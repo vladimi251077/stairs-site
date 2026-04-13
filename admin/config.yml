@@ -1,0 +1,47 @@
+backend:
+  name: git-gateway
+  branch: main
+
+media_folder: "uploads"
+public_folder: "/uploads"
+
+locale: "ru"
+
+collections:
+  - name: "site"
+    label: "Настройки сайта"
+    files:
+      - label: "Контент сайта"
+        name: "site"
+        file: "content/site.json"
+        format: "json"
+        fields:
+          - { label: "Бейдж", name: "badge", widget: "string" }
+          - { label: "Главный заголовок", name: "heroTitle", widget: "string" }
+          - { label: "Подзаголовок", name: "heroLead", widget: "text" }
+          - { label: "Описание услуг", name: "servicesLead", widget: "text" }
+          - { label: "Услуга 1 заголовок", name: "srv1t", widget: "string" }
+          - { label: "Услуга 1 текст", name: "srv1d", widget: "text" }
+          - { label: "Услуга 2 заголовок", name: "srv2t", widget: "string" }
+          - { label: "Услуга 2 текст", name: "srv2d", widget: "text" }
+          - { label: "Услуга 3 заголовок", name: "srv3t", widget: "string" }
+          - { label: "Услуга 3 текст", name: "srv3d", widget: "text" }
+          - { label: "Работа 1 заголовок", name: "work1t", widget: "string" }
+          - { label: "Работа 1 текст", name: "work1d", widget: "text" }
+          - { label: "Работа 2 заголовок", name: "work2t", widget: "string" }
+          - { label: "Работа 2 текст", name: "work2d", widget: "text" }
+          - { label: "Работа 3 заголовок", name: "work3t", widget: "string" }
+          - { label: "Работа 3 текст", name: "work3d", widget: "text" }
+          - { label: "Акция 1 заголовок", name: "promo1t", widget: "string" }
+          - { label: "Акция 1 текст", name: "promo1d", widget: "text" }
+          - { label: "Акция 2 заголовок", name: "promo2t", widget: "string" }
+          - { label: "Акция 2 текст", name: "promo2d", widget: "text" }
+          - { label: "Контактный текст", name: "contactsLead", widget: "text" }
+          - { label: "Телефон", name: "phone", widget: "string" }
+          - { label: "WhatsApp номер", name: "whatsapp", widget: "string" }
+          - { label: "Telegram username", name: "telegram", widget: "string" }
+          - { label: "Базовая ставка за ступень", name: "baseRate", widget: "number", value_type: "int", min: 1 }
+          - { label: "Главное фото", name: "heroImage", widget: "image", required: false }
+          - { label: "Фото работы 1", name: "work1img", widget: "image", required: false }
+          - { label: "Фото работы 2", name: "work2img", widget: "image", required: false }
+          - { label: "Фото работы 3", name: "work3img", widget: "image", required: false }
