@@ -1,29 +1,295 @@
 <!doctype html>
-<html>
+<html lang="ru">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Админка сайта</title>
-
-  <!-- Netlify Identity -->
-  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tekstura Admin</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root{--bg:#12100f;--panel:#1f1b18;--line:#3c342d;--text:#f4e7d4;--muted:#b9aa97;--accent:#e8c8a2}
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 Inter,Arial,sans-serif}
+    .wrap{max-width:1100px;margin:0 auto;padding:24px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:16px}
+    h1,h2{margin:0 0 14px} h1{font-size:28px} h2{font-size:20px} .muted{color:var(--muted)}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px} .full{grid-column:1/-1}
+    label{font-weight:700;display:block;margin-bottom:6px} input,textarea,button{font:inherit}
+    input,textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:#120f0d;color:var(--text)} textarea{min-height:86px;resize:vertical}
+    .btn{background:var(--accent);color:#1b130f;border:0;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}
+    .btn-secondary{background:transparent;color:var(--text);border:1px solid var(--line)}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.item{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}
+    .hidden{display:none}.status{margin-top:10px;color:var(--muted)} .preview{max-width:220px;max-height:120px;border-radius:8px;border:1px solid var(--line);object-fit:cover}
+    @media (max-width:760px){.grid{grid-template-columns:1fr}}
+  </style>
 </head>
-
 <body>
-  <!-- Decap CMS -->
-  <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+  <div class="wrap">
+    <h1>Админ-панель Tekstura</h1>
+    <p class="muted">Авторизация через Supabase Auth. Данные и изображения сохраняются в Supabase.</p>
 
-  <!-- FIX для логина и reset -->
+    <section id="authBox" class="panel">
+      <h2>Вход</h2>
+      <div class="grid">
+        <div><label>Email</label><input id="email" type="email" placeholder="admin@mail.com" /></div>
+        <div><label>Пароль</label><input id="password" type="password" placeholder="••••••••" /></div>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <button id="loginBtn" class="btn">Войти</button>
+        <button id="logoutBtn" class="btn btn-secondary hidden">Выйти</button>
+      </div>
+      <div id="authStatus" class="status"></div>
+    </section>
+
+    <section id="adminApp" class="hidden">
+      <section class="panel">
+        <h2>Контакты</h2>
+        <div class="grid">
+          <div><label>Телефон</label><input id="phone" /></div>
+          <div><label>WhatsApp</label><input id="whatsapp" /></div>
+          <div class="full"><label>Telegram</label><input id="telegram" /></div>
+        </div>
+        <div class="row" style="margin-top:12px"><button id="saveContacts" class="btn">Сохранить контакты</button></div>
+      </section>
+
+      <section class="panel">
+        <h2>Главный экран</h2>
+        <div class="grid">
+          <div class="full"><label>Hero title</label><input id="heroTitle" /></div>
+          <div class="full"><label>Hero subtitle</label><textarea id="heroSubtitle"></textarea></div>
+          <div><label>Badge</label><input id="badge" /></div>
+          <div><label>Base rate</label><input id="baseRate" type="number" min="1" value="5000" /></div>
+
+          <div>
+            <label>Hero image</label>
+            <input id="heroImageFile" type="file" accept="image/*" />
+            <img id="heroImagePreview" class="preview" alt="hero preview" />
+          </div>
+          <div>
+            <label>Logo</label>
+            <input id="logoFile" type="file" accept="image/*" />
+            <img id="logoPreview" class="preview" alt="logo preview" />
+          </div>
+        </div>
+        <div class="row" style="margin-top:12px"><button id="saveHero" class="btn">Сохранить главный экран</button></div>
+      </section>
+
+      <section class="panel">
+        <h2>Услуги</h2>
+        <div id="servicesList"></div>
+        <div class="row"><button id="addService" class="btn btn-secondary">Добавить услугу</button><button id="saveServices" class="btn">Сохранить услуги</button></div>
+      </section>
+
+      <section class="panel">
+        <h2>Проекты</h2>
+        <div id="projectsList"></div>
+        <div class="row"><button id="addProject" class="btn btn-secondary">Добавить проект</button><button id="saveProjects" class="btn">Сохранить проекты</button></div>
+      </section>
+
+      <p id="status" class="status"></p>
+    </section>
+  </div>
+
   <script>
-    if (window.netlifyIdentity) {
-      window.netlifyIdentity.on("init", user => {
-        if (!user) {
-          window.netlifyIdentity.on("login", () => {
-            document.location.href = "/admin/";
+    const SUPABASE_URL = 'https://rhnlykqqhwweaywjopvm.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_OeUkZnLVZ1lTHcS19zau5Q_h_aJguli';
+    const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const authBox = document.getElementById('authBox');
+    const adminApp = document.getElementById('adminApp');
+    const authStatus = document.getElementById('authStatus');
+    const statusBox = document.getElementById('status');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    const state = { heroImage: '', logo: '', services: [], projects: [] };
+
+    function note(msg){ statusBox.textContent = msg; }
+    function uid(){ return (crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random())); }
+
+    async function uploadFile(file, folder){
+      if (!file) return '';
+      const path = `${folder}/${Date.now()}-${file.name.replace(/\s+/g,'-')}`;
+      const { error } = await client.storage.from('site-assets').upload(path, file, { upsert: true });
+      if (error) throw error;
+      const { data } = client.storage.from('site-assets').getPublicUrl(path);
+      return data.publicUrl;
+    }
+
+    function serviceItem(item = {}){
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.innerHTML = `
+        <div class="grid">
+          <div><label>Заголовок</label><input data-k="title" value="${item.title || ''}" /></div>
+          <div><label>Порядок</label><input data-k="sort_order" type="number" value="${item.sort_order || 0}" /></div>
+          <div class="full"><label>Описание</label><textarea data-k="description">${item.description || ''}</textarea></div>
+        </div>
+        <div class="row" style="margin-top:8px"><button class="btn btn-secondary" data-remove>Удалить</button></div>
+      `;
+      div.dataset.id = item.id || uid();
+      div.querySelector('[data-remove]').onclick = () => div.remove();
+      return div;
+    }
+
+    function projectItem(item = {}){
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.innerHTML = `
+        <div class="grid">
+          <div><label>Заголовок</label><input data-k="title" value="${item.title || ''}" /></div>
+          <div><label>Цена (опц.)</label><input data-k="price" value="${item.price || ''}" /></div>
+          <div class="full"><label>Описание</label><textarea data-k="description">${item.description || ''}</textarea></div>
+          <div><label>Картинка</label><input data-k="imageFile" type="file" accept="image/*" /></div>
+          <div><label>URL картинки</label><input data-k="image" value="${item.image || ''}" /></div>
+        </div>
+        <div class="row" style="margin-top:8px"><button class="btn btn-secondary" data-remove>Удалить</button></div>
+      `;
+      div.dataset.id = item.id || uid();
+      div.querySelector('[data-remove]').onclick = () => div.remove();
+      return div;
+    }
+
+    async function loadData(){
+      const [settingsRes, servicesRes, projectsRes] = await Promise.all([
+        client.from('settings').select('*').order('updated_at', { ascending: false }).limit(1).maybeSingle(),
+        client.from('services').select('*').order('sort_order', { ascending: true }),
+        client.from('projects').select('*').order('created_at', { ascending: false })
+      ]);
+
+      const settings = settingsRes.data || {};
+      state.heroImage = settings.heroimage || settings.heroImage || '';
+      state.logo = settings.logo || '';
+
+      document.getElementById('phone').value = settings.phone || '';
+      document.getElementById('whatsapp').value = settings.whatsapp || '';
+      document.getElementById('telegram').value = settings.telegram || '';
+
+      document.getElementById('heroTitle').value = settings.herotitle || settings.heroTitle || '';
+      document.getElementById('heroSubtitle').value = settings.herosubtitle || settings.heroSubtitle || '';
+      document.getElementById('badge').value = settings.badge || '';
+      document.getElementById('baseRate').value = settings.baserate || settings.baseRate || 5000;
+      document.getElementById('heroImagePreview').src = state.heroImage;
+      document.getElementById('logoPreview').src = state.logo;
+
+      const servicesList = document.getElementById('servicesList');
+      servicesList.innerHTML = '';
+      (servicesRes.data || []).forEach(s => servicesList.appendChild(serviceItem(s)));
+      if (!servicesList.children.length) servicesList.appendChild(serviceItem({ sort_order: 1 }));
+
+      const projectsList = document.getElementById('projectsList');
+      projectsList.innerHTML = '';
+      (projectsRes.data || []).forEach(p => projectsList.appendChild(projectItem(p)));
+    }
+
+    async function init(){
+      const { data: { session } } = await client.auth.getSession();
+      if (session) {
+        authStatus.textContent = `Вход выполнен: ${session.user.email}`;
+        logoutBtn.classList.remove('hidden');
+        adminApp.classList.remove('hidden');
+        await loadData();
+      } else {
+        authStatus.textContent = 'Выполните вход для доступа к управлению контентом.';
+      }
+    }
+
+    document.getElementById('loginBtn').onclick = async () => {
+      try {
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        const { error } = await client.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        await init();
+      } catch (e) { authStatus.textContent = 'Ошибка входа: ' + e.message; }
+    };
+
+    logoutBtn.onclick = async () => {
+      await client.auth.signOut();
+      location.reload();
+    };
+
+    document.getElementById('saveContacts').onclick = async () => {
+      try {
+        await client.from('settings').upsert({
+          id: 1,
+          phone: document.getElementById('phone').value.trim(),
+          whatsapp: document.getElementById('whatsapp').value.trim(),
+          telegram: document.getElementById('telegram').value.trim(),
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'id' });
+        note('Контакты сохранены');
+      } catch (e) { note('Ошибка сохранения контактов: ' + e.message); }
+    };
+
+    document.getElementById('saveHero').onclick = async () => {
+      try {
+        const heroFile = document.getElementById('heroImageFile').files[0];
+        const logoFile = document.getElementById('logoFile').files[0];
+        if (heroFile) state.heroImage = await uploadFile(heroFile, 'hero');
+        if (logoFile) state.logo = await uploadFile(logoFile, 'logo');
+
+        await client.from('settings').upsert({
+          id: 1,
+          heroTitle: document.getElementById('heroTitle').value.trim(),
+          heroSubtitle: document.getElementById('heroSubtitle').value.trim(),
+          heroImage: state.heroImage,
+          logo: state.logo,
+          badge: document.getElementById('badge').value.trim(),
+          baseRate: Number(document.getElementById('baseRate').value || 5000),
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'id' });
+
+        document.getElementById('heroImagePreview').src = state.heroImage;
+        document.getElementById('logoPreview').src = state.logo;
+        note('Главный экран сохранён');
+      } catch (e) { note('Ошибка сохранения главного экрана: ' + e.message); }
+    };
+
+    document.getElementById('addService').onclick = () => {
+      document.getElementById('servicesList').appendChild(serviceItem({ sort_order: document.getElementById('servicesList').children.length + 1 }));
+    };
+
+    document.getElementById('saveServices').onclick = async () => {
+      try {
+        const rows = [...document.querySelectorAll('#servicesList .item')].map((el, idx) => ({
+          id: el.dataset.id,
+          title: el.querySelector('[data-k="title"]').value.trim(),
+          description: el.querySelector('[data-k="description"]').value.trim(),
+          sort_order: Number(el.querySelector('[data-k="sort_order"]').value || (idx + 1))
+        }));
+
+        await client.from('services').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        if (rows.length) await client.from('services').upsert(rows);
+        note('Услуги сохранены');
+      } catch (e) { note('Ошибка сохранения услуг: ' + e.message); }
+    };
+
+    document.getElementById('addProject').onclick = () => {
+      document.getElementById('projectsList').appendChild(projectItem({}));
+    };
+
+    document.getElementById('saveProjects').onclick = async () => {
+      try {
+        const items = [...document.querySelectorAll('#projectsList .item')];
+        const rows = [];
+        for (const el of items) {
+          const file = el.querySelector('[data-k="imageFile"]').files[0];
+          let imageUrl = el.querySelector('[data-k="image"]').value.trim();
+          if (file) imageUrl = await uploadFile(file, 'projects');
+          rows.push({
+            id: el.dataset.id,
+            title: el.querySelector('[data-k="title"]').value.trim(),
+            description: el.querySelector('[data-k="description"]').value.trim(),
+            image: imageUrl,
+            price: el.querySelector('[data-k="price"]').value.trim() || null,
+            created_at: new Date().toISOString()
           });
         }
-      });
-    }
+
+        await client.from('projects').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        if (rows.length) await client.from('projects').upsert(rows);
+        note('Проекты сохранены');
+      } catch (e) { note('Ошибка сохранения проектов: ' + e.message); }
+    };
+
+    init();
   </script>
 </body>
 </html>
