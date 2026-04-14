@@ -26,22 +26,22 @@
     a{color:inherit;text-decoration:none}.container{max-width:1240px;margin:0 auto;padding:0 24px}
     header{position:sticky;top:0;z-index:30;backdrop-filter:blur(18px);background:rgba(18,16,14,0.72);border-bottom:1px solid var(--line)}
     .nav{display:flex;align-items:center;justify-content:space-between;padding:16px 0;gap:20px}
-    .brand{display:flex;align-items:center;gap:14px}.brand-mark{position:relative;width:48px;height:48px;border-radius:999px;overflow:hidden;border:1px solid var(--line);background:linear-gradient(135deg,var(--metal),var(--wood2));box-shadow:0 8px 18px rgba(0,0,0,.25)}
-    .brand-mark:before{content:"";position:absolute;left:50%;top:4px;transform:translateX(-50%);width:4px;height:28px;border-radius:999px;background:var(--metal2)}
-    .brand-mark:after{content:"";position:absolute;left:8px;bottom:8px;width:30px;height:18px;border-top:4px solid var(--wood2);border-radius:20px 20px 0 0}
+    .brand{display:flex;align-items:center;gap:14px}
+    .brand-logo{display:block;height:56px;width:auto;object-fit:contain;filter:drop-shadow(0 8px 14px rgba(0,0,0,.35))}
     .brand-title{font-size:30px;font-weight:900;letter-spacing:-0.02em}.brand-sub{font-size:11px;letter-spacing:.36em;text-transform:uppercase;color:var(--muted)}
     .nav-links{display:flex;gap:32px;font-size:14px;font-weight:700;color:var(--muted)}
     .nav-btn{border:none;border-radius:18px;padding:14px 18px;background:var(--candle);color:var(--bg);font-weight:800;cursor:pointer;box-shadow:0 10px 24px rgba(0,0,0,.18)}
-    .hero{padding:70px 0 60px}.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center}
+    .hero{padding:70px 0 60px}.hero-grid{display:grid;grid-template-columns:1fr;gap:40px;align-items:center;justify-items:center;text-align:center}
     .badge{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:10px 14px;text-transform:uppercase;font-size:12px;font-weight:800;letter-spacing:.32em;color:var(--muted);background:rgba(255,255,255,.03)}
     h1{font-size:78px;line-height:.94;margin:20px 0 0;font-weight:900;letter-spacing:-0.04em}.hero-accent{color:var(--candle)}
-    .lead{max-width:650px;margin:24px 0 0;font-size:20px;line-height:1.8;color:var(--muted)}
-    .hero-actions{display:flex;gap:16px;flex-wrap:wrap;margin-top:32px}.btn-primary,.btn-secondary{display:inline-flex;align-items:center;justify-content:center;border-radius:18px;padding:16px 24px;font-weight:800}
+    .lead{max-width:760px;margin:24px auto 0;font-size:20px;line-height:1.8;color:var(--muted)}
+    .hero-actions{display:flex;gap:16px;flex-wrap:wrap;margin-top:32px;justify-content:center}.btn-primary,.btn-secondary{display:inline-flex;align-items:center;justify-content:center;border-radius:18px;padding:16px 24px;font-weight:800}
     .btn-primary{background:var(--candle);color:var(--bg);box-shadow:0 12px 28px rgba(0,0,0,.22)}.btn-secondary{border:1px solid var(--line);color:var(--text);background:transparent}
-    .hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:36px;max-width:760px}.stat{border:1px solid var(--line);border-radius:24px;padding:18px;background:rgba(255,255,255,.04)}.stat b{display:block;font-size:24px}.stat span{display:block;margin-top:4px;font-size:13px;color:var(--muted)}
-    .hero-card{position:relative;border:1px solid var(--line);border-radius:38px;padding:20px;background:linear-gradient(180deg,var(--panel2),var(--panel));box-shadow:0 30px 80px rgba(0,0,0,.45)}
-    .hero-card-inner{border:1px solid var(--line);border-radius:30px;padding:16px;background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01))}
-    .hero-card img{display:block;width:100%;border-radius:22px;object-fit:cover;background:#222}.hero-note{position:absolute;left:24px;bottom:-28px;border:1px solid var(--line);border-radius:22px;padding:16px 18px;background:rgba(20,18,16,.95);box-shadow:0 14px 30px rgba(0,0,0,.25)}
+    .hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:36px;max-width:860px}.stat{border:1px solid var(--line);border-radius:24px;padding:18px;background:rgba(255,255,255,.04)}.stat b{display:block;font-size:24px}.stat span{display:block;margin-top:4px;font-size:13px;color:var(--muted)}
+    .hero-card{width:100%;max-width:920px;position:relative;border:1px solid var(--line);border-radius:38px;padding:28px;background:linear-gradient(180deg,var(--panel2),var(--panel));box-shadow:0 30px 80px rgba(0,0,0,.45)}
+    .hero-card-inner{border:1px solid var(--line);border-radius:30px;padding:22px;background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));display:flex;justify-content:center;align-items:center}
+    .hero-card img{display:block;width:100%;max-width:860px;max-height:65vh;border-radius:22px;object-fit:contain;background:transparent}
+    .hero-note{margin-top:18px;border:1px solid var(--line);border-radius:22px;padding:16px 18px;background:rgba(20,18,16,.95);box-shadow:0 14px 30px rgba(0,0,0,.25)}
     .hero-note small{display:block;text-transform:uppercase;letter-spacing:.32em;color:var(--muted);font-size:11px}.hero-note b{display:block;margin-top:6px;font-size:18px}
     section{padding:24px 0}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}.card{border:1px solid var(--line);border-radius:32px;padding:32px;background:rgba(255,255,255,.04)}.card-line{width:96px;height:6px;border-radius:999px;background:linear-gradient(90deg,var(--metal),var(--wood2));margin-bottom:22px}.card h3{margin:0;font-size:30px}.card p{margin:16px 0 0;color:var(--muted);line-height:1.9}
     .section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:28px}.section-kicker{font-size:12px;text-transform:uppercase;letter-spacing:.32em;color:var(--muted);font-weight:800}.section-title{font-size:58px;line-height:1;font-weight:900;margin:12px 0 0}
@@ -53,17 +53,18 @@
     .panel h2,.dark-panel h2{margin:12px 0 0;font-size:46px}label{display:block;margin:0 0 10px;font-size:14px;font-weight:800}input,select{width:100%;border:1px solid var(--line);border-radius:18px;padding:16px 18px;background:var(--bg2);color:var(--text);font-size:16px}.form-grid{display:grid;gap:18px;margin-top:28px}.estimate{font-size:62px;font-weight:900;color:var(--candle);margin-top:24px;line-height:1}.dark-panel p{color:var(--muted);line-height:1.9}.pill-list{display:grid;gap:12px;margin-top:28px}.pill{border:1px solid var(--line);border-radius:18px;padding:16px 18px}
     .contact-wrap{border:1px solid var(--line);border-radius:36px;padding:36px;background:linear-gradient(135deg,#2a241f,#171411)}.contact-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:32px;align-items:center}.contact-list{display:grid;gap:14px}.contact-item{border:1px solid var(--line);border-radius:18px;padding:16px 18px;background:rgba(255,255,255,.04);font-weight:700}
     footer{padding:40px 0 60px;color:var(--muted)}
-    @media (max-width:980px){.hero-grid,.cards,.projects,.calc-grid,.contact-grid,.hero-stats{grid-template-columns:1fr}h1{font-size:54px}.section-title{font-size:42px}.nav-links{display:none}.hero-note{position:static;margin-top:16px}}
+    @media (max-width:980px){.hero-grid,.cards,.projects,.calc-grid,.contact-grid,.hero-stats{grid-template-columns:1fr}h1{font-size:54px}.section-title{font-size:42px}.nav-links{display:none}.brand-logo{height:50px}.brand-title{font-size:24px}}
+    @media (max-width:680px){.brand-logo{height:42px}.brand-title{font-size:20px}.brand-sub{font-size:10px;letter-spacing:.24em}.hero-card{padding:16px;border-radius:26px}.hero-card-inner{padding:12px;border-radius:20px}.hero-card img{max-width:100%;max-height:48vh}.hero-note b{font-size:16px}}
   </style>
 </head>
 <body>
   <header>
-    <div class="container nav">
-      <div class="brand">
-        <div class="brand-mark"></div>
-        <div>
-          <div class="brand-title">ТЕКСТУРА</div>
-          <div class="brand-sub">stairs atelier</div>
+      <div class="container nav">
+        <div class="brand">
+          <img class="brand-logo" src="/logo.jpg.png" alt="Логотип ТЕКСТУРА" />
+          <div>
+            <div class="brand-title">ТЕКСТУРА</div>
+            <div class="brand-sub">stairs atelier</div>
         </div>
       </div>
       <nav class="nav-links">
@@ -93,8 +94,8 @@
           </div>
         </div>
         <div class="hero-card">
-          <div class="hero-card-inner"><img id="heroImage" src="" alt="Логотип Tekstura" /></div>
-          <div class="hero-note"><small>фирменный образ</small><b>дерево + металл + тёмная премиум-подача</b></div>
+          <div class="hero-card-inner"><img id="heroImage" src="/logo.jpg.png" alt="Логотип Tekstura" /></div>
+          <div class="hero-note"><small>фирменный образ</small><b>акцент на логотип и премиальную тёмную подачу</b></div>
         </div>
       </div>
     </section>
@@ -117,7 +118,6 @@
     function render(data){
       DATA = data || DATA;
       document.getElementById('heroLead').textContent = data.heroLead || 'Делаем лестницы в стиле Tekstura: глубокий тёмный фон, тёплая древесина, благородный металл и архитектурная подача, которая сразу выглядит дорого.';
-      document.getElementById('heroImage').src = data.heroImage || '';
       document.getElementById('phoneBtn').href = 'tel:' + (data.phone || '');
       document.getElementById('phoneBtn').textContent = 'Телефон: ' + (data.phone || '');
       document.getElementById('waBtn').href = 'https://wa.me/' + String(data.whatsapp || '').replace(/\D/g,'');
