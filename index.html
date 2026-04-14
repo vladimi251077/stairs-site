@@ -15,19 +15,20 @@
     a{color:inherit;text-decoration:none}.container{max-width:1240px;margin:0 auto;padding:0 24px}
     header{position:sticky;top:0;z-index:30;backdrop-filter:blur(18px);background:rgba(18,16,14,.72);border-bottom:1px solid var(--line)}
     .nav{display:flex;align-items:center;justify-content:space-between;padding:16px 0;gap:20px}
-    .brand{display:flex;align-items:center;gap:14px}.brand-logo{display:block;height:56px;width:auto;object-fit:contain;filter:drop-shadow(0 8px 14px rgba(0,0,0,.35))}
-    .brand-title{font-size:30px;font-weight:900;letter-spacing:-.02em}.brand-sub{font-size:11px;letter-spacing:.36em;text-transform:uppercase;color:var(--muted)}
+    .brand{display:flex;align-items:center;gap:14px}
+    .brand-logo{display:block;height:56px;width:auto;object-fit:contain;filter:drop-shadow(0 8px 14px rgba(0,0,0,.35))}
+    .brand-title{font-size:30px;font-weight:900;letter-spacing:-0.02em}.brand-sub{font-size:11px;letter-spacing:.36em;text-transform:uppercase;color:var(--muted)}
     .nav-links{display:flex;gap:32px;font-size:14px;font-weight:700;color:var(--muted)}
     .nav-btn{border:none;border-radius:18px;padding:14px 18px;background:var(--candle);color:var(--bg);font-weight:800;cursor:pointer;box-shadow:0 10px 24px rgba(0,0,0,.18)}
     .hero{padding:70px 0 60px}.hero-grid{display:grid;grid-template-columns:1fr;gap:40px;align-items:center;justify-items:center;text-align:center}
     .badge{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:10px 14px;text-transform:uppercase;font-size:12px;font-weight:800;letter-spacing:.32em;color:var(--muted);background:rgba(255,255,255,.03)}
-    h1{font-size:78px;line-height:.94;margin:20px 0 0;font-weight:900;letter-spacing:-.04em}.hero-accent{color:var(--candle)}
+    h1{font-size:78px;line-height:.94;margin:20px 0 0;font-weight:900;letter-spacing:-0.04em}.hero-accent{color:var(--candle)}
     .lead{max-width:760px;margin:24px auto 0;font-size:20px;line-height:1.8;color:var(--muted)}
     .hero-actions{display:flex;gap:16px;flex-wrap:wrap;margin-top:32px;justify-content:center}.btn-primary,.btn-secondary{display:inline-flex;align-items:center;justify-content:center;border-radius:18px;padding:16px 24px;font-weight:800}
     .btn-primary{background:var(--candle);color:var(--bg);box-shadow:0 12px 28px rgba(0,0,0,.22)}.btn-secondary{border:1px solid var(--line);color:var(--text);background:transparent}
     .hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:36px;max-width:860px}.stat{border:1px solid var(--line);border-radius:24px;padding:18px;background:rgba(255,255,255,.04)}.stat b{display:block;font-size:24px}.stat span{display:block;margin-top:4px;font-size:13px;color:var(--muted)}
-    .hero-card{width:100%;max-width:920px;border:1px solid var(--line);border-radius:38px;padding:28px;background:linear-gradient(180deg,var(--panel2),var(--panel));box-shadow:0 30px 80px rgba(0,0,0,.45)}
-    .hero-card-inner{border:1px solid var(--line);border-radius:30px;padding:22px;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.01));display:flex;justify-content:center;align-items:center}
+    .hero-card{width:100%;max-width:920px;position:relative;border:1px solid var(--line);border-radius:38px;padding:28px;background:linear-gradient(180deg,var(--panel2),var(--panel));box-shadow:0 30px 80px rgba(0,0,0,.45)}
+    .hero-card-inner{border:1px solid var(--line);border-radius:30px;padding:22px;background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));display:flex;justify-content:center;align-items:center}
     .hero-card img{display:block;width:100%;max-width:860px;max-height:65vh;border-radius:22px;object-fit:contain;background:transparent}
     .hero-note{margin-top:18px;border:1px solid var(--line);border-radius:22px;padding:16px 18px;background:rgba(20,18,16,.95);box-shadow:0 14px 30px rgba(0,0,0,.25)}
     .hero-note small{display:block;text-transform:uppercase;letter-spacing:.32em;color:var(--muted);font-size:11px}.hero-note b{display:block;margin-top:6px;font-size:18px}
@@ -49,12 +50,12 @@
 </head>
 <body>
   <header>
-    <div class="container nav">
-      <div class="brand">
-        <img id="headerLogo" class="brand-logo" src="/logo.jpg.png" alt="Логотип ТЕКСТУРА" />
-        <div>
-          <div class="brand-title">ТЕКСТУРА</div>
-          <div class="brand-sub">stairs atelier</div>
+      <div class="container nav">
+        <div class="brand">
+          <img class="brand-logo" src="/logo.jpg.png" alt="Логотип ТЕКСТУРА" />
+          <div>
+            <div class="brand-title">ТЕКСТУРА</div>
+            <div class="brand-sub">stairs atelier</div>
         </div>
       </div>
       <nav class="nav-links">
@@ -122,36 +123,27 @@
       const total = steps * Number(DATA.baseRate || 5000) * type * material;
       document.getElementById('estimate').textContent = 'от ' + formatRub(total);
     }
-
-    function renderSite(payload){
-      const { settings, services, projects } = payload;
-      DATA.baseRate = Number(settings.baseRate || 5000);
-
-      document.getElementById('heroTitle').textContent = settings.heroTitle || FALLBACK.settings.heroTitle;
-      document.getElementById('heroLead').textContent = settings.heroSubtitle || FALLBACK.settings.heroSubtitle;
-      document.getElementById('heroBadge').textContent = settings.badge || FALLBACK.settings.badge;
-
-      const logoUrl = settings.logo || '/logo.jpg.png';
-      document.getElementById('headerLogo').src = logoUrl;
-      document.getElementById('heroImage').src = settings.heroImage || logoUrl;
-
-      document.getElementById('phoneBtn').href = 'tel:' + (settings.phone || '');
-      document.getElementById('phoneBtn').textContent = 'Телефон: ' + (settings.phone || '');
-      document.getElementById('waBtn').href = 'https://wa.me/' + String(settings.whatsapp || '').replace(/\D/g,'');
-      document.getElementById('waBtn').textContent = 'WhatsApp: ' + (settings.whatsapp || '');
-      document.getElementById('tgBtn').href = 'https://t.me/' + String(settings.telegram || '').replace('@','');
-      document.getElementById('tgBtn').textContent = 'Telegram: ' + (settings.telegram || '');
-
-      const safeServices = services.length ? services : FALLBACK.services;
-      document.getElementById('servicesCards').innerHTML = safeServices.slice(0,3).map(s => `<div class="card"><div class="card-line"></div><h3>${s.title || ''}</h3><p>${s.description || ''}</p></div>`).join('');
-
-      const projectHtml = projects.length ? projects.map((p, i) => {
-        const image = p.image || logoUrl;
-        const price = p.price ? `<div class="project-price">${p.price}</div>` : '';
-        return `<article class="project"><div class="project-visual"><img class="project-image" src="${image}" alt="${p.title || ('Проект ' + (i+1))}" /></div><div class="project-body"><small>Проект ${i+1}</small><h4>${p.title || ''}</h4><p>${p.description || ''}</p>${price}</div></article>`;
-      }).join('') : `<article class="project"><div class="project-visual"><img class="project-image" src="${logoUrl}" alt="Логотип Tekstura" /></div><div class="project-body"><small>Проект</small><h4>Добавьте проекты в админке</h4><p>После сохранения в панели администратора карточки появятся здесь без пересборки.</p></div></article>`;
-      document.getElementById('projectsGrid').innerHTML = projectHtml;
-
+    function render(data){
+      DATA = data || DATA;
+      document.getElementById('heroLead').textContent = data.heroLead || 'Делаем лестницы в стиле Tekstura: глубокий тёмный фон, тёплая древесина, благородный металл и архитектурная подача, которая сразу выглядит дорого.';
+      document.getElementById('phoneBtn').href = 'tel:' + (data.phone || '');
+      document.getElementById('phoneBtn').textContent = 'Телефон: ' + (data.phone || '');
+      document.getElementById('waBtn').href = 'https://wa.me/' + String(data.whatsapp || '').replace(/\D/g,'');
+      document.getElementById('waBtn').textContent = 'WhatsApp: ' + (data.whatsapp || '');
+      document.getElementById('tgBtn').href = 'https://t.me/' + String(data.telegram || '').replace('@','');
+      document.getElementById('tgBtn').textContent = 'Telegram: ' + (data.telegram || '');
+      const services = [
+        {title: data.srv1t || 'Дерево + металл', text: data.srv1d || ''},
+        {title: data.srv2t || 'Лестница как арт-объект', text: data.srv2d || ''},
+        {title: data.srv3t || 'Под ключ', text: data.srv3d || ''}
+      ];
+      document.getElementById('servicesCards').innerHTML = services.map(s => `<div class="card"><div class="card-line"></div><h3>${s.title}</h3><p>${s.text}</p></div>`).join('');
+      const projects = [
+        {title: data.work1t || 'Проект 1', text: data.work1d || ''},
+        {title: data.work2t || 'Проект 2', text: data.work2d || ''},
+        {title: data.work3t || 'Проект 3', text: data.work3d || ''}
+      ];
+      document.getElementById('projectsGrid').innerHTML = projects.map((p, i) => `<div class="project"><div class="project-visual"><div class="abstract"><div class="metal"></div><div class="wood"></div><div class="stem"></div><div class="ring"></div></div></div><div class="project-body"><small>Проект ${i + 1}</small><h4>${p.title}</h4><p>${p.text}</p></div></div>`).join('');
       calc();
     }
 
@@ -187,3 +179,4 @@
   </script>
 </body>
 </html>
+update site design 
