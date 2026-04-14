@@ -174,7 +174,7 @@
 
     ['steps','type','material'].forEach(id => document.getElementById(id).addEventListener('input', calc));
 
-    loadFromSupabase().then(renderSite).catch(() => renderSite(FALLBACK));
+    loadFromSupabase().then(renderSite).catch(() => renderSite(FALLBACK)); 
     subscribeToUpdates();
   </script>
 </body>
