@@ -4,57 +4,574 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Tekstura</title>
-
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
+  <script src="/supabase-config.js"></script>
   <style>
-    body {
-      margin: 0;
-      background: #12100f;
-      color: #f4e7d4;
-      font-family: Arial;
-      padding: 20px;
+    :root{
+      --bg:#12100f;
+      --panel:#1b1714;
+      --line:#3c342d;
+      --text:#f4e7d4;
+      --muted:#b9aa97;
+      --accent:#e8c8a2;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font:16px/1.5 Inter,Arial,sans-serif;
+    }
+    .container{
+      max-width:1180px;
+      margin:0 auto;
+      padding:0 20px;
+    }
+    header{
+      position:sticky;
+      top:0;
+      z-index:10;
+      backdrop-filter:blur(10px);
+      background:rgba(18,16,15,.86);
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .nav{
+      min-height:72px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:20px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      text-decoration:none;
+      color:var(--text);
+      font-weight:700;
+      letter-spacing:.04em;
+    }
+    .brand img{
+      width:44px;
+      height:44px;
+      object-fit:contain;
+      border-radius:10px;
+      background:#15120f;
+      border:1px solid var(--line);
+      padding:6px;
+    }
+    .nav-links{
+      display:flex;
+      gap:18px;
+      flex-wrap:wrap;
+    }
+    .nav-links a{
+      color:var(--muted);
+      text-decoration:none;
+    }
+    .nav-links a:hover{color:var(--text)}
+    .hero{
+      padding:72px 0 44px;
+    }
+    .hero-grid{
+      display:grid;
+      grid-template-columns:1.2fr .8fr;
+      gap:26px;
+      align-items:center;
+    }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      color:var(--muted);
+      background:rgba(255,255,255,.02);
+      margin-bottom:18px;
+    }
+    h1{
+      margin:0 0 14px;
+      font-size:56px;
+      line-height:1.02;
+      letter-spacing:-.03em;
+    }
+    .hero-sub{
+      color:var(--muted);
+      font-size:18px;
+      max-width:720px;
+      margin:0 0 24px;
+    }
+    .hero-actions{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:26px;
+    }
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:13px 18px;
+      border-radius:12px;
+      text-decoration:none;
+      font-weight:700;
+      border:1px solid var(--line);
+      color:var(--text);
+      background:transparent;
+    }
+    .btn-primary{
+      background:var(--accent);
+      color:#1a120e;
+      border-color:transparent;
+    }
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:12px;
+    }
+    .stat{
+      border:1px solid var(--line);
+      background:var(--panel);
+      border-radius:16px;
+      padding:16px;
+    }
+    .stat b{
+      display:block;
+      font-size:20px;
+      margin-bottom:6px;
+    }
+    .hero-card{
+      border:1px solid var(--line);
+      background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.01));
+      border-radius:22px;
+      padding:18px;
+      min-height:420px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+    }
+    .hero-card img{
+      max-width:100%;
+      max-height:520px;
+      object-fit:cover;
+      border-radius:18px;
+    }
+    section{
+      padding:38px 0;
+    }
+    .section-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:end;
+      gap:16px;
+      margin-bottom:18px;
+    }
+    .section-head h2{
+      margin:0;
+      font-size:34px;
+    }
+    .section-head p{
+      margin:0;
+      color:var(--muted);
+      max-width:680px;
+    }
+    .cards{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:16px;
+    }
+    .card{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:18px;
+    }
+    .card h3{
+      margin:0 0 10px;
+      font-size:22px;
+    }
+    .card p{
+      margin:0;
+      color:var(--muted);
+    }
+    .projects{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:16px;
+    }
+    .project{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:18px;
+      overflow:hidden;
+    }
+    .project img{
+      width:100%;
+      aspect-ratio:4/3;
+      object-fit:cover;
+      display:block;
+      background:#15120f;
+    }
+    .project-body{
+      padding:16px;
+    }
+    .project h3{
+      margin:0 0 8px;
+      font-size:22px;
+    }
+    .project p{
+      margin:0 0 12px;
+      color:var(--muted);
+    }
+    .price{
+      font-weight:700;
+      color:var(--accent);
+    }
+    .calc{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:16px;
+    }
+    .calc .panel,
+    .contact-wrap > div{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:18px;
+    }
+    .panel h3{
+      margin:0 0 10px;
+      font-size:22px;
+    }
+    .muted{color:var(--muted)}
+    footer{
+      border-top:1px solid rgba(255,255,255,.06);
+      margin-top:28px;
+      padding:24px 0 40px;
+      color:var(--muted);
+    }
+    .contact-wrap{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:16px;
+    }
+    .contact-link{
+      color:var(--text);
+      text-decoration:none;
+      word-break:break-word;
+    }
+    .diag{
+      margin:18px 0 0;
+      color:#ffb7b7;
+      white-space:pre-wrap;
+    }
+    @media (max-width:980px){
+      .hero-grid,.calc,.contact-wrap,.cards,.projects{grid-template-columns:1fr}
+      h1{font-size:42px}
+      .stats{grid-template-columns:1fr}
     }
   </style>
 </head>
 <body>
+  <header>
+    <div class="container nav">
+      <a class="brand" href="#top">
+        <img id="logoImg" alt="Tekstura logo" />
+        <span>Tekstura</span>
+      </a>
+      <nav class="nav-links">
+        <a href="#services">Услуги</a>
+        <a href="#projects">Проекты</a>
+        <a href="#calc">Расчёт</a>
+        <a href="#contacts">Контакты</a>
+      </nav>
+    </div>
+  </header>
 
-<h1 id="heroTitle">Загрузка...</h1>
-<p id="heroSubtitle"></p>
+  <main id="top">
+    <section class="hero">
+      <div class="container hero-grid">
+        <div>
+          <div id="badge" class="badge">premium stairs brand</div>
+          <h1 id="heroTitle">Лестницы как арт-объект</h1>
+          <p id="heroSubtitle" class="hero-sub">Премиальные лестницы из дерева и металла для частных домов и вилл.</p>
 
-<img id="heroImage" style="max-width:300px;display:block;margin-top:20px;" />
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#calc">Рассчитать стоимость</a>
+            <a class="btn" href="#projects">Смотреть проекты</a>
+          </div>
 
-<script>
-const SUPABASE_URL = 'https://rhnlykqqhwweaywjopvm.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_kzUBUDdLy1gWGvs-o5jFsw_xkg5-Sqv';
+          <div class="stats">
+            <div class="stat"><b>Tekstura</b><span class="muted">премиум стиль лестниц</span></div>
+            <div class="stat"><b>Под ключ</b><span class="muted">от идеи до монтажа</span></div>
+            <div class="stat"><b>В рублях</b><span class="muted">понятный расчёт</span></div>
+          </div>
+        </div>
 
-const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        <div class="hero-card">
+          <img id="heroImage" src="/logo.jpg.png" alt="Hero image" />
+        </div>
+      </div>
+      <div class="container">
+        <div id="diag" class="diag"></div>
+      </div>
+    </section>
 
-async function loadData() {
-  try {
-    const { data, error } = await client
-      .from('settings')
-      .select('*')
-      .eq('id', 1)
-      .single();
+    <section id="services">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Услуги</h2>
+            <p>Проектируем, производим и монтируем лестницы с акцентом на материал, форму и безупречную детализацию.</p>
+          </div>
+        </div>
+        <div id="servicesCards" class="cards"></div>
+      </div>
+    </section>
 
-    if (error) {
-      console.error(error);
-      document.getElementById('heroTitle').textContent = 'Ошибка загрузки';
-      return;
+    <section id="projects">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Проекты</h2>
+            <p>Реальные кейсы с индивидуальным подходом к пространству, дизайну и конструкции.</p>
+          </div>
+        </div>
+        <div id="projectsCards" class="projects"></div>
+      </div>
+    </section>
+
+    <section id="calc">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Расчёт</h2>
+            <p>Ориентир для первичной оценки. Итоговая стоимость зависит от геометрии, материалов и сложности монтажа.</p>
+          </div>
+        </div>
+        <div class="calc">
+          <div class="panel">
+            <h3>Базовая ставка</h3>
+            <p class="muted">Стартовая цена от:</p>
+            <div id="baseRateBlock" style="font-size:40px;font-weight:700;color:var(--accent)">5000 ₽</div>
+          </div>
+          <div class="panel">
+            <h3>Как мы работаем</h3>
+            <p class="muted">1. Замер и бриф<br>2. Концепция и расчёт<br>3. Производство<br>4. Доставка и монтаж</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="contacts">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Контакты</h2>
+            <p>Свяжитесь с нами удобным способом, чтобы обсудить задачу, сроки и бюджет.</p>
+          </div>
+        </div>
+        <div class="contact-wrap">
+          <div>
+            <h3>Телефон</h3>
+            <a id="phoneLink" class="contact-link" href="#">+70000000000</a>
+          </div>
+          <div>
+            <h3>WhatsApp</h3>
+            <a id="whatsappLink" class="contact-link" href="#">+70000000000</a>
+          </div>
+          <div>
+            <h3>Telegram</h3>
+            <a id="telegramLink" class="contact-link" href="#">@tekstura</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">Tekstura — премиальный стиль лестниц, дерево и металл для частных домов и вилл.</div>
+  </footer>
+
+  <script>
+    const diagEl = document.getElementById('diag');
+
+    function diag(msg) {
+      diagEl.textContent = msg || '';
+      if (msg) console.error(msg);
     }
 
-    document.getElementById('heroTitle').textContent = data.heroTitle;
-    document.getElementById('heroSubtitle').textContent = data.heroSubtitle;
-    document.getElementById('heroImage').src = data.heroImage;
+    const cfg = window.SUPABASE_CONFIG;
+    if (!cfg || !cfg.url || !cfg.anonKey) {
+      diag('Ошибка: не загрузился supabase-config.js');
+      throw new Error('SUPABASE_CONFIG is missing');
+    }
 
-  } catch (e) {
-    console.error(e);
-  }
-}
+    const client = window.supabase.createClient(cfg.url, cfg.anonKey);
 
-loadData();
-</script>
+    function text(id, value, fallback = '') {
+      document.getElementById(id).textContent = value || fallback;
+    }
 
+    function attr(id, name, value) {
+      if (value) document.getElementById(id).setAttribute(name, value);
+    }
+
+    function renderSettings(row) {
+      const settings = {
+        phone: row?.phone || '+70000000000',
+        whatsapp: row?.whatsapp || '+70000000000',
+        telegram: row?.telegram || '@tekstura',
+        heroTitle: row?.heroTitle || row?.herotitle || 'Лестницы как арт-объект',
+        heroSubtitle: row?.heroSubtitle || row?.herosubtitle || 'Премиальные лестницы из дерева и металла для частных домов и вилл.',
+        heroImage: row?.heroImage || row?.heroimage || '/logo.jpg.png',
+        logo: row?.logo || '/logo.jpg.png',
+        badge: row?.badge || 'premium stairs brand',
+        baseRate: row?.baseRate || row?.baserate || 5000
+      };
+
+      text('heroTitle', settings.heroTitle);
+      text('heroSubtitle', settings.heroSubtitle);
+      text('badge', settings.badge);
+      document.getElementById('heroImage').src = settings.heroImage;
+      document.getElementById('logoImg').src = settings.logo;
+      text('baseRateBlock', `${settings.baseRate} ₽`);
+
+      const phoneClean = settings.phone.replace(/[^\d+]/g, '');
+      const waClean = settings.whatsapp.replace(/[^\d]/g, '');
+      const tgClean = settings.telegram.replace('@', '');
+
+      text('phoneLink', settings.phone);
+      attr('phoneLink', 'href', `tel:${phoneClean}`);
+
+      text('whatsappLink', settings.whatsapp);
+      attr('whatsappLink', 'href', `https://wa.me/${waClean}`);
+
+      text('telegramLink', settings.telegram);
+      attr('telegramLink', 'href', `https://t.me/${tgClean}`);
+    }
+
+    function renderServices(items) {
+      const root = document.getElementById('servicesCards');
+      root.innerHTML = '';
+
+      if (!items?.length) {
+        root.innerHTML = `
+          <div class="card">
+            <h3>Индивидуальный проект</h3>
+            <p>Создаём лестницы под архитектуру интерьера и образ жизни владельца.</p>
+          </div>
+          <div class="card">
+            <h3>Производство</h3>
+            <p>Комбинируем дерево и металл для выразительной и надёжной конструкции.</p>
+          </div>
+          <div class="card">
+            <h3>Монтаж</h3>
+            <p>Точная установка с вниманием к чистоте, срокам и деталям.</p>
+          </div>
+        `;
+        return;
+      }
+
+      items.forEach(item => {
+        const card = document.createElement('article');
+        card.className = 'card';
+        card.innerHTML = `
+          <h3>${escapeHtml(item.title || '')}</h3>
+          <p>${escapeHtml(item.description || '')}</p>
+        `;
+        root.appendChild(card);
+      });
+    }
+
+    function renderProjects(items) {
+      const root = document.getElementById('projectsCards');
+      root.innerHTML = '';
+
+      if (!items?.length) {
+        root.innerHTML = `
+          <article class="project">
+            <img src="/logo.jpg.png" alt="Проект" />
+            <div class="project-body">
+              <h3>Частная вилла</h3>
+              <p>Лестница с деревянными ступенями и металлическим каркасом в современном стиле.</p>
+              <div class="price">по запросу</div>
+            </div>
+          </article>
+        `;
+        return;
+      }
+
+      items.forEach(item => {
+        const card = document.createElement('article');
+        card.className = 'project';
+        card.innerHTML = `
+          <img src="${escapeAttr(item.image || '/logo.jpg.png')}" alt="${escapeAttr(item.title || 'Проект')}" />
+          <div class="project-body">
+            <h3>${escapeHtml(item.title || '')}</h3>
+            <p>${escapeHtml(item.description || '')}</p>
+            <div class="price">${escapeHtml(item.price || 'по запросу')}</div>
+          </div>
+        `;
+        root.appendChild(card);
+      });
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function escapeAttr(str) {
+      return String(str).replaceAll('"', '&quot;');
+    }
+
+    async function loadAll() {
+      try {
+        const [settingsRes, servicesRes, projectsRes] = await Promise.all([
+          client.from('settings').select('*').order('updated_at', { ascending: false }).limit(1).maybeSingle(),
+          client.from('services').select('*').order('sort_order', { ascending: true }),
+          client.from('projects').select('*').order('created_at', { ascending: false })
+        ]);
+
+        if (settingsRes.error) throw settingsRes.error;
+        if (servicesRes.error) console.error('services query failed', servicesRes.error);
+        if (projectsRes.error) console.error('projects query failed', projectsRes.error);
+
+        renderSettings(settingsRes.data || {});
+        renderServices(servicesRes.data || []);
+        renderProjects(projectsRes.data || []);
+
+        diag('');
+      } catch (err) {
+        console.error('Supabase diagnostics failed', err);
+        diag('Ошибка загрузки данных из Supabase: ' + (err?.message || err));
+      }
+    }
+
+    client
+      .channel('site-settings')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'settings' }, loadAll)
+      .subscribe();
+
+    client
+      .channel('site-services')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'services' }, loadAll)
+      .subscribe();
+
+    client
+      .channel('site-projects')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, loadAll)
+      .subscribe();
+
+    loadAll();
+  </script>
 </body>
-</html> 
+</html>
