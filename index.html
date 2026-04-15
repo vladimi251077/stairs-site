@@ -4,28 +4,32 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Tekstura</title>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/supabase-config.js"></script>
-
 <style>
 :root{
+  --bg:#0c0a09;
+  --panel:rgba(20,16,14,.72);
+  --panel-strong:rgba(24,19,16,.82);
+  --line:rgba(255,255,255,.04);
   --text:#f4e7d4;
   --muted:#b9aa97;
   --accent:#e8c8a2;
+  --accent-strong:#f0d7b7;
+  --shadow:0 20px 50px rgba(0,0,0,.30);
 }
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
 
 body{
   margin:0;
   color:var(--text);
-  font:16px/1.55 Arial;
-  position:relative;
-
+  font:16px/1.55 Inter,Arial,sans-serif;
   background:
-    radial-gradient(circle at 20% 10%, rgba(255,255,255,0.06), transparent 25%),
-    radial-gradient(circle at 80% 0%, rgba(255,255,255,0.04), transparent 20%),
-    radial-gradient(circle at 60% 90%, rgba(0,0,0,0.5), transparent 35%),
-    linear-gradient(180deg, #0e0c0a 0%, #151210 50%, #0c0a09 100%);
+    linear-gradient(rgba(8,7,6,.55), rgba(8,7,6,.72)),
+    url("/stone-bg.jpg") center center / cover no-repeat fixed;
+  overflow-x:hidden;
 }
 
 body::before{
@@ -33,78 +37,689 @@ body::before{
   position:fixed;
   inset:0;
   pointer-events:none;
-
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)'/%3E%3C/svg%3E");
-
-  opacity:0.2;
-  mix-blend-mode:overlay;
-}
-
-body::after{
-  content:"";
-  position:fixed;
-  inset:0;
-  pointer-events:none;
-
   background:
-    radial-gradient(circle at 30% 40%, rgba(255,255,255,0.05), transparent 20%),
-    radial-gradient(circle at 70% 60%, rgba(255,255,255,0.04), transparent 25%),
-    radial-gradient(circle at 50% 50%, rgba(0,0,0,0.4), transparent 40%);
-
-  opacity:0.7;
+    radial-gradient(circle at 20% 15%, rgba(255,255,255,.04), transparent 22%),
+    radial-gradient(circle at 80% 10%, rgba(255,255,255,.03), transparent 18%),
+    radial-gradient(circle at 50% 100%, rgba(0,0,0,.25), transparent 30%);
+  opacity:.8;
 }
 
 .container{
-  max-width:1000px;
+  max-width:1180px;
   margin:0 auto;
-  padding:20px;
+  padding:0 20px;
+  position:relative;
+  z-index:1;
+}
+
+header{
+  position:sticky;
+  top:0;
+  z-index:20;
+  backdrop-filter:blur(10px);
+  background:rgba(8,7,6,.38);
+  border-bottom:1px solid rgba(255,255,255,.03);
+}
+
+.nav{
+  min-height:78px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  text-decoration:none;
+  color:var(--text);
+  font-weight:800;
+  letter-spacing:.03em;
+  font-size:20px;
+}
+
+.brand img{
+  width:66px;
+  height:66px;
+  object-fit:contain;
+  border-radius:18px;
+  background:rgba(10,9,8,.55);
+  border:1px solid rgba(255,255,255,.05);
+  padding:8px;
+}
+
+.nav-links{
+  display:flex;
+  gap:26px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+
+.nav-links a{
+  color:var(--muted);
+  text-decoration:none;
+  font-size:16px;
+  transition:.2s ease;
+}
+
+.nav-links a:hover{
+  color:var(--text);
+}
+
+.hero{
+  padding:78px 0 54px;
+}
+
+.hero-grid{
+  display:grid;
+  grid-template-columns:1.08fr .92fr;
+  gap:30px;
+  align-items:center;
+}
+
+.badge{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:11px 18px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:999px;
+  color:var(--muted);
+  background:rgba(20,16,14,.42);
+  backdrop-filter:blur(6px);
+  margin-bottom:22px;
+  font-size:18px;
 }
 
 h1{
-  font-size:42px;
-  margin-bottom:10px;
+  margin:0 0 18px;
+  font-size:76px;
+  line-height:.98;
+  letter-spacing:-.04em;
+  max-width:760px;
 }
 
-p{
+.hero-sub{
+  color:var(--muted);
+  font-size:20px;
+  max-width:760px;
+  margin:0 0 28px;
+}
+
+.hero-actions{
+  display:flex;
+  gap:14px;
+  flex-wrap:wrap;
+  margin-bottom:30px;
+}
+
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:15px 22px;
+  border-radius:16px;
+  text-decoration:none;
+  font-weight:800;
+  border:1px solid rgba(255,255,255,.06);
+  color:var(--text);
+  background:rgba(20,16,14,.45);
+  backdrop-filter:blur(6px);
+}
+
+.btn-primary{
+  background:linear-gradient(180deg, #e8d0ad 0%, #dcc39e 100%);
+  color:#1a120e;
+  border-color:transparent;
+}
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:14px;
+}
+
+.stat{
+  border:1px solid rgba(255,255,255,.05);
+  background:rgba(18,14,12,.46);
+  backdrop-filter:blur(10px);
+  border-radius:22px;
+  padding:18px;
+  box-shadow:var(--shadow);
+}
+
+.stat b{
+  display:block;
+  font-size:18px;
+  margin-bottom:6px;
+  color:var(--text);
+}
+
+.stat span{
+  color:var(--muted);
+  font-size:15px;
+}
+
+.hero-card{
+  border:1px solid rgba(255,255,255,.05);
+  background:rgba(18,14,12,.38);
+  backdrop-filter:blur(8px);
+  border-radius:28px;
+  padding:18px;
+  min-height:500px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  box-shadow:var(--shadow);
+}
+
+.hero-card img{
+  width:100%;
+  max-height:620px;
+  object-fit:cover;
+  border-radius:22px;
+  display:block;
+}
+
+section{
+  padding:44px 0;
+}
+
+.section-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:end;
+  gap:16px;
+  margin-bottom:20px;
+}
+
+.section-head h2{
+  margin:0;
+  font-size:40px;
+  letter-spacing:-.03em;
+}
+
+.section-head p{
+  margin:0;
+  color:var(--muted);
+  max-width:720px;
+  font-size:17px;
+}
+
+.cards{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:18px;
+}
+
+.card{
+  background:var(--panel);
+  border:1px solid rgba(255,255,255,.04);
+  border-radius:24px;
+  padding:22px;
+  backdrop-filter:blur(8px);
+  box-shadow:var(--shadow);
+}
+
+.card h3{
+  margin:0 0 10px;
+  font-size:24px;
+}
+
+.card p{
+  margin:0;
+  color:var(--muted);
+  font-size:16px;
+}
+
+.projects{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:18px;
+}
+
+.project{
+  background:var(--panel);
+  border:1px solid rgba(255,255,255,.04);
+  border-radius:24px;
+  overflow:hidden;
+  backdrop-filter:blur(8px);
+  box-shadow:var(--shadow);
+}
+
+.project img{
+  width:100%;
+  aspect-ratio:4/3;
+  object-fit:cover;
+  display:block;
+  background:#15120f;
+}
+
+.project-body{
+  padding:18px;
+}
+
+.project h3{
+  margin:0 0 8px;
+  font-size:24px;
+}
+
+.project p{
+  margin:0 0 12px;
+  color:var(--muted);
+  min-height:48px;
+}
+
+.price{
+  font-weight:800;
+  color:var(--accent-strong);
+  letter-spacing:.02em;
+}
+
+.calc{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:18px;
+}
+
+.panel,
+.contact-wrap > div{
+  background:var(--panel-strong);
+  border:1px solid rgba(255,255,255,.04);
+  border-radius:24px;
+  padding:22px;
+  backdrop-filter:blur(8px);
+  box-shadow:var(--shadow);
+}
+
+.panel h3{
+  margin:0 0 10px;
+  font-size:24px;
+}
+
+.muted{
   color:var(--muted);
 }
 
-img{
-  max-width:100%;
-  border-radius:12px;
-  margin-top:20px;
+footer{
+  border-top:1px solid rgba(255,255,255,.03);
+  margin-top:32px;
+  padding:28px 0 40px;
+  color:var(--muted);
+  font-size:15px;
+}
+
+.contact-wrap{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:18px;
+}
+
+.contact-link{
+  color:var(--text);
+  text-decoration:none;
+  word-break:break-word;
+  font-size:18px;
+}
+
+.diag{
+  margin:18px 0 0;
+  color:#ffb7b7;
+  white-space:pre-wrap;
+}
+
+@media (max-width:980px){
+  .hero-grid,
+  .calc,
+  .contact-wrap,
+  .cards,
+  .projects{
+    grid-template-columns:1fr;
+  }
+
+  h1{
+    font-size:58px;
+  }
+
+  .stats{
+    grid-template-columns:1fr;
+  }
+}
+
+@media (max-width:640px){
+  .nav{
+    align-items:flex-start;
+    flex-direction:column;
+    padding:14px 0;
+  }
+
+  .nav-links{
+    gap:16px 26px;
+  }
+
+  .brand img{
+    width:54px;
+    height:54px;
+  }
+
+  .badge{
+    font-size:16px;
+  }
+
+  h1{
+    font-size:42px;
+  }
+
+  .hero-sub{
+    font-size:17px;
+  }
+
+  .btn{
+    width:100%;
+  }
 }
 </style>
 </head>
-
 <body>
+<header>
+  <div class="container nav">
+    <a class="brand" href="#top">
+      <img id="logoImg" alt="Tekstura logo" />
+      <span>Tekstura</span>
+    </a>
+    <nav class="nav-links">
+      <a href="#services">Услуги</a>
+      <a href="#projects">Проекты</a>
+      <a href="#calc">Расчёт</a>
+      <a href="#contacts">Контакты</a>
+    </nav>
+  </div>
+</header>
 
-<div class="container">
-  <h1 id="heroTitle">Загрузка...</h1>
-  <p id="heroSubtitle"></p>
-  <img id="heroImage" />
-</div>
+<main id="top">
+  <section class="hero">
+    <div class="container hero-grid">
+      <div>
+        <div id="badge" class="badge">premium stairs brand</div>
+        <h1 id="heroTitle">Лестницы как арт-объект</h1>
+        <p id="heroSubtitle" class="hero-sub">Премиальные лестницы из дерева и металла для частных домов и вилл.</p>
+
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#calc">Рассчитать стоимость</a>
+          <a class="btn" href="#projects">Смотреть проекты</a>
+        </div>
+
+        <div class="stats">
+          <div class="stat"><b>Tekstura</b><span>премиум стиль лестниц</span></div>
+          <div class="stat"><b>Под ключ</b><span>от идеи до монтажа</span></div>
+          <div class="stat"><b>В рублях</b><span>понятный расчёт</span></div>
+        </div>
+      </div>
+
+      <div class="hero-card">
+        <img id="heroImage" src="/logo.jpg.png" alt="Hero image" />
+      </div>
+    </div>
+    <div class="container">
+      <div id="diag" class="diag"></div>
+    </div>
+  </section>
+
+  <section id="services">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <h2>Услуги</h2>
+          <p>Проектируем, производим и монтируем лестницы с акцентом на материал, форму и безупречную детализацию.</p>
+        </div>
+      </div>
+      <div id="servicesCards" class="cards"></div>
+    </div>
+  </section>
+
+  <section id="projects">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <h2>Проекты</h2>
+          <p>Реальные кейсы с индивидуальным подходом к пространству, дизайну и конструкции.</p>
+        </div>
+      </div>
+      <div id="projectsCards" class="projects"></div>
+    </div>
+  </section>
+
+  <section id="calc">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <h2>Расчёт</h2>
+          <p>Ориентир для первичной оценки. Итоговая стоимость зависит от геометрии, материалов и сложности монтажа.</p>
+        </div>
+      </div>
+      <div class="calc">
+        <div class="panel">
+          <h3>Базовая ставка</h3>
+          <p class="muted">Стартовая цена от:</p>
+          <div id="baseRateBlock" style="font-size:42px;font-weight:800;color:var(--accent-strong)">5000 ₽</div>
+        </div>
+        <div class="panel">
+          <h3>Как мы работаем</h3>
+          <p class="muted">1. Замер и бриф<br>2. Концепция и расчёт<br>3. Производство<br>4. Доставка и монтаж</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="contacts">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <h2>Контакты</h2>
+          <p>Свяжитесь с нами удобным способом, чтобы обсудить задачу, сроки и бюджет.</p>
+        </div>
+      </div>
+      <div class="contact-wrap">
+        <div>
+          <h3>Телефон</h3>
+          <a id="phoneLink" class="contact-link" href="#">+70000000000</a>
+        </div>
+        <div>
+          <h3>WhatsApp</h3>
+          <a id="whatsappLink" class="contact-link" href="#">+70000000000</a>
+        </div>
+        <div>
+          <h3>Telegram</h3>
+          <a id="telegramLink" class="contact-link" href="#">@tekstura</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container">Tekstura — премиальный стиль лестниц, дерево и металл для частных домов и вилл.</div>
+</footer>
 
 <script>
-const cfg = window.SUPABASE_CONFIG;
-const client = window.supabase.createClient(cfg.url, cfg.anonKey);
+const diagEl = document.getElementById('diag');
 
-async function load(){
-  const { data } = await client
-    .from('settings')
-    .select('*')
-    .limit(1)
-    .maybeSingle();
-
-  if(!data) return;
-
-  document.getElementById('heroTitle').textContent = data.heroTitle;
-  document.getElementById('heroSubtitle').textContent = data.heroSubtitle;
-  document.getElementById('heroImage').src = data.heroImage;
+function diag(msg) {
+  diagEl.textContent = msg || '';
+  if (msg) console.error(msg);
 }
 
-load();
-</script>
+const cfg = window.SUPABASE_CONFIG;
+if (!cfg || !cfg.url || !cfg.anonKey) {
+  diag('Ошибка: не загрузился supabase-config.js');
+  throw new Error('SUPABASE_CONFIG is missing');
+}
 
+const client = window.supabase.createClient(cfg.url, cfg.anonKey);
+
+function text(id, value, fallback = '') {
+  document.getElementById(id).textContent = value || fallback;
+}
+
+function attr(id, name, value) {
+  if (value) document.getElementById(id).setAttribute(name, value);
+}
+
+function renderSettings(row) {
+  const settings = {
+    phone: row?.phone || '+70000000000',
+    whatsapp: row?.whatsapp || '+70000000000',
+    telegram: row?.telegram || '@tekstura',
+    heroTitle: row?.heroTitle || row?.herotitle || 'Лестницы как арт-объект',
+    heroSubtitle: row?.heroSubtitle || row?.herosubtitle || 'Премиальные лестницы из дерева и металла для частных домов и вилл.',
+    heroImage: row?.heroImage || row?.heroimage || '/logo.jpg.png',
+    logo: row?.logo || '/logo.jpg.png',
+    badge: row?.badge || 'premium stairs brand',
+    baseRate: row?.baseRate || row?.baserate || 5000
+  };
+
+  text('heroTitle', settings.heroTitle);
+  text('heroSubtitle', settings.heroSubtitle);
+  text('badge', settings.badge);
+  document.getElementById('heroImage').src = settings.heroImage;
+  document.getElementById('logoImg').src = settings.logo;
+  text('baseRateBlock', `${settings.baseRate} ₽`);
+
+  const phoneClean = settings.phone.replace(/[^\d+]/g, '');
+  const waClean = settings.whatsapp.replace(/[^\d]/g, '');
+  const tgClean = settings.telegram.replace('@', '');
+
+  text('phoneLink', settings.phone);
+  attr('phoneLink', 'href', `tel:${phoneClean}`);
+
+  text('whatsappLink', settings.whatsapp);
+  attr('whatsappLink', 'href', `https://wa.me/${waClean}`);
+
+  text('telegramLink', settings.telegram);
+  attr('telegramLink', 'href', `https://t.me/${tgClean}`);
+}
+
+function renderServices(items) {
+  const root = document.getElementById('servicesCards');
+  root.innerHTML = '';
+
+  if (!items?.length) {
+    root.innerHTML = `
+      <div class="card">
+        <h3>Индивидуальный проект</h3>
+        <p>Создаём лестницы под архитектуру интерьера и образ жизни владельца.</p>
+      </div>
+      <div class="card">
+        <h3>Производство</h3>
+        <p>Комбинируем дерево и металл для выразительной и надёжной конструкции.</p>
+      </div>
+      <div class="card">
+        <h3>Монтаж</h3>
+        <p>Точная установка с вниманием к чистоте, срокам и деталям.</p>
+      </div>
+    `;
+    return;
+  }
+
+  items.forEach(item => {
+    const card = document.createElement('article');
+    card.className = 'card';
+    card.innerHTML = `
+      <h3>${escapeHtml(item.title || '')}</h3>
+      <p>${escapeHtml(item.description || '')}</p>
+    `;
+    root.appendChild(card);
+  });
+}
+
+function renderProjects(items) {
+  const root = document.getElementById('projectsCards');
+  root.innerHTML = '';
+
+  if (!items?.length) {
+    root.innerHTML = `
+      <article class="project">
+        <img src="/logo.jpg.png" alt="Проект" />
+        <div class="project-body">
+          <h3>Частная вилла</h3>
+          <p>Лестница с деревянными ступенями и металлическим каркасом в современном стиле.</p>
+          <div class="price">по запросу</div>
+        </div>
+      </article>
+    `;
+    return;
+  }
+
+  items.forEach(item => {
+    const card = document.createElement('article');
+    card.className = 'project';
+    card.innerHTML = `
+      <img src="${escapeAttr(item.image || '/logo.jpg.png')}" alt="${escapeAttr(item.title || 'Проект')}" />
+      <div class="project-body">
+        <h3>${escapeHtml(item.title || '')}</h3>
+        <p>${escapeHtml(item.description || '')}</p>
+        <div class="price">${escapeHtml(item.price || 'по запросу')}</div>
+      </div>
+    `;
+    root.appendChild(card);
+  });
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+function escapeAttr(str) {
+  return String(str).replaceAll('"', '&quot;');
+}
+
+async function loadAll() {
+  try {
+    const [settingsRes, servicesRes, projectsRes] = await Promise.all([
+      client.from('settings').select('*').order('updated_at', { ascending: false }).limit(1).maybeSingle(),
+      client.from('services').select('*').order('sort_order', { ascending: true }),
+      client.from('projects').select('*').order('created_at', { ascending: false })
+    ]);
+
+    if (settingsRes.error) throw settingsRes.error;
+    if (servicesRes.error) console.error('services query failed', servicesRes.error);
+    if (projectsRes.error) console.error('projects query failed', projectsRes.error);
+
+    renderSettings(settingsRes.data || {});
+    renderServices(servicesRes.data || []);
+    renderProjects(projectsRes.data || []);
+
+    diag('');
+  } catch (err) {
+    console.error('Supabase diagnostics failed', err);
+    diag('Ошибка загрузки данных из Supabase: ' + (err?.message || err));
+  }
+}
+
+client
+  .channel('site-settings')
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'settings' }, loadAll)
+  .subscribe();
+
+client
+  .channel('site-services')
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'services' }, loadAll)
+  .subscribe();
+
+client
+  .channel('site-projects')
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, loadAll)
+  .subscribe();
+
+loadAll();
+</script>
 </body>
 </html>
