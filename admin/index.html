@@ -1,520 +1,120 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Tekstura Admin</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    :root{
-      --bg:#12100f;
-      --panel:#1f1b18;
-      --line:#3c342d;
-      --text:#f4e7d4;
-      --muted:#b9aa97;
-      --accent:#e8c8a2;
-      --danger:#ff7b7b;
-      --ok:#9be58f;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      background:var(--bg);
-      color:var(--text);
-      font:15px/1.45 Inter, Arial, sans-serif;
-    }
-    .wrap{
-      max-width:1100px;
-      margin:0 auto;
-      padding:24px;
-    }
-    .panel{
-      background:var(--panel);
-      border:1px solid var(--line);
-      border-radius:16px;
-      padding:20px;
-      margin-bottom:18px;
-    }
-    h1,h2{
-      margin:0 0 14px;
-    }
-    h1{font-size:28px}
-    h2{font-size:20px}
-    .muted{color:var(--muted)}
-    .grid{
-      display:grid;
-      grid-template-columns:repeat(2,minmax(0,1fr));
-      gap:12px;
-    }
-    .full{grid-column:1/-1}
-    label{
-      font-weight:700;
-      display:block;
-      margin-bottom:6px;
-    }
-    input,textarea,button{
-      font:inherit;
-    }
-    input,textarea{
-      width:100%;
-      padding:10px 12px;
-      border-radius:10px;
-      border:1px solid var(--line);
-      background:#120f0d;
-      color:var(--text);
-    }
-    textarea{min-height:110px;resize:vertical}
-    .btn{
-      background:var(--accent);
-      color:#1b130f;
-      border:0;
-      padding:10px 14px;
-      border-radius:10px;
-      font-weight:700;
-      cursor:pointer;
-    }
-    .btn-secondary{
-      background:transparent;
-      color:var(--text);
-      border:1px solid var(--line);
-    }
-    .row{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-    .item{
-      border:1px solid var(--line);
-      border-radius:12px;
-      padding:12px;
-      margin-bottom:10px;
-    }
-    .hidden{display:none}
-    .status{
-      margin-top:10px;
-      color:var(--muted);
-    }
-    .danger{color:var(--danger)}
-    .ok{color:var(--ok)}
-    .preview{
-      max-width:220px;
-      max-height:120px;
-      border-radius:8px;
-      border:1px solid var(--line);
-      display:block;
-      margin-top:8px;
-      object-fit:cover;
-    }
-    @media (max-width:760px){
-      .grid{grid-template-columns:1fr}
-    }
-  </style>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tekstura Admin</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --bg: #1f1b18;
+            --panel: #1f1b18;
+            --line: #3c342d;
+            --text: #f4e74d;
+            --muted: #b9aa97;
+            --accent: #e8c82a;
+        }
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+        }
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            padding: 24px;
+            font-size: 28px;
+            color: var(--muted);
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+        label {
+            font-weight: 700;
+            display: block;
+            margin-bottom: 6px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid var(--accent);
+            color: var(--text);
+        }
+        .btn-secondary {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--text);
+        }
+        .hero-card {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>Админ-панель Tekstura</h1>
-    <p class="muted">Авторизация через Supabase Auth. Данные и изображения сохраняются в Supabase.</p>
-
-    <section id="authBox" class="panel">
-      <h2>Вход</h2>
-      <div class="grid">
-        <div class="full">
-          <label for="email">Email</label>
-          <input id="email" type="email" placeholder="admin@mail.com" />
-        </div>
-        <div class="full">
-          <label for="password">Пароль</label>
-          <input id="password" type="password" placeholder="••••••••" />
-        </div>
-      </div>
-      <div class="row" style="margin-top:12px">
-        <button id="loginBtn" class="btn">Войти</button>
-      </div>
-      <p id="authStatus" class="status">Выполните вход для доступа к управлению контентом.</p>
-    </section>
-
-    <section id="adminApp" class="hidden">
-      <section class="panel">
-        <div class="row" style="justify-content:space-between">
-          <h2>Настройки сайта</h2>
-          <button id="logoutBtn" class="btn btn-secondary">Выйти</button>
-        </div>
-
-        <div class="grid">
-          <div>
-            <label>Телефон</label>
-            <input id="phone" />
-          </div>
-          <div>
-            <label>WhatsApp</label>
-            <input id="whatsapp" />
-          </div>
-          <div>
-            <label>Telegram</label>
-            <input id="telegram" />
-          </div>
-          <div>
-            <label>Бейдж</label>
-            <input id="badge" />
-          </div>
-          <div class="full">
-            <label>Главный заголовок</label>
-            <input id="heroTitle" />
-          </div>
-          <div class="full">
-            <label>Подзаголовок</label>
-            <textarea id="heroSubtitle"></textarea>
-          </div>
-          <div>
-            <label>Базовая цена</label>
-            <input id="baseRate" type="number" />
-          </div>
-          <div>
-            <label>Логотип</label>
-            <input id="logoFile" type="file" accept="image/*" />
-            <input id="logo" placeholder="URL логотипа" />
-            <img id="logoPreview" class="preview hidden" />
-          </div>
-          <div class="full">
-            <label>Hero изображение</label>
-            <input id="heroImageFile" type="file" accept="image/*" />
-            <input id="heroImage" placeholder="URL hero image" />
-            <img id="heroPreview" class="preview hidden" />
-          </div>
-        </div>
-
-        <div class="row" style="margin-top:12px">
-          <button id="saveSettings" class="btn">Сохранить настройки</button>
-        </div>
-      </section>
-
-      <section class="panel">
-        <h2>Услуги</h2>
-        <div id="servicesList"></div>
-        <div class="row">
-          <button id="addService" class="btn btn-secondary">Добавить услугу</button>
-          <button id="saveServices" class="btn">Сохранить услуги</button>
-        </div>
-      </section>
-
-      <section class="panel">
+    <section class="panel">
         <h2>Проекты</h2>
         <div id="projectsList"></div>
         <div class="row">
-          <button id="addProject" class="btn btn-secondary">Добавить проект</button>
-          <button id="saveProjects" class="btn">Сохранить проекты</button>
+            <button id="addProject" class="btn btn-secondary">Добавить проект</button>
+            <button id="saveProjects" class="btn btn-secondary">Сохранить проект</button>
         </div>
-      </section>
-
-      <p id="status" class="status"></p>
     </section>
-  </div>
 
-  <script>
-    const SUPABASE_URL = 'https://rhnlykqqhwweaywjopvm.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_kzUBUDdLy1gWGvs-o5jFsw_xkg5-Sqv';
-    const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    <p id="status" class="status"></p>
 
-    const FALLBACK = {
-      settings: {
-        phone: '+70000000000',
-        whatsapp: '+70000000000',
-        telegram: '@tekstura',
-        heroTitle: 'Лестницы как арт-объект',
-        heroSubtitle: 'Премиальные лестницы из дерева и металла для частных домов и вилл.',
-        heroImage: '/logo.jpg.png',
-        logo: '/logo.jpg.png',
-        badge: 'premium stairs brand',
-        baseRate: 5000
-      },
-      services: [],
-      projects: []
-    };
+    <script>
+        const SUPABASE_URL = 'https://rhnlykqqhweaywjopvm.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_OeUkZnLVZ1lTHcS19zau5Q_h_aJguli'; // Обновите с правильным ключом
+        const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const authBox = document.getElementById('authBox');
-    const adminApp = document.getElementById('adminApp');
-    const authStatus = document.getElementById('authStatus');
-    const statusBox = document.getElementById('status');
-    const logoutBtn = document.getElementById('logoutBtn');
+        const authBox = document.getElementById('authBox');
+        const adminApp = document.getElementById('adminApp');
+        const authStatus = document.getElementById('authStatus');
+        const statusBox = document.getElementById('status');
+        const logoutBtn = document.getElementById('logoutBtn');
 
-    const state = { heroImage: '', logo: '', services: [], projects: [] };
+        const state = { heroImage: '', logo: '', services: [], projects: [] };
 
-    function note(msg, type = '') {
-      statusBox.textContent = msg;
-      statusBox.className = 'status ' + type;
-    }
+        function note(msg) { statusBox.textContent = msg; }
 
-    function authNote(msg, type = '') {
-      authStatus.textContent = msg;
-      authStatus.className = 'status ' + type;
-    }
-
-    function uid() {
-      return (crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()));
-    }
-
-    function showImage(inputId, previewId) {
-      const v = document.getElementById(inputId).value.trim();
-      const img = document.getElementById(previewId);
-      if (v) {
-        img.src = v;
-        img.classList.remove('hidden');
-      } else {
-        img.classList.add('hidden');
-      }
-    }
-
-    async function uploadFile(file, folder) {
-      if (!file) return '';
-      const path = `${folder}/${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
-      const { error } = await client.storage.from('site-assets').upload(path, file, { upsert: true });
-      if (error) throw error;
-      const { data } = client.storage.from('site-assets').getPublicUrl(path);
-      return data.publicUrl;
-    }
-
-    function serviceItem(item = {}) {
-      const div = document.createElement('div');
-      div.className = 'item';
-      div.dataset.id = item.id || uid();
-      div.innerHTML = `
-        <div class="grid">
-          <div>
-            <label>Название</label>
-            <input data-k="title" value="${item.title || ''}">
-          </div>
-          <div>
-            <label>Порядок</label>
-            <input data-k="sort_order" type="number" value="${item.sort_order || 1}">
-          </div>
-          <div class="full">
-            <label>Описание</label>
-            <textarea data-k="description">${item.description || ''}</textarea>
-          </div>
-        </div>
-        <div class="row" style="margin-top:10px">
-          <button class="btn btn-secondary" data-act="remove">Удалить</button>
-        </div>
-      `;
-      div.querySelector('[data-act="remove"]').onclick = () => div.remove();
-      return div;
-    }
-
-    function projectItem(item = {}) {
-      const div = document.createElement('div');
-      div.className = 'item';
-      div.dataset.id = item.id || uid();
-      div.innerHTML = `
-        <div class="grid">
-          <div>
-            <label>Название</label>
-            <input data-k="title" value="${item.title || ''}">
-          </div>
-          <div>
-            <label>Цена</label>
-            <input data-k="price" value="${item.price || ''}">
-          </div>
-          <div class="full">
-            <label>Описание</label>
-            <textarea data-k="description">${item.description || ''}</textarea>
-          </div>
-          <div class="full">
-            <label>Изображение файла</label>
-            <input data-k="imageFile" type="file" accept="image/*">
-            <input data-k="image" value="${item.image || ''}" placeholder="URL изображения">
-            ${item.image ? `<img class="preview" src="${item.image}">` : `<img class="preview hidden">`}
-          </div>
-        </div>
-        <div class="row" style="margin-top:10px">
-          <button class="btn btn-secondary" data-act="remove">Удалить</button>
-        </div>
-      `;
-      div.querySelector('[data-act="remove"]').onclick = () => div.remove();
-      div.querySelector('[data-k="image"]').oninput = (e) => {
-        const img = div.querySelector('.preview');
-        if (e.target.value.trim()) {
-          img.src = e.target.value.trim();
-          img.classList.remove('hidden');
-        } else {
-          img.classList.add('hidden');
-        }
-      };
-      return div;
-    }
-
-    async function loadData() {
-      let settings = FALLBACK.settings;
-      let services = FALLBACK.services;
-      let projects = FALLBACK.projects;
-
-      const s = await client.from('settings').select('*').eq('id', 1).maybeSingle();
-      if (s.data) settings = s.data;
-
-      const sv = await client.from('services').select('*').order('sort_order');
-      if (sv.data) services = sv.data;
-
-      const pr = await client.from('projects').select('*').order('created_at', { ascending: false });
-      if (pr.data) projects = pr.data;
-
-      document.getElementById('phone').value = settings.phone || '';
-      document.getElementById('whatsapp').value = settings.whatsapp || '';
-      document.getElementById('telegram').value = settings.telegram || '';
-      document.getElementById('heroTitle').value = settings.heroTitle || '';
-      document.getElementById('heroSubtitle').value = settings.heroSubtitle || '';
-      document.getElementById('heroImage').value = settings.heroImage || '';
-      document.getElementById('logo').value = settings.logo || '';
-      document.getElementById('badge').value = settings.badge || '';
-      document.getElementById('baseRate').value = settings.baseRate || 5000;
-
-      showImage('heroImage', 'heroPreview');
-      showImage('logo', 'logoPreview');
-
-      const servicesList = document.getElementById('servicesList');
-      servicesList.innerHTML = '';
-      services.forEach(x => servicesList.appendChild(serviceItem(x)));
-
-      const projectsList = document.getElementById('projectsList');
-      projectsList.innerHTML = '';
-      projects.forEach(x => projectsList.appendChild(projectItem(x)));
-    }
-
-    document.getElementById('loginBtn').onclick = async () => {
-      authNote('Входим...');
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      const { error } = await client.auth.signInWithPassword({ email, password });
-      if (error) {
-        authNote('Ошибка входа: ' + error.message, 'danger');
-        return;
-      }
-      authBox.classList.add('hidden');
-      adminApp.classList.remove('hidden');
-      await loadData();
-      authNote('Успешный вход', 'ok');
-    };
-
-    logoutBtn.onclick = async () => {
-      await client.auth.signOut();
-      adminApp.classList.add('hidden');
-      authBox.classList.remove('hidden');
-      authNote('Вы вышли');
-    };
-
-    document.getElementById('heroImage').oninput = () => showImage('heroImage', 'heroPreview');
-    document.getElementById('logo').oninput = () => showImage('logo', 'logoPreview');
-
-    document.getElementById('saveSettings').onclick = async () => {
-      try {
-        note('Сохраняем настройки...');
-        const heroFile = document.getElementById('heroImageFile').files[0];
-        const logoFile = document.getElementById('logoFile').files[0];
-
-        let heroImage = document.getElementById('heroImage').value.trim();
-        let logo = document.getElementById('logo').value.trim();
-
-        if (heroFile) heroImage = await uploadFile(heroFile, 'hero');
-        if (logoFile) logo = await uploadFile(logoFile, 'logo');
-
-        const payload = {
-          id: 1,
-          phone: document.getElementById('phone').value.trim(),
-          whatsapp: document.getElementById('whatsapp').value.trim(),
-          telegram: document.getElementById('telegram').value.trim(),
-          heroTitle: document.getElementById('heroTitle').value.trim(),
-          heroSubtitle: document.getElementById('heroSubtitle').value.trim(),
-          heroImage,
-          logo,
-          badge: document.getElementById('badge').value.trim(),
-          baseRate: Number(document.getElementById('baseRate').value || 0),
-          updated_at: new Date().toISOString()
-        };
-
-        const { error } = await client.from('settings').upsert(payload);
-        if (error) throw error;
-
-        document.getElementById('heroImage').value = heroImage;
-        document.getElementById('logo').value = logo;
-        showImage('heroImage', 'heroPreview');
-        showImage('logo', 'logoPreview');
-        note('Настройки сохранены', 'ok');
-      } catch (e) {
-        note('Ошибка сохранения настроек: ' + e.message, 'danger');
-      }
-    };
-
-    document.getElementById('addService').onclick = () => {
-      document.getElementById('servicesList').appendChild(serviceItem({}));
-    };
-
-    document.getElementById('saveServices').onclick = async () => {
-      try {
-        note('Сохраняем услуги...');
-        const items = [...document.querySelectorAll('#servicesList .item')];
-        const rows = items.map((el, i) => ({
-          id: el.dataset.id,
-          title: el.querySelector('[data-k="title"]').value.trim(),
-          description: el.querySelector('[data-k="description"]').value.trim(),
-          sort_order: Number(el.querySelector('[data-k="sort_order"]').value || i + 1)
-        }));
-
-        await client.from('services').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-        if (rows.length) {
-          const { error } = await client.from('services').upsert(rows);
-          if (error) throw error;
-        }
-        note('Услуги сохранены', 'ok');
-      } catch (e) {
-        note('Ошибка сохранения услуг: ' + e.message, 'danger');
-      }
-    };
-
-    document.getElementById('addProject').onclick = () => {
-      document.getElementById('projectsList').appendChild(projectItem({}));
-    };
-
-    document.getElementById('saveProjects').onclick = async () => {
-      try {
-        note('Сохраняем проекты...');
-        const items = [...document.querySelectorAll('#projectsList .item')];
-        const rows = [];
-
-        for (const el of items) {
-          const file = el.querySelector('[data-k="imageFile"]').files[0];
-          let imageUrl = el.querySelector('[data-k="image"]').value.trim();
-          if (file) imageUrl = await uploadFile(file, 'projects');
-
-          rows.push({
-            id: el.dataset.id,
-            title: el.querySelector('[data-k="title"]').value.trim(),
-            description: el.querySelector('[data-k="description"]').value.trim(),
-            image: imageUrl,
-            price: el.querySelector('[data-k="price"]').value.trim() || null,
-            created_at: new Date().toISOString()
-          });
+        function uid() {
+            return crypto.randomUUID() + Date.now();
         }
 
-        await client.from('projects').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-        if (rows.length) {
-          const { error } = await client.from('projects').upsert(rows);
-          if (error) throw error;
+        async function uploadFile(file, folder) {
+            if (!file) return '';
+            const path = `${folder}/${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
+            const { error } = await client.storage.from('site-assets').upload(path, file);
+            if (error) throw error;
         }
-        note('Проекты сохранены', 'ok');
-      } catch (e) {
-        note('Ошибка сохранения проектов: ' + e.message, 'danger');
-      }
-    };
 
-    async function init() {
-      const { data } = await client.auth.getSession();
-      if (data.session) {
-        authBox.classList.add('hidden');
-        adminApp.classList.remove('hidden');
-        await loadData();
-      }
-    }
+        async function fetchProjects() {
+            try {
+                const { data: projects, error } = await client
+                    .from('projects')
+                    .select('*');
 
-    init();
-  </script>
+                if (error) throw error;
+
+                projects.forEach(project => {
+                    const projectElement = document.createElement('div');
+                    projectElement.className = 'project';
+                    projectElement.textContent = project.title;
+                    projectsList.appendChild(projectElement);
+                });
+            } catch (err) {
+                note(`Error fetching projects: ${err.message}`);
+            }
+        }
+
+        // Add other code for saving and handling projects
+
+        fetchProjects();
+    </script>
 </body>
 </html>
