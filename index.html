@@ -467,7 +467,47 @@
       }
     }
   </style>
-</head>
+</head>/* ===== КАМЕННЫЙ ФОН (override) ===== */
+
+body{
+  margin:0;
+  color:var(--text);
+  font:16px/1.55 Inter,Arial,sans-serif;
+  position:relative;
+  overflow-x:hidden;
+
+  background:
+    radial-gradient(circle at 20% 10%, rgba(255,255,255,0.06), transparent 25%),
+    radial-gradient(circle at 80% 0%, rgba(255,255,255,0.04), transparent 20%),
+    radial-gradient(circle at 60% 90%, rgba(0,0,0,0.4), transparent 35%),
+    linear-gradient(180deg, #0e0c0a 0%, #151210 50%, #0c0a09 100%) !important;
+}
+
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)'/%3E%3C/svg%3E");
+
+  opacity:0.18;
+  mix-blend-mode:overlay;
+}
+
+body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+
+  background:
+    radial-gradient(circle at 30% 40%, rgba(255,255,255,0.05), transparent 20%),
+    radial-gradient(circle at 70% 60%, rgba(255,255,255,0.04), transparent 25%),
+    radial-gradient(circle at 50% 50%, rgba(0,0,0,0.3), transparent 40%);
+
+  opacity:0.6;
+}
 <body>
   <header>
     <div class="container nav">
