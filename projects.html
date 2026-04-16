@@ -152,7 +152,9 @@
     }
 
     function getPrice(project) {
-      return project.price || project.price_from || 'по запросу';
+      if (project.price) return project.price + ' ₽';
+      if (project.price_from) return 'от ' + project.price_from + ' ₽';
+      return 'по запросу';
     }
 
     function renderProjects(items) {
