@@ -1,1 +1,155 @@
-<h1>Заявка</h1>
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Заявка — Tekstura</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/supabase-config.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      background: #0f0c0a;
+      color: #f4e7d4;
+      font-family: Inter, sans-serif;
+    }
+
+    .wrap {
+      max-width: 700px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    .block {
+      background: #1a1410;
+      padding: 15px;
+      border-radius: 12px;
+      margin-bottom: 15px;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 12px;
+      margin-top: 8px;
+      border-radius: 10px;
+      border: none;
+      background: #2a211b;
+      color: #fff;
+    }
+
+    button {
+      margin-top: 15px;
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
+      background: #e8c8a2;
+      font-weight: bold;
+    }
+
+    .result {
+      background: #2a211b;
+      padding: 12px;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+
+    <h1>Заявка</h1>
+
+    <div class="block">
+      <b>Ваш расчет:</b>
+      <div id="calcData" class="result">Нет данных</div>
+    </div>
+
+    <div class="block">
+      <input id="name" placeholder="Имя">
+      <input id="phone" placeholder="Телефон">
+      <input id="messenger" placeholder="WhatsApp / Telegram">
+      <input id="city" placeholder="Город">
+      <textarea id="comment" placeholder="Комментарий"></textarea>
+
+      <button onclick="sendRequest()">Отправить заявку</button>
+    </div>
+
+    <div id="status"></div>
+
+  </div>
+
+<script>
+const client = window.supabase.createClient(
+  window.SUPABASE_CONFIG.url,
+  window.SUPABASE_CONFIG.anonKey
+);
+
+let calcPayload = null;
+
+// Получаем данные из URL
+function loadCalcData() {
+  const params = new URLSearchParams(window.location.search);
+  const raw = params.get('calc');
+
+  if (!raw) return;
+
+  try {
+    calcPayload = JSON.parse(decodeURIComponent(raw));
+
+    document.getElementById('calcData').innerText =
+      `Тип: ${calcPayload.staircaseType}
+Цена: ${calcPayload.total} ₽`;
+
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+async function sendRequest() {
+  const name = document.getElementById('name').value;
+  const phone = document.getElementById('phone').value;
+  const messenger = document.getElementById('messenger').value;
+  const city = document.getElementById('city').value;
+  const comment = document.getElementById('comment').value;
+
+  if (!phone) {
+    alert('Введите телефон');
+    return;
+  }
+
+  const { error } = await client.from('calculator_requests').insert([
+    {
+      name,
+      phone,
+      messenger,
+      city,
+      comment,
+      staircase_type: calcPayload?.staircaseType || '',
+      dimensions_json: calcPayload?.dimensions || {},
+      materials_json: calcPayload?.materials || {},
+      options_json: calcPayload?.options || [],
+      calculated_price: calcPayload?.total || 0
+    }
+  ]);
+
+  if (error) {
+    console.error(error);
+    document.getElementById('status').innerText = 'Ошибка отправки';
+  } else {
+    document.getElementById('status').innerText = 'Заявка отправлена ✅';
+  }
+}
+
+loadCalcData();
+</script>
+
+</body>
+</html>
