@@ -1,0 +1,27 @@
+/* Весь стиль для сайта */
+body {
+  margin:0;
+  background:#0f0c0a;
+  color:#f4e7d4;
+  font-family: Inter, Arial, sans-serif;
+}
+
+.container{
+  max-width:1100px;
+  margin:auto;
+  padding:20px;
+}
+
+.header {
+  position:sticky;
+  top:0;
+  backdrop-filter:blur(10px);
+  background:rgba(0,0,0,.6);
+}
+
+.nav{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+...
