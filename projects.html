@@ -1,22 +1,200 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Проект</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Проекты — Tekstura</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/supabase-config.js"></script>
+
+  <style>
+    :root { color-scheme: dark; }
+
+    body {
+      margin: 0;
+      background: #0f0c0a;
+      color: #f4e7d4;
+      font-family: Inter, Arial, sans-serif;
+    }
+
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 28px 16px 48px;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      gap: 16px;
+    }
+
+    .home-link {
+      text-decoration: none;
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 12px;
+      padding: 10px 14px;
+      color: #d7c3a8;
+      background: rgba(255,255,255,.03);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 44px);
+    }
+
+    .subtitle {
+      margin: 0 0 24px;
+      color: #b8aa98;
+    }
+
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+    }
+
+    .project-card {
+      display: block;
+      text-decoration: none;
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: 18px;
+      overflow: hidden;
+      background: rgba(255,255,255,.02);
+      transition: transform .18s ease, border-color .18s ease;
+    }
+
+    .project-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255,255,255,.25);
+    }
+
+    .project-card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      display: block;
+      background: #201b18;
+    }
+
+    .project-card-body {
+      padding: 14px;
+    }
+
+    .project-card h2 {
+      margin: 0 0 8px;
+      font-size: 19px;
+      line-height: 1.25;
+    }
+
+    .project-card p {
+      margin: 0;
+      color: #b8aa98;
+      font-size: 15px;
+      line-height: 1.45;
+    }
+
+    .price {
+      margin-top: 10px;
+      color: #efd8bb;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .empty {
+      border: 1px dashed rgba(255,255,255,.18);
+      border-radius: 14px;
+      padding: 16px;
+      color: #c8baa8;
+      background: rgba(255,255,255,.02);
+    }
+  </style>
 </head>
-<body style="background:black;color:white;font-family:sans-serif;padding:40px;">
+<body>
+  <main class="wrap">
+    <div class="top">
+      <h1>Проекты</h1>
+      <a class="home-link" href="/">На главную</a>
+    </div>
 
-<h1>Страница проекта</h1>
+    <p class="subtitle">Нажмите на карточку, чтобы открыть страницу проекта.</p>
 
-<div id="content">Загрузка...</div>
+    <section id="projectsRoot" class="projects-grid" aria-live="polite"></section>
+  </main>
 
-<script>
-const params = new URLSearchParams(window.location.search);
-const id = params.get('id');
+  <script>
+    const cfg = window.SUPABASE_CONFIG;
+    const client = window.supabase.createClient(cfg.url, cfg.anonKey);
+    const projectsRoot = document.getElementById('projectsRoot');
 
-document.getElementById('content').innerText = 'ID проекта: ' + id;
-</script>
+    function escapeHtml(str) {
+      return String(str ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
 
+    function escapeAttr(str) {
+      return String(str ?? '').replaceAll('"', '&quot;');
+    }
+
+    function getShortDescription(project) {
+      return project.short_description || project.description || '';
+    }
+
+    function getPrice(project) {
+      return project.price || project.price_from || 'по запросу';
+    }
+
+    function renderProjects(items) {
+      if (!items?.length) {
+        projectsRoot.innerHTML = '<div class="empty">Проекты пока не добавлены.</div>';
+        return;
+      }
+
+      projectsRoot.innerHTML = items.map((project) => {
+        const shortDescription = getShortDescription(project);
+        const image = project.cover_image || project.image || '/logo.jpg.png';
+        const id = encodeURIComponent(project.id);
+
+        return `
+          <a class="project-card" href="/project.html?id=${id}">
+            <img src="${escapeAttr(image)}" alt="${escapeAttr(project.title || 'Проект')}" />
+            <div class="project-card-body">
+              <h2>${escapeHtml(project.title || 'Без названия')}</h2>
+              <p>${escapeHtml(shortDescription || 'Описание появится позже.')}</p>
+              <div class="price">${escapeHtml(getPrice(project))}</div>
+            </div>
+          </a>
+        `;
+      }).join('');
+    }
+
+    async function loadProjects() {
+      try {
+        const { data, error } = await client
+          .from('projects')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        renderProjects(data || []);
+      } catch (err) {
+        console.error('Ошибка загрузки проектов', err);
+        projectsRoot.innerHTML = '<div class="empty">Не удалось загрузить проекты. Попробуйте обновить страницу.</div>';
+      }
+    }
+
+    loadProjects();
+  </script>
 </body>
 </html>
