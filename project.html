@@ -3,8 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Проект</title>
+<title>Проект — Tekstura</title>
 
+<!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/supabase-config.js"></script>
 
@@ -12,50 +13,116 @@
 body {
   margin:0;
   background:#0f0c0a;
-  color:#fff;
-  font-family:Arial;
-  padding:20px;
+  color:#f4e7d4;
+  font-family: Inter, Arial, sans-serif;
 }
-img { max-width:100%; border-radius:10px; }
+
+.wrap {
+  max-width:900px;
+  margin:0 auto;
+  padding:24px;
+}
+
+a {
+  color:#e8c8a2;
+  text-decoration:none;
+}
+
+h1 {
+  font-size:32px;
+  margin-bottom:10px;
+}
+
+p {
+  color:#b9aa97;
+}
+
+img {
+  width:100%;
+  border-radius:14px;
+  margin:20px 0;
+}
+
+.price {
+  font-size:20px;
+  color:#f0d7b7;
+  font-weight:bold;
+  margin-top:10px;
+}
 </style>
 </head>
 
 <body>
 
+<div class="wrap">
+
+<a href="/projects.html">← Назад к проектам</a>
+
 <h1 id="title">Загрузка...</h1>
-<p id="desc"></p>
-<img id="img" />
+<p id="subtitle"></p>
+
+<img id="image" />
+
+<div id="price" class="price"></div>
+
+<p id="description"></p>
+
+</div>
 
 <script>
 const params = new URLSearchParams(window.location.search);
 const id = params.get('id');
 
+// 🔥 создаём клиент Supabase (ВАЖНО!)
+const client = supabase.createClient(
+  window.SUPABASE_CONFIG.url,
+  window.SUPABASE_CONFIG.anonKey
+);
+
 if (!id) {
-  document.body.innerHTML = "Нет ID проекта";
+  document.body.innerHTML = "❌ Нет ID проекта";
 } else {
-  load();
+  loadProject();
 }
 
-async function load() {
+async function loadProject() {
   try {
-    const { data, error } = await window.supabase
+    const { data, error } = await client
       .from('projects')
       .select('*')
       .eq('id', id)
       .single();
 
     if (error || !data) {
-      document.body.innerHTML = "Проект не найден";
+      document.body.innerHTML = "❌ Проект не найден";
       return;
     }
 
-    document.getElementById('title').innerText = data.title || 'Без названия';
-    document.getElementById('desc').innerText = data.short_description || '';
-    document.getElementById('img').src = data.cover_image || '';
+    // Заполняем данные
+    document.getElementById('title').innerText =
+      data.title || 'Без названия';
 
-  } catch (e) {
-    document.body.innerHTML = "Ошибка загрузки";
-    console.error(e);
+    document.getElementById('subtitle').innerText =
+      data.short_description || '';
+
+    document.getElementById('description').innerText =
+      data.full_description || data.description || '';
+
+    document.getElementById('image').src =
+      data.cover_image || data.image || '/logo.jpg.png';
+
+    // Цена
+    if (data.price) {
+      document.getElementById('price').innerText = "Цена: " + data.price;
+    } else if (data.price_from) {
+      document.getElementById('price').innerText = "Цена от: " + data.price_from;
+    } else {
+      document.getElementById('price').innerText = "Цена: по запросу";
+    }
+
+  } catch (err) {
+    console.error(err);
+    document.body.innerHTML = "❌ Ошибка загрузки";
   }
 }
 </script>
