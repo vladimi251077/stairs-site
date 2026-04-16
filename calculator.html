@@ -1,1 +1,651 @@
-<h1>Калькулятор работает</h1>
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Калькулятор — Tekstura</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/supabase-config.js"></script>
+
+  <style>
+    :root { color-scheme: dark; }
+
+    body {
+      margin: 0;
+      background: #0f0c0a;
+      color: #f4e7d4;
+      font-family: Inter, Arial, sans-serif;
+    }
+
+    .wrap {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 28px 16px 48px;
+    }
+
+    .top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .back-link {
+      text-decoration: none;
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 12px;
+      padding: 10px 14px;
+      color: #d7c3a8;
+      background: rgba(255,255,255,.03);
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(28px, 4vw, 44px);
+    }
+
+    .subtitle {
+      margin: 0 0 26px;
+      color: #b8aa98;
+      line-height: 1.5;
+    }
+
+    .panel {
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: 18px;
+      background: rgba(255,255,255,.02);
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+
+    .step {
+      display: none;
+    }
+
+    .step.active {
+      display: block;
+    }
+
+    .step h2 {
+      margin: 0 0 14px;
+      font-size: 22px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .field label {
+      color: #d9ccb9;
+      font-size: 14px;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 12px;
+      background: #171310;
+      color: #f4e7d4;
+      padding: 14px;
+      font: inherit;
+    }
+
+    .checkboxes {
+      display: grid;
+      gap: 10px;
+    }
+
+    .check {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: 12px;
+      background: rgba(255,255,255,.02);
+    }
+
+    .check input {
+      width: 18px;
+      height: 18px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    button,
+    .btn-link {
+      border: none;
+      border-radius: 12px;
+      padding: 14px 18px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-primary {
+      background: #e8c8a2;
+      color: #1a120e;
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,.06);
+      color: #f4e7d4;
+      border: 1px solid rgba(255,255,255,.1);
+    }
+
+    .summary {
+      display: grid;
+      gap: 12px;
+    }
+
+    .summary-item {
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 14px;
+      padding: 14px;
+      background: rgba(255,255,255,.02);
+    }
+
+    .summary-item b {
+      display: block;
+      margin-bottom: 6px;
+      color: #e9d6bc;
+    }
+
+    .result {
+      margin-top: 18px;
+      padding: 18px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(232,200,162,.14), rgba(255,255,255,.02));
+      border: 1px solid rgba(232,200,162,.22);
+    }
+
+    .result-price {
+      font-size: clamp(28px, 4vw, 42px);
+      font-weight: 800;
+      color: #f0d7b7;
+      margin: 0 0 8px;
+    }
+
+    .muted {
+      color: #b8aa98;
+    }
+
+    .status {
+      margin-top: 10px;
+      color: #d9c7ad;
+      font-size: 14px;
+    }
+
+    @media (max-width: 760px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .top {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .actions {
+        flex-direction: column;
+      }
+
+      button,
+      .btn-link {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="top">
+      <div>
+        <h1>Калькулятор лестницы</h1>
+        <p class="subtitle">Предварительный расчёт стоимости по типу лестницы, размерам, материалам и дополнительным опциям.</p>
+      </div>
+      <a class="back-link" href="/">На главную</a>
+    </div>
+
+    <div class="panel">
+      <div id="step1" class="step active">
+        <h2>Шаг 1. Тип лестницы</h2>
+
+        <div class="field">
+          <label for="staircaseType">Выберите тип лестницы</label>
+          <select id="staircaseType">
+            <option value="">Выберите тип</option>
+          </select>
+        </div>
+
+        <div class="actions">
+          <button class="btn-primary" type="button" onclick="nextStep(2)">Дальше</button>
+        </div>
+      </div>
+
+      <div id="step2" class="step">
+        <h2>Шаг 2. Размеры</h2>
+
+        <div class="grid">
+          <div class="field">
+            <label for="floorHeight">Высота от пола до пола, мм</label>
+            <input id="floorHeight" type="number" placeholder="Например 3000">
+          </div>
+
+          <div class="field">
+            <label for="spanWidth">Ширина пролёта, мм</label>
+            <input id="spanWidth" type="number" placeholder="Например 1000">
+          </div>
+
+          <div class="field">
+            <label for="openingLength">Длина / размер проёма, мм</label>
+            <input id="openingLength" type="number" placeholder="Например 3500">
+          </div>
+
+          <div class="field">
+            <label for="stepDepth">Глубина ступени, мм</label>
+            <input id="stepDepth" type="number" placeholder="Например 280">
+          </div>
+
+          <div class="field">
+            <label for="stepsCount">Количество ступеней</label>
+            <input id="stepsCount" type="number" placeholder="Например 15">
+          </div>
+
+          <div class="field">
+            <label for="stepWidth">Ширина ступени, мм</label>
+            <input id="stepWidth" type="number" placeholder="Например 1000">
+          </div>
+        </div>
+
+        <div class="checkboxes">
+          <label class="check">
+            <input id="hasPlatform" type="checkbox">
+            <span>Есть площадка</span>
+          </label>
+
+          <label class="check">
+            <input id="hasWinders" type="checkbox">
+            <span>Есть забежные ступени</span>
+          </label>
+        </div>
+
+        <div class="actions">
+          <button class="btn-secondary" type="button" onclick="prevStep(1)">Назад</button>
+          <button class="btn-primary" type="button" onclick="nextStep(3)">Дальше</button>
+        </div>
+      </div>
+
+      <div id="step3" class="step">
+        <h2>Шаг 3. Материалы</h2>
+
+        <div class="grid">
+          <div class="field">
+            <label for="stepMaterial">Материал ступеней</label>
+            <select id="stepMaterial">
+              <option value="">Выберите материал</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="frameMaterial">Материал каркаса</label>
+            <select id="frameMaterial">
+              <option value="">Выберите материал</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="railingMaterial">Ограждение</label>
+            <select id="railingMaterial">
+              <option value="">Выберите вариант</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="finishMaterial">Отделка</label>
+            <select id="finishMaterial">
+              <option value="">Выберите вариант</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn-secondary" type="button" onclick="prevStep(2)">Назад</button>
+          <button class="btn-primary" type="button" onclick="nextStep(4)">Дальше</button>
+        </div>
+      </div>
+
+      <div id="step4" class="step">
+        <h2>Шаг 4. Дополнительные опции</h2>
+
+        <div id="optionsBox" class="checkboxes"></div>
+
+        <div class="actions">
+          <button class="btn-secondary" type="button" onclick="prevStep(3)">Назад</button>
+          <button class="btn-primary" type="button" onclick="calculateAndNext()">Рассчитать</button>
+        </div>
+      </div>
+
+      <div id="step5" class="step">
+        <h2>Шаг 5. Предварительный расчёт</h2>
+
+        <div class="summary">
+          <div class="summary-item">
+            <b>Тип лестницы</b>
+            <div id="summaryType" class="muted"></div>
+          </div>
+
+          <div class="summary-item">
+            <b>Размеры</b>
+            <div id="summarySizes" class="muted"></div>
+          </div>
+
+          <div class="summary-item">
+            <b>Материалы и опции</b>
+            <div id="summaryMaterials" class="muted"></div>
+          </div>
+        </div>
+
+        <div class="result">
+          <div class="result-price" id="resultPrice">—</div>
+          <div class="muted" id="resultRange"></div>
+          <div class="status" id="resultNote">Предварительная оценка. Финальная стоимость зависит от точных размеров, материалов и узлов.</div>
+        </div>
+
+        <div class="actions">
+          <button class="btn-secondary" type="button" onclick="prevStep(4)">Назад</button>
+          <button class="btn-primary" type="button" onclick="goToRequest()">Оставить заявку</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="pageStatus" class="status"></div>
+  </main>
+
+  <script>
+    const cfg = window.SUPABASE_CONFIG;
+    const client = window.supabase.createClient(cfg.url, cfg.anonKey);
+
+    let staircaseTypes = [];
+    let materials = [];
+    let calculatorOptions = [];
+    let globalSettings = null;
+    let lastCalculation = null;
+
+    function setStatus(text) {
+      document.getElementById('pageStatus').textContent = text || '';
+    }
+
+    function showStep(stepNumber) {
+      document.querySelectorAll('.step').forEach(step => step.classList.remove('active'));
+      document.getElementById('step' + stepNumber).classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function nextStep(stepNumber) {
+      showStep(stepNumber);
+    }
+
+    function prevStep(stepNumber) {
+      showStep(stepNumber);
+    }
+
+    function money(value) {
+      const num = Number(value || 0);
+      return new Intl.NumberFormat('ru-RU').format(Math.round(num)) + ' ₽';
+    }
+
+    function fillSelect(selectId, items, emptyText = 'Выберите') {
+      const select = document.getElementById(selectId);
+      select.innerHTML = `<option value="">${emptyText}</option>` + items.map(item => {
+        return `<option value="${item.id}">${item.name}</option>`;
+      }).join('');
+    }
+
+    function getMaterialsByCategory(category) {
+      return materials.filter(item => item.category === category && item.active !== false);
+    }
+
+    function renderOptions() {
+      const root = document.getElementById('optionsBox');
+      const activeOptions = calculatorOptions.filter(item => item.active !== false);
+
+      if (!activeOptions.length) {
+        root.innerHTML = '<div class="muted">Опции пока не добавлены.</div>';
+        return;
+      }
+
+      root.innerHTML = activeOptions.map(item => `
+        <label class="check">
+          <input type="checkbox" class="calc-option" value="${item.id}">
+          <span>${item.name}</span>
+        </label>
+      `).join('');
+    }
+
+    async function loadCalculatorData() {
+      setStatus('Загрузка данных калькулятора...');
+
+      try {
+        const [
+          staircaseTypesRes,
+          materialsRes,
+          optionsRes,
+          globalRes
+        ] = await Promise.all([
+          client.from('staircase_types').select('*').order('sort_order', { ascending: true }),
+          client.from('materials').select('*').order('sort_order', { ascending: true }),
+          client.from('calculator_options').select('*').order('sort_order', { ascending: true }),
+          client.from('calculator_global_settings').select('*').limit(1).maybeSingle()
+        ]);
+
+        if (staircaseTypesRes.error) throw staircaseTypesRes.error;
+        if (materialsRes.error) throw materialsRes.error;
+        if (optionsRes.error) throw optionsRes.error;
+        if (globalRes.error) throw globalRes.error;
+
+        staircaseTypes = staircaseTypesRes.data || [];
+        materials = materialsRes.data || [];
+        calculatorOptions = optionsRes.data || [];
+        globalSettings = globalRes.data || {
+          global_markup_percent: 0,
+          global_discount_percent: 0,
+          install_coef: 1,
+          urgent_coef: 1
+        };
+
+        fillSelect('staircaseType', staircaseTypes, 'Выберите тип лестницы');
+        fillSelect('stepMaterial', getMaterialsByCategory('step_material'), 'Выберите материал ступеней');
+        fillSelect('frameMaterial', getMaterialsByCategory('frame_material'), 'Выберите материал каркаса');
+        fillSelect('railingMaterial', getMaterialsByCategory('railing_material'), 'Выберите ограждение');
+        fillSelect('finishMaterial', getMaterialsByCategory('finish_material'), 'Выберите отделку');
+
+        renderOptions();
+        setStatus('');
+      } catch (err) {
+        console.error(err);
+        setStatus('Не удалось загрузить данные калькулятора. Проверь таблицы Supabase.');
+      }
+    }
+
+    function getSelectedItem(items, id) {
+      return items.find(item => String(item.id) === String(id)) || null;
+    }
+
+    function calculateEstimate() {
+      const staircaseTypeId = document.getElementById('staircaseType').value;
+      const stepMaterialId = document.getElementById('stepMaterial').value;
+      const frameMaterialId = document.getElementById('frameMaterial').value;
+      const railingMaterialId = document.getElementById('railingMaterial').value;
+      const finishMaterialId = document.getElementById('finishMaterial').value;
+
+      const floorHeight = Number(document.getElementById('floorHeight').value || 0);
+      const spanWidth = Number(document.getElementById('spanWidth').value || 0);
+      const openingLength = Number(document.getElementById('openingLength').value || 0);
+      const stepDepth = Number(document.getElementById('stepDepth').value || 0);
+      const stepsCount = Number(document.getElementById('stepsCount').value || 0);
+      const stepWidth = Number(document.getElementById('stepWidth').value || 0);
+      const hasPlatform = document.getElementById('hasPlatform').checked;
+      const hasWinders = document.getElementById('hasWinders').checked;
+
+      const selectedType = getSelectedItem(staircaseTypes, staircaseTypeId);
+      const selectedStepMaterial = getSelectedItem(materials, stepMaterialId);
+      const selectedFrameMaterial = getSelectedItem(materials, frameMaterialId);
+      const selectedRailingMaterial = getSelectedItem(materials, railingMaterialId);
+      const selectedFinishMaterial = getSelectedItem(materials, finishMaterialId);
+
+      const selectedOptionIds = Array.from(document.querySelectorAll('.calc-option:checked')).map(item => item.value);
+      const selectedOptions = calculatorOptions.filter(item => selectedOptionIds.includes(String(item.id)));
+
+      if (!selectedType) {
+        alert('Выберите тип лестницы');
+        showStep(1);
+        return null;
+      }
+
+      const basePrice = Number(selectedType.base_price || 0);
+      const complexityCoef = Number(selectedType.complexity_coef || 1);
+
+      const dimensionsFactor =
+        (floorHeight / 3000) * 0.35 +
+        (spanWidth / 1000) * 0.2 +
+        (openingLength / 3500) * 0.2 +
+        (Math.max(stepsCount, 1) / 15) * 0.25;
+
+      const sizeMultiplier = Math.max(0.8, dimensionsFactor || 1);
+
+      let materialsTotal = 0;
+      [selectedStepMaterial, selectedFrameMaterial, selectedRailingMaterial, selectedFinishMaterial].forEach(item => {
+        if (item) materialsTotal += Number(item.price || 0);
+      });
+
+      let optionsTotal = 0;
+      selectedOptions.forEach(item => {
+        optionsTotal += Number(item.price || 0);
+      });
+
+      if (hasPlatform) optionsTotal += 15000;
+      if (hasWinders) optionsTotal += 18000;
+      if (stepDepth > 300) optionsTotal += 9000;
+      if (stepWidth > 1100) optionsTotal += 12000;
+
+      let total =
+        basePrice * complexityCoef * sizeMultiplier +
+        materialsTotal +
+        optionsTotal;
+
+      const markup = Number(globalSettings?.global_markup_percent || 0);
+      const discount = Number(globalSettings?.global_discount_percent || 0);
+
+      total = total * (1 + markup / 100);
+      total = total * (1 - discount / 100);
+
+      const min = total * 0.9;
+      const max = total * 1.12;
+
+      return {
+        total,
+        min,
+        max,
+        selectedType,
+        selectedStepMaterial,
+        selectedFrameMaterial,
+        selectedRailingMaterial,
+        selectedFinishMaterial,
+        selectedOptions,
+        dimensions: {
+          floorHeight,
+          spanWidth,
+          openingLength,
+          stepDepth,
+          stepsCount,
+          stepWidth,
+          hasPlatform,
+          hasWinders
+        }
+      };
+    }
+
+    function calculateAndNext() {
+      const result = calculateEstimate();
+      if (!result) return;
+
+      lastCalculation = result;
+
+      document.getElementById('summaryType').textContent = result.selectedType?.name || '—';
+
+      document.getElementById('summarySizes').textContent =
+        `Высота: ${result.dimensions.floorHeight || '—'} мм, ` +
+        `Ширина пролёта: ${result.dimensions.spanWidth || '—'} мм, ` +
+        `Проём: ${result.dimensions.openingLength || '—'} мм, ` +
+        `Ступеней: ${result.dimensions.stepsCount || '—'}`;
+
+      const materialsText = [
+        result.selectedStepMaterial?.name,
+        result.selectedFrameMaterial?.name,
+        result.selectedRailingMaterial?.name,
+        result.selectedFinishMaterial?.name,
+        ...result.selectedOptions.map(item => item.name)
+      ].filter(Boolean).join(', ');
+
+      document.getElementById('summaryMaterials').textContent = materialsText || 'Не выбрано';
+
+      document.getElementById('resultPrice').textContent = money(result.total);
+      document.getElementById('resultRange').textContent =
+        `Ориентировочный диапазон: ${money(result.min)} — ${money(result.max)}`;
+
+      showStep(5);
+    }
+
+    function goToRequest() {
+      if (!lastCalculation) {
+        alert('Сначала выполните расчёт');
+        return;
+      }
+
+      const payload = {
+        staircaseType: lastCalculation.selectedType?.name || '',
+        total: Math.round(lastCalculation.total),
+        min: Math.round(lastCalculation.min),
+        max: Math.round(lastCalculation.max),
+        dimensions: lastCalculation.dimensions,
+        materials: {
+          step: lastCalculation.selectedStepMaterial?.name || '',
+          frame: lastCalculation.selectedFrameMaterial?.name || '',
+          railing: lastCalculation.selectedRailingMaterial?.name || '',
+          finish: lastCalculation.selectedFinishMaterial?.name || ''
+        },
+        options: lastCalculation.selectedOptions.map(item => item.name)
+      };
+
+      const encoded = encodeURIComponent(JSON.stringify(payload));
+      window.location.href = '/request.html?calc=' + encoded;
+    }
+
+    loadCalculatorData();
+  </script>
+</body>
+</html>
