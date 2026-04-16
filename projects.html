@@ -1,99 +1,21 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Проекты — Tekstura</title>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/supabase-config.js"></script>
-
-<style>
-body{
-  margin:0;
-  background:#0c0a09;
-  color:#f4e7d4;
-  font-family:Arial;
-  padding:20px;
-}
-
-h1{
-  font-size:36px;
-  margin-bottom:20px;
-}
-
-.grid{
-  display:grid;
-  gap:20px;
-}
-
-.card{
-  background:#15120f;
-  border-radius:20px;
-  overflow:hidden;
-  cursor:pointer;
-}
-
-.card img{
-  width:100%;
-  height:200px;
-  object-fit:cover;
-}
-
-.card-body{
-  padding:15px;
-}
-
-.card h3{
-  margin:0 0 10px;
-}
-</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Проект</title>
 </head>
-<body>
+<body style="background:black;color:white;font-family:sans-serif;padding:40px;">
 
-<h1>Проекты</h1>
+<h1>Страница проекта</h1>
 
-<div id="projects" class="grid"></div>
+<div id="content">Загрузка...</div>
 
 <script>
-const cfg = window.SUPABASE_CONFIG;
-const client = supabase.createClient(cfg.url, cfg.anonKey);
+const params = new URLSearchParams(window.location.search);
+const id = params.get('id');
 
-async function loadProjects(){
-  const { data, error } = await client
-    .from('projects')
-    .select('*')
-    .order('id', { ascending:false });
-
-  if(error){
-    console.error(error);
-    return;
-  }
-
-  const root = document.getElementById('projects');
-  root.innerHTML = '';
-
-  data.forEach(item => {
-    const el = document.createElement('div');
-    el.className = 'card';
-
-    el.innerHTML = `
-      <img src="${item.image || '/logo.jpg.png'}">
-      <div class="card-body">
-        <h3>${item.title || 'Без названия'}</h3>
-        <p>${item.description || ''}</p>
-      </div>
-    `;
-
-    el.onclick = () => {
-      window.location.href = '/project.html?id=' + item.id;
-    };
-
-    root.appendChild(el);
-  });
-}
-
-loadProjects();
+document.getElementById('content').innerText = 'ID проекта: ' + id;
 </script>
 
 </body>
