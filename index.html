@@ -9,80 +9,118 @@
 <script src="/supabase-config.js"></script>
 
 <style>
-body {
-  margin:0;
-  background:#0f0c0a;
-  color:#f4e7d4;
-  font-family:Inter, Arial;
+:root{
+  --bg:#0c0a09;
+  --panel:rgba(20,16,14,.72);
+  --text:#f4e7d4;
+  --muted:#b9aa97;
+  --accent:#e8c8a2;
 }
 
-.container {
+body{
+  margin:0;
+  color:var(--text);
+  font-family:Inter,Arial;
+  background:linear-gradient(rgba(0,0,0,.6),rgba(0,0,0,.8)), url("/IMG_5190.jpeg") center/cover no-repeat fixed;
+}
+
+.container{
   max-width:1100px;
   margin:auto;
   padding:20px;
 }
 
-header {
-  border-bottom:1px solid rgba(255,255,255,.1);
+header{
+  position:sticky;
+  top:0;
+  background:rgba(0,0,0,.6);
+  backdrop-filter:blur(10px);
 }
 
-.nav {
+.nav{
   display:flex;
   justify-content:space-between;
   align-items:center;
 }
 
-.nav-links {
+.nav-links{
   display:flex;
   gap:20px;
 }
 
-.nav-links a {
-  color:#b9aa97;
+.nav-links a{
+  color:var(--muted);
   text-decoration:none;
 }
 
-.hero {
-  padding:60px 0;
+.hero{
+  padding:80px 0;
 }
 
-h1 {
-  font-size:48px;
+h1{
+  font-size:60px;
 }
 
-.hero-actions {
+.hero-actions{
   margin-top:20px;
   display:flex;
-  gap:10px;
+  gap:12px;
   flex-wrap:wrap;
 }
 
-.btn {
-  padding:12px 18px;
-  border-radius:10px;
+.btn{
+  padding:14px 20px;
+  border-radius:14px;
   text-decoration:none;
   border:1px solid rgba(255,255,255,.1);
+  color:white;
 }
 
-.btn-primary {
-  background:#e8c8a2;
-  color:#1a120e;
+.btn-primary{
+  background:linear-gradient(#e8c8a2,#d6b892);
+  color:black;
   font-weight:bold;
+  box-shadow:0 10px 30px rgba(232,200,162,.3);
 }
 
-.cards {
+.cards{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-  gap:15px;
+  gap:20px;
 }
 
-.card {
+.card{
+  background:var(--panel);
+  padding:20px;
+  border-radius:20px;
+}
+
+.projects{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:20px;
+}
+
+.project{
+  display:block;
+  text-decoration:none;
+  color:white;
+  border-radius:20px;
+  overflow:hidden;
+  background:var(--panel);
+}
+
+.project img{
+  width:100%;
+  height:200px;
+  object-fit:cover;
+}
+
+.project-body{
   padding:15px;
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:12px;
 }
 
-footer {
+footer{
   margin-top:40px;
   padding:20px;
   border-top:1px solid rgba(255,255,255,.1);
@@ -133,10 +171,18 @@ footer {
 <section id="projects" class="container">
   <h2>Проекты</h2>
 
-  <div class="cards">
-    <div class="card">Проект 1</div>
-    <div class="card">Проект 2</div>
-    <div class="card">Проект 3</div>
+  <div id="projectsRoot" class="projects"></div>
+</section>
+
+<section class="container">
+  <div class="card" style="text-align:center">
+    <h2>Готовы обсудить проект?</h2>
+    <p style="color:#b9aa97">Получите точный расчет стоимости</p>
+
+    <div class="hero-actions" style="justify-content:center">
+      <a class="btn btn-primary" href="/calculator.html">Рассчитать</a>
+      <a class="btn" href="/request.html">Оставить заявку</a>
+    </div>
   </div>
 </section>
 
@@ -150,6 +196,36 @@ footer {
     Tekstura — премиальные лестницы
   </div>
 </footer>
+
+<script>
+const client = window.supabase.createClient(
+  window.SUPABASE_CONFIG.url,
+  window.SUPABASE_CONFIG.anonKey
+);
+
+async function loadProjects(){
+  const { data } = await client.from('projects').select('*').limit(3);
+
+  const root = document.getElementById('projectsRoot');
+
+  if(!data || !data.length){
+    root.innerHTML = "<div>Нет проектов</div>";
+    return;
+  }
+
+  root.innerHTML = data.map(p => `
+    <a class="project" href="/project.html?id=${p.id}">
+      <img src="${p.cover_image || '/logo.jpg.png'}">
+      <div class="project-body">
+        <h3>${p.title || 'Без названия'}</h3>
+        <p>${p.short_description || ''}</p>
+      </div>
+    </a>
+  `).join('');
+}
+
+loadProjects();
+</script>
 
 </body>
 </html>
