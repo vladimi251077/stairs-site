@@ -1,0 +1,36 @@
+:root { color-scheme: dark; }
+
+body {
+  margin: 0;
+  background: #0f0c0a;
+  color: #f4e7d4;
+  font-family: Inter, Arial, sans-serif;
+}
+
+.wrap { max-width: 1050px; margin: 0 auto; padding: 28px 16px 48px; }
+.panel { border: 1px solid rgba(255,255,255,.09); border-radius: 18px; background: rgba(255,255,255,.02); padding: 18px; margin-bottom: 18px; }
+.top { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:24px; }
+.back-link { text-decoration:none; border:1px solid rgba(255,255,255,.14); border-radius:12px; padding:10px 14px; color:#d7c3a8; }
+.step { display:none; }
+.step.active { display:block; }
+.grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.field { display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
+.field input, .field select { width:100%; box-sizing:border-box; border:1px solid rgba(255,255,255,.12); border-radius:12px; background:#171310; color:#f4e7d4; padding:14px; font:inherit; }
+.actions { display:flex; gap:12px; margin-top:18px; flex-wrap:wrap; }
+button { border:none; border-radius:12px; padding:14px 18px; font:inherit; font-weight:700; cursor:pointer; }
+.btn-primary { background:#e8c8a2; color:#1a120e; }
+.btn-secondary { background:rgba(255,255,255,.06); color:#f4e7d4; border:1px solid rgba(255,255,255,.1); }
+.result-box { border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:14px; background:rgba(255,255,255,.02); margin-bottom:12px; }
+.result-table { width:100%; border-collapse:collapse; }
+.result-table th, .result-table td { text-align:left; padding:8px; border-bottom:1px solid rgba(255,255,255,.06); }
+.result-table th { color:#d7c7b0; width:55%; font-weight:600; }
+.hidden { display:none; }
+.badge { padding:4px 10px; border-radius:999px; font-size:13px; text-transform:capitalize; }
+.badge.comfortable { background:rgba(77, 195, 124, .2); color:#99f0b8; }
+.badge.acceptable { background:rgba(235, 198, 88, .2); color:#f5d98c; }
+.badge.too_steep { background:rgba(245, 123, 123, .2); color:#ffb0b0; }
+.warning { color:#ffb0b0; margin-bottom:8px; }
+.ok { color:#9de8bc; }
+.price-main { font-size:38px; font-weight:800; color:#f0d7b7; margin-bottom:8px; }
+.muted { color:#b8aa98; }
+@media (max-width:760px){ .grid { grid-template-columns:1fr; } .actions { flex-direction:column; } button { width:100%; } .top { flex-direction:column; align-items:flex-start; }}
