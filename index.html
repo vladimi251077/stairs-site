@@ -1,67 +1,938 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Tekstura</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/supabase-config.js"></script>
 
-  <link rel="stylesheet" href="/assets/site.css">
+  <style>
+    :root{
+      --bg:#0b0908;
+      --panel:rgba(20,16,14,.64);
+      --panel-strong:rgba(24,19,16,.8);
+      --text:#f4e7d4;
+      --muted:#b9aa97;
+      --accent:#e8c8a2;
+      --accent-2:#f0d7b7;
+      --line:rgba(255,255,255,.08);
+      --shadow:0 20px 60px rgba(0,0,0,.28);
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+
+    body{
+      margin:0;
+      color:var(--text);
+      font:16px/1.55 Inter, Arial, sans-serif;
+      background:
+        linear-gradient(rgba(8,7,6,.54), rgba(8,7,6,.76)),
+        #0b0908;
+      overflow-x:hidden;
+    }
+
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      background:
+        radial-gradient(circle at 18% 10%, rgba(255,255,255,.045), transparent 22%),
+        radial-gradient(circle at 82% 8%, rgba(255,255,255,.03), transparent 18%),
+        radial-gradient(circle at 50% 100%, rgba(0,0,0,.28), transparent 32%);
+      opacity:.8;
+      z-index:0;
+    }
+
+    .container{
+      width:min(1180px, calc(100% - 40px));
+      margin:0 auto;
+      position:relative;
+      z-index:1;
+    }
+
+    .site-header{
+      position:sticky;
+      top:0;
+      z-index:50;
+      backdrop-filter:blur(16px);
+      background:linear-gradient(to bottom, rgba(10,8,7,.9), rgba(10,8,7,.6));
+      border-bottom:1px solid rgba(255,255,255,.05);
+      transition:background .3s ease, box-shadow .3s ease;
+    }
+
+    .site-header.is-scrolled{
+      background:linear-gradient(to bottom, rgba(10,8,7,.96), rgba(10,8,7,.78));
+      box-shadow:0 8px 30px rgba(0,0,0,.18);
+    }
+
+    .header-inner{
+      min-height:84px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:20px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      flex:0 0 auto;
+      text-decoration:none;
+    }
+
+    .brand img{
+      width:88px;
+      height:auto;
+      object-fit:contain;
+      filter:drop-shadow(0 6px 14px rgba(0,0,0,.55));
+      transition:transform .35s ease;
+      display:block;
+    }
+
+    .brand:hover img{
+      transform:scale(1.04);
+    }
+
+    .main-nav{
+      display:flex;
+      gap:26px;
+      align-items:center;
+      justify-content:center;
+      flex:1;
+      flex-wrap:wrap;
+    }
+
+    .main-nav a{
+      color:var(--muted);
+      text-decoration:none;
+      font-size:15px;
+      position:relative;
+      transition:color .2s ease;
+    }
+
+    .main-nav a::after{
+      content:"";
+      position:absolute;
+      left:0;
+      bottom:-7px;
+      width:0;
+      height:2px;
+      border-radius:999px;
+      background:var(--accent);
+      transition:width .3s ease;
+    }
+
+    .main-nav a:hover{
+      color:var(--text);
+    }
+
+    .main-nav a:hover::after{
+      width:100%;
+    }
+
+    .header-cta{
+      flex:0 0 auto;
+    }
+
+    .hero{
+      padding:84px 0 58px;
+    }
+
+    .hero-grid{
+      display:grid;
+      grid-template-columns:1.08fr .92fr;
+      gap:30px;
+      align-items:center;
+    }
+
+    .eyebrow,
+    .section-kicker{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 16px;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:999px;
+      color:var(--muted);
+      background:rgba(20,16,14,.42);
+      backdrop-filter:blur(6px);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
+    }
+
+    .eyebrow{
+      margin-bottom:22px;
+      font-size:16px;
+    }
+
+    .section-kicker{
+      margin-bottom:14px;
+      font-size:13px;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+
+    .hero-title{
+      margin:0 0 18px;
+      font-size:clamp(40px, 7vw, 76px);
+      line-height:.98;
+      letter-spacing:-.04em;
+      max-width:760px;
+    }
+
+    .hero-subtitle{
+      margin:0 0 28px;
+      max-width:760px;
+      color:var(--muted);
+      font-size:20px;
+    }
+
+    .hero-actions{
+      display:flex;
+      gap:14px;
+      flex-wrap:wrap;
+      margin-bottom:30px;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:52px;
+      padding:14px 20px;
+      border-radius:16px;
+      text-decoration:none;
+      font-weight:800;
+      border:1px solid rgba(255,255,255,.08);
+      transition:transform .22s ease, box-shadow .22s ease, border-color .22s ease, background .22s ease, color .22s ease;
+      will-change:transform;
+    }
+
+    .btn:hover{
+      transform:translateY(-2px);
+    }
+
+    .btn-primary{
+      background:linear-gradient(180deg, #e8d0ad 0%, #dcc39e 100%);
+      color:#1a120e;
+      border-color:transparent;
+      box-shadow:0 12px 34px rgba(232,200,162,.18);
+    }
+
+    .btn-primary:hover{
+      box-shadow:0 18px 42px rgba(232,200,162,.24);
+    }
+
+    .btn-secondary{
+      background:rgba(20,16,14,.45);
+      color:var(--text);
+      backdrop-filter:blur(6px);
+    }
+
+    .btn-outline{
+      background:transparent;
+      color:var(--text);
+      border-color:rgba(232,200,162,.34);
+    }
+
+    .btn-outline:hover{
+      color:var(--accent);
+      border-color:var(--accent);
+    }
+
+    .btn-glow{
+      box-shadow:0 10px 30px rgba(232,200,162,.25);
+    }
+
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:14px;
+    }
+
+    .stat{
+      border:1px solid rgba(255,255,255,.05);
+      background:rgba(18,14,12,.46);
+      backdrop-filter:blur(10px);
+      border-radius:22px;
+      padding:18px;
+      box-shadow:var(--shadow);
+    }
+
+    .stat b{
+      display:block;
+      font-size:18px;
+      margin-bottom:6px;
+    }
+
+    .stat span{
+      color:var(--muted);
+      font-size:15px;
+    }
+
+    .hero-visual{
+      perspective:1200px;
+    }
+
+    .hero-visual-inner{
+      border:1px solid rgba(255,255,255,.05);
+      background:rgba(18,14,12,.38);
+      backdrop-filter:blur(10px);
+      border-radius:28px;
+      padding:18px;
+      min-height:500px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      box-shadow:var(--shadow);
+      transform-style:preserve-3d;
+      transition:transform .35s ease;
+    }
+
+    .hero-visual-inner img{
+      width:100%;
+      max-height:620px;
+      object-fit:cover;
+      border-radius:22px;
+      background:#15120f;
+      display:block;
+    }
+
+    .section{
+      padding:48px 0;
+    }
+
+    .section-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:end;
+      gap:16px;
+      margin-bottom:22px;
+    }
+
+    .section-head h2{
+      margin:0 0 8px;
+      font-size:40px;
+      letter-spacing:-.03em;
+    }
+
+    .section-head p{
+      margin:0;
+      max-width:720px;
+      color:var(--muted);
+      font-size:17px;
+    }
+
+    .cards-grid{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:18px;
+    }
+
+    .card{
+      background:var(--panel);
+      border:1px solid rgba(255,255,255,.05);
+      border-radius:24px;
+      padding:22px;
+      backdrop-filter:blur(8px);
+      box-shadow:var(--shadow);
+      transition:transform .24s ease, border-color .24s ease;
+    }
+
+    .card:hover{
+      transform:translateY(-4px);
+      border-color:rgba(232,200,162,.2);
+    }
+
+    .card h3{
+      margin:0 0 10px;
+      font-size:24px;
+    }
+
+    .card p{
+      margin:0;
+      color:var(--muted);
+    }
+
+    .projects-grid{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:18px;
+    }
+
+    .project{
+      position:relative;
+      display:block;
+      text-decoration:none;
+      color:inherit;
+      background:var(--panel);
+      border:1px solid rgba(255,255,255,.05);
+      border-radius:24px;
+      overflow:hidden;
+      backdrop-filter:blur(8px);
+      box-shadow:var(--shadow);
+      transition:transform .24s ease, border-color .24s ease, box-shadow .24s ease;
+    }
+
+    .project:hover{
+      transform:translateY(-4px);
+      border-color:rgba(232,200,162,.22);
+      box-shadow:0 26px 70px rgba(0,0,0,.32);
+    }
+
+    .project::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(to top, rgba(0,0,0,.46), transparent 48%);
+      opacity:.7;
+      pointer-events:none;
+    }
+
+    .project img{
+      width:100%;
+      aspect-ratio:4/3;
+      object-fit:cover;
+      background:#15120f;
+      transition:transform .45s ease;
+      display:block;
+    }
+
+    .project:hover img{
+      transform:scale(1.05);
+    }
+
+    .project-body{
+      position:relative;
+      z-index:2;
+      padding:18px;
+    }
+
+    .project h3{
+      margin:0 0 8px;
+      font-size:24px;
+    }
+
+    .project p{
+      margin:0 0 12px;
+      min-height:48px;
+      color:var(--muted);
+    }
+
+    .price{
+      font-weight:800;
+      color:var(--accent-2);
+      letter-spacing:.02em;
+    }
+
+    .cta-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+    }
+
+    .cta-card{
+      position:relative;
+      overflow:hidden;
+      min-height:260px;
+      border-radius:28px;
+      border:1px solid rgba(255,255,255,.06);
+      background:
+        radial-gradient(circle at top right, rgba(232,200,162,.12), transparent 28%),
+        rgba(18,14,12,.62);
+      backdrop-filter:blur(12px);
+      box-shadow:var(--shadow);
+      transition:transform .3s ease;
+    }
+
+    .cta-card:hover{
+      transform:translateY(-4px);
+    }
+
+    .cta-card-glow{
+      position:absolute;
+      inset:auto -10% -40% auto;
+      width:240px;
+      height:240px;
+      background:radial-gradient(circle, rgba(232,200,162,.18), transparent 65%);
+      filter:blur(10px);
+      pointer-events:none;
+    }
+
+    .cta-card-content{
+      position:relative;
+      z-index:2;
+      padding:26px;
+    }
+
+    .cta-card h3{
+      margin:0 0 10px;
+      font-size:30px;
+      line-height:1.1;
+    }
+
+    .cta-card p{
+      margin:0 0 18px;
+      color:var(--muted);
+      max-width:420px;
+    }
+
+    .contacts-grid{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:18px;
+    }
+
+    .contact-card{
+      background:var(--panel-strong);
+      border:1px solid rgba(255,255,255,.05);
+      border-radius:24px;
+      padding:22px;
+      backdrop-filter:blur(8px);
+      box-shadow:var(--shadow);
+    }
+
+    .contact-card h3{
+      margin:0 0 10px;
+    }
+
+    .contact-link{
+      color:var(--text);
+      text-decoration:none;
+      font-size:18px;
+      word-break:break-word;
+    }
+
+    .diag{
+      margin-top:18px;
+      color:#ffb7b7;
+      white-space:pre-wrap;
+    }
+
+    .site-footer{
+      border-top:1px solid rgba(255,255,255,.04);
+      margin-top:32px;
+      padding:28px 0 40px;
+      color:var(--muted);
+      font-size:15px;
+    }
+
+    .reveal{
+      opacity:0;
+      transform:translateY(30px) scale(.985);
+      transition:opacity .9s cubic-bezier(.22,1,.36,1), transform .9s cubic-bezier(.22,1,.36,1);
+    }
+
+    .reveal.is-visible{
+      opacity:1;
+      transform:translateY(0) scale(1);
+    }
+
+    @media (max-width:980px){
+      .hero-grid,
+      .cards-grid,
+      .projects-grid,
+      .cta-grid,
+      .contacts-grid{
+        grid-template-columns:1fr;
+      }
+
+      .stats{
+        grid-template-columns:1fr;
+      }
+
+      .main-nav{
+        gap:16px;
+      }
+    }
+
+    @media (max-width:760px){
+      .header-inner{
+        flex-direction:column;
+        align-items:flex-start;
+        padding:14px 0;
+      }
+
+      .main-nav{
+        width:100%;
+        justify-content:flex-start;
+      }
+
+      .header-cta{
+        width:100%;
+      }
+
+      .btn{
+        width:100%;
+      }
+
+      .section-head{
+        flex-direction:column;
+        align-items:flex-start;
+      }
+    }
+  </style>
 </head>
-
 <body>
+  <header class="site-header" id="siteHeader">
+    <div class="container header-inner">
+      <a class="brand" href="/">
+        <img id="logoImg" src="/logo.jpg.png" alt="Tekstura logo" />
+      </a>
 
-<header class="header">
-  <div class="container nav">
+      <nav class="main-nav">
+        <a href="#services">Услуги</a>
+        <a href="/projects.html">Проекты</a>
+        <a href="/calculator.html">Калькулятор</a>
+        <a href="/request.html">Заявка</a>
+        <a href="#contacts">Контакты</a>
+      </nav>
 
-    <a class="brand" href="/">
-      <img src="/logo.jpg.png">
-    </a>
+      <a class="btn btn-primary header-cta" href="/calculator.html">Рассчитать</a>
+    </div>
+  </header>
 
-    <nav class="nav-links">
-      <a href="#services">Услуги</a>
-      <a href="/projects.html">Проекты</a>
-      <a href="/calculator.html">Калькулятор</a>
-      <a href="/request.html">Заявка</a>
-    </nav>
+  <main>
+    <section class="hero reveal" id="hero">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <div id="badge" class="eyebrow">premium stairs brand</div>
+          <h1 id="heroTitle" class="hero-title">Лестницы как арт-объект</h1>
+          <p id="heroSubtitle" class="hero-subtitle">
+            Премиальные лестницы из дерева и металла для частных домов и вилл.
+          </p>
 
-    <a class="btn primary" href="/calculator.html">Рассчитать</a>
+          <div class="hero-actions">
+            <a class="btn btn-primary btn-glow" href="/calculator.html">Рассчитать стоимость</a>
+            <a class="btn btn-secondary" href="/projects.html">Смотреть проекты</a>
+            <a class="btn btn-outline" href="/request.html">Оставить заявку</a>
+          </div>
 
-  </div>
-</header>
+          <div class="stats">
+            <div class="stat">
+              <b>Tekstura</b>
+              <span>премиум стиль лестниц</span>
+            </div>
+            <div class="stat">
+              <b>Под ключ</b>
+              <span>от идеи до монтажа</span>
+            </div>
+            <div class="stat">
+              <b>В рублях</b>
+              <span>понятный расчёт</span>
+            </div>
+          </div>
+        </div>
 
-<section class="hero">
-  <div class="container hero-grid">
-
-    <div class="fade-up">
-      <h1 class="title">Лестницы как арт-объект</h1>
-      <p class="subtitle">Премиальные лестницы из дерева и металла</p>
-
-      <div class="hero-buttons">
-        <a class="btn primary glow" href="/calculator.html">Рассчитать</a>
-        <a class="btn" href="/projects.html">Проекты</a>
-        <a class="btn outline" href="/request.html">Заявка</a>
+        <div class="hero-visual" id="heroVisual">
+          <div class="hero-visual-inner" id="heroVisualInner">
+            <img id="heroImage" src="/IMG_5190.jpeg" alt="Hero image" />
+          </div>
+        </div>
       </div>
+    </section>
+
+    <section id="services" class="section reveal">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <div class="section-kicker">services</div>
+            <h2>Услуги</h2>
+            <p>Проектируем, производим и монтируем лестницы с акцентом на материал, форму и безупречную детализацию.</p>
+          </div>
+          <a class="btn btn-secondary" href="/request.html">Обсудить проект</a>
+        </div>
+
+        <div id="servicesCards" class="cards-grid"></div>
+      </div>
+    </section>
+
+    <section id="projects" class="section reveal">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <div class="section-kicker">featured projects</div>
+            <h2>Избранные проекты</h2>
+            <p>Нажмите на карточку, чтобы открыть проект подробнее и посмотреть цену, описание и материалы.</p>
+          </div>
+          <a class="btn btn-secondary" href="/projects.html">Все проекты</a>
+        </div>
+
+        <div id="projectsCards" class="projects-grid"></div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="container cta-grid">
+        <article class="cta-card">
+          <div class="cta-card-glow"></div>
+          <div class="cta-card-content">
+            <div class="section-kicker">calculator</div>
+            <h3>Умный расчёт стоимости</h3>
+            <p>Быстрый предварительный расчёт по типу лестницы, размерам, материалам и опциям.</p>
+            <a class="btn btn-primary" href="/calculator.html">Открыть калькулятор</a>
+          </div>
+        </article>
+
+        <article class="cta-card">
+          <div class="cta-card-glow"></div>
+          <div class="cta-card-content">
+            <div class="section-kicker">request</div>
+            <h3>Оставить заявку</h3>
+            <p>Отправьте размеры, фото или описание задачи — соберём ориентир по цене и срокам.</p>
+            <a class="btn btn-primary" href="/request.html">Перейти к заявке</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="contacts" class="section reveal">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <div class="section-kicker">contacts</div>
+            <h2>Контакты</h2>
+            <p>Свяжитесь с нами удобным способом, чтобы обсудить проект, сроки и бюджет.</p>
+          </div>
+        </div>
+
+        <div class="contacts-grid">
+          <div class="contact-card">
+            <h3>Телефон</h3>
+            <a id="phoneLink" class="contact-link" href="#">+70000000000</a>
+          </div>
+          <div class="contact-card">
+            <h3>WhatsApp</h3>
+            <a id="whatsappLink" class="contact-link" href="#">+70000000000</a>
+          </div>
+          <div class="contact-card">
+            <h3>Telegram</h3>
+            <a id="telegramLink" class="contact-link" href="#">@tekstura</a>
+          </div>
+        </div>
+
+        <div id="diag" class="diag"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      Tekstura — премиальные лестницы из дерева и металла для частных домов и вилл.
     </div>
+  </footer>
 
-    <div class="hero-image parallax">
-      <img src="/logo.jpg.png">
-    </div>
+  <script>
+    const siteHeader = document.getElementById('siteHeader');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 12) {
+        siteHeader.classList.add('is-scrolled');
+      } else {
+        siteHeader.classList.remove('is-scrolled');
+      }
+    }, { passive:true });
 
-  </div>
-</section>
+    const revealItems = document.querySelectorAll('.reveal');
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold:0.12, rootMargin:'0px 0px -40px 0px' });
 
-<section class="section fade-up">
-  <div class="container">
-    <h2>Проекты</h2>
-    <div id="projects" class="grid"></div>
-  </div>
-</section>
+    revealItems.forEach(item => revealObserver.observe(item));
 
-<script src="/assets/animations.js"></script>
-<script src="/assets/ui.js"></script>
+    const heroVisual = document.getElementById('heroVisual');
+    const heroVisualInner = document.getElementById('heroVisualInner');
+    if (heroVisual && heroVisualInner) {
+      heroVisual.addEventListener('mousemove', (e) => {
+        const rect = heroVisual.getBoundingClientRect();
+        const px = (e.clientX - rect.left) / rect.width;
+        const py = (e.clientY - rect.top) / rect.height;
+        const rotateY = (px - 0.5) * 10;
+        const rotateX = (0.5 - py) * 10;
+        heroVisualInner.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-2px)`;
+      });
+      heroVisual.addEventListener('mouseleave', () => {
+        heroVisualInner.style.transform = 'rotateX(0deg) rotateY(0deg) translateY(0)';
+      });
+    }
 
+    const diagEl = document.getElementById('diag');
+    function diag(msg) {
+      diagEl.textContent = msg || '';
+      if (msg) console.error(msg);
+    }
+
+    const cfg = window.SUPABASE_CONFIG;
+    if (!cfg || !cfg.url || !cfg.anonKey) {
+      diag('Ошибка: не загрузился supabase-config.js');
+      throw new Error('SUPABASE_CONFIG is missing');
+    }
+
+    const client = window.supabase.createClient(cfg.url, cfg.anonKey);
+
+    function text(id, value, fallback = '') {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value || fallback;
+    }
+
+    function attr(id, name, value) {
+      const el = document.getElementById(id);
+      if (el && value) el.setAttribute(name, value);
+    }
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function escapeAttr(str) {
+      return String(str || '').replaceAll('"', '&quot;');
+    }
+
+    function renderSettings(row) {
+      const settings = {
+        phone: row?.phone || '+70000000000',
+        whatsapp: row?.whatsapp || '+70000000000',
+        telegram: row?.telegram || '@tekstura',
+        heroTitle: row?.heroTitle || row?.herotitle || 'Лестницы как арт-объект',
+        heroSubtitle: row?.heroSubtitle || row?.herosubtitle || 'Премиальные лестницы из дерева и металла для частных домов и вилл.',
+        heroImage: row?.heroImage || row?.heroimage || '/IMG_5190.jpeg',
+        logo: row?.logo || '/logo.jpg.png',
+        badge: row?.badge || 'premium stairs brand'
+      };
+
+      text('heroTitle', settings.heroTitle);
+      text('heroSubtitle', settings.heroSubtitle);
+      text('badge', settings.badge);
+
+      const heroImage = document.getElementById('heroImage');
+      const logoImg = document.getElementById('logoImg');
+      if (heroImage) heroImage.src = settings.heroImage;
+      if (logoImg) logoImg.src = settings.logo;
+
+      const phoneClean = settings.phone.replace(/[^\d+]/g, '');
+      const waClean = settings.whatsapp.replace(/[^\d]/g, '');
+      const tgClean = settings.telegram.replace('@', '');
+
+      text('phoneLink', settings.phone);
+      attr('phoneLink', 'href', `tel:${phoneClean}`);
+
+      text('whatsappLink', settings.whatsapp);
+      attr('whatsappLink', 'href', `https://wa.me/${waClean}`);
+
+      text('telegramLink', settings.telegram);
+      attr('telegramLink', 'href', `https://t.me/${tgClean}`);
+    }
+
+    function renderServices(items) {
+      const root = document.getElementById('servicesCards');
+      root.innerHTML = '';
+
+      if (!items?.length) {
+        root.innerHTML = `
+          <div class="card">
+            <h3>Индивидуальный проект</h3>
+            <p>Создаём лестницы под архитектуру интерьера и образ жизни владельца.</p>
+          </div>
+          <div class="card">
+            <h3>Производство</h3>
+            <p>Комбинируем дерево и металл для выразительной и надёжной конструкции.</p>
+          </div>
+          <div class="card">
+            <h3>Монтаж</h3>
+            <p>Точная установка с вниманием к чистоте, срокам и деталям.</p>
+          </div>
+        `;
+        return;
+      }
+
+      root.innerHTML = items.map(item => `
+        <div class="card">
+          <h3>${escapeHtml(item.title || '')}</h3>
+          <p>${escapeHtml(item.full_description || item.short_description || item.description || '')}</p>
+        </div>
+      `).join('');
+    }
+
+    function renderProjects(items) {
+      const root = document.getElementById('projectsCards');
+      root.innerHTML = '';
+
+      const featured = (items || []).filter(item => item.featured === true || item.featured === 'true');
+      const list = featured.length ? featured.slice(0, 3) : (items || []).slice(0, 3);
+
+      if (!list.length) {
+        root.innerHTML = `
+          <a class="project" href="/projects.html">
+            <img src="/logo.jpg.png" alt="Проект" />
+            <div class="project-body">
+              <h3>Проекты скоро здесь</h3>
+              <p>Добавьте проекты в админке или в Supabase, и они появятся на главной странице.</p>
+              <div class="price">по запросу</div>
+            </div>
+          </a>
+        `;
+        return;
+      }
+
+      root.innerHTML = list.map(item => {
+        const image = item.cover_image || item.image || '/logo.jpg.png';
+        const title = item.title || 'Без названия';
+        const desc = item.short_description || item.description || 'Описание появится позже.';
+        const price = item.price
+          ? `${item.price} ₽`
+          : item.price_from
+            ? `от ${item.price_from} ₽`
+            : 'по запросу';
+
+        return `
+          <a class="project" href="/project.html?id=${encodeURIComponent(item.id)}">
+            <img src="${escapeAttr(image)}" alt="${escapeAttr(title)}" />
+            <div class="project-body">
+              <h3>${escapeHtml(title)}</h3>
+              <p>${escapeHtml(desc)}</p>
+              <div class="price">${escapeHtml(price)}</div>
+            </div>
+          </a>
+        `;
+      }).join('');
+    }
+
+    async function loadAll() {
+      try {
+        const [settingsRes, servicesRes, projectsRes] = await Promise.all([
+          client.from('settings').select('*').order('updated_at', { ascending: false }).limit(1).maybeSingle(),
+          client.from('services').select('*').order('sort_order', { ascending: true }),
+          client.from('projects').select('*').order('created_at', { ascending: false })
+        ]);
+
+        if (settingsRes.error) throw settingsRes.error;
+        if (servicesRes.error) console.error('services query failed', servicesRes.error);
+        if (projectsRes.error) console.error('projects query failed', projectsRes.error);
+
+        renderSettings(settingsRes.data || {});
+        renderServices(servicesRes.data || []);
+        renderProjects(projectsRes.data || []);
+        diag('');
+      } catch (err) {
+        console.error('Supabase diagnostics failed', err);
+        diag('Ошибка загрузки данных из Supabase: ' + (err?.message || err));
+      }
+    }
+
+    loadAll();
+  </script>
 </body>
 </html>
