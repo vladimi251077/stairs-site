@@ -33,30 +33,34 @@ window.nextStep = showStep;
 window.prevStep = showStep;
 
 function setStatus(message = '') {
-  $('pageStatus').textContent = message;
+  const statusNode = $('pageStatus');
+  if (statusNode) statusNode.textContent = message;
 }
 
 function toggleTurnFields() {
-  const stairType = $('stairType').value;
+  const stairTypeNode = $('stairType');
   const turnDirection = $('turnDirectionField');
   const turnType = $('turnTypeField');
 
+  if (!stairTypeNode || !turnDirection || !turnType) return;
+
+  const stairType = stairTypeNode.value;
   turnDirection.classList.toggle('hidden', stairType !== 'l_turn');
   turnType.classList.toggle('hidden', stairType === 'straight');
 }
 
 function getConfigFromForm() {
   return {
-    opening_type: $('openingType').value,
-    stair_type: $('stairType').value,
-    turn_direction: $('turnDirection').value,
-    turn_type: $('turnType').value,
-    floor_to_floor_height: Number($('floorHeight').value || 0),
-    opening_length: Number($('openingLength').value || 0),
-    opening_width: Number($('openingWidth').value || 0),
-    march_width: Number($('marchWidth').value || 0),
-    frame_material: $('frameMaterial').value,
-    finish_level: $('finishLevel').value
+    opening_type: $('openingType')?.value || 'straight',
+    stair_type: $('stairType')?.value || 'straight',
+    turn_direction: $('turnDirection')?.value || 'left',
+    turn_type: $('turnType')?.value || 'landing',
+    floor_to_floor_height: Number($('floorHeight')?.value || 0),
+    opening_length: Number($('openingLength')?.value || 0),
+    opening_width: Number($('openingWidth')?.value || 0),
+    march_width: Number($('marchWidth')?.value || 0),
+    frame_material: $('frameMaterial')?.value || 'metal',
+    finish_level: $('finishLevel')?.value || 'basic'
   };
 }
 
@@ -73,6 +77,7 @@ function calculateLTurnGeometry(config) {
   const risersForTurn = config.turn_type === 'winders' ? 3 : 1;
   const lowerRisers = Math.max(3, Math.floor((totalStraight.riser_count - risersForTurn) / 2));
   const upperRisers = totalStraight.riser_count - lowerRisers - risersForTurn;
+
   if (upperRisers < 3) {
     return {
       ...totalStraight,
@@ -83,11 +88,13 @@ function calculateLTurnGeometry(config) {
   }
 
   const split = splitLTurn(config);
+
   const lower = calculateStraightGeometry({
     floor_to_floor_height: lowerRisers * totalStraight.riser_height,
     opening_length: split.lowerLength,
     march_width: config.march_width
   });
+
   const upper = calculateStraightGeometry({
     floor_to_floor_height: upperRisers * totalStraight.riser_height,
     opening_length: split.upperLength,
@@ -103,9 +110,10 @@ function calculateLTurnGeometry(config) {
     };
   }
 
-  const turnNodeLength = config.turn_type === 'landing'
-    ? Math.max(config.march_width, 900)
-    : Math.round(totalStraight.tread_depth * 3);
+  const turnNodeLength =
+    config.turn_type === 'landing'
+      ? Math.max(config.march_width, 900)
+      : Math.round(totalStraight.tread_depth * 3);
 
   return {
     ...totalStraight,
@@ -128,6 +136,7 @@ function calculateGeometry(config) {
   if (config.stair_type === 'l_turn') {
     return calculateLTurnGeometry(config);
   }
+
   if (config.stair_type === 'u_turn') {
     return {
       valid: false,
@@ -135,12 +144,15 @@ function calculateGeometry(config) {
       reason: 'П-образная лестница подготовлена в структуре, но расчёт будет добавлен на следующем этапе.'
     };
   }
+
   return calculateStraightGeometry(config);
 }
 
 function renderGeometry(geometry) {
   const root = $('geometryResult');
   const warnings = $('geometryWarnings');
+
+  if (!root || !warnings) return;
 
   if (!geometry.valid) {
     root.innerHTML = '<div class="muted">Нет валидной геометрии.</div>';
@@ -166,12 +178,20 @@ function renderGeometry(geometry) {
     rows.push(['Элемент поворота', `${geometry.turn_node.element_length} мм`]);
   }
 
-  root.innerHTML = `<table class="result-table"><tbody>${rows.map(([k, v]) => `<tr><th>${k}</th><td>${v}</td></tr>`).join('')}</tbody></table>`;
+  root.innerHTML = `
+    <table class="result-table">
+      <tbody>
+        ${rows.map(([k, v]) => `<tr><th>${k}</th><td>${v}</td></tr>`).join('')}
+      </tbody>
+    </table>
+  `;
 
   const warningList = [];
   if (geometry.status === 'too_steep') warningList.push('Лестница слишком крутая.');
   if (geometry.reason) warningList.push(geometry.reason);
-  if (geometry.tread_depth < FORMULA_LIMITS.minTreadDepth) warningList.push('Проём недостаточен для рекомендуемой проступи.');
+  if (geometry.tread_depth < FORMULA_LIMITS.minTreadDepth) {
+    warningList.push('Проём недостаточен для рекомендуемой проступи.');
+  }
 
   warnings.innerHTML = warningList.length
     ? warningList.map((item) => `<div class="warning">${item}</div>`).join('')
@@ -186,14 +206,22 @@ function calculateMaterials(config, geometry) {
 
 function renderMaterials(materials) {
   const root = $('materialsResult');
+  if (!root) return;
+
   if (!materials.valid) {
     root.innerHTML = `<div class="warning">${materials.reason}</div>`;
     return;
   }
 
-  root.innerHTML = `<table class="result-table"><tbody>${materials.items
-    .map((item) => `<tr><th>${item.label}</th><td>${item.value}</td></tr>`)
-    .join('')}</tbody></table>`;
+  root.innerHTML = `
+    <table class="result-table">
+      <tbody>
+        ${materials.items
+          .map((item) => `<tr><th>${item.label}</th><td>${item.value}</td></tr>`)
+          .join('')}
+      </tbody>
+    </table>
+  `;
 }
 
 function calculatePrice(config, geometry, materials) {
@@ -211,7 +239,13 @@ function calculatePrice(config, geometry, materials) {
     materialCost = (materials.metrics.concreteVolumeM3 || 0) * defaults.concrete_rate_per_m3;
   }
 
-  const finishCoef = config.finish_level === 'premium' ? 1.2 : config.finish_level === 'standard' ? 1.08 : 1;
+  const finishCoef =
+    config.finish_level === 'premium'
+      ? 1.2
+      : config.finish_level === 'standard'
+        ? 1.08
+        : 1;
+
   const total = (baseLabor + materialCost) * defaults.install_coef * defaults.markup_coef * finishCoef;
 
   return {
@@ -229,6 +263,8 @@ function money(value) {
 
 function renderPrice(price) {
   const root = $('priceResult');
+  if (!root) return;
+
   if (!price) {
     root.innerHTML = '<div class="warning">Стоимость недоступна без валидной геометрии и материалов.</div>';
     return;
@@ -239,6 +275,14 @@ function renderPrice(price) {
     <div class="muted">Диапазон: ${money(price.min)} — ${money(price.max)}</div>
     <div class="muted">Работы: ${money(price.baseLabor)} · Материалы: ${money(price.materialCost)}</div>
   `;
+}
+
+function runGeometryCalculation() {
+  const config = getConfigFromForm();
+  const geometry = calculateGeometry(config);
+  state.geometry = geometry;
+  renderGeometry(geometry);
+  showStep(3);
 }
 
 function runConfigurator() {
@@ -262,10 +306,23 @@ async function loadSupabaseDictionaries() {
 
   setStatus('Загрузка инженерных справочников...');
   try {
-    const client = window.supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
+    const client = window.supabase.createClient(
+      window.SUPABASE_CONFIG.url,
+      window.SUPABASE_CONFIG.anonKey
+    );
+
     const [defaultsRes, rulesRes] = await Promise.all([
-      client.from('stair_defaults').select('*').eq('active', true).order('updated_at', { ascending: false }).limit(1).maybeSingle(),
-      client.from('stair_material_rules').select('*').eq('active', true)
+      client
+        .from('stair_defaults')
+        .select('*')
+        .eq('active', true)
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      client
+        .from('stair_material_rules')
+        .select('*')
+        .eq('active', true)
     ]);
 
     if (!defaultsRes.error && defaultsRes.data) {
@@ -274,6 +331,7 @@ async function loadSupabaseDictionaries() {
         ...defaultsRes.data
       };
     }
+
     if (!rulesRes.error && rulesRes.data) {
       state.dictionaries.materialRules = rulesRes.data;
     }
@@ -286,13 +344,18 @@ async function loadSupabaseDictionaries() {
 }
 
 function init() {
-  $('stairType').addEventListener('change', toggleTurnFields);
-  $('calculateBtn').addEventListener('click', runConfigurator);
-  $('toResultsBtn').addEventListener('click', () => showStep(3));
+  const stairTypeNode = $('stairType');
+  const calculateBtn = $('calculateBtn');
+  const toResultsBtn = $('toResultsBtn');
+
+  if (!stairTypeNode || !calculateBtn || !toResultsBtn) return;
+
+  stairTypeNode.addEventListener('change', toggleTurnFields);
+  calculateBtn.addEventListener('click', runConfigurator);
+  toResultsBtn.addEventListener('click', runGeometryCalculation);
 
   toggleTurnFields();
   loadSupabaseDictionaries();
 }
 
 init();
- 
