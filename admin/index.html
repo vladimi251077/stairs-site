@@ -171,9 +171,13 @@
             <label for="whatsapp">WhatsApp</label>
             <input id="whatsapp" />
           </div>
-          <div class="full">
+          <div>
             <label for="telegram">Telegram</label>
             <input id="telegram" />
+          </div>
+          <div>
+            <label for="max">MAX</label>
+            <input id="max" />
           </div>
         </div>
         <div class="row" style="margin-top:12px">
@@ -263,6 +267,7 @@
     const phoneInput = document.getElementById('phone');
     const whatsappInput = document.getElementById('whatsapp');
     const telegramInput = document.getElementById('telegram');
+    const maxInput = document.getElementById('max');
 
     const heroTitleInput = document.getElementById('heroTitle');
     const heroSubtitleInput = document.getElementById('heroSubtitle');
@@ -328,6 +333,7 @@
         phone: row?.phone ?? '',
         whatsapp: row?.whatsapp ?? '',
         telegram: row?.telegram ?? '',
+        max: row?.max ?? '',
         heroTitle: row?.heroTitle ?? row?.herotitle ?? '',
         heroSubtitle: row?.heroSubtitle ?? row?.herosubtitle ?? '',
         heroImage: row?.heroImage ?? row?.heroimage ?? '',
@@ -341,6 +347,7 @@
       phoneInput.value = settings.phone || '';
       whatsappInput.value = settings.whatsapp || '';
       telegramInput.value = settings.telegram || '';
+      maxInput.value = settings.max || '';
       heroTitleInput.value = settings.heroTitle || '';
       heroSubtitleInput.value = settings.heroSubtitle || '';
       heroImageInput.value = settings.heroImage || '';
@@ -564,6 +571,7 @@
           phone: phoneInput.value.trim(),
           whatsapp: whatsappInput.value.trim(),
           telegram: telegramInput.value.trim(),
+          max: maxInput.value.trim(),
           updated_at: new Date().toISOString()
         }, { onConflict: 'id' });
 
