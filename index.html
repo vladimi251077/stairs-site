@@ -330,7 +330,7 @@
             <div class="contact-premium-card__icon">${c.icon}</div>
             <div class="contact-premium-card__content">
               <div class="contact-premium-card__label">${escapeHtml(c.label)}</div>
-              <a href="${escapeHtml(c.href)}" class="contact-premium-card__value" ${c.key === 'phone' ? '' : 'target="_blank" rel="noopener"'}>${escapeHtml(c.text)}</a>
+              <a href="${escapeHtml(c.href)}" class="contact-premium-card__value" aria-label="Открыть ${escapeHtml(c.label)}" ${c.key === 'phone' ? '' : 'target="_blank" rel="noopener"'}>Открыть</a>
             </div>
           </article>
         `).join('')
@@ -338,7 +338,7 @@
 
       document.getElementById('floatingContacts').innerHTML = contacts
         .map(c => `
-          <a href="${escapeHtml(c.href)}" class="floating-contact-btn floating-contact-btn--${escapeHtml(c.key)}" aria-label="${escapeHtml(c.label)}" data-tooltip="${escapeHtml(c.label)}" ${c.key === 'phone' ? '' : 'target="_blank" rel="noopener"'}>
+          <a href="${escapeHtml(c.href)}" class="floating-contact-btn floating-contact-btn--${escapeHtml(c.key)}" aria-label="${escapeHtml(c.label)}" title="${escapeHtml(c.label)}" data-tooltip="${escapeHtml(c.label)}" ${c.key === 'phone' ? '' : 'target="_blank" rel="noopener"'}>
             ${c.icon}
           </a>
         `)
