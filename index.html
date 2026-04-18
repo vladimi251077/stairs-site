@@ -6,11 +6,16 @@
   <title>Tekstura — Премиальные лестницы</title>
   <meta name="description" content="Премиальные лестницы для частных домов и вилл. Проектирование, изготовление, монтаж и инженерный расчёт.">
   <link rel="stylesheet" href="/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/supabase-config.js"></script>
 </head>
 <body>
   <header class="site-header">
     <div class="container site-header__inner">
-      <a href="/" class="brand">TEKSTURA</a>
+      <a href="/" class="brand" aria-label="Tekstura">
+        <img id="siteLogo" src="" alt="Tekstura" style="display:none;max-height:36px;width:auto;">
+        <span id="siteLogoText">TEKSTURA</span>
+      </a>
 
       <nav class="site-nav">
         <a href="/">Главная</a>
@@ -28,14 +33,14 @@
 
       <div class="container hero-premium__inner">
         <div class="hero-premium__content">
-          <div class="hero-premium__eyebrow">Премиальные лестницы</div>
+          <div class="hero-premium__eyebrow" id="heroBadge">Премиальные лестницы</div>
 
-          <h1 class="hero-premium__title">
+          <h1 class="hero-premium__title" id="heroTitle">
             Изысканность и<br>
             инженерная точность
           </h1>
 
-          <p class="hero-premium__subtitle">
+          <p class="hero-premium__subtitle" id="heroSubtitle">
             Премиальные лестницы для частных домов, вилл и современных интерьеров.
             Проектирование, изготовление, монтаж и точный онлайн-расчёт.
           </p>
@@ -66,6 +71,7 @@
         <div class="hero-premium__visual">
           <div class="hero-premium__visual-card">
             <img
+              id="heroImage"
               src="/assets/design/home-showcase.jpg"
               alt="Премиальная лестница Tekstura"
               class="hero-premium__image"
@@ -79,14 +85,14 @@
       <div class="container">
         <div class="section-heading">
           <div class="section-eyebrow">Почему Tekstura</div>
-          <h2>Лестницы, которые становятся частью архитектуры дома</h2>
-          <p>
+          <h2 id="servicesHeading">Лестницы, которые становятся частью архитектуры дома</h2>
+          <p id="servicesLead">
             Мы соединяем премиальный дизайн, инженерный расчёт и аккуратную реализацию,
             чтобы лестница выглядела дорого, служила долго и точно подходила под ваш интерьер.
           </p>
         </div>
 
-        <div class="feature-grid">
+        <div class="feature-grid" id="servicesGrid">
           <article class="feature-card">
             <div class="feature-card__icon">01</div>
             <h3>Премиум дизайн</h3>
@@ -131,14 +137,149 @@
 
   <footer class="site-footer">
     <div class="container site-footer__inner">
-      <div class="site-footer__brand">TEKSTURA</div>
+      <div class="site-footer__brand" id="footerBrand">TEKSTURA</div>
       <div class="site-footer__links">
         <a href="/projects.html">Проекты</a>
         <a href="/services.html">Услуги</a>
         <a href="/calculator.html">Калькулятор</a>
         <a href="/request.html">Заявка</a>
       </div>
+      <div class="site-footer__links" id="contactLinks"></div>
     </div>
   </footer>
+
+  <script>
+    const fallback = {
+      settings: {
+        logo: '',
+        heroTitle: 'Изысканность и<br>инженерная точность',
+        heroSubtitle: 'Премиальные лестницы для частных домов, вилл и современных интерьеров. Проектирование, изготовление, монтаж и точный онлайн-расчёт.',
+        heroImage: '/assets/design/home-showcase.jpg',
+        badge: 'Премиальные лестницы',
+        phone: '',
+        whatsapp: '',
+        telegram: ''
+      },
+      services: [
+        {
+          title: 'Премиум дизайн',
+          description: 'Современные и классические решения для интерьеров высокого уровня.',
+          sort_order: 1
+        },
+        {
+          title: 'Инженерный расчёт',
+          description: 'Точная геометрия, удобство шага, подбор конструкции и материалов.',
+          sort_order: 2
+        },
+        {
+          title: 'Полное сопровождение',
+          description: 'От консультации и визуальной концепции до изготовления и монтажа.',
+          sort_order: 3
+        }
+      ]
+    };
+
+    function escapeHtml(str) {
+      return String(str ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function normalizeSettings(row = {}) {
+      return {
+        logo: row.logo || fallback.settings.logo,
+        heroTitle: row.heroTitle || row.herotitle || fallback.settings.heroTitle,
+        heroSubtitle: row.heroSubtitle || row.herosubtitle || fallback.settings.heroSubtitle,
+        heroImage: row.heroImage || row.heroimage || fallback.settings.heroImage,
+        badge: row.badge || fallback.settings.badge,
+        phone: row.phone || fallback.settings.phone,
+        whatsapp: row.whatsapp || fallback.settings.whatsapp,
+        telegram: row.telegram || fallback.settings.telegram
+      };
+    }
+
+    function renderSettings(settings) {
+      const s = normalizeSettings(settings);
+      const safeHeroTitle = escapeHtml(s.heroTitle || fallback.settings.heroTitle).replace(/\n/g, '<br>');
+
+      document.getElementById('heroBadge').textContent = s.badge || fallback.settings.badge;
+      document.getElementById('heroTitle').innerHTML = safeHeroTitle;
+      document.getElementById('heroSubtitle').textContent = s.heroSubtitle || fallback.settings.heroSubtitle;
+      document.getElementById('heroImage').src = s.heroImage || fallback.settings.heroImage;
+
+      const logoImg = document.getElementById('siteLogo');
+      const logoText = document.getElementById('siteLogoText');
+      const footerBrand = document.getElementById('footerBrand');
+
+      if (s.logo) {
+        logoImg.src = s.logo;
+        logoImg.style.display = 'block';
+        logoText.style.display = 'none';
+        footerBrand.textContent = 'TEKSTURA';
+      } else {
+        logoImg.style.display = 'none';
+        logoText.style.display = 'inline';
+        footerBrand.textContent = 'TEKSTURA';
+      }
+
+      const contacts = [];
+      if (s.phone) contacts.push({ label: 'Телефон', href: 'tel:' + s.phone.replace(/\s+/g, ''), text: s.phone });
+      if (s.whatsapp) contacts.push({ label: 'WhatsApp', href: s.whatsapp, text: 'WhatsApp' });
+      if (s.telegram) contacts.push({ label: 'Telegram', href: s.telegram, text: 'Telegram' });
+
+      document.getElementById('contactLinks').innerHTML = contacts
+        .map(c => `<a href="${escapeHtml(c.href)}" target="_blank" rel="noopener">${escapeHtml(c.label)}: ${escapeHtml(c.text)}</a>`)
+        .join('');
+    }
+
+    function renderServices(services) {
+      const rows = Array.isArray(services) && services.length
+        ? services
+        : fallback.services;
+
+      const grid = document.getElementById('servicesGrid');
+      grid.innerHTML = rows
+        .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+        .map((service, idx) => `
+          <article class="feature-card">
+            <div class="feature-card__icon">${String(idx + 1).padStart(2, '0')}</div>
+            <h3>${escapeHtml(service.title || 'Услуга')}</h3>
+            <p>${escapeHtml(service.description || '')}</p>
+          </article>
+        `)
+        .join('');
+    }
+
+    async function bootHomepageData() {
+      renderSettings(fallback.settings);
+      renderServices(fallback.services);
+
+      try {
+        const cfg = window.SUPABASE_CONFIG;
+        if (!cfg?.url || !cfg?.anonKey || !window.supabase) return;
+
+        const client = window.supabase.createClient(cfg.url, cfg.anonKey);
+
+        const [{ data: settingsData, error: settingsError }, { data: servicesData, error: servicesError }] = await Promise.all([
+          client.from('settings').select('*').order('updated_at', { ascending: false }).limit(1).maybeSingle(),
+          client.from('services').select('*').order('sort_order', { ascending: true })
+        ]);
+
+        if (!settingsError && settingsData) {
+          renderSettings(settingsData);
+        }
+        if (!servicesError && Array.isArray(servicesData)) {
+          renderServices(servicesData);
+        }
+      } catch (err) {
+        console.warn('Homepage fallback mode enabled:', err?.message || err);
+      }
+    }
+
+    bootHomepageData();
+  </script>
 </body>
 </html> 
