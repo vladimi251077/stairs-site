@@ -146,7 +146,19 @@
     </section>
   </main>
 
-  <div id="floatingContacts" class="floating-contacts" aria-label="Быстрые контакты"></div>
+  <div id="floatingContacts" class="floating-contact-menu" aria-label="Быстрые контакты">
+    <button
+      id="floatingContactsToggle"
+      class="floating-contact-menu__toggle"
+      type="button"
+      aria-expanded="false"
+      aria-controls="floatingContactsList"
+      aria-label="Открыть быстрые контакты"
+    >
+      <span class="floating-contact-menu__toggle-icon" aria-hidden="true">✦</span>
+    </button>
+    <div id="floatingContactsList" class="floating-contact-menu__list" hidden></div>
+  </div>
 
   <footer class="site-footer">
     <div class="container site-footer__inner">
@@ -336,13 +348,56 @@
         `).join('')
         : '<article class="contact-premium-card contact-premium-card--empty"><div class="contact-premium-card__label">Контакты скоро будут добавлены</div></article>';
 
-      document.getElementById('floatingContacts').innerHTML = contacts
-        .map(c => `
-          <a href="${escapeHtml(c.href)}" class="floating-contact-btn floating-contact-btn--${escapeHtml(c.key)}" aria-label="${escapeHtml(c.label)}" title="${escapeHtml(c.label)}" data-tooltip="${escapeHtml(c.label)}" ${c.key === 'phone' ? '' : 'target="_blank" rel="noopener"'}>
-            ${c.icon}
-          </a>
-        `)
-        .join('');
+      const floatingContacts = document.getElementById('floatingContacts');
+      const floatingContactsList = document.getElementById('floatingContactsList');
+      const floatingContactsToggle = document.getElementById('floatingContactsToggle');
+
+      if (contacts.length) {
+        floatingContacts.style.display = '';
+        floatingContactsList.innerHTML = contacts
+          .map(c => `
+            <a href="${escapeHtml(c.href)}" class="floating-contact-menu__btn floating-contact-menu__btn--${escapeHtml(c.key)}" aria-label="${escapeHtml(c.label)}" title="${escapeHtml(c.label)}" data-tooltip="${escapeHtml(c.label)}" ${c.key === 'phone' ? '' : 'target="_blank" rel="noopener"'}>
+              ${c.icon}
+            </a>
+          `)
+          .join('');
+      } else {
+        floatingContacts.style.display = 'none';
+        floatingContactsList.innerHTML = '';
+        floatingContactsToggle.setAttribute('aria-expanded', 'false');
+        floatingContacts.classList.remove('is-open');
+        floatingContactsList.hidden = true;
+      }
+    }
+
+    function setupFloatingContactsMenu() {
+      const floatingContacts = document.getElementById('floatingContacts');
+      const floatingContactsList = document.getElementById('floatingContactsList');
+      const floatingContactsToggle = document.getElementById('floatingContactsToggle');
+
+      function closeMenu() {
+        floatingContacts.classList.remove('is-open');
+        floatingContactsList.hidden = true;
+        floatingContactsToggle.setAttribute('aria-expanded', 'false');
+      }
+
+      floatingContactsToggle.addEventListener('click', () => {
+        const isOpen = floatingContacts.classList.toggle('is-open');
+        floatingContactsList.hidden = !isOpen;
+        floatingContactsToggle.setAttribute('aria-expanded', String(isOpen));
+      });
+
+      document.addEventListener('click', (event) => {
+        if (!floatingContacts.contains(event.target)) {
+          closeMenu();
+        }
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+          closeMenu();
+        }
+      });
     }
 
     function renderServices(services) {
@@ -389,7 +444,8 @@
       }
     }
 
+    setupFloatingContactsMenu();
     bootHomepageData();
   </script>
 </body>
-</html> 
+</html>
