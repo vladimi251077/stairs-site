@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Sitemap: https://tekstura.shop/sitemap.xml
+Host: tekstura.shop
