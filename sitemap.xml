@@ -1,21 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
   <url>
     <loc>https://tekstura.shop/</loc>
   </url>
+
   <url>
     <loc>https://tekstura.shop/projects.html</loc>
   </url>
+
   <url>
     <loc>https://tekstura.shop/project.html</loc>
   </url>
+
   <url>
     <loc>https://tekstura.shop/calculator.html</loc>
   </url>
+
   <url>
     <loc>https://tekstura.shop/request.html</loc>
   </url>
+
   <url>
     <loc>https://tekstura.shop/services.html</loc>
   </url>
+
 </urlset>
