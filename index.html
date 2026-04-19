@@ -308,7 +308,10 @@
 
     function renderSettings(settings) {
       const s = normalizeSettings(settings);
-      const safeHeroTitle = escapeHtml(s.heroTitle || fallback.settings.heroTitle).replace(/\n/g, '<br>');
+      const rawHeroTitle = String(s.heroTitle || fallback.settings.heroTitle)
+        .replace(/<br\s*\/?>/gi, '\n');
+
+      const safeHeroTitle = escapeHtml(rawHeroTitle).replace(/\n/g, '<br>');
 
       document.getElementById('heroBadge').textContent = s.badge || fallback.settings.badge;
       document.getElementById('heroTitle').innerHTML = safeHeroTitle;
