@@ -48,6 +48,10 @@ create table if not exists public.calculator_requests (
   created_at timestamptz not null default now()
 );
 
+grant insert on table public.calculator_requests to anon;
+grant insert, select, update, delete on table public.calculator_requests to authenticated;
+grant all on table public.calculator_requests to service_role;
+
 alter table public.settings enable row level security;
 alter table public.services enable row level security;
 alter table public.projects enable row level security;
@@ -58,20 +62,44 @@ create policy if not exists "public read services" on public.services for select
 create policy if not exists "public read projects" on public.projects for select using (true);
 
 drop policy if exists "anon insert calculator_requests" on public.calculator_requests;
-create policy "anon insert calculator_requests" on public.calculator_requests for insert with check (true);
+create policy "anon insert calculator_requests"
+  on public.calculator_requests
+  for insert
+  to anon
+  with check (true);
+
+drop policy if exists "auth insert calculator_requests" on public.calculator_requests;
+create policy "auth insert calculator_requests"
+  on public.calculator_requests
+  for insert
+  to authenticated
+  with check (true);
 
 drop policy if exists "auth read calculator_requests" on public.calculator_requests;
-create policy "auth read calculator_requests" on public.calculator_requests for select using (auth.role() = 'authenticated');
+create policy "auth read calculator_requests"
+  on public.calculator_requests
+  for select
+  to authenticated
+  using (true);
+
+drop policy if exists "auth update calculator_requests" on public.calculator_requests;
+create policy "auth update calculator_requests"
+  on public.calculator_requests
+  for update
+  to authenticated
+  using (true)
+  with check (true);
+
+drop policy if exists "auth delete calculator_requests" on public.calculator_requests;
+create policy "auth delete calculator_requests"
+  on public.calculator_requests
+  for delete
+  to authenticated
+  using (true);
 
 create policy if not exists "auth write settings" on public.settings for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
 create policy if not exists "auth write services" on public.services for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
 create policy if not exists "auth write projects" on public.projects for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
-
-drop policy if exists "auth update calculator_requests" on public.calculator_requests;
-create policy "auth update calculator_requests" on public.calculator_requests for update using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
-
-drop policy if exists "auth delete calculator_requests" on public.calculator_requests;
-create policy "auth delete calculator_requests" on public.calculator_requests for delete using (auth.role() = 'authenticated');
 
 insert into public.settings(id, phone, whatsapp, telegram, notify_email, "heroTitle", "heroSubtitle", "heroImage", logo, badge, "baseRate")
 values (1, '+70000000000', '+70000000000', '@tekstura', null, 'Лестницы как арт-объект', 'Премиальные лестницы из дерева и металла для частных домов и вилл.', '/logo.jpg.png', '/logo.jpg.png', 'premium stairs brand', 5000)
