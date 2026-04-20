@@ -37,16 +37,108 @@ function setStatus(message = '') {
   if (statusNode) statusNode.textContent = message;
 }
 
+function getSelectedStairCardNode() {
+  const stairTypeValue = $('stairType')?.value || 'straight';
+  const turnTypeValue = $('turnType')?.value || 'landing';
+
+  return document.querySelector(
+    `.stair-type-card[data-stair-type="${stairTypeValue}"][data-turn-type="${turnTypeValue}"]`
+  ) || document.querySelector(`.stair-type-card[data-stair-type="${stairTypeValue}"]`);
+}
+
+function updateStairTypeHint() {
+  const hintNode = $('stairTypeHint');
+  const selectedCard = getSelectedStairCardNode();
+  if (!hintNode || !selectedCard) return;
+
+  const helperText = selectedCard.querySelector('.stair-type-card__hint')?.textContent || '';
+  hintNode.textContent = helperText;
+}
+
+function syncStairTypeCards() {
+  const cards = document.querySelectorAll('.stair-type-card');
+  const selectedCard = getSelectedStairCardNode();
+
+  cards.forEach((card) => {
+    const isSelected = selectedCard === card;
+    card.classList.toggle('is-selected', isSelected);
+    card.setAttribute('aria-checked', String(isSelected));
+    if (isSelected) card.setAttribute('tabindex', '0');
+    else card.setAttribute('tabindex', '-1');
+  });
+
+  updateStairTypeHint();
+}
+
+function applyStairTypeCardSelection(card) {
+  const stairTypeNode = $('stairType');
+  const turnTypeNode = $('turnType');
+  if (!stairTypeNode || !turnTypeNode || !card) return;
+
+  stairTypeNode.value = card.dataset.stairType || 'straight';
+  turnTypeNode.value = card.dataset.turnType || 'landing';
+  toggleTurnFields();
+  syncStairTypeCards();
+}
+
+function initStairTypeCards() {
+  const cards = Array.from(document.querySelectorAll('.stair-type-card'));
+  if (!cards.length) return;
+
+  cards.forEach((card) => {
+    card.setAttribute('role', 'radio');
+    card.addEventListener('click', () => applyStairTypeCardSelection(card));
+    card.addEventListener('keydown', (event) => {
+      const horizontalKey = event.key === 'ArrowRight' || event.key === 'ArrowLeft';
+      const verticalKey = event.key === 'ArrowDown' || event.key === 'ArrowUp';
+      if (!horizontalKey && !verticalKey && event.key !== 'Home' && event.key !== 'End') return;
+
+      event.preventDefault();
+      const currentIndex = cards.indexOf(card);
+      if (currentIndex < 0) return;
+
+      let nextIndex = currentIndex;
+      if (event.key === 'Home') nextIndex = 0;
+      else if (event.key === 'End') nextIndex = cards.length - 1;
+      else {
+        const moveForward = event.key === 'ArrowRight' || event.key === 'ArrowDown';
+        const move = moveForward ? 1 : -1;
+        nextIndex = (currentIndex + move + cards.length) % cards.length;
+      }
+
+      cards[nextIndex].focus();
+      applyStairTypeCardSelection(cards[nextIndex]);
+    });
+  });
+
+  syncStairTypeCards();
+}
+
 function toggleTurnFields() {
   const stairTypeNode = $('stairType');
+  const openingTypeNode = $('openingType');
   const turnDirection = $('turnDirectionField');
   const turnType = $('turnTypeField');
+  const turnDirectionInput = $('turnDirection');
+  const turnTypeInput = $('turnType');
 
-  if (!stairTypeNode || !turnDirection || !turnType) return;
+  if (!stairTypeNode || !turnDirection || !turnDirectionInput || !turnTypeInput) return;
 
   const stairType = stairTypeNode.value;
-  turnDirection.classList.toggle('hidden', stairType !== 'l_turn');
-  turnType.classList.toggle('hidden', stairType === 'straight');
+  if (openingTypeNode && openingTypeNode.value !== stairType) {
+    openingTypeNode.value = stairType;
+  }
+
+  const showTurnDirection = stairType === 'l_turn';
+  const showTurnType = stairType !== 'straight';
+
+  turnDirection.classList.toggle('hidden', !showTurnDirection);
+  turnDirectionInput.disabled = !showTurnDirection;
+
+  if (turnType) turnType.classList.toggle('hidden', !showTurnType);
+  turnTypeInput.disabled = !showTurnType;
+
+  syncStairTypeCards();
 }
 
 function getConfigFromForm() {
@@ -64,71 +156,170 @@ function getConfigFromForm() {
   };
 }
 
-function splitLTurn(config) {
-  const lowerLength = Math.max(config.opening_length * 0.52, 1800);
-  const upperLength = Math.max(config.opening_length - lowerLength, 1600);
-  return { lowerLength, upperLength };
+function validateBaseDimensions(config) {
+  if (!config.floor_to_floor_height || config.floor_to_floor_height <= 0) {
+    return 'Укажите корректную высоту этаж-этаж.';
+  }
+  if (!config.opening_length || config.opening_length <= 0) {
+    return 'Недостаточная длина проёма: укажите корректное значение.';
+  }
+  if (!config.opening_width || config.opening_width <= 0) {
+    return 'Недостаточная ширина проёма: укажите корректное значение.';
+  }
+  if (!config.march_width || config.march_width <= 0) {
+    return 'Укажите корректную ширину марша.';
+  }
+  return null;
+}
+
+function buildInvalidGeometry(reason) {
+  return {
+    valid: false,
+    status: 'invalid',
+    reason,
+    riser_count: 0,
+    tread_count: 0,
+    riser_height: 0,
+    tread_depth: 0,
+    comfort_value: 0,
+    stair_angle_deg: 0,
+    run_length: 0,
+    stringer_length: 0
+  };
+}
+
+function assessTurnAvailableRun(config) {
+  const minGap = 50;
+  if (config.march_width + minGap > config.opening_width) {
+    return { valid: false, reason: 'Ширина марша слишком большая для заданной ширины проёма.' };
+  }
+
+  const availableUpperRun = config.opening_width - config.march_width;
+  if (availableUpperRun < FORMULA_LIMITS.minTreadDepth * 3) {
+    return { valid: false, reason: 'Недостаточная ширина проёма для верхнего марша Г-образной лестницы.' };
+  }
+
+  const turnElementLength =
+    config.turn_type === 'landing'
+      ? Math.max(config.march_width, 900)
+      : Math.max(Math.round(config.march_width * 0.9), 750);
+
+  const availableLowerRun = config.opening_length - turnElementLength;
+  if (availableLowerRun < FORMULA_LIMITS.minTreadDepth * 3) {
+    return { valid: false, reason: 'Недостаточная длина проёма для нижнего марша Г-образной лестницы.' };
+  }
+
+  return {
+    valid: true,
+    availableLowerRun,
+    availableUpperRun,
+    turnElementLength
+  };
 }
 
 function calculateLTurnGeometry(config) {
-  const totalStraight = calculateStraightGeometry(config);
-  if (!totalStraight.valid) return totalStraight;
+  const baseValidationError = validateBaseDimensions(config);
+  if (baseValidationError) return buildInvalidGeometry(baseValidationError);
+
+  const runAssessment = assessTurnAvailableRun(config);
+  if (!runAssessment.valid) return buildInvalidGeometry(runAssessment.reason);
 
   const risersForTurn = config.turn_type === 'winders' ? 3 : 1;
-  const lowerRisers = Math.max(3, Math.floor((totalStraight.riser_count - risersForTurn) / 2));
-  const upperRisers = totalStraight.riser_count - lowerRisers - risersForTurn;
+  const combinedRun = runAssessment.availableLowerRun + runAssessment.availableUpperRun;
+  const totalStraight = calculateStraightGeometry({
+    ...config,
+    opening_length: combinedRun
+  });
+  if (!totalStraight.valid) {
+    return buildInvalidGeometry(totalStraight.reason || 'Не удалось подобрать суммарную геометрию Г-образной лестницы.');
+  }
+
+  const marchRisers = totalStraight.riser_count - risersForTurn;
+  if (marchRisers < 6) {
+    return buildInvalidGeometry('Слишком мало подъёмов для выбранного типа поворота. Увеличьте высоту лестницы или смените тип поворота.');
+  }
+
+  const splitRatio = runAssessment.availableLowerRun / (combinedRun || 1);
+  const lowerRisers = Math.max(3, Math.round(marchRisers * splitRatio));
+  const upperRisers = marchRisers - lowerRisers;
 
   if (upperRisers < 3) {
-    return {
-      ...totalStraight,
-      valid: false,
-      status: 'invalid',
-      reason: 'Недостаточно подъёмов для Г-образной лестницы. Увеличьте высоту или измените конфигурацию.'
-    };
+    return buildInvalidGeometry('Недостаточно подъёмов для верхнего марша после поворота. Увеличьте проём или высоту.');
   }
 
-  const split = splitLTurn(config);
+  const riserHeight = totalStraight.riser_height;
+  const lowerTreads = lowerRisers;
+  const upperTreads = upperRisers - 1;
 
-  const lower = calculateStraightGeometry({
-    floor_to_floor_height: lowerRisers * totalStraight.riser_height,
-    opening_length: split.lowerLength,
-    march_width: config.march_width
-  });
-
-  const upper = calculateStraightGeometry({
-    floor_to_floor_height: upperRisers * totalStraight.riser_height,
-    opening_length: split.upperLength,
-    march_width: config.march_width
-  });
-
-  if (!lower.valid || !upper.valid) {
-    return {
-      ...totalStraight,
-      valid: false,
-      status: 'invalid',
-      reason: 'Для Г-образной лестницы не удаётся подобрать допустимую геометрию маршей в заданном проёме.'
-    };
+  if (lowerTreads < 3 || upperTreads < 2) {
+    return buildInvalidGeometry('Недостаточно ступеней для формирования Г-образной лестницы.');
   }
 
-  const turnNodeLength =
-    config.turn_type === 'landing'
-      ? Math.max(config.march_width, 900)
-      : Math.round(totalStraight.tread_depth * 3);
+  const lowerTreadDepth = runAssessment.availableLowerRun / lowerTreads;
+  const upperTreadDepth = runAssessment.availableUpperRun / upperTreads;
+
+  if (lowerTreadDepth < FORMULA_LIMITS.minTreadDepth) {
+    return buildInvalidGeometry('Недостаточная длина проёма: нижний марш не помещается с минимальной глубиной проступи.');
+  }
+  if (upperTreadDepth < FORMULA_LIMITS.minTreadDepth) {
+    return buildInvalidGeometry('Недостаточная ширина проёма: верхний марш не помещается с минимальной глубиной проступи.');
+  }
+  if (lowerTreadDepth > FORMULA_LIMITS.maxTreadDepth || upperTreadDepth > FORMULA_LIMITS.maxTreadDepth) {
+    return buildInvalidGeometry('Проём слишком велик для выбранной высоты: проступи получаются слишком глубокими.');
+  }
+
+  const avgTreadDepth = (lowerTreadDepth * lowerTreads + upperTreadDepth * upperTreads) / (lowerTreads + upperTreads);
+  const stairAngle = Number(((Math.atan(riserHeight / avgTreadDepth) * 180) / Math.PI).toFixed(2));
+  if (stairAngle > FORMULA_LIMITS.maxRecommendedAngle) {
+    return buildInvalidGeometry('Лестница становится слишком крутой. Увеличьте длину или ширину проёма.');
+  }
+
+  const comfortValue = Number((2 * riserHeight + avgTreadDepth).toFixed(1));
+  const comfortDeviation = Math.abs(comfortValue - FORMULA_LIMITS.targetComfort);
+  const comfortStatus =
+    comfortDeviation <= FORMULA_LIMITS.maxComfortDeviationForComfortable
+      ? 'comfortable'
+      : comfortDeviation > FORMULA_LIMITS.maxComfortDeviationForAcceptable
+        ? 'too_steep'
+        : 'acceptable';
+
+  const totalRunLength = runAssessment.availableLowerRun + runAssessment.availableUpperRun + runAssessment.turnElementLength;
+  const lowerRise = lowerRisers * riserHeight;
+  const upperRise = upperRisers * riserHeight;
+  const lowerStringer = Math.hypot(lowerRise, runAssessment.availableLowerRun);
+  const upperStringer = Math.hypot(upperRise, runAssessment.availableUpperRun);
 
   return {
-    ...totalStraight,
+    valid: true,
+    riser_count: totalStraight.riser_count,
+    tread_count: lowerTreads + upperTreads,
+    riser_height: riserHeight,
+    tread_depth: Number(avgTreadDepth.toFixed(1)),
+    comfort_value: comfortValue,
+    comfort_deviation: Number(comfortDeviation.toFixed(1)),
+    stair_angle_deg: stairAngle,
+    run_length: Math.round(totalRunLength),
+    stringer_length: Math.round(lowerStringer + upperStringer + runAssessment.turnElementLength),
+    status: comfortStatus,
+    reason: comfortStatus === 'too_steep' ? 'Формула удобства и угол близки к предельным.' : null,
     turn_node: {
       type: config.turn_type,
       direction: config.turn_direction,
-      element_length: turnNodeLength,
+      element_length: runAssessment.turnElementLength,
       risers_in_turn: risersForTurn
     },
-    lower_march: lower,
-    upper_march: upper,
-    run_length: Math.round(lower.run_length + upper.run_length + turnNodeLength),
-    stringer_length: Math.round(lower.stringer_length + upper.stringer_length + turnNodeLength),
-    status: totalStraight.status,
-    reason: totalStraight.reason
+    lower_march: {
+      risers: lowerRisers,
+      treads: lowerTreads,
+      run_length: Math.round(runAssessment.availableLowerRun),
+      tread_depth: Number(lowerTreadDepth.toFixed(1))
+    },
+    upper_march: {
+      risers: upperRisers,
+      treads: upperTreads,
+      run_length: Math.round(runAssessment.availableUpperRun),
+      tread_depth: Number(upperTreadDepth.toFixed(1))
+    }
   };
 }
 
@@ -138,11 +329,7 @@ function calculateGeometry(config) {
   }
 
   if (config.stair_type === 'u_turn') {
-    return {
-      valid: false,
-      status: 'invalid',
-      reason: 'П-образная лестница подготовлена в структуре, но расчёт будет добавлен на следующем этапе.'
-    };
+    return buildInvalidGeometry('П-образная лестница пока не реализована в расчёте.');
   }
 
   return calculateStraightGeometry(config);
@@ -155,7 +342,7 @@ function renderGeometry(geometry) {
   if (!root || !warnings) return;
 
   if (!geometry.valid) {
-    root.innerHTML = '<div class="muted">Нет валидной геометрии.</div>';
+    root.innerHTML = '<div class="warning">Расчёт геометрии недоступен для текущих параметров.</div>';
     warnings.innerHTML = `<div class="warning">${geometry.reason || 'Проверьте исходные параметры.'}</div>`;
     return;
   }
@@ -176,6 +363,14 @@ function renderGeometry(geometry) {
   if (geometry.turn_node) {
     rows.push(['Поворотный узел', `${geometry.turn_node.type}, ${geometry.turn_node.direction}`]);
     rows.push(['Элемент поворота', `${geometry.turn_node.element_length} мм`]);
+    rows.push([
+      'Нижний марш',
+      `${geometry.lower_march?.risers || 0} под., ${geometry.lower_march?.treads || 0} прост., ${geometry.lower_march?.run_length || 0} мм`
+    ]);
+    rows.push([
+      'Верхний марш',
+      `${geometry.upper_march?.risers || 0} под., ${geometry.upper_march?.treads || 0} прост., ${geometry.upper_march?.run_length || 0} мм`
+    ]);
   }
 
   root.innerHTML = `
@@ -282,7 +477,14 @@ function runGeometryCalculation() {
   const geometry = calculateGeometry(config);
   state.geometry = geometry;
   renderGeometry(geometry);
-  showStep(3);
+  if (geometry.valid) {
+    setStatus('Геометрия рассчитана');
+  } else if (config.stair_type === 'u_turn') {
+    setStatus('П-образная лестница пока не реализована');
+  } else {
+    setStatus('Проверьте исходные параметры');
+  }
+  showStep(2);
 }
 
 function runConfigurator() {
@@ -297,6 +499,14 @@ function runConfigurator() {
 
   state.price = calculatePrice(config, geometry, materials);
   renderPrice(state.price);
+
+  if (geometry.valid) {
+    setStatus('Геометрия рассчитана');
+  } else if (config.stair_type === 'u_turn') {
+    setStatus('П-образная лестница пока не реализована');
+  } else {
+    setStatus('Проверьте исходные параметры');
+  }
 
   showStep(4);
 }
@@ -345,15 +555,28 @@ async function loadSupabaseDictionaries() {
 
 function init() {
   const stairTypeNode = $('stairType');
+  const openingTypeNode = $('openingType');
+  const turnTypeNode = $('turnType');
   const calculateBtn = $('calculateBtn');
   const toResultsBtn = $('toResultsBtn');
 
-  if (!stairTypeNode || !calculateBtn || !toResultsBtn) return;
+  if (!stairTypeNode || !turnTypeNode || !calculateBtn || !toResultsBtn) return;
 
   stairTypeNode.addEventListener('change', toggleTurnFields);
+  turnTypeNode.addEventListener('change', syncStairTypeCards);
+  if (openingTypeNode) {
+    openingTypeNode.addEventListener('change', () => {
+      stairTypeNode.value = openingTypeNode.value;
+      if (openingTypeNode.value === 'straight') {
+        turnTypeNode.value = 'landing';
+      }
+      toggleTurnFields();
+    });
+  }
   calculateBtn.addEventListener('click', runConfigurator);
   toResultsBtn.addEventListener('click', runGeometryCalculation);
 
+  initStairTypeCards();
   toggleTurnFields();
   loadSupabaseDictionaries();
 }
