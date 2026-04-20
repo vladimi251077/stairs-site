@@ -233,11 +233,39 @@ h3 {
 
 .visual-choice{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
 .visual-card{display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:14px;border:1px solid rgba(255,255,255,.14);border-radius:14px;background:rgba(23,16,12,.6);color:var(--text);min-height:110px;text-align:left}
-.visual-card span{font-size:22px;color:#f2cd98}
 .visual-card b{font-size:14px}
 .visual-card small{color:var(--text-muted);font-size:12px}
-.visual-card.selected{border-color:rgba(241,202,149,.8);box-shadow:0 0 0 2px rgba(241,202,149,.18) inset;background:rgba(58,41,28,.55)}
-.visual-card:focus{outline:2px solid rgba(241,202,149,.35)}
+.visual-card:hover{background:rgba(63,44,30,.5);border-color:rgba(241,202,149,.35)}
+.visual-card.selected{border-color:rgba(241,202,149,.8);box-shadow:0 0 0 2px rgba(241,202,149,.18) inset,0 8px 20px rgba(0,0,0,.24);background:rgba(58,41,28,.55)}
+.visual-card:focus-visible{outline:2px solid rgba(241,202,149,.45);outline-offset:2px}
+
+.stair-type-choice{grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.stair-type-card{padding:12px 12px 13px;min-height:132px}
+.stair-diagram{
+  width:100%;
+  height:58px;
+  border:1px solid rgba(238,207,165,.22);
+  border-radius:10px;
+  background:linear-gradient(160deg,rgba(255,255,255,.05),rgba(255,255,255,.01)),rgba(24,17,12,.85);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:6px;
+}
+.stair-diagram svg{width:100%;height:100%}
+.stair-route{fill:none;stroke:rgba(237,211,174,.36);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.stair-steps{fill:none;stroke:#f1cf9f;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}
+.stair-landing{fill:rgba(241,207,159,.2);stroke:rgba(241,207,159,.48);stroke-width:1.2}
+.stair-winders{fill:none;stroke:#f2bf7e;stroke-width:1.5;stroke-linecap:round;opacity:.95}
+.stair-type-card.selected .stair-diagram{
+  border-color:rgba(241,202,149,.55);
+  background:linear-gradient(160deg,rgba(236,198,144,.16),rgba(255,255,255,.01)),rgba(32,23,16,.92);
+  box-shadow:inset 0 0 0 1px rgba(241,202,149,.25);
+}
+.stair-type-card:hover .stair-route{stroke:rgba(241,213,174,.45)}
+.stair-type-card:hover .stair-steps{stroke:#f6d9af}
+.stair-type-card.selected .stair-steps{stroke:#ffdfb0}
+.stair-type-card.selected .stair-winders{stroke:#ffd39a}
 .extras-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .extras-list label{font-size:14px;color:var(--text-soft);display:flex;gap:8px;align-items:center;padding:8px;border:1px solid var(--line-soft);border-radius:10px;background:rgba(255,255,255,.03)}
 .actions a.btn-primary{text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
@@ -544,5 +572,14 @@ button:hover {
 
   .stair-type-hint h3 {
     font-size: 16px;
+  }
+
+  .stair-type-choice {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .stair-type-card {
+    min-height: 120px;
   }
 }

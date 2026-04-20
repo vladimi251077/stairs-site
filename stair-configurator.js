@@ -80,21 +80,39 @@ function setProceedAvailability(canProceed) {
 
 function bindVisualSelectors() {
   document.querySelectorAll('.visual-choice').forEach((group) => {
+    const cards = [...group.querySelectorAll('.visual-card')];
+    const hiddenInput = $(group.dataset.target);
+
+    const applySelection = (card) => {
+      if (!card || !hiddenInput) return;
+      hiddenInput.value = card.dataset.value;
+      cards.forEach((c) => {
+        c.classList.toggle('selected', c === card);
+        c.setAttribute('aria-pressed', String(c === card));
+      });
+      hiddenInput.dispatchEvent(new Event('change'));
+    };
+
     group.addEventListener('click', (e) => {
       const card = e.target.closest('.visual-card');
       if (!card) return;
-      const hiddenInput = $(group.dataset.target);
-      if (!hiddenInput) return;
-      hiddenInput.value = card.dataset.value;
-      group.querySelectorAll('.visual-card').forEach((c) => c.classList.remove('selected'));
-      card.classList.add('selected');
-      hiddenInput.dispatchEvent(new Event('change'));
+      applySelection(card);
     });
-    group.querySelectorAll('.visual-card').forEach((card) => {
+
+    cards.forEach((card, index) => {
       card.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           card.click();
+          return;
+        }
+        if (e.key !== 'ArrowRight' && e.key !== 'ArrowDown' && e.key !== 'ArrowLeft' && e.key !== 'ArrowUp') return;
+        e.preventDefault();
+        const delta = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : -1;
+        const nextIndex = (index + delta + cards.length) % cards.length;
+        cards[nextIndex].focus();
+        if (group.classList.contains('stair-type-choice')) {
+          applySelection(cards[nextIndex]);
         }
       });
     });
