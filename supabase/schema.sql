@@ -60,3 +60,21 @@ for insert with check (bucket_id = 'site-assets' and auth.role() = 'authenticate
 
 create policy if not exists "auth update assets" on storage.objects
 for update using (bucket_id = 'site-assets' and auth.role() = 'authenticated');
+
+
+create table if not exists public.project_images (
+  id uuid primary key default gen_random_uuid(),
+  project_id uuid not null references public.projects(id) on delete cascade,
+  image_url text not null,
+  alt_text text,
+  sort_order int default 1,
+  is_cover boolean default false,
+  created_at timestamptz default now()
+);
+
+alter table public.projects add column if not exists cover_image text;
+alter table public.projects add column if not exists custom_options jsonb not null default '{}'::jsonb;
+
+alter table public.project_images enable row level security;
+create policy if not exists "public read project_images" on public.project_images for select using (true);
+create policy if not exists "auth write project_images" on public.project_images for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
