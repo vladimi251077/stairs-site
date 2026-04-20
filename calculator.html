@@ -23,66 +23,135 @@
     <section class="step active" id="step1">
       <h2>Шаг 1. Конфигурация лестницы</h2>
 
-      <div class="field"><label>Тип лестницы</label>
-        <div class="visual-choice stair-type-choice" data-target="stairType" role="radiogroup" aria-label="Выбор типа лестницы">
-          <button type="button" class="visual-card stair-type-card selected" data-value="straight" aria-pressed="true">
-            <span class="stair-diagram" aria-hidden="true">
-              <svg viewBox="0 0 72 46" focusable="false">
-                <path class="stair-route" d="M8 34H58" />
-                <path class="stair-steps" d="M10 34v-5h7v-5h7v-5h7v-5h7v-5h7v-5" />
-              </svg>
-            </span>
-            <b>Прямая</b>
-            <small>Один марш без поворота</small>
-          </button>
-          <button type="button" class="visual-card stair-type-card" data-value="l_turn_landing" aria-pressed="false">
-            <span class="stair-diagram" aria-hidden="true">
-              <svg viewBox="0 0 72 46" focusable="false">
-                <path class="stair-route" d="M8 34H40V8" />
-                <path class="stair-steps" d="M10 34v-5h7v-5h7v-5h7" />
-                <rect class="stair-landing" x="34" y="21" width="12" height="12" rx="2" />
-                <path class="stair-steps" d="M40 19h5v-5h5v-5" />
-              </svg>
-            </span>
-            <b>Г-образная (площадка)</b>
-            <small>90° поворот через площадку</small>
-          </button>
-          <button type="button" class="visual-card stair-type-card" data-value="l_turn_winders" aria-pressed="false">
-            <span class="stair-diagram" aria-hidden="true">
-              <svg viewBox="0 0 72 46" focusable="false">
-                <path class="stair-route" d="M8 34H40V8" />
-                <path class="stair-steps" d="M10 34v-5h7v-5h7v-5h6" />
-                <path class="stair-winders" d="M32 31L40 23M35 28L40 20M38 25L40 17" />
-                <path class="stair-steps" d="M40 19h5v-5h5v-5" />
-              </svg>
-            </span>
-            <b>Г-образная (забежные)</b>
-            <small>90° компактный поворот</small>
-          </button>
-          <button type="button" class="visual-card stair-type-card" data-value="u_turn_landing" aria-pressed="false">
-            <span class="stair-diagram" aria-hidden="true">
-              <svg viewBox="0 0 72 46" focusable="false">
-                <path class="stair-route" d="M8 34H38V12H64" />
-                <path class="stair-steps" d="M10 34v-5h7v-5h7v-5h7" />
-                <rect class="stair-landing" x="31" y="15" width="14" height="14" rx="2" />
-                <path class="stair-steps" d="M46 12v5h7v5h7v5" />
-              </svg>
-            </span>
-            <b>П-образная (площадка)</b>
-            <small>180° разворот через площадку</small>
-          </button>
-          <button type="button" class="visual-card stair-type-card" data-value="u_turn_winders" aria-pressed="false">
-            <span class="stair-diagram" aria-hidden="true">
-              <svg viewBox="0 0 72 46" focusable="false">
-                <path class="stair-route" d="M8 34H38V12H64" />
-                <path class="stair-steps" d="M10 34v-5h7v-5h7v-5h6" />
-                <path class="stair-winders" d="M31 29L38 24M34 26L38 21M37 23L38 18M41 15L46 12M44 15L49 12M47 15L52 12" />
-                <path class="stair-steps" d="M46 12v5h7v5h7v5" />
-              </svg>
-            </span>
-            <b>П-образная (забежные)</b>
-            <small>180° разворот на забежных</small>
-          </button>
+      <div class="grid">
+
+        <div class="field">
+          <label>Тип проёма</label>
+          <select id="openingType">
+            <option value="straight">Прямой</option>
+            <option value="l_turn">Г-образный</option>
+            <option value="u_turn">П-образный</option>
+          </select>
+        </div>
+
+        <div class="field visually-hidden">
+          <label>Тип лестницы</label>
+          <select id="stairType" class="visually-hidden">
+            <option value="straight">Прямая</option>
+            <option value="l_turn">Г-образная</option>
+            <option value="u_turn">П-образная</option>
+          </select>
+        </div>
+
+        <div class="field visually-hidden" id="turnTypeField">
+          <label>Тип поворота (служебное поле)</label>
+          <select id="turnType" class="visually-hidden">
+            <option value="landing">Площадка</option>
+            <option value="winders">Забежные ступени</option>
+          </select>
+        </div>
+
+        <div class="field stair-type-field">
+          <label id="stairTypeCardsLabel">Конфигурация лестницы</label>
+          <div class="stair-type-cards" role="radiogroup" aria-labelledby="stairTypeCardsLabel">
+            <button type="button" class="stair-type-card" data-stair-type="straight" data-turn-type="landing">
+              <span class="stair-type-card__icon" aria-hidden="true">
+                <svg viewBox="0 0 88 56">
+                  <polyline points="10,46 24,46 24,38 38,38 38,30 52,30 52,22 66,22 66,14 78,14"/>
+                </svg>
+              </span>
+              <span class="stair-type-card__title">Прямая</span>
+              <span class="stair-type-card__hint">Один марш без поворота</span>
+            </button>
+
+            <button type="button" class="stair-type-card" data-stair-type="l_turn" data-turn-type="landing">
+              <span class="stair-type-card__icon" aria-hidden="true">
+                <svg viewBox="0 0 88 56">
+                  <polyline points="10,46 24,46 24,38 38,38 38,30 52,30"/>
+                  <rect x="52" y="20" width="14" height="14"/>
+                  <polyline points="66,20 66,16 74,16 74,12"/>
+                </svg>
+              </span>
+              <span class="stair-type-card__title">Г-образная с площадкой</span>
+              <span class="stair-type-card__hint">Поворот 90° через площадку</span>
+            </button>
+
+            <button type="button" class="stair-type-card" data-stair-type="l_turn" data-turn-type="winders">
+              <span class="stair-type-card__icon" aria-hidden="true">
+                <svg viewBox="0 0 88 56">
+                  <polyline points="10,46 24,46 24,38 38,38 38,30 52,30"/>
+                  <path d="M52 30 L66 30 L66 16 Z"/>
+                  <path d="M52 30 L62 30 L62 20 Z"/>
+                  <polyline points="66,16 74,16 74,12"/>
+                </svg>
+              </span>
+              <span class="stair-type-card__title">Г-образная с забежными</span>
+              <span class="stair-type-card__hint">Поворот 90° без площадки</span>
+            </button>
+
+            <button type="button" class="stair-type-card" data-stair-type="u_turn" data-turn-type="landing">
+              <span class="stair-type-card__icon" aria-hidden="true">
+                <svg viewBox="0 0 88 56">
+                  <polyline points="8,46 22,46 22,38 36,38 36,30 48,30"/>
+                  <rect x="48" y="20" width="14" height="14"/>
+                  <polyline points="62,20 62,16 50,16 50,10 36,10 36,4 22,4"/>
+                </svg>
+              </span>
+              <span class="stair-type-card__title">П-образная с площадкой</span>
+              <span class="stair-type-card__hint">Поворот 180° через площадку</span>
+            </button>
+
+            <button type="button" class="stair-type-card" data-stair-type="u_turn" data-turn-type="winders">
+              <span class="stair-type-card__icon" aria-hidden="true">
+                <svg viewBox="0 0 88 56">
+                  <polyline points="8,46 22,46 22,38 36,38 36,30 48,30"/>
+                  <path d="M48 30 L62 30 L62 16 Z"/>
+                  <path d="M48 30 L58 30 L58 20 Z"/>
+                  <polyline points="62,16 50,16 50,10 36,10 36,4 22,4"/>
+                </svg>
+              </span>
+              <span class="stair-type-card__title">П-образная с забежными</span>
+              <span class="stair-type-card__hint">Поворот 180° без площадки</span>
+            </button>
+          </div>
+          <div id="stairTypeHint" class="muted stair-type-hint">Выберите конфигурацию лестницы для расчёта.</div>
+        </div>
+
+        <div class="field" id="turnDirectionField">
+          <label>Направление поворота</label>
+          <select id="turnDirection">
+            <option value="left">Левый</option>
+            <option value="right">Правый</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Высота этаж-этаж (мм)</label>
+          <input id="floorHeight" type="number" placeholder="3000">
+        </div>
+
+        <div class="field">
+          <label>Длина проёма (мм)</label>
+          <input id="openingLength" type="number" placeholder="4200">
+        </div>
+
+        <div class="field">
+          <label>Ширина проёма (мм)</label>
+          <input id="openingWidth" type="number" placeholder="1200">
+        </div>
+
+        <div class="field">
+          <label>Ширина марша (мм)</label>
+          <input id="marchWidth" type="number" placeholder="1000">
+        </div>
+
+        <div class="field">
+          <label>Материал каркаса</label>
+          <select id="frameMaterial">
+            <option value="metal">Металл</option>
+            <option value="wood">Дерево</option>
+            <option value="concrete">Бетон</option>
+          </select>
         </div>
         <input type="hidden" id="stairType" value="straight">
         <div id="stairTypeHint" class="stair-type-hint" aria-live="polite"></div>
