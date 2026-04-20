@@ -35,6 +35,34 @@ const LABELS = {
   finish_level: { basic: 'Базовый', standard: 'Стандарт', premium: 'Премиум' }
 };
 
+const STAIR_TYPE_HINTS = {
+  straight: {
+    title: 'Прямая лестница',
+    text: 'Подходит для узких и длинных проёмов. Обычно требуется достаточная длина проёма, но меньше ширины.',
+    invalidAdvice: 'Если расчёт не проходит, увеличьте длину проёма или уменьшите ширину марша.'
+  },
+  l_turn_landing: {
+    title: 'Г-образная с площадкой',
+    text: 'Требует запаса по длине и ширине проёма. Для площадки нужен более свободный поворотный узел.',
+    invalidAdvice: 'При ошибке геометрии увеличьте длину и ширину проёма в зоне поворота.'
+  },
+  l_turn_winders: {
+    title: 'Г-образная с забежными',
+    text: 'Более компактное решение, чем площадка. Подходит при ограниченном пространстве, но требует точного расчёта.',
+    invalidAdvice: 'Если геометрия невалидна, проверьте ширину проёма и попробуйте уменьшить ширину марша.'
+  },
+  u_turn_landing: {
+    title: 'П-образная с площадкой',
+    text: 'Требует большой ширины проёма для разворота на 180°. Лучше подходит для просторных планировок.',
+    invalidAdvice: 'Если расчёт не проходит, сначала увеличьте ширину проёма под разворот и среднюю зону.'
+  },
+  u_turn_winders: {
+    title: 'П-образная с забежными',
+    text: 'Компактнее П-образной с площадкой, но всё равно требует достаточной ширины проёма и точной геометрии.',
+    invalidAdvice: 'При невалидной геометрии увеличьте ширину проёма и проверьте ограничения по маршу.'
+  }
+};
+
 const $ = (id) => document.getElementById(id);
 function showStep(step) { document.querySelectorAll('.step').forEach((n) => n.classList.remove('active')); $(`step${step}`)?.classList.add('active'); }
 window.nextStep = showStep;
@@ -81,6 +109,32 @@ function toggleTurnFields() {
   const isTurn = stairType !== 'straight';
   turnDirection.classList.toggle('hidden', !isTurn);
   turnDirectionInput.disabled = !isTurn;
+}
+
+function renderStairTypeHint(target, stairType, geometry) {
+  if (!target) return;
+  const hint = STAIR_TYPE_HINTS[stairType] || STAIR_TYPE_HINTS.straight;
+  const uTurnNote = stairType === 'u_turn_landing' || stairType === 'u_turn_winders'
+    ? '<div class="stair-type-hint-warning">Для П-образной лестницы требуется увеличенная ширина проёма.</div>'
+    : '';
+  const invalidHelp = geometry && !geometry.valid
+    ? `<div class="stair-type-hint-invalid">${hint.invalidAdvice}</div>`
+    : '';
+  target.innerHTML = `
+    <div class="stair-type-hint-card">
+      <div class="stair-type-hint-label">Подсказка по проёму</div>
+      <h3>${hint.title}</h3>
+      <p>${hint.text}</p>
+      ${uTurnNote}
+      ${invalidHelp}
+    </div>
+  `;
+}
+
+function updateStairTypeHints(geometry = null) {
+  const stairType = $('stairType')?.value || state.lastConfig?.stair_type || 'straight';
+  renderStairTypeHint($('stairTypeHint'), stairType, geometry);
+  renderStairTypeHint($('geometryTypeHint'), stairType, geometry);
 }
 
 function getConfigFromForm() {
@@ -371,6 +425,7 @@ function runGeometryCalculation() {
   state.lastConfig = config;
   state.geometry = calculateGeometry(config);
   renderGeometry(state.geometry);
+  updateStairTypeHints(state.geometry);
   setStatus(state.geometry.valid ? 'Геометрия рассчитана' : 'Проверьте параметры');
   showStep(2);
 }
@@ -379,6 +434,7 @@ function runConfigurator() {
   const config = getConfigFromForm();
   state.lastConfig = config;
   state.geometry = calculateGeometry(config); renderGeometry(state.geometry);
+  updateStairTypeHints(state.geometry);
   if (!state.geometry.valid) {
     setStatus('Исправьте параметры геометрии, чтобы продолжить');
     showStep(2);
@@ -403,11 +459,15 @@ async function loadSupabaseDictionaries() {
 
 function init() {
   bindVisualSelectors();
-  $('stairType')?.addEventListener('change', toggleTurnFields);
+  $('stairType')?.addEventListener('change', () => {
+    toggleTurnFields();
+    updateStairTypeHints();
+  });
   $('calculateBtn')?.addEventListener('click', runConfigurator);
   $('toResultsBtn')?.addEventListener('click', runGeometryCalculation);
   setProceedAvailability(false);
   toggleTurnFields();
+  updateStairTypeHints();
   loadSupabaseDictionaries();
 }
 init();
