@@ -278,6 +278,15 @@ button:hover {
   background-position: 90% 40%;
 }
 
+.btn-primary:disabled {
+  cursor: not-allowed;
+  color: rgba(55, 40, 24, 0.7);
+  background-image: linear-gradient(132deg, rgba(207, 180, 141, 0.6) 0%, rgba(150, 124, 84, 0.62) 100%);
+  box-shadow: none;
+  filter: grayscale(0.2);
+  transform: none;
+}
+
 .btn-secondary {
   background: rgba(255, 255, 255, 0.08);
   color: var(--text);
@@ -356,9 +365,43 @@ button:hover {
   color: var(--danger-text);
 }
 
+.warning-block {
+  margin-bottom: 10px;
+  border: 1px solid rgba(235, 198, 88, 0.34);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(235, 198, 88, 0.15), rgba(235, 198, 88, 0.08));
+  padding: 12px 14px;
+}
+
+.warning-block.invalid {
+  border-color: rgba(245, 123, 123, 0.44);
+  background: linear-gradient(180deg, rgba(245, 123, 123, 0.2), rgba(245, 123, 123, 0.1));
+  box-shadow: inset 0 0 0 1px rgba(245, 123, 123, 0.22);
+}
+
+.warning-title {
+  color: #ffd0d0;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.warning-text {
+  color: var(--danger-text);
+  line-height: 1.55;
+}
+
+.warning-list {
+  margin: 10px 0 0 18px;
+  padding: 0;
+}
+
+.warning-list li {
+  color: #ffd7d7;
+  margin-bottom: 4px;
+}
+
 .warning {
   color: var(--danger-text);
-  margin-bottom: 8px;
   line-height: 1.5;
 }
 
