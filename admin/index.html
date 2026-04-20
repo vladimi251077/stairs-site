@@ -123,9 +123,73 @@
       font-size:13px;
       color:var(--muted);
     }
+    .gallery-tools{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      align-items:center;
+      margin-bottom:10px;
+    }
+    .gallery-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+      gap:10px;
+    }
+    .gallery-card{
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:#171310;
+      padding:10px;
+    }
+    .gallery-card img{
+      width:100%;
+      height:130px;
+      border-radius:8px;
+      border:1px solid var(--line);
+      object-fit:cover;
+      display:block;
+      margin-bottom:8px;
+    }
+    .cover-badge{
+      display:inline-flex;
+      border:1px solid var(--accent);
+      color:var(--accent);
+      border-radius:999px;
+      padding:2px 8px;
+      font-size:12px;
+      margin-bottom:8px;
+    }
+    .gallery-meta{
+      display:grid;
+      grid-template-columns:1fr 92px;
+      gap:8px;
+      margin-bottom:8px;
+    }
+    .gallery-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+    }
+    .gallery-empty{
+      border:1px dashed var(--line);
+      border-radius:10px;
+      padding:12px;
+      color:var(--muted);
+      text-align:center;
+    }
+    details.advanced{
+      margin-top:10px;
+    }
+    details.advanced > summary{
+      cursor:pointer;
+      color:var(--muted);
+      user-select:none;
+      margin-bottom:8px;
+    }
     @media (max-width:760px){
       .grid{grid-template-columns:1fr}
       .topbar{align-items:flex-start;flex-direction:column}
+      .gallery-meta{grid-template-columns:1fr}
     }
   </style>
 </head>
@@ -389,6 +453,7 @@
       const div = document.createElement('div');
       div.className = 'item';
       div.dataset.id = item.id || uid();
+      const initialGallery = normalizeGalleryEntries(item.gallery_images || [], item.cover_image || item.image || '');
       div.innerHTML = `
         <div class="grid">
           <div>
@@ -412,8 +477,17 @@
             <input data-k="image" value="${escapeHtml(item.image || '')}" />
           </div>
           <div class="full">
-            <label>Галерея (JSON массив url или объектов {image_url,alt_text,sort_order,is_cover})</label>
-            <textarea data-k="gallery_json">${escapeHtml(JSON.stringify(item.gallery_images || []))}</textarea>
+            <label>Галерея проекта</label>
+            <div class="gallery-tools">
+              <button type="button" class="btn btn-secondary" data-k="galleryAddBtn">Добавить фото</button>
+              <span class="small">Можно выбрать сразу несколько файлов.</span>
+              <input data-k="galleryFiles" type="file" accept="image/*" multiple class="hidden" />
+            </div>
+            <div data-k="gallery_list" class="gallery-grid"></div>
+            <details class="advanced">
+              <summary>Служебный JSON галереи (для совместимости)</summary>
+              <textarea data-k="gallery_json"></textarea>
+            </details>
           </div>
           <div class="full">
             <label>Опции mini-configurator (JSON)</label>
@@ -424,8 +498,152 @@
           <button type="button" class="btn btn-danger" data-remove>Удалить</button>
         </div>
       `;
+      const galleryJsonTextarea = div.querySelector('[data-k="gallery_json"]');
+      div._galleryState = { images: initialGallery };
+      renderProjectGallery(div);
+      galleryJsonTextarea.value = JSON.stringify(initialGallery, null, 2);
+      galleryJsonTextarea.addEventListener('input', () => {
+        try {
+          const parsed = JSON.parse(galleryJsonTextarea.value || '[]');
+          div._galleryState.images = normalizeGalleryEntries(parsed);
+          renderProjectGallery(div);
+        } catch {}
+      });
+      div.querySelector('[data-k="galleryAddBtn"]').onclick = () => div.querySelector('[data-k="galleryFiles"]').click();
+      div.querySelector('[data-k="galleryFiles"]').addEventListener('change', async (event) => {
+        const files = [...(event.target.files || [])];
+        if (!files.length) return;
+        try {
+          setStatus(`Загрузка ${files.length} фото в галерею...`);
+          for (const file of files) {
+            const imageUrl = await uploadFile(file, 'projects');
+            div._galleryState.images.push({
+              id: uid(),
+              image_url: imageUrl,
+              alt_text: '',
+              sort_order: div._galleryState.images.length + 1,
+              is_cover: div._galleryState.images.length === 0
+            });
+          }
+          div._galleryState.images = normalizeGalleryEntries(div._galleryState.images);
+          renderProjectGallery(div);
+          setStatus('Фото загружены в галерею');
+        } catch (err) {
+          setStatus('Ошибка загрузки в галерею: ' + explainError(err), true);
+        } finally {
+          event.target.value = '';
+        }
+      });
       div.querySelector('[data-remove]').onclick = () => div.remove();
       return div;
+    }
+
+    function normalizeGalleryEntries(gallery, fallbackImageUrl = '') {
+      const source = Array.isArray(gallery) ? gallery : [];
+      const normalized = source.map((g, idx) => {
+        if (typeof g === 'string') {
+          return { id: uid(), image_url: g, alt_text: '', sort_order: idx + 1, is_cover: idx === 0 };
+        }
+        return {
+          id: g.id || uid(),
+          image_url: g.image_url || g.url || '',
+          alt_text: g.alt_text || '',
+          sort_order: Number(g.sort_order || (idx + 1)),
+          is_cover: !!g.is_cover
+        };
+      }).filter((g) => g.image_url);
+
+      if (!normalized.length && fallbackImageUrl) {
+        normalized.push({ id: uid(), image_url: fallbackImageUrl, alt_text: '', sort_order: 1, is_cover: true });
+      }
+
+      normalized.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+      normalized.forEach((g, idx) => { g.sort_order = idx + 1; });
+      if (normalized.length && !normalized.some((g) => g.is_cover)) normalized[0].is_cover = true;
+      return normalized;
+    }
+
+    function renderProjectGallery(projectEl) {
+      const list = projectEl.querySelector('[data-k="gallery_list"]');
+      const jsonEl = projectEl.querySelector('[data-k="gallery_json"]');
+      const gallery = projectEl._galleryState?.images || [];
+      list.innerHTML = '';
+
+      if (!gallery.length) {
+        const empty = document.createElement('div');
+        empty.className = 'gallery-empty';
+        empty.textContent = 'Пока нет изображений. Добавьте фото для галереи.';
+        list.appendChild(empty);
+      }
+
+      gallery.forEach((img, idx) => {
+        const card = document.createElement('div');
+        card.className = 'gallery-card';
+        card.innerHTML = `
+          ${img.is_cover ? '<div class="cover-badge">Обложка</div>' : ''}
+          <img src="${escapeHtml(img.image_url)}" alt="preview" />
+          <div class="gallery-meta">
+            <input type="text" data-k="alt" placeholder="Описание (alt)" value="${escapeHtml(img.alt_text || '')}" />
+            <input type="number" data-k="sort" min="1" value="${idx + 1}" />
+          </div>
+          <div class="gallery-actions">
+            <button type="button" class="btn btn-secondary" data-act="cover">Сделать обложкой</button>
+            <button type="button" class="btn btn-secondary" data-act="up">Выше</button>
+            <button type="button" class="btn btn-secondary" data-act="down">Ниже</button>
+            <button type="button" class="btn btn-danger" data-act="remove">Удалить</button>
+          </div>
+        `;
+        card.querySelector('[data-k="alt"]').addEventListener('input', (e) => {
+          projectEl._galleryState.images[idx].alt_text = e.target.value;
+          syncProjectGalleryJson(projectEl);
+        });
+        card.querySelector('[data-k="sort"]').addEventListener('change', (e) => {
+          const to = Math.max(1, Number(e.target.value || idx + 1));
+          moveGalleryItem(projectEl, idx, to - 1);
+        });
+        card.querySelector('[data-act="cover"]').onclick = () => {
+          projectEl._galleryState.images.forEach((x) => (x.is_cover = false));
+          projectEl._galleryState.images[idx].is_cover = true;
+          renderProjectGallery(projectEl);
+        };
+        card.querySelector('[data-act="remove"]').onclick = () => {
+          projectEl._galleryState.images.splice(idx, 1);
+          projectEl._galleryState.images = normalizeGalleryEntries(projectEl._galleryState.images);
+          renderProjectGallery(projectEl);
+        };
+        card.querySelector('[data-act="up"]').onclick = () => moveGalleryItem(projectEl, idx, idx - 1);
+        card.querySelector('[data-act="down"]').onclick = () => moveGalleryItem(projectEl, idx, idx + 1);
+        list.appendChild(card);
+      });
+
+      jsonEl.value = JSON.stringify(gallery.map((g, idx) => ({
+        image_url: g.image_url,
+        alt_text: g.alt_text || '',
+        sort_order: idx + 1,
+        is_cover: !!g.is_cover
+      })), null, 2);
+    }
+
+    function moveGalleryItem(projectEl, from, to) {
+      const gallery = projectEl._galleryState.images;
+      if (!gallery.length) return;
+      const boundedTo = Math.max(0, Math.min(gallery.length - 1, to));
+      if (from === boundedTo || from < 0 || from >= gallery.length) return;
+      const [item] = gallery.splice(from, 1);
+      gallery.splice(boundedTo, 0, item);
+      projectEl._galleryState.images = normalizeGalleryEntries(gallery);
+      renderProjectGallery(projectEl);
+    }
+
+    function syncProjectGalleryJson(projectEl) {
+      const jsonEl = projectEl.querySelector('[data-k="gallery_json"]');
+      if (!jsonEl) return;
+      jsonEl.value = JSON.stringify(projectEl._galleryState.images.map((g, idx) => ({
+        image_url: g.image_url,
+        alt_text: g.alt_text || '',
+        sort_order: idx + 1,
+        is_cover: !!g.is_cover
+      })), null, 2);
     }
 
     function renderServices(items) {
@@ -668,21 +886,24 @@
           let gallery = [];
           try { customOptions = JSON.parse(el.querySelector('[data-k="custom_options"]').value || '{}'); } catch {}
           try { gallery = JSON.parse(el.querySelector('[data-k="gallery_json"]').value || '[]'); } catch {}
+          if (Array.isArray(el._galleryState?.images) && el._galleryState.images.length) {
+            gallery = el._galleryState.images;
+          }
+
+          const normalizedGallery = normalizeGalleryEntries(gallery, imageUrl);
+          const cover = normalizedGallery.find((g) => g.is_cover) || normalizedGallery[0] || null;
+          if (!imageUrl && cover?.image_url) imageUrl = cover.image_url;
 
           rows.push({
             id: el.dataset.id,
             title: el.querySelector('[data-k="title"]').value.trim(),
             description: el.querySelector('[data-k="description"]').value.trim(),
             image: imageUrl,
-            cover_image: imageUrl,
+            cover_image: cover?.image_url || imageUrl,
             custom_options: customOptions,
             price: el.querySelector('[data-k="price"]').value.trim() || null,
             created_at: new Date().toISOString()
           });
-
-          const normalizedGallery = (Array.isArray(gallery) ? gallery : []).map((g, idx) => typeof g === 'string'
-            ? { image_url: g, alt_text: '', sort_order: idx + 1, is_cover: idx === 0 }
-            : { image_url: g.image_url, alt_text: g.alt_text || '', sort_order: g.sort_order ?? (idx + 1), is_cover: !!g.is_cover });
 
           normalizedGallery.forEach((g) => {
             if (!g.image_url) return;
