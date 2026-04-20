@@ -42,6 +42,14 @@ window.prevStep = showStep;
 
 function setStatus(message = '') { const n = $('pageStatus'); if (n) n.textContent = message; }
 
+function setProceedAvailability(canProceed) {
+  const proceedBtn = $('calculateBtn');
+  if (!proceedBtn) return;
+  proceedBtn.disabled = !canProceed;
+  proceedBtn.setAttribute('aria-disabled', String(!canProceed));
+  proceedBtn.title = canProceed ? '' : 'Исправьте параметры геометрии, чтобы перейти к материалам и цене.';
+}
+
 function bindVisualSelectors() {
   document.querySelectorAll('.visual-choice').forEach((group) => {
     group.addEventListener('click', (e) => {
@@ -198,12 +206,36 @@ function calculateGeometry(config) {
   return calculateStraightGeometry(config);
 }
 
+function getInvalidGeometryGuidance(config) {
+  const steps = [
+    'Увеличить ширину проёма.',
+    'Уменьшить ширину марша.',
+    'Выбрать другой тип лестницы.'
+  ];
+  if (config.stair_type === 'u_turn_landing' || config.stair_type === 'u_turn_winders') {
+    steps.push('Для П-образной лестницы требуется большая ширина проёма.');
+  }
+  return steps;
+}
+
 function renderGeometry(geometry) {
   const root = $('geometryResult'); const warnings = $('geometryWarnings');
   if (!root || !warnings) return;
   if (!geometry.valid) {
-    root.innerHTML = '<div class="warning">Расчёт геометрии недоступен.</div>';
-    warnings.innerHTML = `<div class="warning">${geometry.reason}</div>`;
+    const guidanceItems = getInvalidGeometryGuidance(state.lastConfig || {});
+    root.innerHTML = `
+      <div class="warning-block invalid">
+        <div class="warning-title">Геометрия не проходит проверку</div>
+        <div class="warning-text">Исправьте параметры, затем пересчитайте геометрию.</div>
+      </div>
+    `;
+    warnings.innerHTML = `
+      <div class="warning-block invalid">
+        <div class="warning-text">${geometry.reason}</div>
+        <ul class="warning-list">${guidanceItems.map((item) => `<li>${item}</li>`).join('')}</ul>
+      </div>
+    `;
+    setProceedAvailability(false);
     return;
   }
 
@@ -231,7 +263,10 @@ function renderGeometry(geometry) {
   if (geometry.reason) warningList.push(geometry.reason);
   if (geometry.stair_angle_deg > FORMULA_LIMITS.maxRecommendedAngle - 2) warningList.push('Угол близок к верхней рекомендуемой границе.');
   if (geometry.tread_depth < FORMULA_LIMITS.minTreadDepth + 10) warningList.push('Глубина проступи близка к минимальной.');
-  warnings.innerHTML = warningList.length ? warningList.map((i) => `<div class="warning">${i}</div>`).join('') : '<div class="ok">Геометрия в инженерных пределах.</div>';
+  warnings.innerHTML = warningList.length
+    ? warningList.map((i) => `<div class="warning-block"><div class="warning-text">${i}</div></div>`).join('')
+    : '<div class="ok">Геометрия в инженерных пределах.</div>';
+  setProceedAvailability(true);
 }
 
 function calculateMaterials(config, geometry) {
@@ -344,6 +379,11 @@ function runConfigurator() {
   const config = getConfigFromForm();
   state.lastConfig = config;
   state.geometry = calculateGeometry(config); renderGeometry(state.geometry);
+  if (!state.geometry.valid) {
+    setStatus('Исправьте параметры геометрии, чтобы продолжить');
+    showStep(2);
+    return;
+  }
   state.materials = calculateMaterials(config, state.geometry); renderMaterials(state.materials);
   state.price = calculatePrice(config, state.geometry, state.materials); renderPrice(state.price);
   setStatus(state.geometry.valid ? 'Расчёт обновлён' : 'Проверьте параметры');
@@ -366,6 +406,7 @@ function init() {
   $('stairType')?.addEventListener('change', toggleTurnFields);
   $('calculateBtn')?.addEventListener('click', runConfigurator);
   $('toResultsBtn')?.addEventListener('click', runGeometryCalculation);
+  setProceedAvailability(false);
   toggleTurnFields();
   loadSupabaseDictionaries();
 }
