@@ -131,26 +131,45 @@ async function sendRequest() {
     return;
   }
 
-  const { error } = await client.from('calculator_requests').insert([
-    {
-      name,
-      phone,
-      messenger,
-      city,
-      comment,
-      staircase_type: calcPayload?.staircaseType || '',
-      dimensions_json: { ...(calcPayload?.dimensions || {}), geometry: calcPayload?.geometrySummary || {} },
-      materials_json: { ...(calcPayload?.materials || {}), summary: calcPayload?.materialsSummary || {} },
-      options_json: { extras: calcPayload?.options || [], labels: calcPayload?.selectedExtras || [], price_breakdown: calcPayload?.priceBreakdown || {} },
-      calculated_price: calcPayload?.total || 0
-    }
-  ]);
+  const leadPayload = {
+    name,
+    phone,
+    messenger,
+    city,
+    comment,
+    staircase_type: calcPayload?.staircaseType || '',
+    dimensions_json: { ...(calcPayload?.dimensions || {}), geometry: calcPayload?.geometrySummary || {} },
+    materials_json: { ...(calcPayload?.materials || {}), summary: calcPayload?.materialsSummary || {} },
+    options_json: { extras: calcPayload?.options || [], labels: calcPayload?.selectedExtras || [], price_breakdown: calcPayload?.priceBreakdown || {} },
+    calculated_price: calcPayload?.total || 0
+  };
+
+  const { data, error } = await client
+    .from('calculator_requests')
+    .insert([leadPayload])
+    .select('*')
+    .single();
 
   if (error) {
     console.error(error);
     document.getElementById('status').innerText = 'Ошибка отправки';
-  } else {
-    document.getElementById('status').innerText = 'Заявка отправлена ✅';
+    return;
+  }
+
+  document.getElementById('status').innerText = 'Заявка отправлена ✅';
+
+  try {
+    const notifyResponse = await fetch('/api/notify-lead', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lead: data || leadPayload })
+    });
+
+    if (!notifyResponse.ok) {
+      console.error('Notification endpoint failed', await notifyResponse.text());
+    }
+  } catch (notifyError) {
+    console.error('Notification request failed', notifyError);
   }
 }
 
