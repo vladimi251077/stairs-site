@@ -242,6 +242,58 @@ h3 {
 .extras-list label{font-size:14px;color:var(--text-soft);display:flex;gap:8px;align-items:center;padding:8px;border:1px solid var(--line-soft);border-radius:10px;background:rgba(255,255,255,.03)}
 .actions a.btn-primary{text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
 
+.stair-type-hint {
+  margin-top: 12px;
+}
+
+.stair-type-hint-card {
+  border: 1px solid rgba(230, 190, 142, 0.42);
+  border-radius: 14px;
+  background:
+    linear-gradient(160deg, rgba(80, 56, 38, 0.45), rgba(38, 26, 19, 0.62)),
+    rgba(45, 31, 22, 0.58);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  padding: 14px 15px;
+}
+
+.stair-type-hint-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: rgba(240, 208, 162, 0.9);
+  margin-bottom: 6px;
+}
+
+.stair-type-hint h3 {
+  margin: 0 0 6px;
+  font-size: 17px;
+  color: var(--gold-1);
+}
+
+.stair-type-hint p {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 14px;
+}
+
+.stair-type-hint-warning {
+  margin-top: 9px;
+  font-size: 13px;
+  color: #ffd9a3;
+}
+
+.stair-type-hint-invalid {
+  margin-top: 9px;
+  padding-top: 9px;
+  border-top: 1px solid rgba(255, 173, 173, 0.22);
+  color: #ffc0c0;
+  font-size: 13px;
+}
+
+.stair-type-hint.compact {
+  margin: 12px 0 4px;
+}
+
 .actions {
   display: flex;
   gap: 12px;
@@ -484,5 +536,13 @@ button:hover {
 
   .field {
     margin-bottom: 14px;
+  }
+
+  .stair-type-hint-card {
+    padding: 13px 12px;
+  }
+
+  .stair-type-hint h3 {
+    font-size: 16px;
   }
 }

@@ -32,6 +32,7 @@
           <button type="button" class="visual-card" data-value="u_turn_winders"><span>⤿</span><b>П-образная (забежные)</b><small>Разворот на забежных</small></button>
         </div>
         <input type="hidden" id="stairType" value="straight">
+        <div id="stairTypeHint" class="stair-type-hint" aria-live="polite"></div>
       </div>
 
       <div class="grid">
@@ -80,7 +81,7 @@
       <div class="actions"><button class="btn-primary" id="toResultsBtn">Рассчитать геометрию</button></div>
     </section>
 
-    <section class="step" id="step2"><h2>Геометрия лестницы</h2><div id="geometryResult" class="result-box"></div><div id="geometryWarnings"></div><div class="actions"><button class="btn-secondary" onclick="prevStep(1)">Назад</button><button class="btn-primary" id="calculateBtn">Перейти к материалам и цене</button></div></section>
+    <section class="step" id="step2"><h2>Геометрия лестницы</h2><div id="geometryResult" class="result-box"></div><div id="geometryWarnings"></div><div id="geometryTypeHint" class="stair-type-hint compact" aria-live="polite"></div><div class="actions"><button class="btn-secondary" onclick="prevStep(1)">Назад</button><button class="btn-primary" id="calculateBtn">Перейти к материалам и цене</button></div></section>
     <section class="step" id="step3"><h2>Материалы</h2><div id="materialsResult" class="result-box"></div><div class="actions"><button class="btn-secondary" onclick="prevStep(2)">Назад</button><button class="btn-primary" onclick="nextStep(4)">Рассчитать стоимость</button></div></section>
     <section class="step" id="step4"><h2>Стоимость</h2><div id="priceResult" class="result-box"></div><div class="actions"><button class="btn-secondary" onclick="prevStep(3)">Назад</button><a id="requestBtn" class="btn-primary" href="/request.html">Оставить заявку по расчёту</a></div></section>
   </div>
