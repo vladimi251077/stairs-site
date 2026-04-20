@@ -13,6 +13,7 @@ function formatLeadMessage(lead) {
   const optionsLabels = Array.isArray(lead?.options_json?.labels)
     ? lead.options_json.labels.map((option) => option?.label || option).filter(Boolean)
     : [];
+  const selectedOptions = lead?.options_json?.extras || [];
 
   return [
     'Новая заявка Tekstura',
@@ -24,6 +25,7 @@ function formatLeadMessage(lead) {
     `Тип лестницы: ${lead?.staircase_type || '-'}`,
     `Рассчитанная цена: ${lead?.calculated_price || 0} ₽`,
     `Опции: ${optionsLabels.join(', ') || 'нет'}`,
+    `Выбранные опции: ${JSON.stringify(selectedOptions)}`,
     `Материалы: ${JSON.stringify(lead?.materials_json?.summary || {})}`,
     `Геометрия: ${JSON.stringify(lead?.dimensions_json?.geometry || {})}`
   ].join('\n');
@@ -33,6 +35,7 @@ function formatLeadEmailHtml(lead) {
   const optionsLabels = Array.isArray(lead?.options_json?.labels)
     ? lead.options_json.labels.map((option) => option?.label || option).filter(Boolean)
     : [];
+  const selectedOptions = lead?.options_json?.extras || [];
 
   const rows = [
     ['Имя', lead?.name || '-'],
@@ -43,6 +46,7 @@ function formatLeadEmailHtml(lead) {
     ['Тип лестницы', lead?.staircase_type || '-'],
     ['Рассчитанная цена', `${lead?.calculated_price || 0} ₽`],
     ['Опции', optionsLabels.join(', ') || 'нет'],
+    ['Выбранные опции', JSON.stringify(selectedOptions)],
     ['Материалы', JSON.stringify(lead?.materials_json?.summary || {})],
     ['Геометрия', JSON.stringify(lead?.dimensions_json?.geometry || {})]
   ];
@@ -86,13 +90,47 @@ async function sendTelegram(message) {
   return { ok: true };
 }
 
-async function sendEmail(html) {
+async function resolveNotifyEmailRecipient() {
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    return process.env.NOTIFY_EMAIL_TO || '';
+  }
+
+  try {
+    const response = await fetch(`${supabaseUrl.replace(/\/$/, '')}/rest/v1/settings?select=notify_email&id=eq.1&limit=1`, {
+      headers: {
+        apikey: serviceRoleKey,
+        Authorization: `Bearer ${serviceRoleKey}`
+      }
+    });
+
+    if (!response.ok) {
+      console.error('[notify-lead] failed to load settings.notify_email', { status: response.status });
+      return process.env.NOTIFY_EMAIL_TO || '';
+    }
+
+    const payload = await response.json().catch(() => []);
+    const fromSettings = payload?.[0]?.notify_email;
+    return (fromSettings || process.env.NOTIFY_EMAIL_TO || '').trim();
+  } catch (error) {
+    console.error('[notify-lead] settings notify_email fetch error', error?.message || error);
+    return process.env.NOTIFY_EMAIL_TO || '';
+  }
+}
+
+async function sendEmail(html, recipientEmail) {
   const apiKey = process.env.RESEND_API_KEY;
-  const to = process.env.NOTIFY_EMAIL_TO;
+  const to = (recipientEmail || '').trim();
   const from = process.env.NOTIFY_EMAIL_FROM || 'Tekstura <onboarding@resend.dev>';
 
-  if (!apiKey || !to) {
-    return { ok: false, skipped: true, error: 'Missing RESEND_API_KEY or NOTIFY_EMAIL_TO' };
+  if (!to) {
+    return { ok: false, skipped: true, error: 'email-not-configured' };
+  }
+
+  if (!apiKey) {
+    return { ok: false, skipped: true, error: 'Missing RESEND_API_KEY' };
   }
 
   const response = await fetch('https://api.resend.com/emails', {
@@ -198,10 +236,11 @@ module.exports = async function handler(req, res) {
 
   const message = formatLeadMessage(lead);
   const emailHtml = formatLeadEmailHtml(lead);
+  const notifyEmailTo = await resolveNotifyEmailRecipient();
 
   const deliveryResults = {
     telegram: await sendTelegram(message),
-    email: await sendEmail(emailHtml),
+    email: await sendEmail(emailHtml, notifyEmailTo),
     whatsapp: await sendWhatsApp(message)
   };
 
