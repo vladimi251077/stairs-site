@@ -22,9 +22,7 @@ export function getCandidateRiserCounts(floorToFloorHeight, minRiser = DEFAULTS.
   if (minCount > maxCount) return [];
 
   const counts = [];
-  for (let count = minCount; count <= maxCount; count += 1) {
-    counts.push(count);
-  }
+  for (let count = minCount; count <= maxCount; count += 1) counts.push(count);
   return counts;
 }
 
@@ -34,11 +32,8 @@ export function evaluateComfort(riserHeight, treadDepth) {
   const deviation = Math.abs(comfortValue - DEFAULTS.targetComfort);
 
   let status = 'acceptable';
-  if (deviation <= DEFAULTS.maxComfortDeviationForComfortable) {
-    status = 'comfortable';
-  } else if (deviation > DEFAULTS.maxComfortDeviationForAcceptable) {
-    status = 'too_steep';
-  }
+  if (deviation <= DEFAULTS.maxComfortDeviationForComfortable) status = 'comfortable';
+  else if (deviation > DEFAULTS.maxComfortDeviationForAcceptable) status = 'too_steep';
 
   return {
     comfort_value: toFixedNumber(comfortValue),
@@ -60,15 +55,9 @@ export function calculateStringerLength(riserHeight, treadCount, treadDepth) {
 
 function getInvalidReason(params, candidates) {
   const { floor_to_floor_height, opening_length } = params;
-  if (!floor_to_floor_height || floor_to_floor_height <= 0) {
-    return 'Укажите корректную высоту от пола до пола.';
-  }
-  if (!opening_length || opening_length <= 0) {
-    return 'Укажите корректную длину проёма.';
-  }
-  if (!candidates.length) {
-    return 'Не найдено допустимое количество подъёмов для заданной высоты.';
-  }
+  if (!floor_to_floor_height || floor_to_floor_height <= 0) return 'Укажите корректную высоту от пола до пола.';
+  if (!opening_length || opening_length <= 0) return 'Укажите корректную длину проёма.';
+  if (!candidates.length) return 'Не найдено допустимое количество подъёмов для заданной высоты.';
   return 'Не удалось подобрать геометрию в инженерных диапазонах. Увеличьте проём или измените конфигурацию.';
 }
 
@@ -76,11 +65,7 @@ export function calculateStraightGeometry(params) {
   const floorHeight = Number(params.floor_to_floor_height);
   const openingLength = Number(params.opening_length);
 
-  const candidateRiserCounts = getCandidateRiserCounts(
-    floorHeight,
-    DEFAULTS.minRiser,
-    DEFAULTS.maxRiser
-  );
+  const candidateRiserCounts = getCandidateRiserCounts(floorHeight, DEFAULTS.minRiser, DEFAULTS.maxRiser);
 
   const variants = candidateRiserCounts
     .map((riserCount) => {
@@ -131,7 +116,6 @@ export function calculateStraightGeometry(params) {
 
   const best = variants[0];
   const comfort = evaluateComfort(best.riser_height, best.tread_depth);
-
   let status = comfort.status;
   let reason = null;
 
@@ -145,10 +129,26 @@ export function calculateStraightGeometry(params) {
     reason = 'Лестница получается слишком крутой. Рекомендуется увеличить длину проёма.';
   }
 
+  return { ...best, status, reason };
+}
+
+export function evaluateMarch({ runLength, risers, treadCount, riserHeight }) {
+  const treadDepth = runLength / treadCount;
+  if (treadDepth < DEFAULTS.minTreadDepth || treadDepth > DEFAULTS.maxTreadDepth) {
+    return { valid: false, reason: 'Глубина проступи марша выходит за инженерные пределы.' };
+  }
+
+  const comfort = evaluateComfort(riserHeight, treadDepth);
+  const angle = calculateStairAngle(riserHeight, treadDepth);
+
   return {
-    ...best,
-    status,
-    reason
+    valid: true,
+    run_length: Math.round(runLength),
+    risers,
+    treads: treadCount,
+    tread_depth: toFixedNumber(treadDepth),
+    stair_angle_deg: angle,
+    comfort
   };
 }
 

@@ -230,6 +230,18 @@ h3 {
   background: rgba(38, 27, 19, 0.76);
 }
 
+
+.visual-choice{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.visual-card{display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:14px;border:1px solid rgba(255,255,255,.14);border-radius:14px;background:rgba(23,16,12,.6);color:var(--text);min-height:110px;text-align:left}
+.visual-card span{font-size:22px;color:#f2cd98}
+.visual-card b{font-size:14px}
+.visual-card small{color:var(--text-muted);font-size:12px}
+.visual-card.selected{border-color:rgba(241,202,149,.8);box-shadow:0 0 0 2px rgba(241,202,149,.18) inset;background:rgba(58,41,28,.55)}
+.visual-card:focus{outline:2px solid rgba(241,202,149,.35)}
+.extras-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.extras-list label{font-size:14px;color:var(--text-soft);display:flex;gap:8px;align-items:center;padding:8px;border:1px solid var(--line-soft);border-radius:10px;background:rgba(255,255,255,.03)}
+.actions a.btn-primary{text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+
 .actions {
   display: flex;
   gap: 12px;

@@ -190,13 +190,23 @@
 
     async function loadProjects() {
       try {
-        const { data, error } = await client
-          .from('projects')
-          .select('*')
-          .order('created_at', { ascending: false });
-
+        const { data, error } = await client.from('projects').select('*').order('created_at', { ascending: false });
         if (error) throw error;
-        renderProjects(data || []);
+        const items = data || [];
+        if (!items.length) return renderProjects([]);
+
+        const { data: images } = await client
+          .from('project_images')
+          .select('project_id,image_url,is_cover,sort_order')
+          .in('project_id', items.map((i) => i.id))
+          .order('sort_order', { ascending: true });
+
+        const coverMap = new Map();
+        (images || []).forEach((img) => {
+          if (!coverMap.has(img.project_id) || img.is_cover) coverMap.set(img.project_id, img.image_url);
+        });
+
+        renderProjects(items.map((project) => ({ ...project, cover_image: coverMap.get(project.id) || project.cover_image })));
       } catch (err) {
         console.error('Ошибка загрузки проектов', err);
         projectsRoot.innerHTML = '<div class="empty">Не удалось загрузить проекты. Попробуйте обновить страницу.</div>';
