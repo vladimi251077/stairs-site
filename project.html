@@ -115,6 +115,27 @@
     window.SUPABASE_CONFIG.anonKey
   );
 
+
+  function updateSeoMeta(titleText, descriptionText) {
+    const baseTitle = 'Проект лестницы — Tekstura';
+    const safeTitle = (titleText || '').trim();
+    const safeDescription = (descriptionText || '').trim();
+
+    const finalTitle = safeTitle ? `${safeTitle} — проект лестницы | Tekstura` : baseTitle;
+    const finalDescription = safeDescription || 'Проект премиальной лестницы Tekstura: детали решения, материалы, конструкция и особенности реализации.';
+
+    document.title = finalTitle;
+
+    const descriptionMeta = document.querySelector('meta[name="description"]');
+    if (descriptionMeta) descriptionMeta.setAttribute('content', finalDescription);
+
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) ogTitle.setAttribute('content', finalTitle);
+
+    const ogDescription = document.querySelector('meta[property="og:description"]');
+    if (ogDescription) ogDescription.setAttribute('content', finalDescription);
+  }
+
   if (!id) {
     document.body.innerHTML = "❌ Открой проект через страницу проектов";
   } else {
@@ -165,6 +186,8 @@
 
       document.getElementById('leadTime').innerText =
         data.lead_time ? 'Срок: ' + data.lead_time : '';
+
+      updateSeoMeta(data.title, data.short_description || data.description || data.full_description || '');
 
     } catch (err) {
       console.error(err);
