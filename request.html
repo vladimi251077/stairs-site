@@ -112,9 +112,7 @@ function loadCalcData() {
   try {
     calcPayload = JSON.parse(decodeURIComponent(raw));
 
-    document.getElementById('calcData').innerText =
-      `Тип: ${calcPayload.staircaseType}
-Цена: ${calcPayload.total} ₽`;
+    document.getElementById('calcData').innerText = `Тип: ${calcPayload.staircaseType || '-'}\nЦена: ${calcPayload.total || 0} ₽\nОграждение: ${calcPayload?.materialsSummary?.railing || '-'}\nОблицовка: ${calcPayload?.materialsSummary?.cladding || '-'}\nОпции: ${(calcPayload?.selectedExtras || []).map((e)=>e.label).join(', ') || 'нет'}`;
 
   } catch (e) {
     console.error(e);
@@ -141,9 +139,9 @@ async function sendRequest() {
       city,
       comment,
       staircase_type: calcPayload?.staircaseType || '',
-      dimensions_json: calcPayload?.dimensions || {},
-      materials_json: calcPayload?.materials || {},
-      options_json: calcPayload?.options || [],
+      dimensions_json: { ...(calcPayload?.dimensions || {}), geometry: calcPayload?.geometrySummary || {} },
+      materials_json: { ...(calcPayload?.materials || {}), summary: calcPayload?.materialsSummary || {} },
+      options_json: { extras: calcPayload?.options || [], labels: calcPayload?.selectedExtras || [], price_breakdown: calcPayload?.priceBreakdown || {} },
       calculated_price: calcPayload?.total || 0
     }
   ]);

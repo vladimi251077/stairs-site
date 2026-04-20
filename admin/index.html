@@ -404,12 +404,20 @@
             <textarea data-k="description">${escapeHtml(item.description || '')}</textarea>
           </div>
           <div>
-            <label>Картинка</label>
+            <label>Картинка (legacy)</label>
             <input data-k="imageFile" type="file" accept="image/*" />
           </div>
           <div>
-            <label>URL картинки</label>
+            <label>URL картинки (legacy)</label>
             <input data-k="image" value="${escapeHtml(item.image || '')}" />
+          </div>
+          <div class="full">
+            <label>Галерея (JSON массив url или объектов {image_url,alt_text,sort_order,is_cover})</label>
+            <textarea data-k="gallery_json">${escapeHtml(JSON.stringify(item.gallery_images || []))}</textarea>
+          </div>
+          <div class="full">
+            <label>Опции mini-configurator (JSON)</label>
+            <textarea data-k="custom_options">${escapeHtml(JSON.stringify(item.custom_options || {}))}</textarea>
           </div>
         </div>
         <div class="row" style="margin-top:8px">
@@ -468,13 +476,16 @@
     }
 
     async function loadProjects() {
-      const { data, error } = await client
-        .from('projects')
-        .select('*')
-        .order('created_at', { ascending: false });
-
+      const { data, error } = await client.from('projects').select('*').order('created_at', { ascending: false });
       if (error) throw error;
-      state.projects = data || [];
+      const rows = data || [];
+      const { data: images } = await client.from('project_images').select('*').in('project_id', rows.map((r)=>r.id));
+      const grouped = new Map();
+      (images || []).forEach((img) => {
+        if (!grouped.has(img.project_id)) grouped.set(img.project_id, []);
+        grouped.get(img.project_id).push(img);
+      });
+      state.projects = rows.map((r) => ({ ...r, gallery_images: grouped.get(r.id) || [] }));
       renderProjects(state.projects);
     }
 
@@ -645,6 +656,7 @@
       try {
         setStatus('Сохранение проектов...');
         const rows = [];
+        const imageRows = [];
         const items = [...projectsList.querySelectorAll('.item')];
 
         for (const el of items) {
@@ -652,18 +664,39 @@
           let imageUrl = el.querySelector('[data-k="image"]').value.trim();
           if (file) imageUrl = await uploadFile(file, 'projects');
 
+          let customOptions = {};
+          let gallery = [];
+          try { customOptions = JSON.parse(el.querySelector('[data-k="custom_options"]').value || '{}'); } catch {}
+          try { gallery = JSON.parse(el.querySelector('[data-k="gallery_json"]').value || '[]'); } catch {}
+
           rows.push({
             id: el.dataset.id,
             title: el.querySelector('[data-k="title"]').value.trim(),
             description: el.querySelector('[data-k="description"]').value.trim(),
             image: imageUrl,
+            cover_image: imageUrl,
+            custom_options: customOptions,
             price: el.querySelector('[data-k="price"]').value.trim() || null,
             created_at: new Date().toISOString()
           });
+
+          const normalizedGallery = (Array.isArray(gallery) ? gallery : []).map((g, idx) => typeof g === 'string'
+            ? { image_url: g, alt_text: '', sort_order: idx + 1, is_cover: idx === 0 }
+            : { image_url: g.image_url, alt_text: g.alt_text || '', sort_order: g.sort_order ?? (idx + 1), is_cover: !!g.is_cover });
+
+          normalizedGallery.forEach((g) => {
+            if (!g.image_url) return;
+            imageRows.push({ project_id: el.dataset.id, image_url: g.image_url, alt_text: g.alt_text, sort_order: g.sort_order, is_cover: g.is_cover });
+          });
+          if (!normalizedGallery.length && imageUrl) {
+            imageRows.push({ project_id: el.dataset.id, image_url: imageUrl, alt_text: '', sort_order: 1, is_cover: true });
+          }
         }
 
         await client.from('projects').delete().neq('id', '00000000-0000-0000-0000-000000000000');
         if (rows.length) await client.from('projects').upsert(rows);
+        await client.from('project_images').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        if (imageRows.length) await client.from('project_images').insert(imageRows);
         setStatus('Проекты сохранены');
         await loadProjects();
       } catch (err) {
