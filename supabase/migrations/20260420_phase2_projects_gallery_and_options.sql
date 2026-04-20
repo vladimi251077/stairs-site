@@ -16,8 +16,11 @@ create index if not exists idx_project_images_project_id on public.project_image
 create index if not exists idx_project_images_cover on public.project_images(project_id, is_cover desc, sort_order asc);
 
 alter table public.project_images enable row level security;
-create policy if not exists "public read project_images" on public.project_images for select using (true);
-create policy if not exists "auth write project_images" on public.project_images for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+drop policy if exists "public read project_images" on public.project_images;
+create policy "public read project_images" on public.project_images for select using (true);
+
+drop policy if exists "auth write project_images" on public.project_images;
+create policy "auth write project_images" on public.project_images for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
 
 update public.projects set cover_image = coalesce(cover_image, image) where cover_image is null;
 

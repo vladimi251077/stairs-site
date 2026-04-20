@@ -748,6 +748,15 @@
       return msg;
     }
 
+    function throwIfSupabaseError(result, operationLabel) {
+      if (!result?.error) return;
+      const sourceError = result.error;
+      const details = [sourceError.message, sourceError.details, sourceError.hint].filter(Boolean).join(' | ');
+      const err = new Error(`${operationLabel}: ${details || 'неизвестная ошибка Supabase'}`);
+      err.cause = sourceError;
+      throw err;
+    }
+
     async function initAuth() {
       const { data, error } = await client.auth.getSession();
       if (error) throw error;
@@ -914,10 +923,22 @@
           }
         }
 
-        await client.from('projects').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-        if (rows.length) await client.from('projects').upsert(rows);
-        await client.from('project_images').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-        if (imageRows.length) await client.from('project_images').insert(imageRows);
+        const deleteProjectsResult = await client.from('projects').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        throwIfSupabaseError(deleteProjectsResult, 'Не удалось очистить список проектов');
+
+        if (rows.length) {
+          const upsertProjectsResult = await client.from('projects').upsert(rows);
+          throwIfSupabaseError(upsertProjectsResult, 'Не удалось сохранить проекты');
+        }
+
+        const deleteImagesResult = await client.from('project_images').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        throwIfSupabaseError(deleteImagesResult, 'Не удалось очистить галерею проектов');
+
+        if (imageRows.length) {
+          const insertImagesResult = await client.from('project_images').insert(imageRows);
+          throwIfSupabaseError(insertImagesResult, 'Не удалось сохранить изображения проектов');
+        }
+
         setStatus('Проекты сохранены');
         await loadProjects();
       } catch (err) {
