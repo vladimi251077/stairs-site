@@ -817,3 +817,29 @@ a {
     padding: 22px 18px;
   }
 }
+
+
+/* Custom improvements */
+select {
+  padding: 8px;
+  background-color: var(--panel);
+  border: 1px solid var(--line);
+  color: var(--text);
+  border-radius: var(--radius-sm);
+}
+
+select:focus {
+  outline: 2px solid var(--accent);
+}
+
+.card {
+  margin-bottom: 16px;
+}
+
+/* Mobile navigation improvement */
+@media (max-width: 600px) {
+  .site-nav {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
