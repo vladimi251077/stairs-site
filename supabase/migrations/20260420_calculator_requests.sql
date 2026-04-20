@@ -14,6 +14,10 @@ create table if not exists public.calculator_requests (
   created_at timestamptz not null default now()
 );
 
+grant insert on table public.calculator_requests to anon;
+grant insert, select, update, delete on table public.calculator_requests to authenticated;
+grant all on table public.calculator_requests to service_role;
+
 create index if not exists idx_calculator_requests_created_at on public.calculator_requests(created_at desc);
 create index if not exists idx_calculator_requests_phone on public.calculator_requests(phone);
 
@@ -23,23 +27,34 @@ drop policy if exists "anon insert calculator_requests" on public.calculator_req
 create policy "anon insert calculator_requests"
   on public.calculator_requests
   for insert
+  to anon
+  with check (true);
+
+drop policy if exists "auth insert calculator_requests" on public.calculator_requests;
+create policy "auth insert calculator_requests"
+  on public.calculator_requests
+  for insert
+  to authenticated
   with check (true);
 
 drop policy if exists "auth read calculator_requests" on public.calculator_requests;
 create policy "auth read calculator_requests"
   on public.calculator_requests
   for select
-  using (auth.role() = 'authenticated');
+  to authenticated
+  using (true);
 
 drop policy if exists "auth update calculator_requests" on public.calculator_requests;
 create policy "auth update calculator_requests"
   on public.calculator_requests
   for update
-  using (auth.role() = 'authenticated')
-  with check (auth.role() = 'authenticated');
+  to authenticated
+  using (true)
+  with check (true);
 
 drop policy if exists "auth delete calculator_requests" on public.calculator_requests;
 create policy "auth delete calculator_requests"
   on public.calculator_requests
   for delete
-  using (auth.role() = 'authenticated');
+  to authenticated
+  using (true);
