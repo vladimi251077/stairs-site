@@ -1,213 +1,165 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Калькулятор лестницы онлайн — рассчитать стоимость | Tekstura</title>
-  <meta name="description" content="Онлайн-калькулятор лестницы: рассчитайте параметры, материалы и ориентировочную стоимость проекта. Быстрый расчёт от Tekstura.">
-  <link rel="canonical" href="https://tekstura.shop/calculator.html">
-  <meta property="og:type" content="website"><meta property="og:site_name" content="Tekstura">
-  <meta property="og:title" content="Калькулятор лестницы онлайн — рассчитать стоимость | Tekstura">
-  <meta property="og:description" content="Онлайн-калькулятор лестницы: рассчитайте параметры, материалы и ориентировочную стоимость проекта. Быстрый расчёт от Tekstura.">
-  <meta property="og:url" content="https://tekstura.shop/calculator.html">
-  <link rel="stylesheet" href="/stair-configurator.css">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/supabase-config.js"></script>
+<meta charset="UTF-8">
+<title>Калькулятор лестницы Tekstura</title>
+<style>
+body { background:#0f0c0a; color:#f4e7d4; font-family:Inter, Arial, sans-serif; margin:0; }
+.container { max-width:800px; margin:0 auto; padding:20px; }
+progress { width:100%; height:10px; margin:10px 0; }
+.step { display:none; }
+.step.active { display:block; }
+button { margin:10px 0; padding:10px 20px; border:0; border-radius:5px; background:#e8c8a2; color:#1a120e; font-weight:600; cursor:pointer; }
+input, select { width:100%; padding:8px; margin-top:5px; border-radius:5px; border:1px solid #444; background:#1a120e; color:#f4e7d4; }
+label { display:block; margin-top:10px; }
+.card-group { display:flex; gap:10px; flex-wrap:wrap; }
+.card { flex:1 1 30%; padding:10px; border:1px solid #444; border-radius:8px; cursor:pointer; text-align:center; }
+.card.selected { border-color:#e8c8a2; background:#201b18; }
+small { display:block; font-size:12px; color:#b9aa97; }
+</style>
 </head>
 <body>
-<main class="wrap">
-  <section class="hero panel"><div class="top"><div class="hero-content"><p class="eyebrow">Tekstura Engineering</p><h1>Калькулятор лестницы онлайн</h1><p class="hero-subtitle">Расчёт геометрии, материалов и цены с расширенными настройками.</p></div><a class="back-link" href="/">На главную</a></div></section>
-  <div class="panel configurator-panel">
-    <div id="pageStatus" class="muted" aria-live="polite"></div>
+<div class="container">
+<h1>Калькулятор лестницы</h1>
+<progress id="progress" value="1" max="5"></progress>
 
-    <section class="step active" id="step1">
-      <h2>Шаг 1. Конфигурация лестницы</h2>
+<div class="step active" id="step1">
+<h2>Шаг 1. Тип лестницы</h2>
+<div class="card-group" id="stairTypeCards">
+<div class="card" data-value="straight">Прямая</div>
+<div class="card" data-value="l_turn">Г‑образная</div>
+<div class="card" data-value="u_turn">П‑образная</div>
+</div>
+<button onclick="nextStep()">Далее</button>
+</div>
 
-      <div class="grid">
+<div class="step" id="step2">
+<h2>Шаг 2. Параметры проёма</h2>
+<label>Высота этаж-этаж (мм)<input type="number" id="floorHeight" placeholder="3000"></label>
+<label>Длина проёма (мм)<input type="number" id="openingLength" placeholder="4200"></label>
+<label>Ширина проёма (мм)<input type="number" id="openingWidth" placeholder="1200"></label>
+<label>Ширина марша (мм)<input type="number" id="marchWidth" placeholder="1000"></label>
+<button onclick="prevStep()">Назад</button>
+<button onclick="nextStep()">Далее</button>
+</div>
 
-        <div class="field">
-          <label>Тип проёма</label>
-          <select id="openingType">
-            <option value="straight">Прямой</option>
-            <option value="l_turn">Г-образный</option>
-            <option value="u_turn">П-образный</option>
-          </select>
-        </div>
+<div class="step" id="step3">
+<h2>Шаг 3. Материал каркаса</h2>
+<div class="card-group" id="frameMaterialCards">
+<div class="card" data-value="metal">Металлокаркас<br><small>Высокая жёсткость</small></div>
+<div class="card" data-value="concrete">Бетонный каркас<br><small>Монолитное основание</small></div>
+<div class="card" data-value="wood">Деревянный каркас<br><small>Тёплая фактура</small></div>
+</div>
+<button onclick="prevStep()">Назад</button>
+<button onclick="nextStep()">Далее</button>
+</div>
 
-        <div class="field visually-hidden">
-          <label>Тип лестницы</label>
-          <select id="stairType" class="visually-hidden">
-            <option value="straight">Прямая</option>
-            <option value="l_turn">Г-образная</option>
-            <option value="u_turn">П-образная</option>
-          </select>
-        </div>
+<div class="step" id="step4">
+<h2>Шаг 4. Отделка и ограждение</h2>
+<label>Облицовка<select id="cladding"><option value="none">Без облицовки</option><option value="standard">Стандарт</option><option value="premium">Премиум</option></select></label>
+<label>Ограждение<select id="railing"><option value="none">Без ограждения</option><option value="metal">Металл</option><option value="glass">Стекло</option><option value="wood">Дерево</option></select></label>
+<label><input type="checkbox" id="lighting"> Подсветка ступеней</label>
+<label><input type="checkbox" id="coating"> Премиум покраска</label>
+<button onclick="prevStep()">Назад</button>
+<button onclick="nextStep()">Далее</button>
+</div>
 
-        <div class="field visually-hidden" id="turnTypeField">
-          <label>Тип поворота (служебное поле)</label>
-          <select id="turnType" class="visually-hidden">
-            <option value="landing">Площадка</option>
-            <option value="winders">Забежные ступени</option>
-          </select>
-        </div>
+<div class="step" id="step5">
+<h2>Шаг 5. Итог</h2>
+<div id="summary"></div>
+<label>Ваше имя<input type="text" id="name"></label>
+<label>Телефон<input type="tel" id="phone"></label>
+<button onclick="prevStep()">Назад</button>
+<button onclick="submitRequest()">Отправить заявку</button>
+</div>
+</div>
 
-        <div class="field stair-type-field">
-          <label id="stairTypeCardsLabel">Конфигурация лестницы</label>
-          <div class="stair-type-cards" role="radiogroup" aria-labelledby="stairTypeCardsLabel">
-            <button type="button" class="stair-type-card" data-stair-type="straight" data-turn-type="landing">
-              <span class="stair-type-card__icon" aria-hidden="true">
-                <svg viewBox="0 0 88 56">
-                  <polyline points="10,46 24,46 24,38 38,38 38,30 52,30 52,22 66,22 66,14 78,14"/>
-                </svg>
-              </span>
-              <span class="stair-type-card__title">Прямая</span>
-              <span class="stair-type-card__hint">Один марш без поворота</span>
-            </button>
+<script>
+let currentStep = 1;
+const maxStep = 5;
+const state = {};
 
-            <button type="button" class="stair-type-card" data-stair-type="l_turn" data-turn-type="landing">
-              <span class="stair-type-card__icon" aria-hidden="true">
-                <svg viewBox="0 0 88 56">
-                  <polyline points="10,46 24,46 24,38 38,38 38,30 52,30"/>
-                  <rect x="52" y="20" width="14" height="14"/>
-                  <polyline points="66,20 66,16 74,16 74,12"/>
-                </svg>
-              </span>
-              <span class="stair-type-card__title">Г-образная с площадкой</span>
-              <span class="stair-type-card__hint">Поворот 90° через площадку</span>
-            </button>
+function updateProgress() {
+ document.getElementById('progress').value = currentStep;
+}
 
-            <button type="button" class="stair-type-card" data-stair-type="l_turn" data-turn-type="winders">
-              <span class="stair-type-card__icon" aria-hidden="true">
-                <svg viewBox="0 0 88 56">
-                  <polyline points="10,46 24,46 24,38 38,38 38,30 52,30"/>
-                  <path d="M52 30 L66 30 L66 16 Z"/>
-                  <path d="M52 30 L62 30 L62 20 Z"/>
-                  <polyline points="66,16 74,16 74,12"/>
-                </svg>
-              </span>
-              <span class="stair-type-card__title">Г-образная с забежными</span>
-              <span class="stair-type-card__hint">Поворот 90° без площадки</span>
-            </button>
+function showStep(step) {
+ document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+ document.getElementById('step' + step).classList.add('active');
+ currentStep = step;
+ updateProgress();
+}
 
-            <button type="button" class="stair-type-card" data-stair-type="u_turn" data-turn-type="landing">
-              <span class="stair-type-card__icon" aria-hidden="true">
-                <svg viewBox="0 0 88 56">
-                  <polyline points="8,46 22,46 22,38 36,38 36,30 48,30"/>
-                  <rect x="48" y="20" width="14" height="14"/>
-                  <polyline points="62,20 62,16 50,16 50,10 36,10 36,4 22,4"/>
-                </svg>
-              </span>
-              <span class="stair-type-card__title">П-образная с площадкой</span>
-              <span class="stair-type-card__hint">Поворот 180° через площадку</span>
-            </button>
+function nextStep() {
+ if (currentStep === 1) {
+   const selected = document.querySelector('#stairTypeCards .selected');
+   if (!selected) { alert('Выберите тип лестницы'); return; }
+   state.stair_type = selected.dataset.value;
+ }
+ if (currentStep === 2) {
+   state.floor_height = document.getElementById('floorHeight').value;
+   state.opening_length = document.getElementById('openingLength').value;
+   state.opening_width = document.getElementById('openingWidth').value;
+   state.march_width = document.getElementById('marchWidth').value;
+ }
+ if (currentStep === 3) {
+   const selected = document.querySelector('#frameMaterialCards .selected');
+   if (!selected) { alert('Выберите материал каркаса'); return; }
+   state.frame_material = selected.dataset.value;
+ }
+ if (currentStep === 4) {
+   state.cladding = document.getElementById('cladding').value;
+   state.railing = document.getElementById('railing').value;
+   state.lighting = document.getElementById('lighting').checked;
+   state.coating = document.getElementById('coating').checked;
+   // Пример расчёта: складываем базовую цену и наценки
+   let basePrice = 100000;
+   if (state.frame_material === 'concrete') basePrice += 42000;
+   if (state.frame_material === 'wood') basePrice += 26000;
+   if (state.cladding === 'premium') basePrice += 52000;
+   if (state.railing === 'glass') basePrice += 38000;
+   if (state.railing === 'wood') basePrice += 21000;
+   if (state.lighting) basePrice += 26000;
+   if (state.coating) basePrice += 18000;
+   state.total_price = basePrice;
+   const summary = document.getElementById('summary');
+   summary.innerHTML = '<p>Тип: ' + state.stair_type + '</p>' +
+     '<p>Каркас: ' + state.frame_material + '</p>' +
+     '<p>Облицовка: ' + state.cladding + '</p>' +
+     '<p>Ограждение: ' + state.railing + '</p>' +
+     '<p>Доп. опции: ' + (state.lighting ? 'Подсветка, ' : '') + (state.coating ? 'Премиум покраска' : '') + '</p>' +
+     '<p><strong>Предварительная стоимость: ' + basePrice.toLocaleString('ru-RU') + ' ₽</strong></p>' +
+     '<p>Это предварительный расчёт. Точная стоимость будет определена после замера и выбора материалов.</p>';
+ }
+ if (currentStep < maxStep) showStep(currentStep + 1);
+}
 
-            <button type="button" class="stair-type-card" data-stair-type="u_turn" data-turn-type="winders">
-              <span class="stair-type-card__icon" aria-hidden="true">
-                <svg viewBox="0 0 88 56">
-                  <polyline points="8,46 22,46 22,38 36,38 36,30 48,30"/>
-                  <path d="M48 30 L62 30 L62 16 Z"/>
-                  <path d="M48 30 L58 30 L58 20 Z"/>
-                  <polyline points="62,16 50,16 50,10 36,10 36,4 22,4"/>
-                </svg>
-              </span>
-              <span class="stair-type-card__title">П-образная с забежными</span>
-              <span class="stair-type-card__hint">Поворот 180° без площадки</span>
-            </button>
-          </div>
-          <div id="stairTypeHint" class="muted stair-type-hint">Выберите конфигурацию лестницы для расчёта.</div>
-        </div>
+function prevStep() {
+ if (currentStep > 1) showStep(currentStep - 1);
+}
 
-        <div class="field" id="turnDirectionField">
-          <label>Направление поворота</label>
-          <select id="turnDirection">
-            <option value="left">Левый</option>
-            <option value="right">Правый</option>
-          </select>
-        </div>
+function selectCard(groupId, card) {
+ const group = document.getElementById(groupId);
+ group.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
+ card.classList.add('selected');
+}
 
-        <div class="field">
-          <label>Высота этаж-этаж (мм)</label>
-          <input id="floorHeight" type="number" placeholder="3000">
-        </div>
+// Обработчики выбора карточек
+document.querySelectorAll('#stairTypeCards .card').forEach(card => {
+ card.addEventListener('click', () => selectCard('stairTypeCards', card));
+});
+document.querySelectorAll('#frameMaterialCards .card').forEach(card => {
+ card.addEventListener('click', () => selectCard('frameMaterialCards', card));
+});
 
-        <div class="field">
-          <label>Длина проёма (мм)</label>
-          <input id="openingLength" type="number" placeholder="4200">
-        </div>
-
-        <div class="field">
-          <label>Ширина проёма (мм)</label>
-          <input id="openingWidth" type="number" placeholder="1200">
-        </div>
-
-        <div class="field">
-          <label>Ширина марша (мм)</label>
-          <input id="marchWidth" type="number" placeholder="1000">
-        </div>
-
-        <div class="field">
-          <label>Материал каркаса</label>
-          <select id="frameMaterial">
-            <option value="metal">Металл</option>
-            <option value="wood">Дерево</option>
-            <option value="concrete">Бетон</option>
-          </select>
-        </div>
-        <input type="hidden" id="stairType" value="straight">
-        <div id="stairTypeHint" class="stair-type-hint" aria-live="polite"></div>
-      </div>
-
-      <div class="grid">
-        <div class="field" id="turnDirectionField"><label>Направление поворота</label><select id="turnDirection"><option value="left">Левый</option><option value="right">Правый</option></select></div>
-        <div class="field"><label>Высота этаж-этаж (мм)</label><input id="floorHeight" type="number" placeholder="3000"></div>
-        <div class="field"><label>Длина проёма (мм)</label><input id="openingLength" type="number" placeholder="4200"></div>
-        <div class="field"><label>Ширина проёма (мм)</label><input id="openingWidth" type="number" placeholder="2100"></div>
-        <div class="field"><label>Ширина марша (мм)</label><input id="marchWidth" type="number" placeholder="1000"></div>
-        <div class="field"><label>Расстояние доставки (км)</label><input id="deliveryDistance" type="number" placeholder="20"></div>
-      </div>
-
-      <div class="field"><label>Материал каркаса</label>
-        <div class="visual-choice" data-target="frameMaterial">
-          <button type="button" class="visual-card selected" data-value="metal"><span>▦</span><b>Металл</b><small>Высокая жёсткость</small></button>
-          <button type="button" class="visual-card" data-value="wood"><span>▤</span><b>Дерево</b><small>Тёплая фактура</small></button>
-          <button type="button" class="visual-card" data-value="concrete"><span>▩</span><b>Бетон</b><small>Монолитное основание</small></button>
-        </div><input type="hidden" id="frameMaterial" value="metal"></div>
-
-      <div class="field"><label>Облицовка</label>
-        <div class="visual-choice" data-target="claddingType">
-          <button type="button" class="visual-card" data-value="none"><span>○</span><b>Без облицовки</b><small>Только базовые поверхности</small></button>
-          <button type="button" class="visual-card selected" data-value="standard"><span>◑</span><b>Стандарт</b><small>Надёжные материалы</small></button>
-          <button type="button" class="visual-card" data-value="premium"><span>●</span><b>Премиум</b><small>Шпон/массив/камень</small></button>
-        </div><input type="hidden" id="claddingType" value="standard"></div>
-
-      <div class="field"><label>Ограждение</label>
-        <div class="visual-choice" data-target="railingType">
-          <button type="button" class="visual-card" data-value="none"><span>∅</span><b>Без ограждения</b><small>Для ниш/второго света</small></button>
-          <button type="button" class="visual-card selected" data-value="metal"><span>║</span><b>Металл</b><small>Минимализм</small></button>
-          <button type="button" class="visual-card" data-value="glass"><span>▯</span><b>Стекло</b><small>Визуальная лёгкость</small></button>
-          <button type="button" class="visual-card" data-value="wood"><span>▮</span><b>Дерево</b><small>Классический образ</small></button>
-        </div><input type="hidden" id="railingType" value="metal"></div>
-
-      <div class="grid">
-        <div class="field"><label>Уровень финиша</label><select id="finishLevel"><option value="basic">Базовый</option><option value="standard">Стандарт</option><option value="premium">Премиум</option></select></div>
-        <div class="field"><label>Доп. опции</label>
-          <div class="extras-list">
-            <label><input type="checkbox" name="extras" value="lighting"> Подсветка ступеней</label>
-            <label><input type="checkbox" name="extras" value="painted_metal"> Окраска металла</label>
-            <label><input type="checkbox" name="extras" value="premium_coating"> Премиум-покрытие</label>
-            <label><input type="checkbox" name="extras" value="hidden_fasteners"> Скрытый крепёж</label>
-          </div>
-        </div>
-      </div>
-
-      <div class="actions"><button class="btn-primary" id="toResultsBtn">Рассчитать геометрию</button></div>
-    </section>
-
-    <section class="step" id="step2"><h2>Геометрия лестницы</h2><div id="geometryResult" class="result-box"></div><div id="geometryWarnings"></div><div id="geometryTypeHint" class="stair-type-hint compact" aria-live="polite"></div><div class="actions"><button class="btn-secondary" onclick="prevStep(1)">Назад</button><button class="btn-primary" id="calculateBtn">Перейти к материалам и цене</button></div></section>
-    <section class="step" id="step3"><h2>Материалы</h2><div id="materialsResult" class="result-box"></div><div class="actions"><button class="btn-secondary" onclick="prevStep(2)">Назад</button><button class="btn-primary" onclick="nextStep(4)">Рассчитать стоимость</button></div></section>
-    <section class="step" id="step4"><h2>Стоимость</h2><div id="priceResult" class="result-box"></div><div class="actions"><button class="btn-secondary" onclick="prevStep(3)">Назад</button><a id="requestBtn" class="btn-primary" href="/request.html">Оставить заявку по расчёту</a></div></section>
-  </div>
-</main>
-<script type="module" src="/stair-configurator.js"></script>
+function submitRequest() {
+ const name = document.getElementById('name').value.trim();
+ const phone = document.getElementById('phone').value.trim();
+ if (!name || !phone) { alert('Заполните имя и телефон'); return; }
+ const payload = { name, phone, ...state };
+ alert('Заявка отправлена! Спасибо, ' + name + '. Наш менеджер свяжется с вами.');
+ console.log('Payload:', payload);
+}
+</script>
 </body>
 </html>
