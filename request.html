@@ -152,7 +152,8 @@ async function sendRequest() {
 
   if (error) {
     console.error(error);
-    document.getElementById('status').innerText = 'Ошибка отправки';
+    const errorMessage = error?.message || error?.details || error?.hint || 'Неизвестная ошибка Supabase';
+    document.getElementById('status').innerText = `Ошибка отправки: ${errorMessage}`;
     return;
   }
 
