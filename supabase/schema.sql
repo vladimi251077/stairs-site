@@ -6,6 +6,7 @@ create table if not exists public.settings (
   phone text,
   whatsapp text,
   telegram text,
+  notify_email text,
   "heroTitle" text,
   "heroSubtitle" text,
   "heroImage" text,
@@ -72,8 +73,8 @@ create policy "auth update calculator_requests" on public.calculator_requests fo
 drop policy if exists "auth delete calculator_requests" on public.calculator_requests;
 create policy "auth delete calculator_requests" on public.calculator_requests for delete using (auth.role() = 'authenticated');
 
-insert into public.settings(id, phone, whatsapp, telegram, "heroTitle", "heroSubtitle", "heroImage", logo, badge, "baseRate")
-values (1, '+70000000000', '+70000000000', '@tekstura', 'Лестницы как арт-объект', 'Премиальные лестницы из дерева и металла для частных домов и вилл.', '/logo.jpg.png', '/logo.jpg.png', 'premium stairs brand', 5000)
+insert into public.settings(id, phone, whatsapp, telegram, notify_email, "heroTitle", "heroSubtitle", "heroImage", logo, badge, "baseRate")
+values (1, '+70000000000', '+70000000000', '@tekstura', null, 'Лестницы как арт-объект', 'Премиальные лестницы из дерева и металла для частных домов и вилл.', '/logo.jpg.png', '/logo.jpg.png', 'premium stairs brand', 5000)
 on conflict (id) do nothing;
 
 insert into storage.buckets (id, name, public)

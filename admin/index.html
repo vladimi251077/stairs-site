@@ -240,6 +240,10 @@
             <input id="telegram" />
           </div>
           <div>
+            <label for="notifyEmail">Email для уведомлений</label>
+            <input id="notifyEmail" type="email" placeholder="leads@tekstura.shop" />
+          </div>
+          <div>
             <label for="max">MAX</label>
             <input id="max" />
           </div>
@@ -331,6 +335,7 @@
     const phoneInput = document.getElementById('phone');
     const whatsappInput = document.getElementById('whatsapp');
     const telegramInput = document.getElementById('telegram');
+    const notifyEmailInput = document.getElementById('notifyEmail');
     const maxInput = document.getElementById('max');
 
     const heroTitleInput = document.getElementById('heroTitle');
@@ -397,6 +402,7 @@
         phone: row?.phone ?? '',
         whatsapp: row?.whatsapp ?? '',
         telegram: row?.telegram ?? '',
+        notifyEmail: row?.notify_email ?? row?.notifyEmail ?? '',
         max: row?.max ?? '',
         heroTitle: row?.heroTitle ?? row?.herotitle ?? '',
         heroSubtitle: row?.heroSubtitle ?? row?.herosubtitle ?? '',
@@ -411,6 +417,7 @@
       phoneInput.value = settings.phone || '';
       whatsappInput.value = settings.whatsapp || '';
       telegramInput.value = settings.telegram || '';
+      notifyEmailInput.value = settings.notifyEmail || '';
       maxInput.value = settings.max || '';
       heroTitleInput.value = settings.heroTitle || '';
       heroSubtitleInput.value = settings.heroSubtitle || '';
@@ -809,6 +816,7 @@
           phone: phoneInput.value.trim(),
           whatsapp: whatsappInput.value.trim(),
           telegram: telegramInput.value.trim(),
+          notify_email: notifyEmailInput.value.trim(),
           max: maxInput.value.trim(),
           updated_at: new Date().toISOString()
         }, { onConflict: 'id' });
