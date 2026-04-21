@@ -17,20 +17,23 @@
   <style>
     :root{--bg:#0f0c0a;--panel:#19130f;--line:#3d332b;--text:#f4e7d4;--muted:#baa894;--accent:#e8c8a2;--ok:#9ddcb0;--err:#ff9e9e}
     *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 Inter,sans-serif}
-    .wrap{max-width:760px;margin:auto;padding:16px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+    .wrap{max-width:800px;margin:auto;padding:16px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:15px;margin-bottom:12px}
     h1{margin:0 0 8px;font-size:clamp(28px,4vw,38px)} .muted{color:var(--muted)} .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .full{grid-column:1/-1} input,textarea{width:100%;padding:11px;border-radius:10px;border:1px solid var(--line);background:#120f0d;color:var(--text)} textarea{min-height:96px}
+    .full{grid-column:1/-1} input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:#120f0d;color:var(--text)} textarea{min-height:96px}
     .btn{width:100%;padding:12px;border-radius:10px;border:0;background:var(--accent);color:#1a120e;font-weight:700;cursor:pointer;margin-top:10px}
     .result{white-space:pre-line;background:#221a15;border:1px solid var(--line);border-radius:10px;padding:10px}
     #status.ok{color:var(--ok)} #status.err{color:var(--err)}
-    @media(max-width:700px){.grid{grid-template-columns:1fr}}
+    .trust-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+    .trust-chip{border:1px solid var(--line);border-radius:10px;padding:8px;color:#cfb79a;background:#1b1512;font-size:13px}
+    .expect-list{margin:10px 0 0;padding-left:18px;color:#d5c2ab}
+    .success-card{border:1px solid rgba(157,220,176,.35);background:rgba(82,122,92,.18);border-radius:12px;padding:10px;margin-top:8px}
+    @media(max-width:700px){.grid{grid-template-columns:1fr}.trust-grid{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
   <div class="wrap">
     <h1>Заявка на лестницу</h1>
-    <p class="muted">Заполните контакты — мы свяжемся и уточним детали проекта.</p>
-    <p class="muted">Производство Tekstura: Казань, Орнбургский тракт, 340.</p>
+    <p class="muted">Заполните контакты — с вами свяжется инженер Tekstura для уточнения размеров и оптимальной конфигурации.</p>
 
     <div class="panel">
       <b>Сводка расчёта</b>
@@ -38,15 +41,30 @@
     </div>
 
     <div class="panel">
+      <b>Как проходит работа после отправки</b>
+      <ul class="expect-list">
+        <li>В рабочее время ответ обычно в течение 30–90 минут.</li>
+        <li>Первым выходит на связь инженер-консультант Tekstura.</li>
+        <li>После уточнения размеров подготавливаем ориентир по стоимости и срокам.</li>
+      </ul>
+      <div class="trust-grid">
+        <div class="trust-chip">Собственное производство</div>
+        <div class="trust-chip">Казань, Орнбургский тракт, 340</div>
+        <div class="trust-chip">Монтаж штатной бригадой</div>
+      </div>
+    </div>
+
+    <div class="panel">
       <div class="grid">
-        <div><input id="name" placeholder="Имя"></div>
-        <div><input id="phone" placeholder="Телефон *"></div>
-        <div><input id="messenger" placeholder="WhatsApp / Telegram"></div>
-        <div><input id="city" placeholder="Город"></div>
-        <div class="full"><textarea id="comment" placeholder="Комментарий"></textarea></div>
+        <div><input id="name" placeholder="Ваше имя"></div>
+        <div><input id="phone" placeholder="Телефон для связи *"></div>
+        <div><input id="messenger" placeholder="WhatsApp или Telegram"></div>
+        <div><input id="city" placeholder="Город и район объекта"></div>
+        <div class="full"><textarea id="comment" placeholder="Кратко о задаче: тип дома, этап ремонта, пожелания по стилю"></textarea></div>
       </div>
       <button class="btn" id="sendBtn" onclick="sendRequest()">Отправить заявку</button>
       <div id="status" style="margin-top:10px"></div>
+      <div id="successState" hidden class="success-card">Спасибо за обращение в Tekstura. Заявка сохранена, инженер уже получил уведомление.</div>
     </div>
   </div>
 <script>
@@ -96,6 +114,8 @@ async function insertLead(payload){
 async function sendRequest() {
   const status = document.getElementById('status');
   const sendBtn = document.getElementById('sendBtn');
+  const successState = document.getElementById('successState');
+  successState.hidden = true;
   status.className = '';
   status.textContent = 'Отправляем заявку...';
   sendBtn.disabled = true;
@@ -123,7 +143,9 @@ async function sendRequest() {
   try {
     const { data } = await insertLead(payload);
     status.className = 'ok';
-    status.textContent = 'Заявка отправлена ✅ Спасибо! Мы свяжемся с вами в ближайшее время.';
+    status.textContent = 'Заявка отправлена ✅';
+    successState.hidden = false;
+    successState.textContent = 'Спасибо за обращение в Tekstura. Мы получили вашу заявку, передали её инженеру и свяжемся с вами в ближайшее рабочее время.';
     document.getElementById('sendBtn').disabled = true;
     try {
       await fetch('/api/notify-lead', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lead: data || payload }) });

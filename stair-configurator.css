@@ -187,6 +187,10 @@ h3 {
   display: block;
 }
 
+.step h2 {
+  margin-bottom: 14px;
+}
+
 .grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -198,6 +202,31 @@ h3 {
   flex-direction: column;
   gap: 8px;
   margin-bottom: 18px;
+}
+
+.field-help {
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.extras-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 14px;
+}
+
+.geometry-fallback-cta {
+  margin-top: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 12px;
+}
+
+.geometry-fallback-cta p {
+  margin: 0 0 10px;
+  color: var(--text-soft);
 }
 
 .field label {
@@ -590,5 +619,10 @@ button:hover {
 
   .field {
     margin-bottom: 14px;
+  }
+
+  .extras-list {
+    grid-template-columns: 1fr;
+    gap: 8px;
   }
 }

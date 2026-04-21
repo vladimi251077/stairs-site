@@ -432,9 +432,9 @@ function calculateGeometry(config) {
 
 function getInvalidGeometryGuidance(config) {
   const steps = [
-    'Проверьте длину проёма для каждого марша.',
-    'Уменьшите ширину марша, если нужно выиграть место.',
-    'Выберите другой тип лестницы, если планировка очень компактная.'
+    'Проверьте, что размеры введены по чистовым стенам и без запаса на отделку.',
+    'Попробуйте уменьшить ширину марша на 50–100 мм, если пространство ограничено.',
+    'При компактной планировке выберите более подходящий тип лестницы.'
   ];
   if (config.stair_type === 'u_turn_landing' || config.stair_type === 'u_turn_winders') {
     steps.push('Для П-образной лестницы ширина проёма проверяется под два марша и разворотную зону.');
@@ -443,14 +443,14 @@ function getInvalidGeometryGuidance(config) {
 }
 
 function renderGeometry(geometry) {
-  const root = $('geometryResult'); const warnings = $('geometryWarnings');
+  const root = $('geometryResult'); const warnings = $('geometryWarnings'); const fallbackCta = $('geometryFallbackCta');
   if (!root || !warnings) return;
   if (!geometry.valid) {
     const guidanceItems = getInvalidGeometryGuidance(state.lastConfig || {});
     root.innerHTML = `
-      <div class="warning-block invalid">
-        <div class="warning-title">Геометрия не проходит проверку</div>
-        <div class="warning-text">Исправьте параметры, затем пересчитайте геометрию.</div>
+        <div class="warning-block invalid">
+        <div class="warning-title">Пока не удалось собрать удобную геометрию</div>
+        <div class="warning-text">Это частая ситуация на первом шаге. Скорректируйте параметры или отправьте запрос на ручную инженерную проверку.</div>
       </div>
     `;
     warnings.innerHTML = `
@@ -459,6 +459,7 @@ function renderGeometry(geometry) {
         <ul class="warning-list">${guidanceItems.map((item) => `<li>${item}</li>`).join('')}</ul>
       </div>
     `;
+    if (fallbackCta) fallbackCta.hidden = false;
     setProceedAvailability(false);
     return;
   }
@@ -494,6 +495,7 @@ function renderGeometry(geometry) {
   warnings.innerHTML = warningList.length
     ? warningList.map((i) => `<div class="warning-block"><div class="warning-text">${i}</div></div>`).join('')
     : '<div class="ok">Геометрия в инженерных пределах.</div>';
+  if (fallbackCta) fallbackCta.hidden = true;
   setProceedAvailability(true);
 }
 
