@@ -33,7 +33,16 @@ function bindVisualSelectors() {
 }
 
 function toggleTurnFields() { const stairType = $('stairType')?.value || 'straight'; const base = $('baseCondition')?.value || 'empty_opening'; const field = $('turnDirectionField'); const input = $('turnDirection'); if (!field || !input) return; const show = stairType !== 'straight' && base === 'empty_opening'; field.classList.toggle('hidden', !show); input.disabled = !show; }
-function toggleScenarioFields() { const base = $('baseCondition')?.value || 'empty_opening'; const full = base === 'empty_opening'; $('stairTypeField')?.classList.toggle('hidden', !full); $('frameMaterialField')?.classList.toggle('hidden', base === 'consultation'); $('finishGrid')?.classList.toggle('hidden', base === 'consultation'); $('existingConditionField')?.classList.toggle('hidden', !(base === 'existing_metal_frame' || base === 'existing_concrete_base')); }
+function toggleScenarioFields() {
+  const base = $('baseCondition')?.value || 'empty_opening';
+  const full = base === 'empty_opening';
+  const finishOnly = base === 'finish_only';
+  $('stairTypeField')?.classList.toggle('hidden', !full);
+  $('frameMaterialField')?.classList.toggle('hidden', base === 'consultation' || finishOnly);
+  $('finishGrid')?.classList.toggle('hidden', base === 'consultation');
+  $('existingConditionField')?.classList.toggle('hidden', !(base === 'existing_metal_frame' || base === 'existing_concrete_base'));
+  $('geometryOptionalNote')?.classList.toggle('hidden', !finishOnly);
+}
 
 function renderStairTypeHint(target, stairType, geometry) { if (!target) return; const hint = STAIR_TYPE_HINTS[stairType] || STAIR_TYPE_HINTS.straight; const invalidHelp = geometry && !geometry.valid ? `<div class="stair-type-hint-invalid">${hint.invalidAdvice}</div>` : ''; target.innerHTML = `<div class="stair-type-hint-card"><div class="stair-type-hint-label">Подсказка по проёму</div><h3>${hint.title}</h3><p>${hint.text}</p>${invalidHelp}</div>`; }
 function updateStairTypeHints(geometry = null) { const stairType = $('stairType')?.value || 'straight'; renderStairTypeHint($('stairTypeHint'), stairType, geometry); renderStairTypeHint($('geometryTypeHint'), stairType, geometry); }
@@ -51,13 +60,56 @@ function getConfigFromForm() {
 
 function validateBase(config) { if (config.floor_to_floor_height <= 0) return 'Укажите корректную высоту этаж-этаж.'; if (config.opening_length <= 0) return 'Укажите корректную длину проёма.'; if (config.opening_width <= 0) return 'Укажите корректную ширину проёма.'; if (config.march_width <= 0) return 'Укажите корректную ширину марша.'; return null; }
 
+function scenarioGeometry(config, scenario) {
+  const summary = {
+    riser_count: 0, tread_count: 0, riser_height: 0, tread_depth: 0, comfort_value: 0, stair_angle_deg: 0,
+    headroom_min: 0, headroom_warning_count: 0, headroom_critical_count: 0, score: scenario.score
+  };
+  return { valid: true, status: 'warning', warnings: scenario.warnings, geometrySummary: summary, visualization: null, alternatives: [], scenarioSummary: scenario.summary };
+}
+
 function calculateGeometry(config) {
-  if (config.base_condition === 'consultation') return { valid: true, status: 'warning', warnings: ['Мы подготовим индивидуальный сценарий после короткой консультации.'], geometrySummary: null, visualization: null };
-  const err = validateBase(config); if (err) return { valid: false, status: 'invalid', warnings: [err], geometrySummary: null, visualization: null };
-  if (config.base_condition !== 'empty_opening') {
-    return { valid: true, status: 'warning', warnings: ['Сценарий с существующим основанием: расчёт выполняется как fit-check + отделка, с обязательной проверкой инженером.'], geometrySummary: { riser_count: 0, tread_count: 0, riser_height: 0, tread_depth: 0, comfort_value: 0, stair_angle_deg: 0, headroom_min: 0, score: 60 }, visualization: null };
+  if (config.base_condition === 'consultation') {
+    return { valid: true, status: 'warning', warnings: ['Онлайн-расчёт пропущен: после заявки инженер Tekstura предложит решение по вашим размерам и задачам.'], geometrySummary: null, visualization: null, alternatives: [], scenarioSummary: 'Консультационный маршрут без автоматического подбора.' };
+  }
+  const err = validateBase(config); if (err) return { valid: false, status: 'invalid', warnings: [err], geometrySummary: null, visualization: null, alternatives: [] };
+  if (config.base_condition === 'existing_metal_frame') {
+    return scenarioGeometry(config, {
+      score: 72,
+      summary: 'Fit-check существующего металлокаркаса: отделка, ограждение, покрытие, подсветка и монтаж.',
+      warnings: [
+        'Сценарий "Готовый металлокаркас": считаем проверку посадки и объём финишных работ, а не новый каркас.',
+        'Подтверждение инженером обязательно: нужно проверить состояние сварных узлов, геометрию и анкеровку.',
+        config.existing_condition_notes ? `Примечание по состоянию: ${config.existing_condition_notes}` : 'Добавьте примечание о текущем состоянии каркаса, если есть дефекты.'
+      ]
+    });
+  }
+  if (config.base_condition === 'existing_concrete_base') {
+    return scenarioGeometry(config, {
+      score: 74,
+      summary: 'Бетонное основание: облицовка, ограждение, финиш, подготовка и монтажные узлы.',
+      warnings: [
+        'Сценарий "Готовое бетонное основание": расчёт сфокусирован на облицовке и монтажных работах.',
+        'Рекомендуется проверка инженером уклонов, геометрии кромок и прочности мест крепления ограждений.',
+        config.existing_condition_notes ? `Примечание по основанию: ${config.existing_condition_notes}` : 'При наличии сколов/трещин добавьте комментарий для инженерной оценки.'
+      ]
+    });
+  }
+  if (config.base_condition === 'finish_only') {
+    return scenarioGeometry(config, {
+      score: 78,
+      summary: 'Только отделка: без подбора несущей схемы, с акцентом на финиш и детали.',
+      warnings: ['Сценарий "Только отделка": структурная геометрия не пересчитывается, выполняем аккуратный финишный scope.']
+    });
   }
   return calculateStairGeometryEngine({ stairType: config.stair_type, floorHeight: config.floor_to_floor_height, slabThickness: config.slab_thickness, topFinish: config.top_finish_thickness, bottomFinish: config.bottom_finish_thickness, openingLength: config.opening_length, openingWidth: config.opening_width, marchWidth: config.march_width, turnDirection: config.turn_direction });
+}
+
+function dimensionLine({ x1, y1, x2, y2, label, vertical = false }) {
+  const tx = vertical ? x1 - 8 : (x1 + x2) / 2;
+  const ty = vertical ? (y1 + y2) / 2 : y1 - 6;
+  const rotate = vertical ? ` transform="rotate(-90 ${tx} ${ty})"` : '';
+  return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="rgba(255,255,255,.5)" stroke-dasharray="4 3"/>\n<text x="${tx}" y="${ty}" fill="#f0d7b7" font-size="10" text-anchor="middle"${rotate}>${label}</text>`;
 }
 
 function renderGeometryVisuals(visualization) {
@@ -65,13 +117,29 @@ function renderGeometryVisuals(visualization) {
   if (!visualization) { plan.innerHTML = '<div class="muted">Визуализация будет показана после расчёта.</div>'; elev.innerHTML = '<div class="muted">Нет данных для бокового вида.</div>'; return; }
   const maxX = Math.max(visualization.opening.length, ...visualization.path.map((p) => p.x), 1);
   const maxY = Math.max(visualization.opening.width, ...visualization.path.map((p) => p.y), 1);
-  const poly = visualization.path.map((p) => `${20 + (p.x / maxX) * 500},${20 + (p.y / maxY) * 200}`).join(' ');
-  const warningDots = (visualization.warningZones || []).map((p) => `<circle cx="${20 + (p.x / maxX) * 500}" cy="${20 + (p.y / maxY) * 200}" r="4" fill="#ffb0b0"/>`).join('');
-  plan.innerHTML = `<svg viewBox="0 0 540 240" class="geo-svg"><rect x="20" y="20" width="500" height="200" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.25)"/><polyline points="${poly}" fill="none" stroke="#ddb786" stroke-width="3"/>${warningDots}</svg>`;
-  const n = Math.max(1, visualization.elevation.treadCount || 1); const stepW = 500 / n;
-  const stairs = Array.from({ length: n }).map((_, i) => { const x = 20 + i * stepW; const y = 220 - ((i + 1) / n) * 160; return `<path d="M${x} 220 L${x} ${y} L${x + stepW} ${y}" stroke="#ddb786" fill="none" stroke-width="2"/>`; }).join('');
-  const slabY = 220 - ((visualization.elevation.slabUnderside || 0) / Math.max(visualization.elevation.floorHeight || 1, 1)) * 180;
-  elev.innerHTML = `<svg viewBox="0 0 540 240" class="geo-svg"><line x1="20" y1="${slabY}" x2="520" y2="${slabY}" stroke="#f5d98c" stroke-dasharray="6 6"/>${stairs}</svg>`;
+  const px = (x) => 26 + (x / maxX) * 488;
+  const py = (y) => 26 + (y / maxY) * 188;
+  const poly = visualization.path.map((p) => `${px(p.x)},${py(p.y)}`).join(' ');
+  const warningDots = (visualization.warningZones || []).map((p) => `<circle cx="${px(p.x)}" cy="${py(p.y)}" r="2.4" fill="#f5d98c"/>`).join('');
+  const criticalDots = (visualization.criticalZones || []).map((p) => `<circle cx="${px(p.x)}" cy="${py(p.y)}" r="3" fill="#ff9898"/>`).join('');
+  plan.innerHTML = `<svg viewBox="0 0 540 240" class="geo-svg"><rect x="26" y="26" width="488" height="188" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.2)"/><rect x="26" y="26" width="${(visualization.opening.length / maxX) * 488}" height="${(visualization.opening.width / maxY) * 188}" fill="rgba(221,183,134,0.08)" stroke="rgba(221,183,134,.7)"/><polyline points="${poly}" fill="none" stroke="#ddb786" stroke-width="3"/>${warningDots}${criticalDots}${dimensionLine({ x1: 26, y1: 220, x2: 514, y2: 220, label: `Длина проёма ${visualization.dimensions.openingLength} мм` })}${dimensionLine({ x1: 520, y1: 26, x2: 520, y2: 214, label: `Ширина проёма ${visualization.dimensions.openingWidth} мм`, vertical: true })}${dimensionLine({ x1: 26, y1: 16, x2: 26 + (visualization.dimensions.marchWidth / maxX) * 488, y2: 16, label: `Марш ${visualization.dimensions.marchWidth} мм` })}</svg>`;
+
+  const n = Math.max(1, visualization.elevation.treadCount || 1); const stepW = 488 / n;
+  const stairs = Array.from({ length: n }).map((_, i) => { const x = 26 + i * stepW; const y = 214 - ((i + 1) / n) * 158; return `<path d="M${x} 214 L${x} ${y} L${x + stepW} ${y}" stroke="#ddb786" fill="none" stroke-width="2"/>`; }).join('');
+  const slabY = 214 - ((visualization.elevation.slabUnderside || 0) / Math.max(visualization.elevation.floorHeight || 1, 1)) * 176;
+  const criticalBand = slabY + 10;
+  elev.innerHTML = `<svg viewBox="0 0 540 240" class="geo-svg"><rect x="26" y="26" width="488" height="188" fill="rgba(255,255,255,.02)" stroke="rgba(255,255,255,.2)"/><line x1="26" y1="${slabY}" x2="514" y2="${slabY}" stroke="#f5d98c" stroke-dasharray="6 6"/><rect x="26" y="${criticalBand}" width="488" height="${214 - criticalBand}" fill="rgba(245,123,123,.09)"/>${stairs}${dimensionLine({ x1: 12, y1: 214, x2: 12, y2: 26, label: `Этаж-этаж ${visualization.dimensions.floorHeight} мм`, vertical: true })}</svg>`;
+}
+
+function renderAlternatives(geometry) {
+  const root = $('geometryAlternatives');
+  if (!root) return;
+  const alternatives = geometry?.alternatives || [];
+  if (!alternatives.length) {
+    root.innerHTML = '<div class="muted">Альтернативные варианты появятся, когда движок найдёт несколько рабочих конфигураций.</div>';
+    return;
+  }
+  root.innerHTML = `<div class="alt-grid">${alternatives.slice(0, 3).map((item, idx) => `<article class="alt-card"><div class="alt-title">Вариант ${idx + 2}</div><div class="alt-row"><span>Подъёмы</span><b>${item.riserCount}</b></div><div class="alt-row"><span>Проступь</span><b>${item.treadDepth} мм</b></div><div class="alt-row"><span>Угол</span><b>${item.angleDeg}°</b></div><div class="alt-row"><span>Просвет</span><b>${item.minHeadroom} мм</b></div><div class="alt-row"><span>Статус</span><b class="badge ${item.status}">${item.status === 'recommended' ? 'Рекомендуем' : item.status === 'warning' ? 'Допустимо' : 'Проверить'}</b></div></article>`).join('')}</div>`;
 }
 
 function getInvalidGeometryGuidance(config) {
@@ -84,12 +152,12 @@ function renderGeometry(geometry) {
   const root = $('geometryResult'); const warnings = $('geometryWarnings'); const fallbackCta = $('geometryFallbackCta'); if (!root || !warnings) return;
   if (!geometry.valid || geometry.status === 'invalid') {
     const guidance = getInvalidGeometryGuidance(state.lastConfig || {});
-    root.innerHTML = `<div class="warning-block invalid"><div class="warning-title">Не найдена безопасная и удобная конфигурация</div><div class="warning-text">Онлайн-подбор не дал корректный результат для текущих размеров.</div></div>`;
+    root.innerHTML = `<div class="warning-block invalid"><div class="warning-title">Для текущих размеров онлайн-подбор не нашёл безопасный и удобный вариант</div><div class="warning-text">Это не отказ — просто нужен ручной инженерный подбор.</div></div>`;
     warnings.innerHTML = `<div class="warning-block invalid"><div class="warning-text">${(geometry.warnings || []).join(' ')}</div><ul class="warning-list">${guidance.map((x) => `<li>${x}</li>`).join('')}</ul></div>`;
-    if (fallbackCta) fallbackCta.hidden = false; renderGeometryVisuals(null); setProceedAvailability(false); return;
+    if (fallbackCta) fallbackCta.hidden = false; renderGeometryVisuals(null); renderAlternatives(null); setProceedAvailability(false); return;
   }
 
-  const statusText = { recommended: 'Рекомендуем', warning: 'Требует проверки', invalid: 'Невалидно' };
+  const statusText = { recommended: 'Рекомендуем', warning: 'Допустимо с проверкой', invalid: 'Нужна проверка' };
   const summary = geometry.geometrySummary || {};
   const rows = [
     ['Сценарий', LABELS.base_condition[state.lastConfig.base_condition] || state.lastConfig.base_condition],
@@ -102,14 +170,19 @@ function renderGeometry(geometry) {
     ['Формула 2h+b', `${summary.comfort_value || '—'} мм`],
     ['Угол', `${summary.stair_angle_deg || '—'}°`],
     ['Мин. просвет по линии хода', `${summary.headroom_min || '—'} мм`],
+    ['Критичные точки просвета', `${summary.headroom_critical_count ?? '—'}`],
     ['Оценка кандидата', `${summary.score || '—'}/100`]
   ];
+  if (geometry.scenarioSummary) rows.push(['Логика сценария', geometry.scenarioSummary]);
   root.innerHTML = `<table class="result-table"><tbody>${rows.map(([k, v]) => `<tr><th>${k}</th><td>${v}</td></tr>`).join('')}</tbody></table>`;
+
   const warningList = [...(geometry.warnings || [])];
-  if (geometry.status === 'warning') warningList.unshift('Вариант допустим, но перед запуском рекомендуем инженерную проверку Tekstura.');
+  if (geometry.status === 'recommended') warningList.unshift('Геометрия в рекомендованной зоне: сохраняем спокойный премиальный баланс шага и угла.');
+  if (geometry.status === 'warning') warningList.unshift('Вариант строится, но перед запуском рекомендуем инженерное подтверждение и контроль на объекте.');
   warnings.innerHTML = warningList.length ? warningList.map((w) => `<div class="warning-block"><div class="warning-text">${w}</div></div>`).join('') : '<div class="ok">Геометрия в рекомендованных пределах.</div>';
   if (fallbackCta) fallbackCta.hidden = geometry.status === 'recommended';
   renderGeometryVisuals(geometry.visualization);
+  renderAlternatives(geometry);
   setProceedAvailability(true);
 }
 
@@ -145,6 +218,7 @@ function buildRequestPayload() {
     staircaseType: LABELS.stair_type[cfg.stair_type] || cfg.stair_type,
     inputDimensions: { floor_to_floor_height: cfg.floor_to_floor_height, opening_length: cfg.opening_length, opening_width: cfg.opening_width, march_width: cfg.march_width, slab_thickness: cfg.slab_thickness, top_finish_thickness: cfg.top_finish_thickness, bottom_finish_thickness: cfg.bottom_finish_thickness },
     geometrySummary: state.geometry?.geometrySummary || null,
+    scenario_summary: state.geometry?.scenarioSummary || '',
     status: state.geometry?.status || 'invalid',
     warnings: state.geometry?.warnings || [],
     materialsSummary: { frame: LABELS.frame_material[cfg.frame_material], cladding: LABELS.cladding[cfg.cladding], railing: LABELS.railing[cfg.railing], finish: LABELS.finish_level[cfg.finish_level] },

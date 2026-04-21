@@ -83,6 +83,7 @@
         <div class="field"><label for="topFinishThickness">Финиш сверху (мм)</label><input id="topFinishThickness" type="number" placeholder="20"></div>
         <div class="field"><label for="bottomFinishThickness">Финиш снизу (мм)</label><input id="bottomFinishThickness" type="number" placeholder="20"></div>
         <div class="field"><label for="deliveryDistance">Расстояние доставки (км)</label><input id="deliveryDistance" type="number" placeholder="20"></div>
+        <div class="field hidden" id="geometryOptionalNote"><label>Режим отделки</label><small class="field-help">Для сценария «Только отделка» структурный подбор маршей не выполняется — фиксируем отделочные работы и узлы монтажа.</small></div>
         <div class="field hidden" id="existingConditionField"><label for="existingConditionNotes">Состояние существующего основания</label><input id="existingConditionNotes" type="text" placeholder="Например: нужен ремонт сварных швов"></div>
       </div>
 
@@ -120,6 +121,7 @@
       <div id="geometryTypeHint" class="stair-type-hint"></div>
       <div id="geometryResult" class="result-box"></div>
       <div id="geometryWarnings"></div>
+      <div id="geometryAlternatives" class="result-box"></div>
       <div class="geometry-visuals">
         <div class="result-box">
           <h3>Вид сверху</h3>

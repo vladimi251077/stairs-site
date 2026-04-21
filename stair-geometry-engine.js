@@ -7,7 +7,7 @@ const LIMITS = {
 };
 
 const round = (v, d = 1) => Number(v.toFixed(d));
-const rad = (deg) => (deg * Math.PI) / 180;
+const EDGE_BLEND_MM = 120;
 
 function getRiserCounts(height) {
   const minCount = Math.ceil(height / LIMITS.riser.recommendedMax);
@@ -59,7 +59,10 @@ function buildPath(params, treadsPerFlight) {
     if (path.length) path[path.length - 1].x = cornerX;
     const turnCount = params.turnType === 'winders' ? 3 : 1;
     for (let i = 1; i <= turnCount; i += 1) {
-      path.push({ x: cornerX + (params.marchWidth * i) / (turnCount + 1), y: yMid + (params.marchWidth * i) / (turnCount + 1) });
+      path.push({
+        x: cornerX + (params.marchWidth * i) / (turnCount + 1),
+        y: yMid + (params.marchWidth * i) / (turnCount + 1)
+      });
     }
     y = yMid + params.marchWidth;
     for (let i = 0; i < upper; i += 1) {
@@ -74,7 +77,10 @@ function buildPath(params, treadsPerFlight) {
     const farX = Math.max(x, params.openingLength - params.marchWidth);
     if (path.length) path[path.length - 1].x = farX;
     for (let i = 1; i <= turnCount; i += 1) {
-      path.push({ x: farX + (params.marchWidth * i) / (turnCount + 1), y: yMid + (params.marchWidth * i) / (turnCount + 1) });
+      path.push({
+        x: farX + (params.marchWidth * i) / (turnCount + 1),
+        y: yMid + (params.marchWidth * i) / (turnCount + 1)
+      });
     }
     x = farX;
     y = yMid + params.marchWidth;
@@ -86,21 +92,81 @@ function buildPath(params, treadsPerFlight) {
   return path;
 }
 
+function samplePolyline(points, step = 80) {
+  if (!points.length) return [];
+  const samples = [{ ...points[0], dist: 0 }];
+  let acc = 0;
+  for (let i = 1; i < points.length; i += 1) {
+    const a = points[i - 1];
+    const b = points[i];
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const segment = Math.hypot(dx, dy);
+    if (!segment) continue;
+    const chunks = Math.max(1, Math.ceil(segment / step));
+    for (let j = 1; j <= chunks; j += 1) {
+      const t = j / chunks;
+      const x = a.x + dx * t;
+      const y = a.y + dy * t;
+      const d = acc + segment * t;
+      samples.push({ x: round(x), y: round(y), dist: round(d) });
+    }
+    acc += segment;
+  }
+  return samples;
+}
+
+function ceilingBlendFactor(point, openingLength, openingWidth) {
+  const dx = Math.min(point.x, openingLength - point.x);
+  const dy = Math.min(point.y, openingWidth - point.y);
+  const edgeDist = Math.min(dx, dy);
+  if (edgeDist <= 0) return 0;
+  if (edgeDist >= EDGE_BLEND_MM) return 1;
+  return edgeDist / EDGE_BLEND_MM;
+}
+
 function evaluateHeadroom(params, treadsPerFlight, riserHeight) {
   const path = buildPath(params, treadsPerFlight);
+  const walkingSamples = samplePolyline(path, 70);
   const slabUnderside = params.floorHeight - params.slabThickness - params.topFinish - params.bottomFinish;
-  const totalTreads = Math.max(1, path.length);
+  const openCeiling = params.floorHeight + 2600;
+  const pathLength = Math.max(walkingSamples[walkingSamples.length - 1]?.dist || 1, 1);
 
-  const headroomSamples = path.map((point, index) => {
-    const stepHeight = riserHeight * (index + 1);
-    const inOpening = point.x >= 0 && point.x <= params.openingLength && point.y >= 0 && point.y <= params.openingWidth;
-    const clearance = inOpening ? 2600 : slabUnderside - stepHeight;
-    return { ...point, stepHeight: round(stepHeight), clearance: round(clearance) };
+  const headroomSamples = walkingSamples.map((point) => {
+    const progress = point.dist / pathLength;
+    const stepHeight = riserHeight * progress * Math.max(1, path.length);
+    const inside = point.x >= 0 && point.x <= params.openingLength && point.y >= 0 && point.y <= params.openingWidth;
+    const blend = inside ? ceilingBlendFactor(point, params.openingLength, params.openingWidth) : 0;
+    const ceilingHeight = slabUnderside + (openCeiling - slabUnderside) * blend;
+    const clearance = ceilingHeight - stepHeight;
+    return {
+      ...point,
+      stepHeight: round(stepHeight),
+      clearance: round(clearance),
+      insideOpening: inside,
+      blend: round(blend, 2)
+    };
   });
 
   const minHeadroom = headroomSamples.reduce((min, item) => Math.min(min, item.clearance), Infinity);
   const warningZones = headroomSamples.filter((item) => item.clearance < LIMITS.headroom.recommendedMin);
-  return { minHeadroom: Number.isFinite(minHeadroom) ? minHeadroom : 0, path, headroomSamples, warningZones, totalTreads };
+  const criticalZones = headroomSamples.filter((item) => item.clearance < LIMITS.headroom.warningMin);
+  const criticalLocations = criticalZones.slice(0, 5).map((item) => ({
+    x: item.x,
+    y: item.y,
+    clearance: item.clearance,
+    distance: item.dist
+  }));
+
+  return {
+    minHeadroom: Number.isFinite(minHeadroom) ? round(minHeadroom) : 0,
+    path,
+    walkingSamples: headroomSamples,
+    warningZones,
+    criticalZones,
+    criticalLocations,
+    totalTreads: Math.max(1, path.length)
+  };
 }
 
 function buildCandidate(input, riserCount, splitRatio = 0.5) {
@@ -136,11 +202,23 @@ function buildCandidate(input, riserCount, splitRatio = 0.5) {
     totalRun: round(totalTreads * treadDepth),
     turnType,
     marching: { lowerRisers, upperRisers, treadsLower, treadsUpper },
+    headroomMeta: {
+      warningCount: headroom.warningZones.length,
+      criticalCount: headroom.criticalZones.length,
+      criticalLocations: headroom.criticalLocations
+    },
     visualization: {
       path: headroom.path,
-      headroomSamples: headroom.headroomSamples,
+      walkingSamples: headroom.walkingSamples,
       warningZones: headroom.warningZones,
+      criticalZones: headroom.criticalZones,
       opening: { length: input.openingLength, width: input.openingWidth },
+      dimensions: {
+        openingLength: input.openingLength,
+        openingWidth: input.openingWidth,
+        marchWidth: input.marchWidth,
+        floorHeight: input.floorHeight
+      },
       elevation: {
         floorHeight: input.floorHeight,
         slabUnderside: input.floorHeight - input.slabThickness - input.topFinish - input.bottomFinish,
@@ -202,9 +280,10 @@ export function calculateStairGeometryEngine(rawInput) {
   variants.sort((a, b) => b.score - a.score);
   const best = variants[0];
   const warnings = [];
-  if (best.minHeadroom < LIMITS.headroom.recommendedMin) warnings.push('Просвет по линии хода ниже 2000 мм, рекомендуем ручную проверку инженером.');
-  if (best.comfort.value < LIMITS.comfort.min || best.comfort.value > LIMITS.comfort.max) warnings.push('Формула 2h+b вне целевого диапазона 600–640 мм.');
-  if (best.angleDeg > LIMITS.angle.recommendedMax) warnings.push('Угол близок к предельно комфортному.');
+  if (best.minHeadroom < LIMITS.headroom.recommendedMin) warnings.push('Просвет по линии хода ниже 2000 мм: вариант строится, но нужен контроль инженера Tekstura.');
+  if (best.comfort.value < LIMITS.comfort.min || best.comfort.value > LIMITS.comfort.max) warnings.push('Формула 2h+b вышла за целевой диапазон 600–640 мм.');
+  if (best.angleDeg > LIMITS.angle.recommendedMax) warnings.push('Угол близок к верхней границе комфорта.');
+  if (best.headroomMeta.criticalCount) warnings.push(`Есть критичные точки по просвету: ${best.headroomMeta.criticalCount} участков ниже ${LIMITS.headroom.warningMin} мм.`);
 
   return {
     valid: best.status !== 'invalid',
@@ -220,6 +299,9 @@ export function calculateStairGeometryEngine(rawInput) {
       comfort_value: best.comfort.value,
       stair_angle_deg: best.angleDeg,
       headroom_min: best.minHeadroom,
+      headroom_warning_count: best.headroomMeta.warningCount,
+      headroom_critical_count: best.headroomMeta.criticalCount,
+      headroom_critical_locations: best.headroomMeta.criticalLocations,
       score: best.score
     },
     visualization: best.visualization
