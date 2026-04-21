@@ -4,8 +4,8 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Проект лестницы — Tekstura</title>
 <meta name="description" content="Проект премиальной лестницы Tekstura: детали решения, материалы, конструкция и особенности реализации.">
-<link rel="canonical" href="https://stairs-site.vercel.app/project.html">
-<meta property="og:type" content="website"><meta property="og:site_name" content="Tekstura"><meta property="og:title" content="Проект лестницы — Tekstura"><meta property="og:description" content="Проект премиальной лестницы Tekstura: детали решения, материалы, конструкция и особенности реализации."><meta property="og:url" content="https://stairs-site.vercel.app/project.html">
+<link rel="canonical" href="https://tekstura.shop/project.html">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Tekstura"><meta property="og:title" content="Проект лестницы — Tekstura"><meta property="og:description" content="Проект премиальной лестницы Tekstura: детали решения, материалы, конструкция и особенности реализации."><meta property="og:url" content="https://tekstura.shop/project.html">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="/supabase-config.js"></script>
 <style>
 body{margin:0;background:#0f0c0a;color:#f4e7d4;font-family:Inter,Arial,sans-serif}.wrap{max-width:980px;margin:0 auto;padding:24px}a{color:#e8c8a2;text-decoration:none}h1{font-size:32px;margin-bottom:10px}p{color:#b9aa97;line-height:1.6}
@@ -43,7 +43,7 @@ const defaults = {
   frame:[['metal','Металлокаркас',0],['concrete','Бетонный каркас',42000],['wood','Деревянный каркас',26000]],
   finish:[['basic','Базовый',0],['standard','Стандарт',18000],['premium','Премиум',48000]]
 };
-function updateSeoMeta(t,d){const base='Проект лестницы — Tekstura';const ft=t?`${t} — проект лестницы | Tekstura`:base;const fd=d||'Проект премиальной лестницы Tekstura';document.title=ft;document.querySelector('meta[name="description"]').setAttribute('content',fd);document.querySelector('meta[property="og:title"]').setAttribute('content',ft);document.querySelector('meta[property="og:description"]').setAttribute('content',fd);}
+function updateSeoMeta(t,d){const base='Проект лестницы — Tekstura';const ft=t?`${t} — проект лестницы | Tekstura`:base;const fd=d||'Проект премиальной лестницы Tekstura';document.title=ft;document.querySelector('meta[name="description"]').setAttribute('content',fd);document.querySelector('meta[property="og:title"]').setAttribute('content',ft);document.querySelector('meta[property="og:description"]').setAttribute('content',fd);const canonical=document.querySelector('link[rel="canonical"]');const og=document.querySelector('meta[property="og:url"]');const url=`https://tekstura.shop/project.html?id=${encodeURIComponent(id||'')}`;if(canonical) canonical.setAttribute('href',url);if(og) og.setAttribute('content',url);}
 if(!id) document.body.innerHTML='❌ Открой проект через страницу проектов'; else loadProject();
 function setMainImage(url){const m=document.getElementById('mainImage');m.src=url||'/logo.jpg.png';document.querySelectorAll('#thumbs img').forEach((i)=>i.classList.toggle('active',i.src===m.src));}
 function fillSelect(id,options){document.getElementById(id).innerHTML=options.map(o=>`<option value="${o[0]}" data-delta="${o[2]}">${o[1]}</option>`).join('');}
@@ -52,9 +52,9 @@ const payload={staircaseType:project?.title||'Проект',total,selectedExtras
 document.getElementById('cfgRequest').href='/request.html?calc='+encodeURIComponent(JSON.stringify(payload));}
 async function loadProject(){try{const {data,error}=await client.from('projects').select('*').eq('id',id).single();if(error||!data){document.body.innerHTML='❌ Проект не найден';return;}project=data;basePrice=Number(data.price||data.price_from||0)||0;
 const {data:imgData}=await client.from('project_images').select('*').eq('project_id',id).order('sort_order',{ascending:true});
-images=(imgData&&imgData.length)?imgData:[{image_url:data.cover_image||data.image||'/logo.jpg.png',alt_text:data.title||'Проект',is_cover:true}];
+images=(imgData&&imgData.length)?imgData.filter((i)=>i.image_url):[{image_url:data.cover_image||data.image||'/logo.jpg.png',alt_text:data.title||'Проект',is_cover:true}];
 const cover=images.find(i=>i.is_cover)?.image_url||images[0].image_url; setMainImage(cover);
-document.getElementById('thumbs').innerHTML=images.map((img)=>`<img src="${img.image_url}" alt="${img.alt_text||'Проект'}">`).join('');document.querySelectorAll('#thumbs img').forEach((img)=>img.onclick=()=>setMainImage(img.src));
+document.getElementById('thumbs').innerHTML=images.map((img)=>`<img loading="lazy" src="${img.image_url}" alt="${img.alt_text||'Проект'}">`).join('');document.querySelectorAll('#thumbs img').forEach((img)=>img.onclick=()=>setMainImage(img.src));
 
 const opts=data.custom_options || {}; fillSelect('cfgRailing',opts.railing||defaults.railing); fillSelect('cfgCladding',opts.cladding||defaults.cladding); fillSelect('cfgFrame',opts.frame||defaults.frame); fillSelect('cfgFinish',opts.finish||defaults.finish);
 ['cfgRailing','cfgCladding','cfgFrame','cfgFinish','cfgLighting','cfgCoating'].forEach((id)=>document.getElementById(id).addEventListener('change',recalc)); recalc();

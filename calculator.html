@@ -5,30 +5,27 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Калькулятор лестницы Tekstura</title>
 <meta name="description" content="Пошаговый калькулятор Tekstura: тип лестницы, параметры, материалы и предварительная стоимость с передачей данных в заявку.">
-<link rel="canonical" href="https://stairs-site.vercel.app/calculator.html">
+<link rel="canonical" href="https://tekstura.shop/calculator.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Tekstura">
 <meta property="og:title" content="Калькулятор лестницы Tekstura">
 <meta property="og:description" content="Пошаговый расчёт стоимости лестницы с выбором материалов и передачей результата в заявку.">
-<meta property="og:url" content="https://stairs-site.vercel.app/calculator.html">
+<meta property="og:url" content="https://tekstura.shop/calculator.html">
+<link rel="stylesheet" href="/stair-configurator.css">
 <style>
-:root{--bg:#0f0c0a;--panel:#18130f;--line:#3f352d;--text:#f4e7d4;--muted:#baa894;--accent:#e8c8a2}
-*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 Inter,Arial,sans-serif}
-.container{max-width:860px;margin:0 auto;padding:20px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px}
-.step{display:none}.step.active{display:block} h1{font-size:clamp(26px,4vw,38px);margin:0 0 8px} h2{margin:0 0 8px}
-.progress{height:10px;background:#221b17;border-radius:999px;overflow:hidden;margin:14px 0 22px}.progress-bar{height:100%;background:var(--accent);width:20%;transition:width .2s}
-.field{margin:10px 0} label{display:block;margin-bottom:6px;font-weight:600} input,select{width:100%;padding:11px;border-radius:10px;border:1px solid var(--line);background:#120f0d;color:var(--text)}
-.row{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}.btn{padding:11px 16px;border-radius:10px;border:0;cursor:pointer;font-weight:700}.btn-main{background:var(--accent);color:#1a120e}.btn-alt{background:transparent;color:var(--text);border:1px solid var(--line)}
-.card-group{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.card{padding:12px;border:1px solid var(--line);border-radius:10px;background:#15110e;cursor:pointer}.card.selected{border-color:var(--accent);background:#201912}
-small{display:block;color:var(--muted)} .summary{background:#201912;border:1px solid var(--line);border-radius:10px;padding:12px}
-@media (max-width:700px){.card-group{grid-template-columns:1fr}.container{padding:14px}.panel{padding:14px}}
+.container{max-width:960px;margin:0 auto;padding:20px}.panel{padding:22px}.progress{height:10px;background:#221b17;border-radius:999px;overflow:hidden;margin:14px 0 22px}.progress-bar{height:100%;background:var(--gold-2);width:20%;transition:width .2s}
+.card-group{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.card{padding:12px;border:1px solid var(--line);border-radius:12px;background:#15110e;color:var(--text);cursor:pointer}.card.selected{border-color:var(--gold-2);background:#201912}
+.row{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}.btn{padding:11px 16px;border-radius:10px;border:0;cursor:pointer;font-weight:700}.btn-main{background:var(--gold-1);color:#1a120e}.btn-alt{background:transparent;color:var(--text);border:1px solid var(--line)}
+.summary{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:10px;padding:12px}
+.checkbox-line{display:flex;align-items:center;gap:8px}.checkbox-line input{width:auto}
+@media (max-width:760px){.card-group{grid-template-columns:1fr}.container{padding:14px}.panel{padding:14px}.row .btn{flex:1;min-width:140px}}
 </style>
 </head>
 <body>
-<div class="container">
+<div class="container wrap">
   <div class="panel">
     <h1>Калькулятор лестницы</h1>
-    <p style="color:var(--muted);margin:0">Пошаговый расчёт с передачей результата в форму заявки.</p>
+    <p class="hero-subtitle" style="margin-top:0">Пошаговый расчёт с передачей результата в форму заявки.</p>
     <div class="progress"><div id="progressBar" class="progress-bar"></div></div>
 
     <section class="step active" id="step1">
@@ -38,16 +35,18 @@ small{display:block;color:var(--muted)} .summary{background:#201912;border:1px s
         <button type="button" class="card" data-value="l_turn">Г-образная</button>
         <button type="button" class="card" data-value="u_turn">П-образная</button>
       </div>
-      <div class="row"><button class="btn btn-main" onclick="nextStep()">Далее</button></div>
+      <div class="row"><button class="btn btn-main" id="nextBtn1">Далее</button></div>
     </section>
 
     <section class="step" id="step2">
       <h2>Шаг 2. Геометрия</h2>
-      <div class="field"><label for="floorHeight">Высота этаж-этаж (мм)</label><input type="number" id="floorHeight" placeholder="3000"></div>
-      <div class="field"><label for="openingLength">Длина проёма (мм)</label><input type="number" id="openingLength" placeholder="4200"></div>
-      <div class="field"><label for="openingWidth">Ширина проёма (мм)</label><input type="number" id="openingWidth" placeholder="1200"></div>
-      <div class="field"><label for="marchWidth">Ширина марша (мм)</label><input type="number" id="marchWidth" placeholder="1000"></div>
-      <div class="row"><button class="btn btn-alt" onclick="prevStep()">Назад</button><button class="btn btn-main" onclick="nextStep()">Далее</button></div>
+      <div class="grid">
+        <div class="field"><label for="floorHeight">Высота этаж-этаж (мм)</label><input type="number" id="floorHeight" placeholder="3000"></div>
+        <div class="field"><label for="marchWidth">Ширина марша (мм)</label><input type="number" id="marchWidth" placeholder="1000"></div>
+        <div class="field"><label for="openingLength">Длина проёма (мм)</label><input type="number" id="openingLength" placeholder="4200"></div>
+        <div class="field"><label for="openingWidth">Ширина проёма (мм)</label><input type="number" id="openingWidth" placeholder="1200"></div>
+      </div>
+      <div class="row"><button class="btn btn-alt" data-prev>Назад</button><button class="btn btn-main" data-next>Далее</button></div>
     </section>
 
     <section class="step" id="step3">
@@ -57,22 +56,24 @@ small{display:block;color:var(--muted)} .summary{background:#201912;border:1px s
         <button type="button" class="card" data-value="concrete">Бетонный каркас<small>+42 000 ₽</small></button>
         <button type="button" class="card" data-value="wood">Деревянный каркас<small>+26 000 ₽</small></button>
       </div>
-      <div class="row"><button class="btn btn-alt" onclick="prevStep()">Назад</button><button class="btn btn-main" onclick="nextStep()">Далее</button></div>
+      <div class="row"><button class="btn btn-alt" data-prev>Назад</button><button class="btn btn-main" data-next>Далее</button></div>
     </section>
 
     <section class="step" id="step4">
       <h2>Шаг 4. Отделка и ограждение</h2>
-      <div class="field"><label for="cladding">Облицовка</label><select id="cladding"><option value="none">Без облицовки</option><option value="standard">Стандарт</option><option value="premium">Премиум</option></select></div>
-      <div class="field"><label for="railing">Ограждение</label><select id="railing"><option value="none">Без ограждения</option><option value="metal">Металл</option><option value="glass">Стекло</option><option value="wood">Дерево</option></select></div>
-      <div class="field"><label><input type="checkbox" id="lighting"> Подсветка ступеней (+26 000 ₽)</label></div>
-      <div class="field"><label><input type="checkbox" id="coating"> Премиум покрытие (+18 000 ₽)</label></div>
-      <div class="row"><button class="btn btn-alt" onclick="prevStep()">Назад</button><button class="btn btn-main" onclick="nextStep()">Далее</button></div>
+      <div class="grid">
+        <div class="field"><label for="cladding">Облицовка</label><select id="cladding"><option value="none">Без облицовки</option><option value="standard" selected>Стандарт</option><option value="premium">Премиум</option></select></div>
+        <div class="field"><label for="railing">Ограждение</label><select id="railing"><option value="none">Без ограждения</option><option value="metal" selected>Металл</option><option value="glass">Стекло</option><option value="wood">Дерево</option></select></div>
+      </div>
+      <div class="field checkbox-line"><input type="checkbox" id="lighting"><label for="lighting">Подсветка ступеней (+26 000 ₽)</label></div>
+      <div class="field checkbox-line"><input type="checkbox" id="coating"><label for="coating">Премиум покрытие (+18 000 ₽)</label></div>
+      <div class="row"><button class="btn btn-alt" data-prev>Назад</button><button class="btn btn-main" data-next>Далее</button></div>
     </section>
 
     <section class="step" id="step5">
       <h2>Шаг 5. Итог</h2>
       <div id="summary" class="summary"></div>
-      <div class="row"><button class="btn btn-alt" onclick="prevStep()">Назад</button><button class="btn btn-main" onclick="goToRequest()">Перейти к заявке</button></div>
+      <div class="row"><button class="btn btn-alt" data-prev>Назад</button><button class="btn btn-main" id="submitCalc">Перейти к заявке</button></div>
     </section>
   </div>
 </div>
@@ -80,22 +81,25 @@ small{display:block;color:var(--muted)} .summary{background:#201912;border:1px s
 let currentStep = 1; const maxStep = 5;
 const labels={stair_type:{straight:'Прямая',l_turn:'Г-образная',u_turn:'П-образная'},frame:{metal:'Металлокаркас',concrete:'Бетонный каркас',wood:'Деревянный каркас'},cladding:{none:'Без облицовки',standard:'Стандарт',premium:'Премиум'},railing:{none:'Без ограждения',metal:'Металл',glass:'Стекло',wood:'Дерево'}};
 const state={};
-function updateProgress(){document.getElementById('progressBar').style.width=((currentStep/maxStep)*100)+'%'}
-function showStep(step){document.querySelectorAll('.step').forEach((s)=>s.classList.remove('active'));document.getElementById('step'+step).classList.add('active');currentStep=step;updateProgress()}
+const byId=(id)=>document.getElementById(id);
+function updateProgress(){byId('progressBar').style.width=((currentStep/maxStep)*100)+'%'}
+function showStep(step){document.querySelectorAll('.step').forEach((s)=>s.classList.remove('active'));byId('step'+step).classList.add('active');currentStep=step;updateProgress();if(step===5)renderSummary();window.scrollTo({top:0,behavior:'smooth'});}
 function selectCard(groupId, card){document.querySelectorAll('#'+groupId+' .card').forEach((c)=>c.classList.remove('selected'));card.classList.add('selected')}
 document.querySelectorAll('#stairTypeCards .card').forEach((card)=>card.addEventListener('click',()=>selectCard('stairTypeCards',card)));
 document.querySelectorAll('#frameMaterialCards .card').forEach((card)=>card.addEventListener('click',()=>selectCard('frameMaterialCards',card)));
 function calcTotal(){let total=100000;if(state.frame_material==='concrete') total+=42000;if(state.frame_material==='wood') total+=26000;if(state.cladding==='none') total-=30000;if(state.cladding==='premium') total+=52000;if(state.railing==='glass') total+=38000;if(state.railing==='wood') total+=21000;if(state.lighting) total+=26000;if(state.coating) total+=18000;return total}
-function nextStep(){if(currentStep===1){const s=document.querySelector('#stairTypeCards .selected'); if(!s) return alert('Выберите тип лестницы'); state.stair_type=s.dataset.value}
-if(currentStep===2){state.floor_height=document.getElementById('floorHeight').value;state.opening_length=document.getElementById('openingLength').value;state.opening_width=document.getElementById('openingWidth').value;state.march_width=document.getElementById('marchWidth').value}
-if(currentStep===3){const s=document.querySelector('#frameMaterialCards .selected'); if(!s) return alert('Выберите материал каркаса'); state.frame_material=s.dataset.value}
-if(currentStep===4){state.cladding=document.getElementById('cladding').value;state.railing=document.getElementById('railing').value;state.lighting=document.getElementById('lighting').checked;state.coating=document.getElementById('coating').checked;state.total_price=calcTotal();renderSummary()}
-if(currentStep<maxStep) showStep(currentStep+1)}
-function prevStep(){if(currentStep>1) showStep(currentStep-1)}
-function renderSummary(){const extras=[];if(state.lighting) extras.push('Подсветка');if(state.coating) extras.push('Премиум покрытие');
-const total=state.total_price||calcTotal();document.getElementById('summary').innerHTML=`<p><b>Тип:</b> ${labels.stair_type[state.stair_type]}</p><p><b>Каркас:</b> ${labels.frame[state.frame_material]}</p><p><b>Облицовка:</b> ${labels.cladding[state.cladding]}</p><p><b>Ограждение:</b> ${labels.railing[state.railing]}</p><p><b>Доп. опции:</b> ${extras.join(', ')||'Нет'}</p><p><b>Предварительная стоимость:</b> ${Number(total).toLocaleString('ru-RU')} ₽</p>`}
-function goToRequest(){const payload={staircaseType:labels.stair_type[state.stair_type]||'-',total:state.total_price||calcTotal(),selectedExtras:[{label:labels.frame[state.frame_material]},{label:labels.cladding[state.cladding]},{label:labels.railing[state.railing]},...(state.lighting?[{label:'Подсветка'}]:[]),...(state.coating?[{label:'Премиум покрытие'}]:[])],materialsSummary:{frame:labels.frame[state.frame_material],cladding:labels.cladding[state.cladding],railing:labels.railing[state.railing]},dimensions:{floor_height:state.floor_height,opening_length:state.opening_length,opening_width:state.opening_width,march_width:state.march_width},priceBreakdown:{total:state.total_price||calcTotal()}};
-location.href='/request.html?calc='+encodeURIComponent(JSON.stringify(payload))}
+function parseNum(id){return Number(byId(id).value||0)}
+function validateStep(){if(currentStep===1){const s=document.querySelector('#stairTypeCards .selected'); if(!s){alert('Выберите тип лестницы'); return false;} state.stair_type=s.dataset.value;}
+if(currentStep===2){state.floor_height=parseNum('floorHeight');state.opening_length=parseNum('openingLength');state.opening_width=parseNum('openingWidth');state.march_width=parseNum('marchWidth');if(!state.floor_height||!state.opening_length||!state.opening_width||!state.march_width){alert('Заполните параметры геометрии');return false;}}
+if(currentStep===3){const s=document.querySelector('#frameMaterialCards .selected'); if(!s){alert('Выберите материал каркаса');return false;} state.frame_material=s.dataset.value;}
+if(currentStep===4){state.cladding=byId('cladding').value;state.railing=byId('railing').value;state.lighting=byId('lighting').checked;state.coating=byId('coating').checked;state.total_price=calcTotal();}
+return true;}
+function nextStep(){if(validateStep()&&currentStep<maxStep)showStep(currentStep+1)}
+function prevStep(){if(currentStep>1)showStep(currentStep-1)}
+function renderSummary(){const extras=[];if(state.lighting) extras.push('Подсветка');if(state.coating) extras.push('Премиум покрытие'); const total=state.total_price||calcTotal();
+byId('summary').innerHTML=`<p><b>Тип:</b> ${labels.stair_type[state.stair_type]||'-'}</p><p><b>Каркас:</b> ${labels.frame[state.frame_material]||'-'}</p><p><b>Облицовка:</b> ${labels.cladding[state.cladding]||'-'}</p><p><b>Ограждение:</b> ${labels.railing[state.railing]||'-'}</p><p><b>Доп. опции:</b> ${extras.join(', ')||'Нет'}</p><p><b>Предварительная стоимость:</b> ${Number(total).toLocaleString('ru-RU')} ₽</p>`}
+function goToRequest(){const payload={staircaseType:labels.stair_type[state.stair_type]||'-',total:state.total_price||calcTotal(),selectedExtras:[{label:labels.frame[state.frame_material]},{label:labels.cladding[state.cladding]},{label:labels.railing[state.railing]},...(state.lighting?[{label:'Подсветка'}]:[]),...(state.coating?[{label:'Премиум покрытие'}]:[])],materialsSummary:{frame:labels.frame[state.frame_material],cladding:labels.cladding[state.cladding],railing:labels.railing[state.railing]},dimensions:{floor_height:state.floor_height,opening_length:state.opening_length,opening_width:state.opening_width,march_width:state.march_width},priceBreakdown:{total:state.total_price||calcTotal()}};location.href='/request.html?calc='+encodeURIComponent(JSON.stringify(payload))}
+document.getElementById('nextBtn1').onclick=nextStep;document.querySelectorAll('[data-next]').forEach(b=>b.onclick=nextStep);document.querySelectorAll('[data-prev]').forEach(b=>b.onclick=prevStep);document.getElementById('submitCalc').onclick=goToRequest;
 updateProgress();
 </script>
 </body>

@@ -752,7 +752,9 @@
       if (/Invalid API key/i.test(msg)) return 'Неверный Supabase ключ.';
       if (/Failed to fetch|Load failed|fetch failed/i.test(msg)) return 'Сеть не может достучаться до Supabase. Проверь URL, ключ, HTTPS и CORS.';
       if (/CORS/i.test(msg)) return 'Браузер блокирует запрос к Supabase из-за CORS.';
-      return msg;
+      const code = err?.code ? ` [${err.code}]` : '';
+      const details = [err?.details, err?.hint].filter(Boolean).join(' | ');
+      return `${msg}${code}${details ? ` — ${details}` : ''}`;
     }
 
     function throwIfSupabaseError(result, operationLabel) {
@@ -811,7 +813,7 @@
 
     document.getElementById('saveContacts').onclick = async () => {
       try {
-        await client.from('settings').upsert({
+        const contactsRes = await client.from('settings').upsert({
           id: 1,
           phone: phoneInput.value.trim(),
           whatsapp: whatsappInput.value.trim(),
@@ -820,6 +822,7 @@
           max: maxInput.value.trim(),
           updated_at: new Date().toISOString()
         }, { onConflict: 'id' });
+        throwIfSupabaseError(contactsRes, 'Не удалось сохранить контакты');
 
         setStatus('Контакты сохранены');
         await loadSettings();
@@ -842,7 +845,7 @@
           logo = await uploadFile(logoFileInput.files[0], 'logo');
         }
 
-        await client.from('settings').upsert({
+        const heroRes = await client.from('settings').upsert({
           id: 1,
           heroTitle: heroTitleInput.value.trim(),
           heroSubtitle: heroSubtitleInput.value.trim(),
@@ -852,6 +855,7 @@
           baseRate: Number(baseRateInput.value || 5000),
           updated_at: new Date().toISOString()
         }, { onConflict: 'id' });
+        throwIfSupabaseError(heroRes, 'Не удалось сохранить главный экран');
 
         setStatus('Главный экран сохранён');
         await loadSettings();
@@ -874,8 +878,12 @@
           sort_order: Number(el.querySelector('[data-k="sort_order"]').value || (idx + 1))
         }));
 
-        await client.from('services').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-        if (rows.length) await client.from('services').upsert(rows);
+        const deleteServicesRes = await client.from('services').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        throwIfSupabaseError(deleteServicesRes, 'Не удалось очистить услуги');
+        if (rows.length) {
+          const upsertServicesRes = await client.from('services').upsert(rows);
+          throwIfSupabaseError(upsertServicesRes, 'Не удалось сохранить услуги');
+        }
         setStatus('Услуги сохранены');
         await loadServices();
       } catch (err) {
@@ -931,20 +939,28 @@
           }
         }
 
-        const deleteProjectsResult = await client.from('projects').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-        throwIfSupabaseError(deleteProjectsResult, 'Не удалось очистить список проектов');
+        const currentIds = state.projects.map((p) => p.id);
+        const nextIds = rows.map((r) => r.id);
+        const removedIds = currentIds.filter((id) => !nextIds.includes(id));
 
         if (rows.length) {
-          const upsertProjectsResult = await client.from('projects').upsert(rows);
+          const upsertProjectsResult = await client.from('projects').upsert(rows, { onConflict: 'id' });
           throwIfSupabaseError(upsertProjectsResult, 'Не удалось сохранить проекты');
         }
 
-        const deleteImagesResult = await client.from('project_images').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-        throwIfSupabaseError(deleteImagesResult, 'Не удалось очистить галерею проектов');
+        for (const projectId of nextIds) {
+          const clearImagesRes = await client.from('project_images').delete().eq('project_id', projectId);
+          throwIfSupabaseError(clearImagesRes, `Не удалось очистить галерею проекта ${projectId}`);
+          const projectImages = imageRows.filter((row) => row.project_id === projectId);
+          if (projectImages.length) {
+            const insertImagesResult = await client.from('project_images').insert(projectImages);
+            throwIfSupabaseError(insertImagesResult, `Не удалось сохранить изображения проекта ${projectId}`);
+          }
+        }
 
-        if (imageRows.length) {
-          const insertImagesResult = await client.from('project_images').insert(imageRows);
-          throwIfSupabaseError(insertImagesResult, 'Не удалось сохранить изображения проектов');
+        if (removedIds.length) {
+          const deleteRemovedProjects = await client.from('projects').delete().in('id', removedIds);
+          throwIfSupabaseError(deleteRemovedProjects, 'Не удалось удалить удалённые проекты');
         }
 
         setStatus('Проекты сохранены');
