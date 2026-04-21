@@ -3,179 +3,118 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
   <title>Оставить заявку на лестницу — Tekstura</title>
-  <meta name="description" content="Оставьте заявку на проектирование и изготовление лестницы. Свяжемся, уточним параметры и подготовим предложение по вашему проекту.">
-  <link rel="canonical" href="https://tekstura.shop/request.html">
+  <meta name="description" content="Оставьте заявку на лестницу Tekstura. Если расчёт выполнен в калькуляторе, мы подтянем его параметры в форму автоматически.">
+  <link rel="canonical" href="https://stairs-site.vercel.app/request.html">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Tekstura">
   <meta property="og:title" content="Оставить заявку на лестницу — Tekstura">
-  <meta property="og:description" content="Оставьте заявку на проектирование и изготовление лестницы. Свяжемся, уточним параметры и подготовим предложение по вашему проекту.">
-  <meta property="og:url" content="https://tekstura.shop/request.html">
+  <meta property="og:description" content="Передайте расчёт из калькулятора и отправьте заявку в Tekstura.">
+  <meta property="og:url" content="https://stairs-site.vercel.app/request.html">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/supabase-config.js"></script>
-
   <style>
-    body {
-      margin: 0;
-      background: #0f0c0a;
-      color: #f4e7d4;
-      font-family: Inter, sans-serif;
-    }
-
-    .wrap {
-      max-width: 700px;
-      margin: auto;
-      padding: 20px;
-    }
-
-    h1 {
-      margin-bottom: 10px;
-    }
-
-    .block {
-      background: #1a1410;
-      padding: 15px;
-      border-radius: 12px;
-      margin-bottom: 15px;
-    }
-
-    input, textarea {
-      width: 100%;
-      padding: 12px;
-      margin-top: 8px;
-      border-radius: 10px;
-      border: none;
-      background: #2a211b;
-      color: #fff;
-    }
-
-    button {
-      margin-top: 15px;
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: none;
-      background: #e8c8a2;
-      font-weight: bold;
-    }
-
-    .result {
-      background: #2a211b;
-      padding: 12px;
-      border-radius: 10px;
-      margin-top: 10px;
-    }
+    :root{--bg:#0f0c0a;--panel:#19130f;--line:#3d332b;--text:#f4e7d4;--muted:#baa894;--accent:#e8c8a2;--ok:#9ddcb0;--err:#ff9e9e}
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 Inter,sans-serif}
+    .wrap{max-width:760px;margin:auto;padding:16px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+    h1{margin:0 0 8px;font-size:clamp(28px,4vw,38px)} .muted{color:var(--muted)} .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .full{grid-column:1/-1} input,textarea{width:100%;padding:11px;border-radius:10px;border:1px solid var(--line);background:#120f0d;color:var(--text)} textarea{min-height:96px}
+    .btn{width:100%;padding:12px;border-radius:10px;border:0;background:var(--accent);color:#1a120e;font-weight:700;cursor:pointer;margin-top:10px}
+    .result{white-space:pre-line;background:#221a15;border:1px solid var(--line);border-radius:10px;padding:10px}
+    #status.ok{color:var(--ok)} #status.err{color:var(--err)}
+    @media(max-width:700px){.grid{grid-template-columns:1fr}}
   </style>
 </head>
-
 <body>
   <div class="wrap">
+    <h1>Заявка на лестницу</h1>
+    <p class="muted">Заполните контакты — мы свяжемся и уточним детали проекта.</p>
 
-    <h1>Оставить заявку на лестницу</h1>
-    <p>Оставьте заявку на проект лестницы или консультацию — уточним параметры и подготовим расчёт стоимости.</p>
-
-    <div class="block">
-      <b>Ваш расчет:</b>
-      <div id="calcData" class="result">Нет данных</div>
+    <div class="panel">
+      <b>Сводка расчёта</b>
+      <div id="calcData" class="result">Расчёт не передан. Вы можете оставить заявку без калькулятора.</div>
     </div>
 
-    <div class="block">
-      <input id="name" placeholder="Имя">
-      <input id="phone" placeholder="Телефон">
-      <input id="messenger" placeholder="WhatsApp / Telegram">
-      <input id="city" placeholder="Город">
-      <textarea id="comment" placeholder="Комментарий"></textarea>
-
-      <button onclick="sendRequest()">Отправить заявку</button>
+    <div class="panel">
+      <div class="grid">
+        <div><input id="name" placeholder="Имя"></div>
+        <div><input id="phone" placeholder="Телефон *"></div>
+        <div><input id="messenger" placeholder="WhatsApp / Telegram"></div>
+        <div><input id="city" placeholder="Город"></div>
+        <div class="full"><textarea id="comment" placeholder="Комментарий"></textarea></div>
+      </div>
+      <button class="btn" onclick="sendRequest()">Отправить заявку</button>
+      <div id="status" style="margin-top:10px"></div>
     </div>
-
-    <div id="status"></div>
-
   </div>
-
 <script>
-const client = window.supabase.createClient(
-  window.SUPABASE_CONFIG.url,
-  window.SUPABASE_CONFIG.anonKey
-);
-
+const client = window.supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
 let calcPayload = null;
 
-// Получаем данные из URL
-function loadCalcData() {
-  const params = new URLSearchParams(window.location.search);
-  const raw = params.get('calc');
-
+function parseCalc(){
+  const raw = new URLSearchParams(location.search).get('calc');
   if (!raw) return;
-
   try {
     calcPayload = JSON.parse(decodeURIComponent(raw));
-
-    document.getElementById('calcData').innerText = `Тип: ${calcPayload.staircaseType || '-'}\nЦена: ${calcPayload.total || 0} ₽\nОграждение: ${calcPayload?.materialsSummary?.railing || '-'}\nОблицовка: ${calcPayload?.materialsSummary?.cladding || '-'}\nОпции: ${(calcPayload?.selectedExtras || []).map((e)=>e.label).join(', ') || 'нет'}`;
-
-  } catch (e) {
-    console.error(e);
+    const lines = [
+      `Тип лестницы: ${calcPayload.staircaseType || '-'}`,
+      `Каркас: ${calcPayload?.materialsSummary?.frame || '-'}`,
+      `Облицовка: ${calcPayload?.materialsSummary?.cladding || '-'}`,
+      `Ограждение: ${calcPayload?.materialsSummary?.railing || '-'}`,
+      `Опции: ${(calcPayload?.selectedExtras || []).map((i)=>i.label).join(', ') || 'Нет'}`,
+      `Итоговая стоимость: ${Number(calcPayload.total || 0).toLocaleString('ru-RU')} ₽`
+    ];
+    document.getElementById('calcData').textContent = lines.join('\n');
+  } catch (err) {
+    console.error('calc parse error', err);
   }
+}
+
+async function insertLead(payload){
+  const tables = ['leads', 'calculator_requests'];
+  let lastError = null;
+  for (const table of tables) {
+    const { data, error } = await client.from(table).insert([payload]).select('*').single();
+    if (!error) return { data, table };
+    lastError = error;
+  }
+  throw lastError;
 }
 
 async function sendRequest() {
-  const name = document.getElementById('name').value;
-  const phone = document.getElementById('phone').value;
-  const messenger = document.getElementById('messenger').value;
-  const city = document.getElementById('city').value;
-  const comment = document.getElementById('comment').value;
+  const status = document.getElementById('status');
+  status.className = '';
+  const phone = document.getElementById('phone').value.trim();
+  if (!phone) { alert('Введите телефон'); return; }
 
-  if (!phone) {
-    alert('Введите телефон');
-    return;
-  }
-
-  const leadPayload = {
-    name,
+  const payload = {
+    name: document.getElementById('name').value.trim(),
     phone,
-    messenger,
-    city,
-    comment,
+    messenger: document.getElementById('messenger').value.trim(),
+    city: document.getElementById('city').value.trim(),
+    comment: document.getElementById('comment').value.trim(),
     staircase_type: calcPayload?.staircaseType || '',
-    dimensions_json: { ...(calcPayload?.dimensions || {}), geometry: calcPayload?.geometrySummary || {} },
-    materials_json: { ...(calcPayload?.materials || {}), summary: calcPayload?.materialsSummary || {} },
-    options_json: { extras: calcPayload?.options || [], labels: calcPayload?.selectedExtras || [], price_breakdown: calcPayload?.priceBreakdown || {} },
-    calculated_price: calcPayload?.total || 0
+    dimensions_json: calcPayload?.dimensions || {},
+    materials_json: calcPayload?.materialsSummary || {},
+    options_json: { selected: calcPayload?.selectedExtras || [], price_breakdown: calcPayload?.priceBreakdown || {} },
+    calculated_price: Number(calcPayload?.total || 0)
   };
 
-  const { data, error } = await client
-    .from('calculator_requests')
-    .insert([leadPayload])
-    .select('*')
-    .single();
-
-  if (error) {
-    console.error(error);
-    const errorMessage = error?.message || error?.details || error?.hint || 'Неизвестная ошибка Supabase';
-    document.getElementById('status').innerText = `Ошибка отправки: ${errorMessage}`;
-    return;
-  }
-
-  document.getElementById('status').innerText = 'Заявка отправлена ✅';
-
   try {
-    const notifyResponse = await fetch('/api/notify-lead', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ lead: data || leadPayload })
-    });
-
-    if (!notifyResponse.ok) {
-      console.error('Notification endpoint failed', await notifyResponse.text());
-    }
-  } catch (notifyError) {
-    console.error('Notification request failed', notifyError);
+    const { data } = await insertLead(payload);
+    status.className = 'ok';
+    status.textContent = 'Заявка отправлена ✅ Спасибо! Мы свяжемся с вами в ближайшее время.';
+    try {
+      await fetch('/api/notify-lead', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lead: data || payload }) });
+    } catch (err) { console.error('notify failed', err); }
+  } catch (error) {
+    console.error(error);
+    status.className = 'err';
+    status.textContent = `Ошибка отправки: ${error?.message || 'Не удалось записать заявку в Supabase'}`;
   }
 }
 
-loadCalcData();
+parseCalc();
 </script>
-
 </body>
 </html>

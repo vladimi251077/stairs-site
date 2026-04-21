@@ -3,217 +3,66 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-
   <title>Проекты лестниц — портфолио Tekstura</title>
   <meta name="description" content="Реализованные проекты премиальных лестниц Tekstura: современные решения для частных домов, вилл и интерьерных пространств.">
-  <link rel="canonical" href="https://tekstura.shop/projects.html">
+  <link rel="canonical" href="https://stairs-site.vercel.app/projects.html">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Tekstura">
   <meta property="og:title" content="Проекты лестниц — портфолио Tekstura">
   <meta property="og:description" content="Реализованные проекты премиальных лестниц Tekstura: современные решения для частных домов, вилл и интерьерных пространств.">
-  <meta property="og:url" content="https://tekstura.shop/projects.html">
+  <meta property="og:url" content="https://stairs-site.vercel.app/projects.html">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/supabase-config.js"></script>
-
+  <link rel="stylesheet" href="/styles.css">
   <style>
-    :root { color-scheme: dark; }
-
-    body {
-      margin: 0;
-      background: #0f0c0a;
-      color: #f4e7d4;
-      font-family: Inter, Arial, sans-serif;
-    }
-
-    .wrap {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 28px 16px 48px;
-    }
-
-    a {
-      color: inherit;
-    }
-
-    .top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 24px;
-      gap: 16px;
-    }
-
-    .home-link {
-      text-decoration: none;
-      border: 1px solid rgba(255,255,255,.14);
-      border-radius: 12px;
-      padding: 10px 14px;
-      color: #d7c3a8;
-      background: rgba(255,255,255,.03);
-    }
-
-    h1 {
-      margin: 0;
-      font-size: clamp(28px, 4vw, 44px);
-    }
-
-    .subtitle {
-      margin: 0 0 24px;
-      color: #b8aa98;
-    }
-
-    .projects-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 16px;
-    }
-
-    .project-card {
-      display: block;
-      text-decoration: none;
-      border: 1px solid rgba(255,255,255,.09);
-      border-radius: 18px;
-      overflow: hidden;
-      background: rgba(255,255,255,.02);
-      transition: transform .18s ease, border-color .18s ease;
-    }
-
-    .project-card:hover {
-      transform: translateY(-2px);
-      border-color: rgba(255,255,255,.25);
-    }
-
-    .project-card img {
-      width: 100%;
-      height: 180px;
-      object-fit: cover;
-      display: block;
-      background: #201b18;
-    }
-
-    .project-card-body {
-      padding: 14px;
-    }
-
-    .project-card h2 {
-      margin: 0 0 8px;
-      font-size: 19px;
-      line-height: 1.25;
-    }
-
-    .project-card p {
-      margin: 0;
-      color: #b8aa98;
-      font-size: 15px;
-      line-height: 1.45;
-    }
-
-    .price {
-      margin-top: 10px;
-      color: #efd8bb;
-      font-weight: 700;
-      font-size: 14px;
-    }
-
-    .empty {
-      border: 1px dashed rgba(255,255,255,.18);
-      border-radius: 14px;
-      padding: 16px;
-      color: #c8baa8;
-      background: rgba(255,255,255,.02);
-    }
+    .projects-wrap{max-width:1140px;margin:0 auto;padding:28px 16px 48px}.projects-top{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+    .projects-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}.project-card{border:1px solid rgba(255,255,255,.09);border-radius:16px;overflow:hidden;background:rgba(255,255,255,.02);text-decoration:none;color:inherit}
+    .project-card img{width:100%;height:190px;object-fit:cover;background:#201b18}.project-body{padding:14px}.project-body h2{margin:0 0 8px}.project-body p{margin:0;color:#b8aa98}
+    .chip{border:1px solid rgba(255,255,255,.18);padding:8px 12px;border-radius:999px;font-size:14px;color:#d9c6ae;background:rgba(255,255,255,.02)}
+    .price{margin-top:10px;font-weight:700;color:#efd8bb}.empty{border:1px dashed rgba(255,255,255,.2);padding:16px;border-radius:12px;color:#b8aa98}
   </style>
 </head>
 <body>
-  <main class="wrap">
-    <div class="top">
-      <h1>Проекты лестниц и портфолио Tekstura</h1>
-      <a class="home-link" href="/">На главную</a>
+  <main class="projects-wrap">
+    <div class="projects-top">
+      <div>
+        <h1>Проекты лестниц Tekstura</h1>
+        <p class="subtitle">Галерея реализованных решений. Фильтр по типу лестницы появится в следующем обновлении.</p>
+      </div>
+      <div class="chip" aria-label="заглушка фильтра">Фильтр: скоро</div>
     </div>
-
-    <p class="subtitle">Реализованные проекты лестниц для частных домов: портфолио современных и премиальных решений Tekstura.</p>
-
     <section id="projectsRoot" class="projects-grid" aria-live="polite"></section>
   </main>
-
-  <script>
-    const cfg = window.SUPABASE_CONFIG;
-    const client = window.supabase.createClient(cfg.url, cfg.anonKey);
-    const projectsRoot = document.getElementById('projectsRoot');
-
-    function escapeHtml(str) {
-      return String(str ?? '')
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#039;');
-    }
-
-    function escapeAttr(str) {
-      return String(str ?? '').replaceAll('"', '&quot;');
-    }
-
-    function getShortDescription(project) {
-      return project.short_description || project.description || '';
-    }
-
-    function getPrice(project) {
-      if (project.price) return project.price + ' ₽';
-      if (project.price_from) return 'от ' + project.price_from + ' ₽';
-      return 'по запросу';
-    }
-
-    function renderProjects(items) {
-      if (!items?.length) {
-        projectsRoot.innerHTML = '<div class="empty">Проекты пока не добавлены.</div>';
-        return;
-      }
-
-      projectsRoot.innerHTML = items.map((project) => {
-        const shortDescription = getShortDescription(project);
-        const image = project.cover_image || project.image || '/logo.jpg.png';
-        const id = encodeURIComponent(project.id);
-
-        return `
-          <a class="project-card" href="/project.html?id=${id}">
-            <img src="${escapeAttr(image)}" alt="${escapeAttr(project.title || 'Проект')}" />
-            <div class="project-card-body">
-              <h2>${escapeHtml(project.title || 'Без названия')}</h2>
-              <p>${escapeHtml(shortDescription || 'Описание появится позже.')}</p>
-              <div class="price">${escapeHtml(getPrice(project))}</div>
-            </div>
-          </a>
-        `;
-      }).join('');
-    }
-
-    async function loadProjects() {
-      try {
-        const { data, error } = await client.from('projects').select('*').order('created_at', { ascending: false });
-        if (error) throw error;
-        const items = data || [];
-        if (!items.length) return renderProjects([]);
-
-        const { data: images } = await client
-          .from('project_images')
-          .select('project_id,image_url,is_cover,sort_order')
-          .in('project_id', items.map((i) => i.id))
-          .order('sort_order', { ascending: true });
-
-        const coverMap = new Map();
-        (images || []).forEach((img) => {
-          if (!coverMap.has(img.project_id) || img.is_cover) coverMap.set(img.project_id, img.image_url);
-        });
-
-        renderProjects(items.map((project) => ({ ...project, cover_image: coverMap.get(project.id) || project.cover_image })));
-      } catch (err) {
-        console.error('Ошибка загрузки проектов', err);
-        projectsRoot.innerHTML = '<div class="empty">Не удалось загрузить проекты. Попробуйте обновить страницу.</div>';
-      }
-    }
-
-    loadProjects();
-  </script>
+<script>
+const cfg = window.SUPABASE_CONFIG;
+const client = window.supabase.createClient(cfg.url, cfg.anonKey);
+const projectsRoot = document.getElementById('projectsRoot');
+const esc = (s='') => String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
+const getPrice = (project) => project.price ? `${project.price} ₽` : (project.price_from ? `от ${project.price_from} ₽` : 'по запросу');
+const render = (items=[]) => {
+  if (!items.length) { projectsRoot.innerHTML='<div class="empty">Проекты пока не добавлены.</div>'; return; }
+  projectsRoot.innerHTML = items.map((p)=>{
+    const title = p.title || 'Проект Tekstura';
+    const shortDescription = p.short_description || p.description || '';
+    const descriptionHtml = shortDescription ? `<p>${esc(shortDescription)}</p>` : '';
+    const image = p.cover_image || p.image || '/logo.jpg.png';
+    return `<a class="project-card" href="/project.html?id=${encodeURIComponent(p.id)}"><img src="${esc(image)}" alt="${esc(title)}"><div class="project-body"><h2>${esc(title)}</h2>${descriptionHtml}<div class="price">${esc(getPrice(p))}</div></div></a>`;
+  }).join('');
+};
+(async function load(){
+  try {
+    const { data, error } = await client.from('projects').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    const items = data || [];
+    if (!items.length) return render([]);
+    const { data: images } = await client.from('project_images').select('project_id,image_url,is_cover,sort_order').in('project_id', items.map((i)=>i.id)).order('sort_order', { ascending: true });
+    const coverMap = new Map();
+    (images||[]).forEach((img)=>{ if(!coverMap.has(img.project_id) || img.is_cover) coverMap.set(img.project_id, img.image_url); });
+    render(items.map((p)=>({ ...p, cover_image: coverMap.get(p.id) || p.cover_image })));
+  } catch (err) {
+    console.error(err); projectsRoot.innerHTML='<div class="empty">Не удалось загрузить проекты.</div>';
+  }
+})();
+</script>
 </body>
 </html>

@@ -29,7 +29,7 @@ const LABELS = {
     u_turn_landing: 'П-образная с площадкой',
     u_turn_winders: 'П-образная с забежными'
   },
-  frame_material: { metal: 'Металлический каркас', wood: 'Деревянный каркас', concrete: 'Бетонный каркас' },
+  frame_material: { metal: 'Металлокаркас', concrete: 'Бетонный каркас', wood: 'Деревянный каркас' },
   cladding: { none: 'Без облицовки', standard: 'Стандартная облицовка', premium: 'Премиальная облицовка' },
   railing: { none: 'Без ограждения', metal: 'Металлическое ограждение', glass: 'Стеклянное ограждение', wood: 'Деревянное ограждение' },
   finish_level: { basic: 'Базовый', standard: 'Стандарт', premium: 'Премиум' }
