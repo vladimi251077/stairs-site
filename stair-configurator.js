@@ -74,9 +74,10 @@ const UTURN_LIMITS = {
 };
 
 const $ = (id) => document.getElementById(id);
-function showStep(step) { document.querySelectorAll('.step').forEach((n) => n.classList.remove('active')); $(`step${step}`)?.classList.add('active'); }
-window.nextStep = showStep;
-window.prevStep = showStep;
+let currentStep = 1;
+function showStep(step) { document.querySelectorAll('.step').forEach((n) => n.classList.remove('active')); $(`step${step}`)?.classList.add('active'); currentStep = step; }
+window.nextStep = () => showStep(currentStep + 1);
+window.prevStep = () => showStep(Math.max(1, currentStep - 1));
 
 function setStatus(message = '') { const n = $('pageStatus'); if (n) n.textContent = message; }
 

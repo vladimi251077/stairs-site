@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Оставить заявку на лестницу — Tekstura</title>
   <meta name="description" content="Оставьте заявку на лестницу Tekstura. Если расчёт выполнен в калькуляторе, мы подтянем его параметры в форму автоматически.">
-  <link rel="canonical" href="https://stairs-site.vercel.app/request.html">
+  <link rel="canonical" href="https://tekstura.shop/request.html">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Tekstura">
   <meta property="og:title" content="Оставить заявку на лестницу — Tekstura">
   <meta property="og:description" content="Передайте расчёт из калькулятора и отправьте заявку в Tekstura.">
-  <meta property="og:url" content="https://stairs-site.vercel.app/request.html">
+  <meta property="og:url" content="https://tekstura.shop/request.html">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/supabase-config.js"></script>
   <style>
@@ -43,7 +43,7 @@
         <div><input id="city" placeholder="Город"></div>
         <div class="full"><textarea id="comment" placeholder="Комментарий"></textarea></div>
       </div>
-      <button class="btn" onclick="sendRequest()">Отправить заявку</button>
+      <button class="btn" id="sendBtn" onclick="sendRequest()">Отправить заявку</button>
       <div id="status" style="margin-top:10px"></div>
     </div>
   </div>
@@ -83,7 +83,10 @@ async function insertLead(payload){
 
 async function sendRequest() {
   const status = document.getElementById('status');
+  const sendBtn = document.getElementById('sendBtn');
   status.className = '';
+  status.textContent = 'Отправляем заявку...';
+  sendBtn.disabled = true;
   const phone = document.getElementById('phone').value.trim();
   if (!phone) { alert('Введите телефон'); return; }
 
@@ -104,6 +107,7 @@ async function sendRequest() {
     const { data } = await insertLead(payload);
     status.className = 'ok';
     status.textContent = 'Заявка отправлена ✅ Спасибо! Мы свяжемся с вами в ближайшее время.';
+    document.getElementById('sendBtn').disabled = true;
     try {
       await fetch('/api/notify-lead', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lead: data || payload }) });
     } catch (err) { console.error('notify failed', err); }
@@ -111,6 +115,7 @@ async function sendRequest() {
     console.error(error);
     status.className = 'err';
     status.textContent = `Ошибка отправки: ${error?.message || 'Не удалось записать заявку в Supabase'}`;
+    sendBtn.disabled = false;
   }
 }
 

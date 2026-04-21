@@ -135,3 +135,22 @@ alter table public.projects add column if not exists custom_options jsonb not nu
 alter table public.project_images enable row level security;
 create policy if not exists "public read project_images" on public.project_images for select using (true);
 create policy if not exists "auth write project_images" on public.project_images for all using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+
+-- Alignment for current project / request pages
+alter table public.projects add column if not exists short_description text;
+alter table public.projects add column if not exists full_description text;
+alter table public.projects add column if not exists materials text;
+alter table public.projects add column if not exists staircase_type text;
+alter table public.projects add column if not exists category text;
+alter table public.projects add column if not exists lead_time text;
+alter table public.projects add column if not exists price_from numeric;
+
+create index if not exists idx_projects_created_at on public.projects(created_at desc);
+create index if not exists idx_project_images_project_sort on public.project_images(project_id, sort_order asc);
+
+drop policy if exists "auth insert leads" on public.leads;
+create policy "auth insert leads" on public.leads for insert to authenticated with check (true);
+drop policy if exists "auth update leads" on public.leads;
+create policy "auth update leads" on public.leads for update to authenticated using (true) with check (true);
+drop policy if exists "auth delete leads" on public.leads;
+create policy "auth delete leads" on public.leads for delete to authenticated using (true);
