@@ -22,7 +22,18 @@
       <section class="step active" id="step1">
         <h2>Шаг 1. Конфигурация лестницы</h2>
         <div class="grid">
-          <div class="field">
+          <div class="field field-wide">
+            <label for="baseCondition">Что у вас уже есть?</label>
+            <select id="baseCondition">
+              <option value="empty_opening">Пустой проём</option>
+              <option value="existing_metal_frame">Готовый металлокаркас</option>
+              <option value="existing_concrete_base">Готовое бетонное основание</option>
+              <option value="finish_only">Нужна только отделка / облицовка</option>
+              <option value="consultation">Нужна консультация</option>
+            </select>
+            <p class="field-help">Выберите ситуацию сейчас — дальше покажем только нужные поля.</p>
+          </div>
+          <div class="field structural-field" id="openingTypeField">
             <label for="openingType">Тип проёма</label>
             <select id="openingType">
               <option value="straight">Прямой</option>
@@ -30,12 +41,12 @@
               <option value="u_turn">П-образный</option>
             </select>
           </div>
-          <div class="field">
+          <div class="field structural-field" id="stairTypeField">
             <label for="stairType">Тип лестницы</label>
             <select id="stairType">
               <option value="straight">Прямая</option>
               <option value="l_turn">Г-образная</option>
-              <option value="u_turn">П-образная (подготовка)</option>
+              <option value="u_turn">П-образная</option>
             </select>
           </div>
           <div class="field" id="turnDirectionField">
@@ -60,27 +71,97 @@
 
       <section class="step" id="step2">
         <h2>Шаг 2. Параметры проёма</h2>
-        <div class="grid">
+        <div class="grid" id="geometryInputGroup">
           <div class="field">
             <label for="floorHeight">Высота от пола до пола, мм</label>
             <input id="floorHeight" type="number" value="3000" min="2000" max="5000">
+            <p class="field-help">Измерьте от чистового пола нижнего этажа до чистового пола верхнего.</p>
           </div>
           <div class="field">
             <label for="openingLength">Длина проёма, мм</label>
             <input id="openingLength" type="number" value="4200" min="1500" max="10000">
+            <p class="field-help">Размер отверстия в перекрытии по направлению основного движения лестницы.</p>
           </div>
           <div class="field">
             <label for="openingWidth">Ширина проёма, мм</label>
             <input id="openingWidth" type="number" value="2200" min="900" max="5000">
+            <p class="field-help">Ширина свободного проёма без отделки стен и коробов.</p>
           </div>
           <div class="field">
             <label for="marchWidth">Ширина марша, мм</label>
             <input id="marchWidth" type="number" value="1000" min="700" max="1800">
+            <p class="field-help">Комфортный частный дом обычно начинается от 900–1000 мм.</p>
           </div>
         </div>
 
-        <div class="grid">
+        <div class="grid hidden" id="existingMetalGroup">
           <div class="field">
+            <label for="metalFrameCondition">Состояние металлокаркаса</label>
+            <select id="metalFrameCondition">
+              <option value="good">Ровный, без видимых дефектов</option>
+              <option value="needs_coating">Нужно обновить покрытие</option>
+              <option value="needs_repair">Есть вопросы по сварке / геометрии</option>
+            </select>
+            <p class="field-help">Каркас не пересчитываем как новый, только проверяем посадку и состав отделки.</p>
+          </div>
+          <div class="field">
+            <label for="existingFrameNotes">Комментарий по каркасу</label>
+            <textarea id="existingFrameNotes" rows="4" placeholder="Например: есть фото, требуется покраска, нужна подсветка"></textarea>
+          </div>
+        </div>
+
+        <div class="grid hidden" id="existingConcreteGroup">
+          <div class="field">
+            <label for="concreteStepCount">Количество ступеней</label>
+            <input id="concreteStepCount" type="number" value="15" min="1" max="40">
+          </div>
+          <div class="field">
+            <label for="concreteStairWidth">Ширина бетонного основания, мм</label>
+            <input id="concreteStairWidth" type="number" value="1000" min="600" max="2500">
+          </div>
+          <div class="field">
+            <label for="concreteTreadDepth">Средняя глубина ступени, мм</label>
+            <input id="concreteTreadDepth" type="number" value="300" min="180" max="500">
+          </div>
+          <div class="field">
+            <label for="concreteBaseCondition">Состояние основания</label>
+            <select id="concreteBaseCondition">
+              <option value="ready">Ровное, готово к облицовке</option>
+              <option value="prep_needed">Нужна подготовка поверхности</option>
+              <option value="repair_needed">Есть сколы / перепады</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid hidden" id="finishOnlyGroup">
+          <div class="field">
+            <label for="finishStepCount">Сколько ступеней отделывать</label>
+            <input id="finishStepCount" type="number" value="15" min="1" max="50">
+          </div>
+          <div class="field">
+            <label for="finishStairWidth">Ширина ступени, мм</label>
+            <input id="finishStairWidth" type="number" value="1000" min="600" max="2500">
+          </div>
+          <div class="field">
+            <label for="finishTreadDepth">Средняя глубина ступени, мм</label>
+            <input id="finishTreadDepth" type="number" value="300" min="180" max="500">
+          </div>
+          <div class="field">
+            <label for="finishOnlyNotes">Что нужно сделать</label>
+            <textarea id="finishOnlyNotes" rows="4" placeholder="Например: заменить ступени, закрыть подступенки, обновить поручень"></textarea>
+          </div>
+        </div>
+
+        <div class="grid hidden" id="consultationGroup">
+          <div class="field field-wide">
+            <label for="consultationNotes">Коротко опишите задачу</label>
+            <textarea id="consultationNotes" rows="5" placeholder="Например: есть проём и фото дома, нужна идея лестницы и оценка вариантов"></textarea>
+            <p class="field-help">Для консультации не нужно заполнять инженерные размеры идеально — инженер уточнит главное.</p>
+          </div>
+        </div>
+
+        <div class="grid" id="pricingInputGroup">
+          <div class="field" id="frameMaterialField">
             <label for="frameMaterial">Тип каркаса</label>
             <select id="frameMaterial">
               <option value="metal">metal</option>
@@ -98,6 +179,44 @@
           </div>
         </div>
 
+        <div class="grid hidden" id="serviceOptionsGroup">
+          <div class="field">
+            <label for="finishMaterial">Материал отделки</label>
+            <select id="finishMaterial">
+              <option value="oak">Дуб / шпон</option>
+              <option value="ash">Ясень</option>
+              <option value="stone">Камень</option>
+              <option value="porcelain">Керамогранит</option>
+              <option value="microcement">Микроцемент</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="railingOption">Ограждение</label>
+            <select id="railingOption">
+              <option value="metal">Металл</option>
+              <option value="glass">Стекло</option>
+              <option value="wood">Дерево</option>
+              <option value="none">Не нужно</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="coatingOption">Покрытие / защита</label>
+            <select id="coatingOption">
+              <option value="standard">Стандартное</option>
+              <option value="premium">Премиальное</option>
+              <option value="none">Не требуется</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="lightingOption">Подсветка</label>
+            <select id="lightingOption">
+              <option value="none">Не нужна</option>
+              <option value="step">Точечная по ступеням</option>
+              <option value="linear">Линейная</option>
+            </select>
+          </div>
+        </div>
+
         <div class="actions">
           <button class="btn-secondary" type="button" onclick="prevStep(1)">Назад</button>
           <button class="btn-primary" id="toResultsBtn" type="button">Рассчитать геометрию</button>
@@ -105,12 +224,14 @@
       </section>
 
       <section class="step" id="step3">
-        <h2>Шаг 3. Геометрия и предупреждения</h2>
-       <div id="geometryResult" class="result-box"></div>
+        <h2>Шаг 3. Результат и проверка</h2>
+        <div id="geometryResult" class="result-box"></div>
+        <div id="geometryDiagram" class="diagram-shell"></div>
         <div id="geometryWarnings" class="result-box"></div>
         <div class="actions">
           <button class="btn-secondary" type="button" onclick="prevStep(2)">Назад</button>
           <button class="btn-primary" id="calculateBtn" type="button">Перейти к материалам и цене</button>
+          <a class="btn-review hidden" id="engineerReviewLink" href="/request.html">Отправить размеры на инженерную проверку</a>
         </div>
       </section>
 
@@ -127,7 +248,7 @@
 
         <div class="actions">
           <button class="btn-secondary" type="button" onclick="prevStep(3)">Назад</button>
-          <a class="back-link" href="/request.html">Оставить заявку</a>
+          <a class="back-link" id="requestLink" href="/request.html">Оставить заявку</a>
         </div>
       </section>
     </div>
