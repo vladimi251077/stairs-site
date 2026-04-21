@@ -80,6 +80,11 @@
       <div id="stairTypeHint" class="stair-type-hint"></div>
 
       <div id="readyFlowFields" class="hidden">
+        <div class="stair-type-hint-card ready-branch-card">
+          <div class="stair-type-hint-label">Ветвь «Готовый каркас»</div>
+          <h3>Отдельный сценарий расчёта</h3>
+          <p>Считаем только релевантный объём работ по существующему основанию: без повторного расчёта нового несущего каркаса.</p>
+        </div>
         <div class="field">
           <label for="configurationType">Конфигурация</label>
           <div class="visual-choice" data-target="configurationType">
@@ -103,11 +108,13 @@
         </div>
         <div class="field">
           <label>Объём работ</label>
+          <p class="muted" id="scopeWorkHint">Выберите фактический состав работ для текущего типа основания.</p>
           <div class="extras-list">
             <label><input type="checkbox" name="scopeWork" value="steps_only"> Только ступени</label>
             <label><input type="checkbox" name="scopeWork" value="steps_risers"> Ступени + подступенки</label>
             <label><input type="checkbox" name="scopeWork" value="railing"> Ограждение</label>
             <label><input type="checkbox" name="scopeWork" value="frame_cladding"> Обшивка каркаса</label>
+            <label><input type="checkbox" name="scopeWork" value="base_preparation"> Подготовка основания</label>
             <label><input type="checkbox" name="scopeWork" value="finish_coating"> Финиш/покрытие</label>
             <label><input type="checkbox" name="scopeWork" value="lighting"> Подсветка</label>
             <label><input type="checkbox" name="scopeWork" value="installation"> Монтаж</label>

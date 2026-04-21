@@ -20,9 +20,14 @@ const SCOPE_LABELS = {
   steps_risers: 'Ступени + подступенки',
   railing: 'Ограждение',
   frame_cladding: 'Обшивка каркаса',
+  base_preparation: 'Подготовка основания',
   finish_coating: 'Финиш/покрытие',
   lighting: 'Подсветка',
   installation: 'Монтаж'
+};
+const READY_SCOPE_BY_SUBTYPE = {
+  existing_metal_frame: ['steps_only', 'steps_risers', 'railing', 'frame_cladding', 'finish_coating', 'lighting', 'installation'],
+  existing_concrete_base: ['steps_only', 'steps_risers', 'railing', 'base_preparation', 'finish_coating', 'installation']
 };
 const STAIR_TYPE_HINTS = { straight: { title: 'Прямая лестница', text: 'Подходит для длинных проёмов без поворотов.', invalidAdvice: 'Увеличьте длину проёма или рассмотрите поворотную схему.' }, l_turn_landing: { title: 'Г-образная с площадкой', text: 'Плавный поворот 90° с площадкой.', invalidAdvice: 'Проверьте длину/ширину проёма в зоне поворота.' }, l_turn_winders: { title: 'Г-образная с забежными', text: 'Компактный поворот для ограниченного пространства.', invalidAdvice: 'Чаще всего помогает увеличение ширины проёма.' }, u_turn_landing: { title: 'П-образная с площадкой', text: 'Разворот на 180° с площадкой.', invalidAdvice: 'Нужна достаточная ширина под два марша.' }, u_turn_winders: { title: 'П-образная с забежными', text: 'Компактный разворот 180°.', invalidAdvice: 'Для комфорта критична проверка по линии хода.' } };
 
@@ -60,11 +65,53 @@ function toggleReadyFlowFields() {
   const showTurn = configuration !== 'straight';
   $('turnTypeField')?.classList.toggle('hidden', !showTurn);
   $('readyTurnDirectionField')?.classList.toggle('hidden', !showTurn);
+  if ($('readyTurnDirection')) $('readyTurnDirection').disabled = !showTurn;
+  if ($('turnType')) $('turnType').disabled = !showTurn;
   const showLanding = showTurn && turnType === 'landing';
   const showWinders = showTurn && turnType === 'winders';
   $('landingLengthField')?.classList.toggle('hidden', !showLanding);
   $('landingWidthField')?.classList.toggle('hidden', !showLanding);
   $('winderCountField')?.classList.toggle('hidden', !showWinders);
+  if ($('landingLength')) $('landingLength').disabled = !showLanding;
+  if ($('landingWidth')) $('landingWidth').disabled = !showLanding;
+  if ($('winderCount')) $('winderCount').disabled = !showWinders;
+}
+function syncReadyFlowState() {
+  const isReady = ($('baseCondition')?.value || 'empty_opening') === 'ready_frame';
+  const configuration = $('configurationType')?.value || 'straight';
+  const turnTypeInput = $('turnType');
+  if (!isReady) return;
+  if (configuration === 'straight') {
+    if (turnTypeInput) turnTypeInput.value = 'landing';
+    if ($('readyTurnDirection')) $('readyTurnDirection').value = 'left';
+    if ($('landingLength')) $('landingLength').value = '';
+    if ($('landingWidth')) $('landingWidth').value = '';
+    if ($('winderCount')) $('winderCount').value = '';
+  } else if ((turnTypeInput?.value || 'landing') === 'landing') {
+    if ($('winderCount')) $('winderCount').value = '';
+  } else {
+    if ($('landingLength')) $('landingLength').value = '';
+    if ($('landingWidth')) $('landingWidth').value = '';
+  }
+  toggleReadyFlowFields();
+}
+function syncScopeWorkForSubtype() {
+  const baseCondition = $('baseCondition')?.value || 'empty_opening';
+  const baseSubtype = $('baseSubtype')?.value || 'existing_metal_frame';
+  const allowed = new Set(baseCondition === 'ready_frame' ? (READY_SCOPE_BY_SUBTYPE[baseSubtype] || []) : []);
+  document.querySelectorAll('input[name="scopeWork"]').forEach((input) => {
+    const enabled = allowed.has(input.value);
+    input.disabled = !enabled;
+    if (!enabled) input.checked = false;
+    const row = input.closest('label');
+    if (row) row.classList.toggle('muted', !enabled);
+  });
+  const hint = $('scopeWorkHint');
+  if (hint && baseCondition === 'ready_frame') {
+    hint.textContent = baseSubtype === 'existing_metal_frame'
+      ? 'Металлокаркас: отделка/ограждение/покрытие/подсветка/подгонка и монтаж.'
+      : 'Бетонное основание: подготовка/облицовка/ограждение/финиш и монтаж.';
+  }
 }
 function toggleScenarioFields() {
   const base = $('baseCondition')?.value || 'empty_opening';
@@ -75,7 +122,9 @@ function toggleScenarioFields() {
   $('emptyOpeningGrid')?.classList.toggle('hidden', !empty);
   $('frameMaterialField')?.classList.toggle('hidden', !empty);
   $('finishGrid')?.classList.toggle('hidden', !empty);
+  if (!empty) syncReadyFlowState();
   toggleReadyFlowFields();
+  syncScopeWorkForSubtype();
 }
 
 function renderStairTypeHint(target, stairType, geometry) { if (!target) return; const hint = STAIR_TYPE_HINTS[stairType] || STAIR_TYPE_HINTS.straight; const invalidHelp = geometry && !geometry.valid ? `<div class="stair-type-hint-invalid">${hint.invalidAdvice}</div>` : ''; target.innerHTML = `<div class="stair-type-hint-card"><div class="stair-type-hint-label">Подсказка по проёму</div><h3>${hint.title}</h3><p>${hint.text}</p>${invalidHelp}</div>`; }
@@ -94,20 +143,30 @@ function getConfigFromForm() {
     base_subtype: $('baseSubtype')?.value || 'existing_metal_frame',
     stair_type: $('stairType')?.value || 'straight',
     configuration_type: $('configurationType')?.value || 'straight',
-    turn_type: $('turnType')?.value || 'landing',
-    turn_direction: baseCondition === 'empty_opening' ? ($('turnDirection')?.value || 'left') : ($('readyTurnDirection')?.value || 'left'),
+    turn_type: baseCondition === 'ready_frame' && ($('configurationType')?.value || 'straight') !== 'straight' ? ($('turnType')?.value || 'landing') : null,
+    turn_direction: baseCondition === 'empty_opening'
+      ? (($('stairType')?.value || 'straight') === 'straight' ? null : ($('turnDirection')?.value || 'left'))
+      : (($('configurationType')?.value || 'straight') === 'straight' ? null : ($('readyTurnDirection')?.value || 'left')),
     floor_to_floor_height: Number($('floorHeight')?.value || 0), slab_thickness: Number($('slabThickness')?.value || 220), top_finish_thickness: Number($('topFinishThickness')?.value || 20), bottom_finish_thickness: Number($('bottomFinishThickness')?.value || 20),
     opening_length: Number($('openingLength')?.value || 0), opening_width: Number($('openingWidth')?.value || 0), march_width: Number($('marchWidth')?.value || 0),
     step_count: Number($('stepCount')?.value || 0),
     riser_height: Number($('riserHeight')?.value || 0),
     tread_depth: Number($('treadDepth')?.value || 0),
     ready_march_width: Number($('readyMarchWidth')?.value || 0),
-    landing_length: Number($('landingLength')?.value || 0),
-    landing_width: Number($('landingWidth')?.value || 0),
-    winder_count: Number($('winderCount')?.value || 0),
+    landing_length: baseCondition === 'ready_frame' && ($('configurationType')?.value || 'straight') !== 'straight' && ($('turnType')?.value || 'landing') === 'landing'
+      ? Number($('landingLength')?.value || 0)
+      : null,
+    landing_width: baseCondition === 'ready_frame' && ($('configurationType')?.value || 'straight') !== 'straight' && ($('turnType')?.value || 'landing') === 'landing'
+      ? Number($('landingWidth')?.value || 0)
+      : null,
+    winder_count: baseCondition === 'ready_frame' && ($('configurationType')?.value || 'straight') !== 'straight' && ($('turnType')?.value || 'landing') === 'winders'
+      ? Number($('winderCount')?.value || 0)
+      : null,
     frame_material: $('frameMaterial')?.value || 'metal', finish_level: $('finishLevel')?.value || 'basic', cladding: $('claddingType')?.value || 'standard', railing: $('railingType')?.value || 'metal',
     delivery_distance: Number($('deliveryDistance')?.value || 20), existing_condition_notes: $('existingConditionNotes')?.value?.trim() || '',
-    scope_of_work,
+    scope_of_work: baseCondition === 'ready_frame'
+      ? scope_of_work.filter((item) => (READY_SCOPE_BY_SUBTYPE[$('baseSubtype')?.value || 'existing_metal_frame'] || []).includes(item))
+      : [],
     extras: [...document.querySelectorAll('input[name="extras"]:checked')].map((x) => x.value)
   };
 }
@@ -118,8 +177,8 @@ function validateBase(config) {
     if (config.ready_march_width <= 0) return 'Укажите ширину марша для существующего основания.';
     if (config.riser_height <= 0) return 'Поле "Высота подступенка" обязательно.';
     if (config.tread_depth <= 0) return 'Укажите глубину проступи.';
-    if (config.configuration_type !== 'straight' && config.turn_type === 'landing' && (config.landing_length <= 0 || config.landing_width <= 0)) return 'Для площадки укажите длину и ширину площадки.';
-    if (config.configuration_type !== 'straight' && config.turn_type === 'winders' && config.winder_count <= 0) return 'Для забежной схемы укажите количество забежных ступеней.';
+    if (config.configuration_type !== 'straight' && config.turn_type === 'landing' && ((config.landing_length || 0) <= 0 || (config.landing_width || 0) <= 0)) return 'Для площадки укажите длину и ширину площадки.';
+    if (config.configuration_type !== 'straight' && config.turn_type === 'winders' && (config.winder_count || 0) <= 0) return 'Для забежной схемы укажите количество забежных ступеней.';
     if (!config.scope_of_work.length) return 'Выберите хотя бы один пункт в объёме работ.';
     return null;
   }
@@ -294,13 +353,14 @@ function calculatePrice(config, geometry, materials) {
     const risers = scope.has('steps_risers') ? unit * 1800 * areaCoef : 0;
     const landingOrWinders = config.configuration_type === 'straight' ? 0 : (config.turn_type === 'landing' ? ((config.landing_length * config.landing_width) / 1_000_000) * 9500 : (config.winder_count || 0) * 2600);
     const railing = scope.has('railing') ? unit * 1400 : 0;
-    const claddingCoating = scope.has('frame_cladding') || scope.has('finish_coating') ? unit * 1200 : 0;
+    const frameCladding = scope.has('frame_cladding') ? unit * 1150 : 0;
+    const finishCoating = scope.has('finish_coating') ? unit * 980 : 0;
     const lighting = scope.has('lighting') ? unit * 900 : 0;
     const installationFitting = scope.has('installation') ? (d.installation_base + unit * 1700) : 0;
     const complexityCoef = config.configuration_type === 'straight' ? 1 : (config.turn_type === 'winders' ? 1.18 : 1.1);
-    const subtotal = (stepFinishing + risers + landingOrWinders + railing + claddingCoating + lighting + installationFitting) * complexityCoef;
+    const subtotal = (stepFinishing + risers + landingOrWinders + railing + frameCladding + finishCoating + lighting + installationFitting) * complexityCoef;
     const total = subtotal * d.markup_coef;
-    return { total, min: total * 0.9, max: total * 1.14, breakdown: { stepFinishing, risers, landingOrWinders, railing, claddingCoating, lighting, installationFitting, complexityCoef } };
+    return { total, min: total * 0.9, max: total * 1.14, breakdown: { stepFinishing, risers, landingOrWinders, railing, frameCladding, finishCoating, lighting, installationFitting, complexityCoef } };
   }
   if (config.base_condition === 'ready_frame' && config.base_subtype === 'existing_concrete_base') {
     const unit = config.step_count || 0;
@@ -310,7 +370,7 @@ function calculatePrice(config, geometry, materials) {
     const risers = scope.has('steps_risers') ? unit * 1900 * areaCoef : 0;
     const landingOrWinders = config.configuration_type === 'straight' ? 0 : (config.turn_type === 'landing' ? ((config.landing_length * config.landing_width) / 1_000_000) * 9100 : (config.winder_count || 0) * 2400);
     const railing = scope.has('railing') ? unit * 1450 : 0;
-    const concretePrepWorks = unit * 950;
+    const concretePrepWorks = scope.has('base_preparation') ? unit * 950 : 0;
     const finish = scope.has('finish_coating') ? unit * 1200 : 0;
     const installation = scope.has('installation') ? (d.installation_base + unit * 1600) : 0;
     const subtotal = stairCladding + risers + landingOrWinders + railing + concretePrepWorks + finish + installation;
@@ -342,7 +402,7 @@ function renderPrice(price) {
   const cfg = state.lastConfig || {};
   let rows = '';
   if (cfg.base_condition === 'ready_frame' && cfg.base_subtype === 'existing_metal_frame') {
-    rows = `<tr><th>Отделка ступеней</th><td>${money(b.stepFinishing)}</td></tr><tr><th>Подступенки</th><td>${money(b.risers)}</td></tr><tr><th>Площадка/забежные</th><td>${money(b.landingOrWinders)}</td></tr><tr><th>Ограждение</th><td>${money(b.railing)}</td></tr><tr><th>Обшивка/покрытие металла</th><td>${money(b.claddingCoating)}</td></tr><tr><th>Подсветка</th><td>${money(b.lighting)}</td></tr><tr><th>Монтаж/подгонка</th><td>${money(b.installationFitting)}</td></tr><tr><th>Коэффициент сложности</th><td>${(b.complexityCoef || 1).toFixed(2)}</td></tr>`;
+    rows = `<tr><th>Отделка ступеней</th><td>${money(b.stepFinishing)}</td></tr><tr><th>Подступенки</th><td>${money(b.risers)}</td></tr><tr><th>Площадка/забежные</th><td>${money(b.landingOrWinders)}</td></tr><tr><th>Ограждение</th><td>${money(b.railing)}</td></tr><tr><th>Обшивка каркаса</th><td>${money(b.frameCladding)}</td></tr><tr><th>Финиш/покрытие</th><td>${money(b.finishCoating)}</td></tr><tr><th>Подсветка</th><td>${money(b.lighting)}</td></tr><tr><th>Монтаж/подгонка</th><td>${money(b.installationFitting)}</td></tr><tr><th>Коэффициент сложности</th><td>${(b.complexityCoef || 1).toFixed(2)}</td></tr>`;
   } else if (cfg.base_condition === 'ready_frame' && cfg.base_subtype === 'existing_concrete_base') {
     rows = `<tr><th>Облицовка ступеней</th><td>${money(b.stairCladding)}</td></tr><tr><th>Подступенки</th><td>${money(b.risers)}</td></tr><tr><th>Площадка/забежные</th><td>${money(b.landingOrWinders)}</td></tr><tr><th>Ограждение</th><td>${money(b.railing)}</td></tr><tr><th>Подготовка бетона</th><td>${money(b.concretePrepWorks)}</td></tr><tr><th>Финиш</th><td>${money(b.finish)}</td></tr><tr><th>Монтаж</th><td>${money(b.installation)}</td></tr>`;
   } else {
@@ -394,8 +454,9 @@ function init() {
   bindVisualSelectors();
   $('stairType')?.addEventListener('change', () => { toggleTurnFields(); updateStairTypeHints(); });
   $('baseCondition')?.addEventListener('change', () => { toggleScenarioFields(); toggleTurnFields(); updateStairTypeHints(); });
-  $('configurationType')?.addEventListener('change', toggleReadyFlowFields);
-  $('turnType')?.addEventListener('change', toggleReadyFlowFields);
+  $('baseSubtype')?.addEventListener('change', syncScopeWorkForSubtype);
+  $('configurationType')?.addEventListener('change', syncReadyFlowState);
+  $('turnType')?.addEventListener('change', syncReadyFlowState);
   $('calculateBtn')?.addEventListener('click', runConfigurator);
   $('toResultsBtn')?.addEventListener('click', runGeometryCalculation);
   setProceedAvailability(false);
