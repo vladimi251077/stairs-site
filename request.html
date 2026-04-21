@@ -17,7 +17,7 @@
   <style>
     :root{--bg:#0f0c0a;--panel:#19130f;--line:#3d332b;--text:#f4e7d4;--muted:#baa894;--accent:#e8c8a2;--ok:#9ddcb0;--err:#ff9e9e}
     *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 Inter,sans-serif}
-    .wrap{max-width:800px;margin:auto;padding:16px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:15px;margin-bottom:12px}
+    .wrap{max-width:800px;margin:auto;padding:16px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
     h1{margin:0 0 8px;font-size:clamp(28px,4vw,38px)} .muted{color:var(--muted)} .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .full{grid-column:1/-1} input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:#120f0d;color:var(--text)} textarea{min-height:96px}
     .btn{width:100%;padding:12px;border-radius:10px;border:0;background:var(--accent);color:#1a120e;font-weight:700;cursor:pointer;margin-top:10px}
@@ -26,14 +26,14 @@
     .trust-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
     .trust-chip{border:1px solid var(--line);border-radius:10px;padding:8px;color:#cfb79a;background:#1b1512;font-size:13px}
     .expect-list{margin:10px 0 0;padding-left:18px;color:#d5c2ab}
-    .success-card{border:1px solid rgba(157,220,176,.35);background:rgba(82,122,92,.18);border-radius:12px;padding:10px;margin-top:8px}
+    .success-card{border:1px solid rgba(157,220,176,.35);background:rgba(82,122,92,.18);border-radius:12px;padding:12px;margin-top:8px;line-height:1.6}
     @media(max-width:700px){.grid{grid-template-columns:1fr}.trust-grid{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
   <div class="wrap">
     <h1>Заявка на лестницу</h1>
-    <p class="muted">Заполните контакты — с вами свяжется инженер Tekstura для уточнения размеров и оптимальной конфигурации.</p>
+    <p class="muted">Заполните контакты — с вами свяжется инженер Tekstura для уточнения размеров и подбора оптимальной конфигурации под ваш объект.</p>
 
     <div class="panel">
       <b>Сводка расчёта</b>
@@ -43,7 +43,7 @@
     <div class="panel">
       <b>Как проходит работа после отправки</b>
       <ul class="expect-list">
-        <li>В рабочее время ответ обычно в течение 30–90 минут.</li>
+        <li>В рабочее время отвечаем обычно в течение 30–90 минут.</li>
         <li>Первым выходит на связь инженер-консультант Tekstura.</li>
         <li>После уточнения размеров подготавливаем ориентир по стоимости и срокам.</li>
       </ul>
@@ -56,11 +56,11 @@
 
     <div class="panel">
       <div class="grid">
-        <div><input id="name" placeholder="Ваше имя"></div>
+        <div><input id="name" placeholder="Имя и как к вам обращаться"></div>
         <div><input id="phone" placeholder="Телефон для связи *"></div>
-        <div><input id="messenger" placeholder="WhatsApp или Telegram"></div>
+        <div><input id="messenger" placeholder="WhatsApp/Telegram (если удобнее)"></div>
         <div><input id="city" placeholder="Город и район объекта"></div>
-        <div class="full"><textarea id="comment" placeholder="Кратко о задаче: тип дома, этап ремонта, пожелания по стилю"></textarea></div>
+        <div class="full"><textarea id="comment" placeholder="Кратко о задаче: тип дома, этап ремонта, пожелания по стилю и срокам"></textarea></div>
       </div>
       <button class="btn" id="sendBtn" onclick="sendRequest()">Отправить заявку</button>
       <div id="status" style="margin-top:10px"></div>
@@ -73,6 +73,12 @@ const client = (cfg?.url && cfg?.anonKey && window.supabase)
   ? window.supabase.createClient(cfg.url, cfg.anonKey)
   : null;
 let calcPayload = null;
+const EXTRA_LABELS = {
+  lighting: 'Подсветка ступеней',
+  painted_metal: 'Окраска металла',
+  premium_coating: 'Премиум-покрытие',
+  hidden_fasteners: 'Скрытый крепёж'
+};
 
 function parseCalc(){
   const queryRaw = new URLSearchParams(location.search).get('calc');
@@ -89,7 +95,7 @@ function parseCalc(){
       `Каркас: ${calcPayload?.materialsSummary?.frame || '-'}`,
       `Облицовка: ${calcPayload?.materialsSummary?.cladding || '-'}`,
       `Ограждение: ${calcPayload?.materialsSummary?.railing || '-'}`,
-      `Опции: ${(calcPayload?.selectedExtras || []).map((i)=>i.label).join(', ') || 'Нет'}`,
+      `Опции: ${(calcPayload?.selectedExtras || []).map((i)=>i.label || EXTRA_LABELS[i.code] || i.code).join(', ') || 'Нет'}`,
       `Итоговая стоимость: ${Number(calcPayload.total || 0).toLocaleString('ru-RU')} ₽`
     ];
     document.getElementById('calcData').textContent = lines.join('\n');
@@ -145,7 +151,7 @@ async function sendRequest() {
     status.className = 'ok';
     status.textContent = 'Заявка отправлена ✅';
     successState.hidden = false;
-    successState.textContent = 'Спасибо за обращение в Tekstura. Мы получили вашу заявку, передали её инженеру и свяжемся с вами в ближайшее рабочее время.';
+    successState.textContent = 'Спасибо за обращение в Tekstura. Заявка сохранена и передана инженеру. Мы свяжемся с вами в ближайшее рабочее время и уточним финальные параметры.';
     document.getElementById('sendBtn').disabled = true;
     try {
       await fetch('/api/notify-lead', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lead: data || payload }) });

@@ -34,6 +34,12 @@ const LABELS = {
   railing: { none: 'Без ограждения', metal: 'Металлическое ограждение', glass: 'Стеклянное ограждение', wood: 'Деревянное ограждение' },
   finish_level: { basic: 'Базовый', standard: 'Стандарт', premium: 'Премиум' }
 };
+const EXTRA_LABELS = {
+  lighting: 'Подсветка ступеней',
+  painted_metal: 'Окраска металла',
+  premium_coating: 'Премиум-покрытие',
+  hidden_fasteners: 'Скрытый крепёж'
+};
 
 const STAIR_TYPE_HINTS = {
   straight: {
@@ -88,6 +94,12 @@ function showStep(step) {
   document.querySelectorAll('.step').forEach((n) => n.classList.remove('active'));
   $(`step${target}`)?.classList.add('active');
   currentStep = target;
+  const progress = $('stepProgress');
+  if (progress) {
+    const labels = { 1: 'Конфигурация', 2: 'Геометрия', 4: 'Материалы и стоимость' };
+    const order = { 1: 1, 2: 2, 4: 3 };
+    progress.textContent = `Шаг ${order[target] || 1} из 3 · ${labels[target] || 'Конфигурация'}`;
+  }
 }
 
 window.nextStep = () => {
@@ -432,9 +444,9 @@ function calculateGeometry(config) {
 
 function getInvalidGeometryGuidance(config) {
   const steps = [
-    'Проверьте, что размеры введены по чистовым стенам и без запаса на отделку.',
-    'Попробуйте уменьшить ширину марша на 50–100 мм, если пространство ограничено.',
-    'При компактной планировке выберите более подходящий тип лестницы.'
+    'Проверьте размеры после чистовой отделки, чтобы расчёт был точным.',
+    'Если места немного, попробуйте уменьшить ширину марша на 50–100 мм.',
+    'Можно выбрать более компактную конфигурацию и отправить её на проверку инженеру.'
   ];
   if (config.stair_type === 'u_turn_landing' || config.stair_type === 'u_turn_winders') {
     steps.push('Для П-образной лестницы ширина проёма проверяется под два марша и разворотную зону.');
@@ -449,8 +461,8 @@ function renderGeometry(geometry) {
     const guidanceItems = getInvalidGeometryGuidance(state.lastConfig || {});
     root.innerHTML = `
         <div class="warning-block invalid">
-        <div class="warning-title">Пока не удалось собрать удобную геометрию</div>
-        <div class="warning-text">Это частая ситуация на первом шаге. Скорректируйте параметры или отправьте запрос на ручную инженерную проверку.</div>
+        <div class="warning-title">Пока не получилось собрать безопасную и удобную геометрию</div>
+        <div class="warning-text">Это частая ситуация для нестандартных проёмов. Скорректируйте параметры или отправьте запрос на ручную инженерную проверку.</div>
       </div>
     `;
     warnings.innerHTML = `
@@ -488,10 +500,10 @@ function renderGeometry(geometry) {
   root.innerHTML = `<table class="result-table"><tbody>${rows.map(([k, v]) => `<tr><th>${k}</th><td>${v}</td></tr>`).join('')}</tbody></table>`;
 
   const warningList = [];
-  if (geometry.status === 'borderline') warningList.push('Конфигурация возможна, но требует проверки инженером.');
+  if (geometry.status === 'borderline') warningList.push('Конфигурация в целом возможна, но мы рекомендуем обязательную проверку инженером перед запуском в работу.');
   if (geometry.reason) warningList.push(geometry.reason);
-  if (geometry.stair_angle_deg > FORMULA_LIMITS.maxRecommendedAngle - 2) warningList.push('Угол близок к верхней рекомендуемой границе.');
-  if (geometry.tread_depth < FORMULA_LIMITS.minTreadDepth) warningList.push('Глубина проступи компактная — проверьте удобство шага перед запуском в работу.');
+  if (geometry.stair_angle_deg > FORMULA_LIMITS.maxRecommendedAngle - 2) warningList.push('Угол близок к верхней комфортной границе — лучше согласовать решение с инженером.');
+  if (geometry.tread_depth < FORMULA_LIMITS.minTreadDepth) warningList.push('Глубина проступи компактная — для повседневного комфорта нужен дополнительный контроль перед производством.');
   warnings.innerHTML = warningList.length
     ? warningList.map((i) => `<div class="warning-block"><div class="warning-text">${i}</div></div>`).join('')
     : '<div class="ok">Геометрия в инженерных пределах.</div>';
@@ -589,7 +601,7 @@ function buildRequestPayload() {
       finish: LABELS.finish_level[cfg.finish_level]
     },
     priceBreakdown: state.price?.breakdown || {},
-    selectedExtras: (cfg.extras || []).map((x) => ({ code: x, label: x.replaceAll('_', ' ') })),
+    selectedExtras: (cfg.extras || []).map((x) => ({ code: x, label: EXTRA_LABELS[x] || x.replaceAll('_', ' ') })),
     total: Math.round(state.price?.total || 0),
     dimensions: {
       floor_to_floor_height: cfg.floor_to_floor_height,
