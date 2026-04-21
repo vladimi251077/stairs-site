@@ -189,6 +189,7 @@
         heroSubtitle: 'Премиальные лестницы для частных домов, вилл и современных интерьеров. Проектирование, изготовление, монтаж и точный онлайн-расчёт.',
         heroImage: '/assets/design/home-showcase.jpg',
         badge: 'Премиальные лестницы',
+        location: 'Казань, Орнбургский тракт, 340',
         phone: '',
         whatsapp: '',
         telegram: '',
@@ -229,6 +230,7 @@
         heroSubtitle: row.heroSubtitle || row.herosubtitle || fallback.settings.heroSubtitle,
         heroImage: row.heroImage || row.heroimage || fallback.settings.heroImage,
         badge: row.badge || fallback.settings.badge,
+        location: row.location || row.address || fallback.settings.location,
         phone: row.phone || fallback.settings.phone,
         whatsapp: row.whatsapp || fallback.settings.whatsapp,
         telegram: row.telegram || fallback.settings.telegram,
@@ -308,6 +310,16 @@
           href: maxHref,
           text: settings.max || 'Профиль MAX',
           icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h4.1L12 10.47 15.9 5H20v14h-3.2V9.84L12 16.02 7.2 9.84V19H4V5z" fill="currentColor"/></svg>'
+        });
+      }
+
+      if (settings.location) {
+        contacts.push({
+          key: 'location',
+          label: 'Локация производства',
+          href: 'https://yandex.ru/maps/?text=' + encodeURIComponent(settings.location),
+          text: settings.location,
+          icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 00-7 7c0 4.81 5.2 10.64 6.06 11.57a1.25 1.25 0 001.88 0C13.8 19.64 19 13.81 19 9a7 7 0 00-7-7zm0 9.5A2.5 2.5 0 1112 6a2.5 2.5 0 010 5.5z" fill="currentColor"/></svg>'
         });
       }
 
