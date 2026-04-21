@@ -75,9 +75,32 @@ const UTURN_LIMITS = {
 
 const $ = (id) => document.getElementById(id);
 let currentStep = 1;
-function showStep(step) { document.querySelectorAll('.step').forEach((n) => n.classList.remove('active')); $(`step${step}`)?.classList.add('active'); currentStep = step; }
-window.nextStep = () => showStep(currentStep + 1);
-window.prevStep = () => showStep(Math.max(1, currentStep - 1));
+function getAvailableSteps() {
+  return [...document.querySelectorAll('.step')]
+    .map((node) => Number((node.id || '').replace('step', '')))
+    .filter((step) => Number.isFinite(step))
+    .sort((a, b) => a - b);
+}
+
+function showStep(step) {
+  const available = getAvailableSteps();
+  const target = available.includes(step) ? step : (available[0] || 1);
+  document.querySelectorAll('.step').forEach((n) => n.classList.remove('active'));
+  $(`step${target}`)?.classList.add('active');
+  currentStep = target;
+}
+
+window.nextStep = () => {
+  const available = getAvailableSteps();
+  const next = available.find((step) => step > currentStep);
+  if (next) showStep(next);
+};
+
+window.prevStep = () => {
+  const available = getAvailableSteps();
+  const previous = [...available].reverse().find((step) => step < currentStep);
+  if (previous) showStep(previous);
+};
 
 function setStatus(message = '') { const n = $('pageStatus'); if (n) n.textContent = message; }
 
