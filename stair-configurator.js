@@ -566,7 +566,13 @@ function renderPrice(price) {
     </table>
   `;
   const reqBtn = $('requestBtn');
-  if (reqBtn) reqBtn.href = `/request.html?calc=${encodeURIComponent(JSON.stringify(buildRequestPayload()))}`;
+  const payload = buildRequestPayload();
+  try {
+    sessionStorage.setItem('tekstura_calc_payload', encodeURIComponent(JSON.stringify(payload)));
+  } catch (err) {
+    console.error('failed to cache calc payload', err);
+  }
+  if (reqBtn) reqBtn.href = `/request.html?calc=${encodeURIComponent(JSON.stringify(payload))}`;
 }
 
 function buildRequestPayload() {

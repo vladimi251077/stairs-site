@@ -11,6 +11,7 @@
   <meta property="og:title" content="Проекты лестниц — портфолио Tekstura">
   <meta property="og:description" content="Реализованные проекты премиальных лестниц Tekstura: современные решения для частных домов, вилл и интерьерных пространств.">
   <meta property="og:url" content="https://tekstura.shop/projects.html">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/supabase-config.js"></script>
   <link rel="stylesheet" href="/styles.css">
@@ -35,12 +36,15 @@
   </main>
 <script>
 const cfg = window.SUPABASE_CONFIG;
-const client = window.supabase.createClient(cfg.url, cfg.anonKey);
+const projectsCount = document.getElementById('projectsCount');
 const projectsRoot = document.getElementById('projectsRoot');
+const client = (cfg?.url && cfg?.anonKey && window.supabase)
+  ? window.supabase.createClient(cfg.url, cfg.anonKey)
+  : null;
 const esc = (s='') => String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
 const getPrice = (project) => project.price ? `${project.price} ₽` : (project.price_from ? `от ${project.price_from} ₽` : 'по запросу');
 const render = (items=[]) => {
-  document.getElementById('projectsCount').textContent = `Проектов: ${items.length}`;
+  projectsCount.textContent = `Проектов: ${items.length}`;
   if (!items.length) { projectsRoot.innerHTML='<div class="empty">Проекты пока не добавлены.</div>'; return; }
   projectsRoot.innerHTML = items.map((p)=>{
     const title = p.title || 'Проект Tekstura';
@@ -52,6 +56,11 @@ const render = (items=[]) => {
 };
 (async function load(){
   try {
+    if (!client) {
+      projectsCount.textContent = 'Проектов: 0';
+      projectsRoot.innerHTML = '<div class="empty">Каталог временно недоступен. Оставьте заявку, и мы отправим актуальные кейсы.</div>';
+      return;
+    }
     const { data, error } = await client.from('projects').select('*').order('created_at', { ascending: false });
     if (error) throw error;
     const items = data || [];
@@ -61,7 +70,7 @@ const render = (items=[]) => {
     (images||[]).forEach((img)=>{ if(!coverMap.has(img.project_id) || img.is_cover) coverMap.set(img.project_id, img.image_url); });
     render(items.map((p)=>({ ...p, cover_image: coverMap.get(p.id) || p.cover_image })));
   } catch (err) {
-    console.error(err); document.getElementById('projectsCount').textContent='Ошибка загрузки'; projectsRoot.innerHTML='<div class="empty">Не удалось загрузить проекты.</div>';
+    console.error(err); projectsCount.textContent='Ошибка загрузки'; projectsRoot.innerHTML='<div class="empty">Не удалось загрузить проекты.</div>';
   }
 })();
 </script>

@@ -11,6 +11,7 @@
   <meta property="og:title" content="Оставить заявку на лестницу — Tekstura">
   <meta property="og:description" content="Передайте расчёт из калькулятора и отправьте заявку в Tekstura.">
   <meta property="og:url" content="https://tekstura.shop/request.html">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/supabase-config.js"></script>
   <style>
@@ -29,6 +30,7 @@
   <div class="wrap">
     <h1>Заявка на лестницу</h1>
     <p class="muted">Заполните контакты — мы свяжемся и уточним детали проекта.</p>
+    <p class="muted">Производство Tekstura: Казань, Орнбургский тракт, 340.</p>
 
     <div class="panel">
       <b>Сводка расчёта</b>
@@ -48,14 +50,22 @@
     </div>
   </div>
 <script>
-const client = window.supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
+const cfg = window.SUPABASE_CONFIG;
+const client = (cfg?.url && cfg?.anonKey && window.supabase)
+  ? window.supabase.createClient(cfg.url, cfg.anonKey)
+  : null;
 let calcPayload = null;
 
 function parseCalc(){
-  const raw = new URLSearchParams(location.search).get('calc');
+  const queryRaw = new URLSearchParams(location.search).get('calc');
+  const sessionRaw = sessionStorage.getItem('tekstura_calc_payload');
+  const raw = queryRaw || sessionRaw;
   if (!raw) return;
   try {
     calcPayload = JSON.parse(decodeURIComponent(raw));
+    if (queryRaw) {
+      sessionStorage.setItem('tekstura_calc_payload', queryRaw);
+    }
     const lines = [
       `Тип лестницы: ${calcPayload.staircaseType || '-'}`,
       `Каркас: ${calcPayload?.materialsSummary?.frame || '-'}`,
@@ -67,10 +77,12 @@ function parseCalc(){
     document.getElementById('calcData').textContent = lines.join('\n');
   } catch (err) {
     console.error('calc parse error', err);
+    document.getElementById('calcData').textContent = 'Не удалось прочитать расчёт. Вы можете отправить заявку вручную.';
   }
 }
 
 async function insertLead(payload){
+  if (!client) throw new Error('Supabase не настроен');
   const tables = ['leads', 'calculator_requests'];
   let lastError = null;
   for (const table of tables) {
@@ -88,7 +100,12 @@ async function sendRequest() {
   status.textContent = 'Отправляем заявку...';
   sendBtn.disabled = true;
   const phone = document.getElementById('phone').value.trim();
-  if (!phone) { alert('Введите телефон'); return; }
+  if (!phone) {
+    status.className = 'err';
+    status.textContent = 'Введите телефон для отправки заявки.';
+    sendBtn.disabled = false;
+    return;
+  }
 
   const payload = {
     name: document.getElementById('name').value.trim(),

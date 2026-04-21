@@ -11,6 +11,7 @@
   <meta property="og:title" content="Услуги по проектированию и изготовлению лестниц — Tekstura">
   <meta property="og:description" content="Проектирование, изготовление и монтаж премиальных лестниц. Полное сопровождение проекта, подбор материалов и инженерный расчёт.">
   <meta property="og:url" content="https://tekstura.shop/services.html">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/supabase-config.js"></script>
   <link rel="stylesheet" href="/styles.css">
@@ -20,6 +21,8 @@
   <main class="wrap">
     <h1>Услуги Tekstura</h1>
     <p class="subtitle">Полный цикл работ: от идеи и инженерии до монтажа на объекте.</p>
+    <p class="subtitle">Производство: Казань, Орнбургский тракт, 340.</p>
+    <div id="servicesStatus" class="subtitle" aria-live="polite"></div>
     <section id="servicesRoot" class="grid"></section>
   </main>
 <script>
@@ -29,17 +32,27 @@ const fallback=[
   {title:'Монтаж',description:'Профессиональная установка и финальная подгонка на объекте.',price:'от 70 000 ₽'}
 ];
 const root=document.getElementById('servicesRoot');
+const status=document.getElementById('servicesStatus');
 const esc=(s='')=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
 function render(items){root.innerHTML=(items||[]).map((s)=>`<article class="card"><h2>${esc(s.title||'Услуга')}</h2><p>${esc(s.description||'')}</p><div class="price">${esc(s.price||'по запросу')}</div></article>`).join('');}
 (async function load(){
   try {
-    const client=window.supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
+    const cfg = window.SUPABASE_CONFIG;
+    const client=(cfg?.url && cfg?.anonKey && window.supabase) ? window.supabase.createClient(cfg.url, cfg.anonKey) : null;
+    if(!client){
+      status.textContent='Показываем базовый набор услуг.';
+      render(fallback);
+      return;
+    }
     const {data,error}=await client.from('services').select('*').order('sort_order',{ascending:true});
     if(error) throw error;
     const prepared=(data||[]).map((item)=>({title:item.title,description:item.description,price:item.price_from?`от ${item.price_from} ₽`:(item.price||'по запросу')}));
+    status.textContent = prepared.length ? '' : 'Актуальные позиции скоро появятся. Ниже — базовые услуги.';
     render(prepared.length?prepared:fallback);
   } catch (e) {
-    console.error(e); render(fallback);
+    console.error(e);
+    status.textContent='Список услуг временно недоступен. Ниже — базовые услуги.';
+    render(fallback);
   }
 })();
 </script>
