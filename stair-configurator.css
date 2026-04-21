@@ -633,3 +633,9 @@ button:hover {
     gap: 8px;
   }
 }
+
+.geometry-visuals{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.geo-svg{width:100%;height:auto;display:block}
+.badge.recommended{background:var(--success-bg);color:var(--success-text)}
+.badge.warning{background:var(--warn-bg);color:var(--warn-text)}
+@media (max-width:860px){.geometry-visuals{grid-template-columns:1fr}}

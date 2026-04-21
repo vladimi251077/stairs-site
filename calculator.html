@@ -47,8 +47,19 @@
 
     <section class="step active" id="step1">
       <h2>Шаг 1. Конфигурация</h2>
+      <div class="field">
+        <label for="baseCondition">Что у вас уже есть?</label>
+        <div class="visual-choice" data-target="baseCondition">
+          <button type="button" class="visual-card selected" data-value="empty_opening"><span>◻</span><b>Пустой проём</b><small>Полная лестница с нуля</small></button>
+          <button type="button" class="visual-card" data-value="existing_metal_frame"><span>▣</span><b>Готовый металлокаркас</b><small>Проверка + отделка</small></button>
+          <button type="button" class="visual-card" data-value="existing_concrete_base"><span>◼</span><b>Готовое бетонное основание</b><small>Облицовка и ограждение</small></button>
+          <button type="button" class="visual-card" data-value="finish_only"><span>◫</span><b>Только отделка</b><small>Без расчёта нового каркаса</small></button>
+          <button type="button" class="visual-card" data-value="consultation"><span>?</span><b>Нужна консультация</b><small>Запрос на инженера</small></button>
+        </div>
+        <input type="hidden" id="baseCondition" value="empty_opening">
+      </div>
 
-      <div class="field stair-type-field">
+      <div class="field stair-type-field" id="stairTypeField">
         <label for="stairType">Тип лестницы</label>
         <div class="visual-choice stair-type-choice" data-target="stairType">
           <button type="button" class="visual-card selected" data-value="straight"><span>↗</span><b>Прямая</b><small>Классическая одномаршевая</small></button>
@@ -68,10 +79,14 @@
         <div class="field"><label for="openingLength">Длина проёма (мм)</label><input id="openingLength" type="number" placeholder="4200"><small class="field-help">Полезная длина зоны, в которую должен поместиться марш/марши.</small></div>
         <div class="field"><label for="openingWidth">Ширина проёма (мм)</label><input id="openingWidth" type="number" placeholder="2100"><small class="field-help">Нужна для разворота и комфортного прохода, особенно для Г/П-образных схем.</small></div>
         <div class="field"><label for="marchWidth">Ширина марша (мм)</label><input id="marchWidth" type="number" placeholder="1000"><small class="field-help">Рекомендуем 900–1100 мм для удобства и премиального визуального баланса.</small></div>
+        <div class="field"><label for="slabThickness">Толщина плиты (мм)</label><input id="slabThickness" type="number" placeholder="220"></div>
+        <div class="field"><label for="topFinishThickness">Финиш сверху (мм)</label><input id="topFinishThickness" type="number" placeholder="20"></div>
+        <div class="field"><label for="bottomFinishThickness">Финиш снизу (мм)</label><input id="bottomFinishThickness" type="number" placeholder="20"></div>
         <div class="field"><label for="deliveryDistance">Расстояние доставки (км)</label><input id="deliveryDistance" type="number" placeholder="20"></div>
+        <div class="field hidden" id="existingConditionField"><label for="existingConditionNotes">Состояние существующего основания</label><input id="existingConditionNotes" type="text" placeholder="Например: нужен ремонт сварных швов"></div>
       </div>
 
-      <div class="field">
+      <div class="field" id="frameMaterialField">
         <label for="frameMaterial">Материал каркаса</label>
         <div class="visual-choice" data-target="frameMaterial">
           <button type="button" class="visual-card selected" data-value="metal"><span>▦</span><b>Металлокаркас</b><small>Высокая жёсткость</small></button>
@@ -81,7 +96,7 @@
         <input type="hidden" id="frameMaterial" value="metal">
       </div>
 
-      <div class="grid">
+      <div class="grid" id="finishGrid">
         <div class="field"><label for="claddingType">Облицовка</label><select id="claddingType" class="inline-select"><option value="none">Без облицовки</option><option value="standard" selected>Стандартная</option><option value="premium">Премиальная</option></select></div>
         <div class="field"><label for="railingType">Ограждение</label><select id="railingType" class="inline-select"><option value="none">Без ограждения</option><option value="metal" selected>Металлическое</option><option value="glass">Стеклянное</option><option value="wood">Деревянное</option></select></div>
         <div class="field"><label for="finishLevel">Уровень финиша</label><select id="finishLevel" class="inline-select"><option value="basic">Базовый</option><option value="standard">Стандарт</option><option value="premium">Премиум</option></select></div>
@@ -105,6 +120,16 @@
       <div id="geometryTypeHint" class="stair-type-hint"></div>
       <div id="geometryResult" class="result-box"></div>
       <div id="geometryWarnings"></div>
+      <div class="geometry-visuals">
+        <div class="result-box">
+          <h3>Вид сверху</h3>
+          <div id="geometryPlanSvg"></div>
+        </div>
+        <div class="result-box">
+          <h3>Боковой вид</h3>
+          <div id="geometryElevationSvg"></div>
+        </div>
+      </div>
       <div id="geometryFallbackCta" class="geometry-fallback-cta" hidden>
         <p>Если онлайн-геометрия не проходит, это нормально для сложных проёмов. Передайте размеры — инженер Tekstura вручную подберёт рабочее решение.</p>
         <a class="btn-secondary" href="/request.html">Отправить размеры на инженерную проверку</a>
