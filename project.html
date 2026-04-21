@@ -4,8 +4,8 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Проект лестницы — Tekstura</title>
 <meta name="description" content="Проект премиальной лестницы Tekstura: детали решения, материалы, конструкция и особенности реализации.">
-<link rel="canonical" href="https://tekstura.shop/project.html">
-<meta property="og:type" content="website"><meta property="og:site_name" content="Tekstura"><meta property="og:title" content="Проект лестницы — Tekstura"><meta property="og:description" content="Проект премиальной лестницы Tekstura: детали решения, материалы, конструкция и особенности реализации."><meta property="og:url" content="https://tekstura.shop/project.html">
+<link rel="canonical" href="https://stairs-site.vercel.app/project.html">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Tekstura"><meta property="og:title" content="Проект лестницы — Tekstura"><meta property="og:description" content="Проект премиальной лестницы Tekstura: детали решения, материалы, конструкция и особенности реализации."><meta property="og:url" content="https://stairs-site.vercel.app/project.html">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="/supabase-config.js"></script>
 <style>
 body{margin:0;background:#0f0c0a;color:#f4e7d4;font-family:Inter,Arial,sans-serif}.wrap{max-width:980px;margin:0 auto;padding:24px}a{color:#e8c8a2;text-decoration:none}h1{font-size:32px;margin-bottom:10px}p{color:#b9aa97;line-height:1.6}
@@ -19,7 +19,7 @@ body{margin:0;background:#0f0c0a;color:#f4e7d4;font-family:Inter,Arial,sans-seri
 <img id="mainImage" class="gallery-main" src="/logo.jpg.png" alt="Проект"><div class="thumbs" id="thumbs"></div>
 <div id="price" class="price"></div><p id="description"></p>
 <div class="meta"><p id="materials"></p><p id="type"></p><p id="category"></p><p id="leadTime"></p></div>
-<div class="config"><h3>Customize this project</h3><p class="muted">Быстрая оценка изменений по выбранному проекту. Это не полный инженерный расчёт.</p>
+<div class="config"><h3>Настройка проекта</h3><p class="muted">Быстрая оценка изменений по выбранному проекту. Это не полный инженерный расчёт.</p>
 <div class="config-grid">
 <div><label>Ограждение</label><select id="cfgRailing"></select></div>
 <div><label>Облицовка</label><select id="cfgCladding"></select></div>
@@ -40,7 +40,7 @@ let project = null; let images = []; let basePrice = 0;
 const defaults = {
   railing:[['none','Без ограждения',0],['metal','Металл',0],['glass','Стекло',38000],['wood','Дерево',21000]],
   cladding:[['none','Без облицовки',-30000],['standard','Стандарт',0],['premium','Премиум',52000]],
-  frame:[['metal','Металл',0],['wood','Дерево',26000],['concrete','Бетон',42000]],
+  frame:[['metal','Металлокаркас',0],['concrete','Бетонный каркас',42000],['wood','Деревянный каркас',26000]],
   finish:[['basic','Базовый',0],['standard','Стандарт',18000],['premium','Премиум',48000]]
 };
 function updateSeoMeta(t,d){const base='Проект лестницы — Tekstura';const ft=t?`${t} — проект лестницы | Tekstura`:base;const fd=d||'Проект премиальной лестницы Tekstura';document.title=ft;document.querySelector('meta[name="description"]').setAttribute('content',fd);document.querySelector('meta[property="og:title"]').setAttribute('content',ft);document.querySelector('meta[property="og:description"]').setAttribute('content',fd);}
@@ -59,7 +59,7 @@ document.getElementById('thumbs').innerHTML=images.map((img)=>`<img src="${img.i
 const opts=data.custom_options || {}; fillSelect('cfgRailing',opts.railing||defaults.railing); fillSelect('cfgCladding',opts.cladding||defaults.cladding); fillSelect('cfgFrame',opts.frame||defaults.frame); fillSelect('cfgFinish',opts.finish||defaults.finish);
 ['cfgRailing','cfgCladding','cfgFrame','cfgFinish','cfgLighting','cfgCoating'].forEach((id)=>document.getElementById(id).addEventListener('change',recalc)); recalc();
 
-document.getElementById('title').innerText=data.title||'Без названия';document.getElementById('subtitle').innerText=data.short_description||'';document.getElementById('description').innerText=data.full_description||data.description||'Описание пока не добавлено';
+document.getElementById('title').innerText=data.title||'Проект лестницы Tekstura';document.getElementById('subtitle').innerText=data.short_description||'';document.getElementById('description').innerText=data.full_description||data.description||'';
 document.getElementById('price').innerText=basePrice?('Цена: '+new Intl.NumberFormat('ru-RU').format(basePrice)+' ₽'):'Цена: по запросу';
 document.getElementById('materials').innerText=data.materials?'Материалы: '+data.materials:'';document.getElementById('type').innerText=data.staircase_type?'Тип: '+data.staircase_type:'';document.getElementById('category').innerText=data.category?'Категория: '+data.category:'';document.getElementById('leadTime').innerText=data.lead_time?'Срок: '+data.lead_time:'';
 updateSeoMeta(data.title,data.short_description||data.description||data.full_description||'');
