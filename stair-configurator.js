@@ -66,6 +66,14 @@ function toggleReadyFlowFields() {
   $('landingWidthField')?.classList.toggle('hidden', !showLanding);
   $('winderCountField')?.classList.toggle('hidden', !showWinders);
 }
+function setSectionEnabled(sectionId, enabled) {
+  const root = $(sectionId);
+  if (!root) return;
+  root.querySelectorAll('input, select, textarea, button').forEach((el) => {
+    if (el.id === 'calculateBtn' || el.id === 'toResultsBtn') return;
+    el.disabled = !enabled;
+  });
+}
 function toggleScenarioFields() {
   const base = $('baseCondition')?.value || 'empty_opening';
   const empty = base === 'empty_opening';
@@ -75,6 +83,10 @@ function toggleScenarioFields() {
   $('emptyOpeningGrid')?.classList.toggle('hidden', !empty);
   $('frameMaterialField')?.classList.toggle('hidden', !empty);
   $('finishGrid')?.classList.toggle('hidden', !empty);
+  setSectionEnabled('readyFlowFields', !empty);
+  setSectionEnabled('emptyOpeningGrid', empty);
+  setSectionEnabled('frameMaterialField', empty);
+  setSectionEnabled('finishGrid', empty);
   toggleReadyFlowFields();
 }
 
@@ -88,11 +100,20 @@ function updateStairTypeHints(geometry = null) {
 
 function getConfigFromForm() {
   const baseCondition = $('baseCondition')?.value || 'empty_opening';
+  const readyFlow = baseCondition === 'ready_frame';
   const scope_of_work = [...document.querySelectorAll('input[name="scopeWork"]:checked')].map((x) => x.value);
+  const stairTypeFromReady = (() => {
+    const cfg = $('configurationType')?.value || 'straight';
+    const turn = $('turnType')?.value || 'landing';
+    if (cfg === 'straight') return 'straight';
+    if (cfg === 'l_shaped') return turn === 'winders' ? 'l_turn_winders' : 'l_turn_landing';
+    if (cfg === 'u_shaped') return turn === 'winders' ? 'u_turn_winders' : 'u_turn_landing';
+    return 'straight';
+  })();
   return {
     base_condition: baseCondition,
     base_subtype: $('baseSubtype')?.value || 'existing_metal_frame',
-    stair_type: $('stairType')?.value || 'straight',
+    stair_type: readyFlow ? stairTypeFromReady : ($('stairType')?.value || 'straight'),
     configuration_type: $('configurationType')?.value || 'straight',
     turn_type: $('turnType')?.value || 'landing',
     turn_direction: baseCondition === 'empty_opening' ? ($('turnDirection')?.value || 'left') : ($('readyTurnDirection')?.value || 'left'),
@@ -107,8 +128,8 @@ function getConfigFromForm() {
     winder_count: Number($('winderCount')?.value || 0),
     frame_material: $('frameMaterial')?.value || 'metal', finish_level: $('finishLevel')?.value || 'basic', cladding: $('claddingType')?.value || 'standard', railing: $('railingType')?.value || 'metal',
     delivery_distance: Number($('deliveryDistance')?.value || 20), existing_condition_notes: $('existingConditionNotes')?.value?.trim() || '',
-    scope_of_work,
-    extras: [...document.querySelectorAll('input[name="extras"]:checked')].map((x) => x.value)
+    scope_of_work: readyFlow ? scope_of_work : [],
+    extras: readyFlow ? [] : [...document.querySelectorAll('input[name="extras"]:checked')].map((x) => x.value)
   };
 }
 
@@ -283,41 +304,41 @@ function calculateMaterials(config, geometry) {
 }
 function renderMaterials(materials) { const root = $('materialsResult'); if (!root) return; if (!materials.valid) { root.innerHTML = `<div class="warning">${materials.reason}</div>`; return; } root.innerHTML = `<table class="result-table"><tbody>${materials.items.map((i) => `<tr><th>${i.label}</th><td>${i.value}</td></tr>`).join('')}</tbody></table>`; }
 
-function calculatePrice(config, geometry, materials) {
-  if (!geometry.valid || !materials.valid) return null;
-  const d = state.dictionaries.defaults;
-  if (config.base_condition === 'ready_frame' && config.base_subtype === 'existing_metal_frame') {
-    const unit = config.step_count || 0;
-    const areaCoef = (config.ready_march_width || 0) / 1000;
-    const scope = new Set(config.scope_of_work || []);
-    const stepFinishing = scope.has('steps_only') ? unit * 3200 * areaCoef : 0;
-    const risers = scope.has('steps_risers') ? unit * 1800 * areaCoef : 0;
-    const landingOrWinders = config.configuration_type === 'straight' ? 0 : (config.turn_type === 'landing' ? ((config.landing_length * config.landing_width) / 1_000_000) * 9500 : (config.winder_count || 0) * 2600);
-    const railing = scope.has('railing') ? unit * 1400 : 0;
-    const claddingCoating = scope.has('frame_cladding') || scope.has('finish_coating') ? unit * 1200 : 0;
-    const lighting = scope.has('lighting') ? unit * 900 : 0;
-    const installationFitting = scope.has('installation') ? (d.installation_base + unit * 1700) : 0;
-    const complexityCoef = config.configuration_type === 'straight' ? 1 : (config.turn_type === 'winders' ? 1.18 : 1.1);
-    const subtotal = (stepFinishing + risers + landingOrWinders + railing + claddingCoating + lighting + installationFitting) * complexityCoef;
-    const total = subtotal * d.markup_coef;
-    return { total, min: total * 0.9, max: total * 1.14, breakdown: { stepFinishing, risers, landingOrWinders, railing, claddingCoating, lighting, installationFitting, complexityCoef } };
-  }
-  if (config.base_condition === 'ready_frame' && config.base_subtype === 'existing_concrete_base') {
-    const unit = config.step_count || 0;
-    const areaCoef = (config.ready_march_width || 0) / 1000;
-    const scope = new Set(config.scope_of_work || []);
-    const stairCladding = scope.has('steps_only') || scope.has('steps_risers') ? unit * 3600 * areaCoef : 0;
-    const risers = scope.has('steps_risers') ? unit * 1900 * areaCoef : 0;
-    const landingOrWinders = config.configuration_type === 'straight' ? 0 : (config.turn_type === 'landing' ? ((config.landing_length * config.landing_width) / 1_000_000) * 9100 : (config.winder_count || 0) * 2400);
-    const railing = scope.has('railing') ? unit * 1450 : 0;
-    const concretePrepWorks = unit * 950;
-    const finish = scope.has('finish_coating') ? unit * 1200 : 0;
-    const installation = scope.has('installation') ? (d.installation_base + unit * 1600) : 0;
-    const subtotal = stairCladding + risers + landingOrWinders + railing + concretePrepWorks + finish + installation;
-    const total = subtotal * d.markup_coef;
-    return { total, min: total * 0.9, max: total * 1.14, breakdown: { stairCladding, risers, landingOrWinders, railing, concretePrepWorks, finish, installation } };
-  }
-  const baseFrame = (materials.metrics.profileTubeLengthM || 0) * d.metal_rate_per_meter + (materials.metrics.loadBearingWoodM3 || 0) * 32000 + (materials.metrics.concreteVolumeM3 || 0) * d.concrete_rate_per_m3;
+function calculateReadyMetalPrice(config, defaults) {
+  const unit = config.step_count || 0;
+  const areaCoef = (config.ready_march_width || 0) / 1000;
+  const scope = new Set(config.scope_of_work || []);
+  const stepFinishing = scope.has('steps_only') ? unit * 3200 * areaCoef : 0;
+  const risers = scope.has('steps_risers') ? unit * 1800 * areaCoef : 0;
+  const landingOrWinders = config.configuration_type === 'straight' ? 0 : (config.turn_type === 'landing' ? ((config.landing_length * config.landing_width) / 1_000_000) * 9500 : (config.winder_count || 0) * 2600);
+  const railing = scope.has('railing') ? unit * 1400 : 0;
+  const claddingCoating = scope.has('frame_cladding') || scope.has('finish_coating') ? unit * 1200 : 0;
+  const lighting = scope.has('lighting') ? unit * 900 : 0;
+  const installationFitting = scope.has('installation') ? (defaults.installation_base + unit * 1700) : 0;
+  const complexityCoef = config.configuration_type === 'straight' ? 1 : (config.turn_type === 'winders' ? 1.18 : 1.1);
+  const subtotal = (stepFinishing + risers + landingOrWinders + railing + claddingCoating + lighting + installationFitting) * complexityCoef;
+  const total = subtotal * defaults.markup_coef;
+  return { total, min: total * 0.9, max: total * 1.14, breakdown: { stepFinishing, risers, landingOrWinders, railing, claddingCoating, lighting, installationFitting, complexityCoef } };
+}
+
+function calculateReadyConcretePrice(config, defaults) {
+  const unit = config.step_count || 0;
+  const areaCoef = (config.ready_march_width || 0) / 1000;
+  const scope = new Set(config.scope_of_work || []);
+  const stairCladding = scope.has('steps_only') || scope.has('steps_risers') ? unit * 3600 * areaCoef : 0;
+  const risers = scope.has('steps_risers') ? unit * 1900 * areaCoef : 0;
+  const landingOrWinders = config.configuration_type === 'straight' ? 0 : (config.turn_type === 'landing' ? ((config.landing_length * config.landing_width) / 1_000_000) * 9100 : (config.winder_count || 0) * 2400);
+  const railing = scope.has('railing') ? unit * 1450 : 0;
+  const concretePrepWorks = unit * 950;
+  const finish = scope.has('finish_coating') ? unit * 1200 : 0;
+  const installation = scope.has('installation') ? (defaults.installation_base + unit * 1600) : 0;
+  const subtotal = stairCladding + risers + landingOrWinders + railing + concretePrepWorks + finish + installation;
+  const total = subtotal * defaults.markup_coef;
+  return { total, min: total * 0.9, max: total * 1.14, breakdown: { stairCladding, risers, landingOrWinders, railing, concretePrepWorks, finish, installation } };
+}
+
+function calculateNewBuildPrice(config, geometry, materials, defaults) {
+  const baseFrame = (materials.metrics.profileTubeLengthM || 0) * defaults.metal_rate_per_meter + (materials.metrics.loadBearingWoodM3 || 0) * 32000 + (materials.metrics.concreteVolumeM3 || 0) * defaults.concrete_rate_per_m3;
   const stepsArea = (materials.metrics.treadAreaM2 || materials.metrics.claddingAreaM2 || 0);
   const claddingCost = stepsArea * (config.cladding === 'premium' ? 22000 : config.cladding === 'standard' ? 12500 : 0);
   const railingLen = (materials.metrics.railingLengthM || 0);
@@ -326,11 +347,23 @@ function calculatePrice(config, geometry, materials) {
   const finishCost = baseFrame * (config.finish_level === 'premium' ? 0.16 : config.finish_level === 'standard' ? 0.08 : 0.04);
   const extrasMap = { lighting: 24000, painted_metal: 17500, premium_coating: 28000, hidden_fasteners: 19000 };
   const extrasCost = config.extras.reduce((sum, key) => sum + (extrasMap[key] || 0), 0);
-  const installation = d.installation_base + ((geometry.geometrySummary?.tread_count || 0) * d.labor_rate_per_step);
-  const delivery = Math.max(9000, config.delivery_distance * d.delivery_rate_per_km);
-  const subtotal = (baseFrame + claddingCost + railingCost + finishCost + extrasCost + installation + delivery) * d.install_coef;
-  const total = subtotal * d.markup_coef;
+  const installation = defaults.installation_base + ((geometry.geometrySummary?.tread_count || 0) * defaults.labor_rate_per_step);
+  const delivery = Math.max(9000, config.delivery_distance * defaults.delivery_rate_per_km);
+  const subtotal = (baseFrame + claddingCost + railingCost + finishCost + extrasCost + installation + delivery) * defaults.install_coef;
+  const total = subtotal * defaults.markup_coef;
   return { total, min: total * 0.9, max: total * 1.14, breakdown: { newFrameBase: baseFrame, stairsCladding: claddingCost, railing: railingCost, finish: finishCost, extras: extrasCost, installation, delivery } };
+}
+
+function calculatePrice(config, geometry, materials) {
+  if (!geometry.valid || !materials.valid) return null;
+  const d = state.dictionaries.defaults;
+  if (config.base_condition === 'ready_frame' && config.base_subtype === 'existing_metal_frame') {
+    return calculateReadyMetalPrice(config, d);
+  }
+  if (config.base_condition === 'ready_frame' && config.base_subtype === 'existing_concrete_base') {
+    return calculateReadyConcretePrice(config, d);
+  }
+  return calculateNewBuildPrice(config, geometry, materials, d);
 }
 
 function money(v) { return `${new Intl.NumberFormat('ru-RU').format(Math.round(v || 0))} ₽`; }
@@ -357,6 +390,13 @@ function renderPrice(price) {
 
 function buildRequestPayload() {
   const cfg = state.lastConfig || {};
+  const isReadyFlow = cfg.base_condition === 'ready_frame';
+  const stairTypeLabel = isReadyFlow
+    ? (LABELS.configuration_type[cfg.configuration_type] || cfg.configuration_type)
+    : (LABELS.stair_type[cfg.stair_type] || cfg.stair_type);
+  const dimensions = isReadyFlow
+    ? { ready_march_width: cfg.ready_march_width, step_count: cfg.step_count, riser_height: cfg.riser_height, tread_depth: cfg.tread_depth, landing_length: cfg.landing_length, landing_width: cfg.landing_width, winder_count: cfg.winder_count }
+    : { floor_to_floor_height: cfg.floor_to_floor_height, opening_length: cfg.opening_length, opening_width: cfg.opening_width, march_width: cfg.march_width, slab_thickness: cfg.slab_thickness, top_finish_thickness: cfg.top_finish_thickness, bottom_finish_thickness: cfg.bottom_finish_thickness };
   return {
     base_condition: cfg.base_condition,
     base_subtype: cfg.base_subtype,
@@ -372,14 +412,19 @@ function buildRequestPayload() {
     winder_count: cfg.winder_count,
     scope_of_work: cfg.scope_of_work || [],
     existing_condition_notes: cfg.existing_condition_notes || '',
-    staircaseType: LABELS.stair_type[cfg.stair_type] || cfg.stair_type,
-    inputDimensions: { floor_to_floor_height: cfg.floor_to_floor_height, opening_length: cfg.opening_length, opening_width: cfg.opening_width, march_width: cfg.march_width, slab_thickness: cfg.slab_thickness, top_finish_thickness: cfg.top_finish_thickness, bottom_finish_thickness: cfg.bottom_finish_thickness },
+    staircaseType: stairTypeLabel,
+    dimensions,
+    inputDimensions: dimensions,
     geometrySummary: state.geometry?.geometrySummary || null,
     scenario_summary: state.geometry?.scenarioSummary || '',
     status: state.geometry?.status || 'invalid',
     warnings: state.geometry?.warnings || [],
-    materialsSummary: { frame: LABELS.frame_material[cfg.frame_material], cladding: LABELS.cladding[cfg.cladding], railing: LABELS.railing[cfg.railing], finish: LABELS.finish_level[cfg.finish_level] },
-    selectedExtras: (cfg.extras || []).map((x) => ({ code: x, label: EXTRA_LABELS[x] || x })),
+    materialsSummary: isReadyFlow
+      ? { base: LABELS.base_subtype[cfg.base_subtype] || cfg.base_subtype, scope_of_work: (cfg.scope_of_work || []).map((x) => SCOPE_LABELS[x] || x) }
+      : { frame: LABELS.frame_material[cfg.frame_material], cladding: LABELS.cladding[cfg.cladding], railing: LABELS.railing[cfg.railing], finish: LABELS.finish_level[cfg.finish_level] },
+    selectedExtras: isReadyFlow
+      ? (cfg.scope_of_work || []).map((x) => ({ code: x, label: SCOPE_LABELS[x] || x }))
+      : (cfg.extras || []).map((x) => ({ code: x, label: EXTRA_LABELS[x] || x })),
     priceBreakdown: state.price?.breakdown || {},
     total: Math.round(state.price?.total || 0)
   };
