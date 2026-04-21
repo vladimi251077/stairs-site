@@ -311,6 +311,12 @@ a {
   line-height: 1.65;
 }
 
+.services-lead-secondary {
+  margin-top: 12px;
+  color: #d8c4a9;
+  font-size: 15px;
+}
+
 .feature-grid {
   position: relative;
   z-index: 1;
@@ -815,6 +821,16 @@ a {
 
   .cta-box {
     padding: 22px 18px;
+  }
+
+  .site-footer__inner {
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .site-footer__links {
+    flex-direction: column;
+    gap: 8px;
   }
 }
 

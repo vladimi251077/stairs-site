@@ -15,21 +15,36 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/supabase-config.js"></script>
   <link rel="stylesheet" href="/styles.css">
-  <style>.wrap{max-width:1100px;margin:0 auto;padding:24px 16px 48px}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}.card{border:1px solid rgba(255,255,255,.11);border-radius:14px;padding:16px;background:rgba(255,255,255,.02)}.price{color:#efd8bb;font-weight:700;margin-top:10px}@media(max-width:760px){.wrap{padding:16px}}</style>
+  <style>
+    .wrap{max-width:1100px;margin:0 auto;padding:24px 16px 48px}
+    .lead{max-width:780px;color:#c8b7a2}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:16px}
+    .card{border:1px solid rgba(255,255,255,.11);border-radius:16px;padding:16px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02))}
+    .card h2{margin:0 0 8px}
+    .price{color:#efd8bb;font-weight:700;margin-top:10px}
+    .service-cta{margin-top:20px;padding:16px;border:1px solid rgba(255,255,255,.14);border-radius:16px;background:rgba(255,255,255,.025);display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+    .service-cta a{text-decoration:none;padding:10px 14px;border-radius:10px;background:#e8c8a2;color:#1a120e;font-weight:700}
+    @media(max-width:760px){.wrap{padding:16px 14px 36px}.service-cta{padding:14px}}
+  </style>
 </head>
 <body>
   <main class="wrap">
     <h1>Услуги Tekstura</h1>
-    <p class="subtitle">Полный цикл работ: от идеи и инженерии до монтажа на объекте.</p>
-    <p class="subtitle">Производство: Казань, Орнбургский тракт, 340.</p>
+    <p class="lead">Премиальный цикл: инженерное проектирование, производство, монтаж и сопровождение проекта до финальной сдачи объекта.</p>
+    <p class="lead">Производство Tekstura: Казань, Орнбургский тракт, 340.</p>
     <div id="servicesStatus" class="subtitle" aria-live="polite"></div>
     <section id="servicesRoot" class="grid"></section>
+    <div class="service-cta">
+      <div>Нужна комплексная оценка и подбор решения под ваш проём?</div>
+      <a href="/request.html">Оставить заявку</a>
+    </div>
   </main>
 <script>
 const fallback=[
-  {title:'Проектирование',description:'Инженерный расчёт, подбор геометрии, материалов и визуальная концепция лестницы.',price:'от 35 000 ₽'},
-  {title:'Изготовление',description:'Производство каркаса, ступеней и ограждений под размеры вашего объекта.',price:'от 220 000 ₽'},
-  {title:'Монтаж',description:'Профессиональная установка и финальная подгонка на объекте.',price:'от 70 000 ₽'}
+  {title:'Проектирование',description:'Инженерный расчёт, подбор геометрии, материалов и визуальная концепция лестницы под конкретный объект.',price:'от 35 000 ₽'},
+  {title:'Изготовление',description:'Производство каркаса, ступеней и ограждений на собственной площадке Tekstura в Казани.',price:'от 220 000 ₽'},
+  {title:'Монтаж',description:'Профессиональная установка и финальная подгонка на объекте штатной монтажной бригадой.',price:'от 70 000 ₽'},
+  {title:'Проектное сопровождение',description:'Сопровождение архитектора/дизайнера, координация смежных работ и контроль узлов примыкания.',price:'по запросу'}
 ];
 const root=document.getElementById('servicesRoot');
 const status=document.getElementById('servicesStatus');
@@ -40,18 +55,18 @@ function render(items){root.innerHTML=(items||[]).map((s)=>`<article class="card
     const cfg = window.SUPABASE_CONFIG;
     const client=(cfg?.url && cfg?.anonKey && window.supabase) ? window.supabase.createClient(cfg.url, cfg.anonKey) : null;
     if(!client){
-      status.textContent='Показываем базовый набор услуг.';
+      status.textContent='Показываем базовый премиальный пакет услуг.';
       render(fallback);
       return;
     }
     const {data,error}=await client.from('services').select('*').order('sort_order',{ascending:true});
     if(error) throw error;
     const prepared=(data||[]).map((item)=>({title:item.title,description:item.description,price:item.price_from?`от ${item.price_from} ₽`:(item.price||'по запросу')}));
-    status.textContent = prepared.length ? '' : 'Актуальные позиции скоро появятся. Ниже — базовые услуги.';
+    status.textContent = prepared.length ? '' : 'Публичный список обновляется. Ниже — базовый пакет услуг Tekstura.';
     render(prepared.length?prepared:fallback);
   } catch (e) {
     console.error(e);
-    status.textContent='Список услуг временно недоступен. Ниже — базовые услуги.';
+    status.textContent='Список услуг временно недоступен. Ниже — базовый пакет.';
     render(fallback);
   }
 })();

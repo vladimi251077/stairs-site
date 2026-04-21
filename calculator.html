@@ -63,10 +63,10 @@
 
       <div class="grid">
         <div class="field" id="turnDirectionField"><label for="turnDirection">Направление поворота</label><select id="turnDirection"><option value="left">Левый</option><option value="right">Правый</option></select></div>
-        <div class="field"><label for="floorHeight">Высота этаж-этаж (мм)</label><input id="floorHeight" type="number" placeholder="3000"></div>
-        <div class="field"><label for="openingLength">Длина проёма (мм)</label><input id="openingLength" type="number" placeholder="4200"></div>
-        <div class="field"><label for="openingWidth">Ширина проёма (мм)</label><input id="openingWidth" type="number" placeholder="2100"></div>
-        <div class="field"><label for="marchWidth">Ширина марша (мм)</label><input id="marchWidth" type="number" placeholder="1000"></div>
+        <div class="field"><label for="floorHeight">Высота этаж-этаж (мм)</label><input id="floorHeight" type="number" placeholder="3000"><small class="field-help">Измерение от чистового пола нижнего этажа до чистового пола верхнего.</small></div>
+        <div class="field"><label for="openingLength">Длина проёма (мм)</label><input id="openingLength" type="number" placeholder="4200"><small class="field-help">Полезная длина зоны, в которую должен поместиться марш/марши.</small></div>
+        <div class="field"><label for="openingWidth">Ширина проёма (мм)</label><input id="openingWidth" type="number" placeholder="2100"><small class="field-help">Нужна для разворота и комфортного прохода, особенно для Г/П-образных схем.</small></div>
+        <div class="field"><label for="marchWidth">Ширина марша (мм)</label><input id="marchWidth" type="number" placeholder="1000"><small class="field-help">Рекомендуем 900–1100 мм для удобства и премиального визуального баланса.</small></div>
         <div class="field"><label for="deliveryDistance">Расстояние доставки (км)</label><input id="deliveryDistance" type="number" placeholder="20"></div>
       </div>
 
@@ -104,6 +104,10 @@
       <div id="geometryTypeHint" class="stair-type-hint"></div>
       <div id="geometryResult" class="result-box"></div>
       <div id="geometryWarnings"></div>
+      <div id="geometryFallbackCta" class="geometry-fallback-cta" hidden>
+        <p>Даже если онлайн-геометрия не прошла, мы можем вручную подобрать рабочее инженерное решение под ваш проём.</p>
+        <a class="btn-secondary" href="/request.html">Отправить размеры на инженерную проверку</a>
+      </div>
       <div class="actions">
         <button class="btn-secondary" type="button" onclick="prevStep()">Назад</button>
         <button class="btn-primary" id="calculateBtn" type="button">Рассчитать материалы и стоимость</button>
