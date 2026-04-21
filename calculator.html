@@ -48,18 +48,24 @@
     <section class="step active" id="step1">
       <h2>Шаг 1. Конфигурация</h2>
       <div class="field">
-        <label for="baseCondition">Что у вас уже есть?</label>
+        <label for="baseCondition">Сценарий проекта</label>
         <div class="visual-choice" data-target="baseCondition">
-          <button type="button" class="visual-card selected" data-value="empty_opening"><span>◻</span><b>Пустой проём</b><small>Полная лестница с нуля</small></button>
-          <button type="button" class="visual-card" data-value="existing_metal_frame"><span>▣</span><b>Готовый металлокаркас</b><small>Проверка + отделка</small></button>
-          <button type="button" class="visual-card" data-value="existing_concrete_base"><span>◼</span><b>Готовое бетонное основание</b><small>Облицовка и ограждение</small></button>
-          <button type="button" class="visual-card" data-value="finish_only"><span>◫</span><b>Только отделка</b><small>Без расчёта нового каркаса</small></button>
-          <button type="button" class="visual-card" data-value="consultation"><span>?</span><b>Нужна консультация</b><small>Запрос на инженера</small></button>
+          <button type="button" class="visual-card selected" data-value="empty_opening"><span>◻</span><b>Пустой проём</b><small>Новая лестница под ключ</small></button>
+          <button type="button" class="visual-card" data-value="ready_frame"><span>▣</span><b>Готовый каркас</b><small>Отделка существующего основания</small></button>
         </div>
         <input type="hidden" id="baseCondition" value="empty_opening">
       </div>
 
-      <div class="field stair-type-field" id="stairTypeField">
+      <div class="field hidden" id="baseSubtypeField">
+        <label for="baseSubtype">Тип готового основания</label>
+        <div class="visual-choice" data-target="baseSubtype">
+          <button type="button" class="visual-card selected" data-value="existing_metal_frame"><span>▦</span><b>Готовый металлокаркас</b><small>Финиш + проверка посадки</small></button>
+          <button type="button" class="visual-card" data-value="existing_concrete_base"><span>▩</span><b>Готовое бетонное основание</b><small>Облицовка + ограждение</small></button>
+        </div>
+        <input type="hidden" id="baseSubtype" value="existing_metal_frame">
+      </div>
+
+      <div class="field stair-type-field" id="emptyStairTypeField">
         <label for="stairType">Тип лестницы</label>
         <div class="visual-choice stair-type-choice" data-target="stairType">
           <button type="button" class="visual-card selected" data-value="straight"><span>↗</span><b>Прямая</b><small>Классическая одномаршевая</small></button>
@@ -73,7 +79,43 @@
 
       <div id="stairTypeHint" class="stair-type-hint"></div>
 
-      <div class="grid">
+      <div id="readyFlowFields" class="hidden">
+        <div class="field">
+          <label for="configurationType">Конфигурация</label>
+          <div class="visual-choice" data-target="configurationType">
+            <button type="button" class="visual-card selected" data-value="straight"><span>↗</span><b>Прямая</b></button>
+            <button type="button" class="visual-card" data-value="l_shaped"><span>└</span><b>Г-образная</b></button>
+            <button type="button" class="visual-card" data-value="u_shaped"><span>∪</span><b>П-образная</b></button>
+          </div>
+          <input type="hidden" id="configurationType" value="straight">
+        </div>
+        <div class="grid">
+          <div class="field hidden" id="turnTypeField"><label for="turnType">Тип поворота</label><select id="turnType"><option value="landing">Площадка</option><option value="winders">Забежные</option></select></div>
+          <div class="field"><label for="stepCount">Количество ступеней</label><input id="stepCount" type="number" placeholder="15"></div>
+          <div class="field"><label for="readyMarchWidth">Ширина марша (мм)</label><input id="readyMarchWidth" type="number" placeholder="1000"></div>
+          <div class="field"><label for="riserHeight">Высота подступенка (мм)</label><input id="riserHeight" type="number" placeholder="170" required><small class="field-help">Рекомендуемая зона комфорта: 150–190 мм.</small></div>
+          <div class="field"><label for="treadDepth">Глубина проступи (мм)</label><input id="treadDepth" type="number" placeholder="280"></div>
+          <div class="field hidden" id="readyTurnDirectionField"><label for="readyTurnDirection">Направление поворота</label><select id="readyTurnDirection"><option value="left">Левый</option><option value="right">Правый</option></select></div>
+          <div class="field hidden" id="landingLengthField"><label for="landingLength">Длина площадки (мм)</label><input id="landingLength" type="number" placeholder="1000"></div>
+          <div class="field hidden" id="landingWidthField"><label for="landingWidth">Ширина площадки (мм)</label><input id="landingWidth" type="number" placeholder="1000"></div>
+          <div class="field hidden" id="winderCountField"><label for="winderCount">Количество забежных ступеней</label><input id="winderCount" type="number" placeholder="3"></div>
+          <div class="field"><label for="existingConditionNotes">Состояние существующего основания</label><input id="existingConditionNotes" type="text" placeholder="Например: требуется усиление узлов"></div>
+        </div>
+        <div class="field">
+          <label>Объём работ</label>
+          <div class="extras-list">
+            <label><input type="checkbox" name="scopeWork" value="steps_only"> Только ступени</label>
+            <label><input type="checkbox" name="scopeWork" value="steps_risers"> Ступени + подступенки</label>
+            <label><input type="checkbox" name="scopeWork" value="railing"> Ограждение</label>
+            <label><input type="checkbox" name="scopeWork" value="frame_cladding"> Обшивка каркаса</label>
+            <label><input type="checkbox" name="scopeWork" value="finish_coating"> Финиш/покрытие</label>
+            <label><input type="checkbox" name="scopeWork" value="lighting"> Подсветка</label>
+            <label><input type="checkbox" name="scopeWork" value="installation"> Монтаж</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" id="emptyOpeningGrid">
         <div class="field" id="turnDirectionField"><label for="turnDirection">Направление поворота</label><select id="turnDirection"><option value="left">Левый</option><option value="right">Правый</option></select></div>
         <div class="field"><label for="floorHeight">Высота этаж-этаж (мм)</label><input id="floorHeight" type="number" placeholder="3000"><small class="field-help">Измерение от чистового пола нижнего этажа до чистового пола верхнего.</small></div>
         <div class="field"><label for="openingLength">Длина проёма (мм)</label><input id="openingLength" type="number" placeholder="4200"><small class="field-help">Полезная длина зоны, в которую должен поместиться марш/марши.</small></div>
@@ -83,8 +125,6 @@
         <div class="field"><label for="topFinishThickness">Финиш сверху (мм)</label><input id="topFinishThickness" type="number" placeholder="20"></div>
         <div class="field"><label for="bottomFinishThickness">Финиш снизу (мм)</label><input id="bottomFinishThickness" type="number" placeholder="20"></div>
         <div class="field"><label for="deliveryDistance">Расстояние доставки (км)</label><input id="deliveryDistance" type="number" placeholder="20"></div>
-        <div class="field hidden" id="geometryOptionalNote"><label>Режим отделки</label><small class="field-help">Для сценария «Только отделка» структурный подбор маршей не выполняется — фиксируем отделочные работы и узлы монтажа.</small></div>
-        <div class="field hidden" id="existingConditionField"><label for="existingConditionNotes">Состояние существующего основания</label><input id="existingConditionNotes" type="text" placeholder="Например: нужен ремонт сварных швов"></div>
       </div>
 
       <div class="field" id="frameMaterialField">
