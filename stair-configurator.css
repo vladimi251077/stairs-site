@@ -549,6 +549,13 @@ button:hover {
   color: var(--text-muted);
 }
 
+#stepProgress {
+  margin: 2px 0 14px;
+  padding: 0 8px;
+  color: #d9c2a5;
+  font-size: 13px;
+}
+
 @media (max-width: 760px) {
   .wrap {
     padding: 20px 14px 36px;
@@ -618,7 +625,7 @@ button:hover {
   }
 
   .field {
-    margin-bottom: 14px;
+    margin-bottom: 16px;
   }
 
   .extras-list {

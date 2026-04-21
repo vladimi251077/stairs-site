@@ -17,11 +17,11 @@
   <link rel="stylesheet" href="/styles.css">
   <style>
     .wrap{max-width:1100px;margin:0 auto;padding:24px 16px 48px}
-    .lead{max-width:780px;color:#c8b7a2}
+    .lead{max-width:780px;color:#c8b7a2;line-height:1.6}
     .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:16px}
-    .card{border:1px solid rgba(255,255,255,.11);border-radius:16px;padding:16px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02))}
+    .card{border:1px solid rgba(255,255,255,.11);border-radius:16px;padding:16px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));display:flex;flex-direction:column;gap:8px}
     .card h2{margin:0 0 8px}
-    .price{color:#efd8bb;font-weight:700;margin-top:10px}
+    .price{color:#efd8bb;font-weight:700;margin-top:auto;padding-top:6px}
     .service-cta{margin-top:20px;padding:16px;border:1px solid rgba(255,255,255,.14);border-radius:16px;background:rgba(255,255,255,.025);display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
     .service-cta a{text-decoration:none;padding:10px 14px;border-radius:10px;background:#e8c8a2;color:#1a120e;font-weight:700}
     @media(max-width:760px){.wrap{padding:16px 14px 36px}.service-cta{padding:14px}}
@@ -35,7 +35,7 @@
     <div id="servicesStatus" class="subtitle" aria-live="polite"></div>
     <section id="servicesRoot" class="grid"></section>
     <div class="service-cta">
-      <div>Нужна комплексная оценка и подбор решения под ваш проём?</div>
+      <div>Нужна комплексная оценка и подбор решения под ваш проём? Подготовим персональную конфигурацию и дорожную карту работ.</div>
       <a href="/request.html">Оставить заявку</a>
     </div>
   </main>
@@ -55,7 +55,7 @@ function render(items){root.innerHTML=(items||[]).map((s)=>`<article class="card
     const cfg = window.SUPABASE_CONFIG;
     const client=(cfg?.url && cfg?.anonKey && window.supabase) ? window.supabase.createClient(cfg.url, cfg.anonKey) : null;
     if(!client){
-      status.textContent='Показываем базовый премиальный пакет услуг.';
+      status.textContent='Показываем базовый премиальный пакет услуг Tekstura.';
       render(fallback);
       return;
     }
@@ -66,7 +66,7 @@ function render(items){root.innerHTML=(items||[]).map((s)=>`<article class="card
     render(prepared.length?prepared:fallback);
   } catch (e) {
     console.error(e);
-    status.textContent='Список услуг временно недоступен. Ниже — базовый пакет.';
+    status.textContent='Список услуг временно недоступен. Ниже — базовый пакет Tekstura.';
     render(fallback);
   }
 })();

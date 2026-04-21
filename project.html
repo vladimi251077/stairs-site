@@ -14,14 +14,14 @@ body{margin:0;background:#0f0c0a;color:#f4e7d4;font-family:Inter,Arial,sans-seri
 .gallery-main{width:100%;border-radius:14px;margin:18px 0;background:#201b18;object-fit:cover;max-height:560px;cursor:pointer}
 .thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:10px;margin-bottom:16px}.thumbs img{width:100%;height:72px;object-fit:cover;border-radius:10px;border:1px solid rgba(255,255,255,.15);cursor:pointer}.thumbs img.active{border-color:#e8c8a2}
 .price{font-size:22px;color:#f0d7b7;font-weight:bold;margin:10px 0}.meta,.config,.trust{margin-top:18px;padding:18px;border:1px solid rgba(255,255,255,.08);border-radius:16px;background:rgba(255,255,255,.02)}
-.meta p{margin:8px 0}.meta p.is-empty{display:none}
+.meta p{margin:8px 0}.meta p.is-empty{display:none}.meta.is-empty{display:none}
 .btn{display:inline-block;margin-top:18px;padding:14px 20px;border-radius:12px;background:#e8c8a2;color:#1a120e;font-weight:700}
 .config-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.config select,.config input{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:#171310;color:#f4e7d4}
 .muted{font-size:13px;color:#ad9e8d}.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.86);display:none;align-items:center;justify-content:center}.lightbox.open{display:flex}.lightbox img{max-width:92vw;max-height:92vh;border-radius:12px}
 @media(max-width:760px){.config-grid{grid-template-columns:1fr}.wrap{padding:18px 14px 34px}}
 </style></head><body><div class="wrap">
 <a href="/projects.html">← Назад к проектам</a><h1 id="title">Загрузка...</h1><p id="subtitle"></p>
-<div class="story"><b>Идея проекта</b><p id="storyText">Мы подбираем геометрию, материалы и узлы монтажа под реальную архитектуру объекта, чтобы лестница выглядела цельно и служила десятилетиями.</p><p class="muted">Производство Tekstura: Казань, Орнбургский тракт, 340.</p></div>
+<div class="story"><b>Идея проекта</b><p id="storyText">Этот кейс показывает подход Tekstura: сначала инженерная логика и эргономика, затем эстетика, материалы и точная подгонка узлов под архитектуру объекта.</p><p class="muted">Производство Tekstura: Казань, Орнбургский тракт, 340. Финальный монтаж выполняет штатная бригада.</p></div>
 <img id="mainImage" class="gallery-main" src="/logo.jpg.png" alt="Проект"><div class="thumbs" id="thumbs"></div>
 <div id="price" class="price"></div><p id="description"></p>
 <div class="meta" id="metaBox"><p id="materials"></p><p id="type"></p><p id="category"></p><p id="leadTime"></p></div>
@@ -37,7 +37,7 @@ body{margin:0;background:#0f0c0a;color:#f4e7d4;font-family:Inter,Arial,sans-seri
 <p id="cfgBase" class="muted"></p><p id="cfgDelta" class="muted"></p><p id="cfgTotal" class="price"></p>
 <a id="cfgRequest" class="btn" href="/request.html">Отправить запрос по изменениям</a>
 </div>
-<div class="trust"><b>Что дальше после заявки:</b><p>Вам ответит инженер Tekstura, уточнит размеры и предложит 1–2 оптимальные конфигурации под ваш проём. Обычно связываемся в течение рабочего дня.</p></div>
+<div class="trust"><b>Что дальше после заявки:</b><p>Вам ответит инженер Tekstura, уточнит размеры и предложит 1–2 оптимальные конфигурации под ваш проём. Обычно связываемся в течение рабочего дня.</p><p class="muted">Вы общаетесь напрямую с командой производства в Казани, без посредников: Орнбургский тракт, 340.</p></div>
 <a class="btn" href="/request.html">Оставить заявку по проекту</a></div>
 <div id="lightbox" class="lightbox"><img id="lightboxImage" src="" alt="Просмотр"></div>
 <script>
@@ -66,6 +66,11 @@ function setMetaLine(id, value, prefix){
   node.textContent = hasValue ? `${prefix}${value}` : '';
   node.classList.toggle('is-empty', !hasValue);
 }
+function syncMetaVisibility() {
+  const metaBox = document.getElementById('metaBox');
+  const hasRows = [...metaBox.querySelectorAll('p')].some((item) => !item.classList.contains('is-empty'));
+  metaBox.classList.toggle('is-empty', !hasRows);
+}
 async function loadProject(){try{if(!client){document.getElementById('title').textContent='Каталог временно недоступен';document.getElementById('description').textContent='Сервис проектов временно недоступен. Оставьте заявку, и мы подберём решение.';return;}
 const {data,error}=await client.from('projects').select('*').eq('id',id).single();if(error||!data){document.getElementById('title').textContent='Проект не найден';document.getElementById('description').textContent='Этот кейс недоступен. Вернитесь к списку проектов.';return;}project=data;basePrice=Number(data.price||data.price_from||0)||0;
 const {data:imgData}=await client.from('project_images').select('*').eq('project_id',id).order('sort_order',{ascending:true});
@@ -82,6 +87,7 @@ setMetaLine('materials', data.materials, 'Материалы: ');
 setMetaLine('type', data.staircase_type, 'Тип: ');
 setMetaLine('category', data.category, 'Категория: ');
 setMetaLine('leadTime', data.lead_time, 'Срок: ');
+syncMetaVisibility();
 updateSeoMeta(data.title,data.short_description||data.description||data.full_description||'');
 }catch(err){console.error(err);document.getElementById('title').textContent='Ошибка загрузки';document.getElementById('description').textContent='Не удалось загрузить проект. Попробуйте позже.';}}
 
