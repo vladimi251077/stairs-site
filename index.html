@@ -351,6 +351,58 @@
       return contacts;
     }
 
+    let logoRenderRequestId = 0;
+
+    function resolveLogoSrc(rawLogo) {
+      const value = String(rawLogo || '').trim();
+      if (!value) return '';
+
+      if (/^(https?:)?\/\//i.test(value) || value.startsWith('/')) {
+        return value;
+      }
+
+      try {
+        return new URL(value, window.location.origin).href;
+      } catch (_) {
+        return '';
+      }
+    }
+
+    function applyLogoWithFallback(rawLogo) {
+      const logoImg = document.getElementById('siteLogo');
+      const logoText = document.getElementById('siteLogoText');
+      const logoSrc = resolveLogoSrc(rawLogo);
+      const requestId = ++logoRenderRequestId;
+
+      const showTextLogo = () => {
+        if (requestId !== logoRenderRequestId) return;
+        logoImg.removeAttribute('src');
+        logoImg.style.display = 'none';
+        logoText.style.display = 'inline';
+      };
+
+      if (!logoSrc) {
+        showTextLogo();
+        return;
+      }
+
+      logoImg.style.display = 'none';
+      logoText.style.display = 'inline';
+
+      const preload = new Image();
+      preload.onload = () => {
+        if (requestId !== logoRenderRequestId) return;
+        logoImg.src = logoSrc;
+        logoImg.style.display = 'block';
+        logoText.style.display = 'none';
+      };
+      preload.onerror = () => {
+        console.warn('[brand] Failed to load logo, fallback to text:', logoSrc);
+        showTextLogo();
+      };
+      preload.src = logoSrc;
+    }
+
     function renderSettings(settings) {
       const s = normalizeSettings(settings);
       const rawHeroTitle = String(s.heroTitle || fallback.settings.heroTitle)
@@ -363,20 +415,10 @@
       document.getElementById('heroSubtitle').textContent = s.heroSubtitle || fallback.settings.heroSubtitle;
       document.getElementById('heroImage').src = s.heroImage || fallback.settings.heroImage;
 
-      const logoImg = document.getElementById('siteLogo');
-      const logoText = document.getElementById('siteLogoText');
       const footerBrand = document.getElementById('footerBrand');
 
-      if (s.logo) {
-        logoImg.src = s.logo;
-        logoImg.style.display = 'block';
-        logoText.style.display = 'none';
-        footerBrand.textContent = 'TEKSTURA';
-      } else {
-        logoImg.style.display = 'none';
-        logoText.style.display = 'inline';
-        footerBrand.textContent = 'TEKSTURA';
-      }
+      applyLogoWithFallback(s.logo);
+      footerBrand.textContent = 'TEKSTURA';
 
       const contacts = buildContacts(s);
 
