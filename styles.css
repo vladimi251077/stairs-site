@@ -1,5 +1,6 @@
 :root {
   color-scheme: dark;
+  --header-offset: 110px;
   --bg-1: #16100c;
   --bg-2: #241a13;
   --bg-3: #35261b;
@@ -88,6 +89,9 @@ a {
 }
 
 .brand {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   text-decoration: none;
   color: var(--gold-1);
   font-size: 18px;
@@ -95,11 +99,16 @@ a {
   letter-spacing: 0.24em;
 }
 
+#siteLogo {
+  max-height: 54px;
+  width: auto;
+}
+
 .site-nav {
   display: flex;
   align-items: center;
   gap: 18px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .site-nav a {
@@ -117,7 +126,7 @@ a {
   position: relative;
   overflow: hidden;
   min-height: 100vh;
-  padding: 110px 0 56px;
+  padding: var(--header-offset) 0 56px;
   color: var(--text);
 }
 
@@ -756,24 +765,55 @@ a {
 }
 
 @media (max-width: 760px) {
+  :root {
+    --header-offset: 152px;
+  }
+
   .container {
     width: min(100% - 28px, 1220px);
   }
 
   .site-header__inner {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 18px 0;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 14px 0 12px;
+  }
+
+  .brand {
+    min-height: 52px;
+  }
+
+  #siteLogo {
+    max-height: 50px;
+  }
+
+  #siteLogoText {
+    font-size: 20px;
+    letter-spacing: 0.16em;
   }
 
   .site-nav {
-    gap: 12px;
+    flex: 1;
+    justify-content: flex-end;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .site-nav a {
+    flex: 0 0 auto;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
   }
 
   .hero-premium {
     min-height: auto;
-    padding: 120px 0 34px;
+    padding: var(--header-offset) 0 34px;
   }
 
   .hero-premium__bg {
@@ -881,31 +921,5 @@ a {
   .site-footer__links {
     gap: 10px;
     width: 100%;
-  }
-}
-
-
-/* Custom improvements */
-select {
-  padding: 8px;
-  background-color: var(--panel);
-  border: 1px solid var(--line);
-  color: var(--text);
-  border-radius: var(--radius-sm);
-}
-
-select:focus {
-  outline: 2px solid var(--accent);
-}
-
-.card {
-  margin-bottom: 16px;
-}
-
-/* Mobile navigation improvement */
-@media (max-width: 600px) {
-  .site-nav {
-    flex-direction: column;
-    gap: 8px;
   }
 }
