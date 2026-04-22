@@ -766,7 +766,7 @@ a {
 
 @media (max-width: 760px) {
   :root {
-    --header-offset: 152px;
+    --header-offset: 210px;
   }
 
   .container {
@@ -774,19 +774,20 @@ a {
   }
 
   .site-header__inner {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    padding: 14px 0 12px;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 14px;
+    padding: 16px 0 14px;
   }
 
   .brand {
-    min-height: 52px;
+    align-self: flex-start;
+    min-height: 64px;
   }
 
   #siteLogo {
-    max-height: 50px;
+    max-height: 68px;
   }
 
   #siteLogoText {
@@ -795,18 +796,20 @@ a {
   }
 
   .site-nav {
-    flex: 1;
-    justify-content: flex-end;
-    gap: 8px;
+    width: 100%;
+    justify-content: flex-start;
+    gap: 14px;
     overflow-x: auto;
-    padding-bottom: 2px;
+    padding: 10px 2px 4px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
     scrollbar-width: thin;
     -webkit-overflow-scrolling: touch;
   }
 
   .site-nav a {
     flex: 0 0 auto;
-    font-size: 12px;
+    font-size: 13px;
+    line-height: 1.25;
     letter-spacing: 0.04em;
     white-space: nowrap;
   }
