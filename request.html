@@ -80,6 +80,45 @@ const EXTRA_LABELS = {
   hidden_fasteners: 'Скрытый крепёж'
 };
 
+function formatWarnings(list = []) {
+  if (!list.length) return 'Нет';
+  return list.join('; ');
+}
+
+function buildCalcSummary(payload) {
+  if (!payload) return ['Расчёт не передан. Вы можете оставить заявку без калькулятора.'];
+  const isReady = payload.base_condition === 'ready_frame';
+  const extras = (payload?.selectedExtras || []).map((i) => i.label || EXTRA_LABELS[i.code] || i.code).join(', ') || 'Нет';
+  const geometry = payload.geometrySummary || {};
+  if (isReady) {
+    return [
+      `Сценарий: ${payload?.materialsSummary?.base || 'Готовый каркас'}`,
+      `Конфигурация: ${payload.staircaseType || '-'}`,
+      `Тип поворота: ${payload?.materialsSummary?.turn_type || 'Не требуется'}`,
+      `Направление поворота: ${payload.turn_direction === 'left' ? 'Левый' : payload.turn_direction === 'right' ? 'Правый' : '-'}`,
+      `Объём работ: ${(payload?.materialsSummary?.scope_of_work || []).join(', ') || 'Не выбран'}`,
+      `Состояние основания: ${payload.existing_condition_notes || 'Без комментариев'}`,
+      `Геометрия: ${geometry.riser_count || '-'} подъёмов · ${geometry.tread_depth || '-'} мм проступь · ${geometry.riser_height || '-'} мм подступенок`,
+      `Просвет / статус: ${geometry.headroom_min || '-'} мм · ${payload.status || '-'}`,
+      `Предупреждения: ${formatWarnings(payload.warnings)}`,
+      `Итоговая стоимость: ${Number(payload.total || 0).toLocaleString('ru-RU')} ₽`
+    ];
+  }
+  return [
+    `Тип лестницы: ${payload.staircaseType || '-'}`,
+    `Каркас: ${payload?.materialsSummary?.frame || '-'}`,
+    `Облицовка: ${payload?.materialsSummary?.cladding || '-'}`,
+    `Ограждение: ${payload?.materialsSummary?.railing || '-'}`,
+    `Финиш: ${payload?.materialsSummary?.finish || '-'}`,
+    `Направление поворота: ${payload.turn_direction === 'left' ? 'Левый' : payload.turn_direction === 'right' ? 'Правый' : 'Не требуется'}`,
+    `Геометрия: ${geometry.riser_count || '-'} подъёмов · ${geometry.tread_depth || '-'} мм проступь · ${geometry.riser_height || '-'} мм подступенок`,
+    `Просвет / статус: ${geometry.headroom_min || '-'} мм · ${payload.status || '-'}`,
+    `Опции: ${extras}`,
+    `Предупреждения: ${formatWarnings(payload.warnings)}`,
+    `Итоговая стоимость: ${Number(payload.total || 0).toLocaleString('ru-RU')} ₽`
+  ];
+}
+
 function parseCalc(){
   const queryRaw = new URLSearchParams(location.search).get('calc');
   const sessionRaw = sessionStorage.getItem('tekstura_calc_payload');
@@ -90,15 +129,7 @@ function parseCalc(){
     if (queryRaw) {
       sessionStorage.setItem('tekstura_calc_payload', queryRaw);
     }
-    const lines = [
-      `Тип лестницы: ${calcPayload.staircaseType || '-'}`,
-      `Каркас: ${calcPayload?.materialsSummary?.frame || '-'}`,
-      `Облицовка: ${calcPayload?.materialsSummary?.cladding || '-'}`,
-      `Ограждение: ${calcPayload?.materialsSummary?.railing || '-'}`,
-      `Опции: ${(calcPayload?.selectedExtras || []).map((i)=>i.label || EXTRA_LABELS[i.code] || i.code).join(', ') || 'Нет'}`,
-      `Итоговая стоимость: ${Number(calcPayload.total || 0).toLocaleString('ru-RU')} ₽`
-    ];
-    document.getElementById('calcData').textContent = lines.join('\n');
+    document.getElementById('calcData').textContent = buildCalcSummary(calcPayload).join('\n');
   } catch (err) {
     console.error('calc parse error', err);
     document.getElementById('calcData').textContent = 'Не удалось прочитать расчёт. Вы можете отправить заявку вручную.';
