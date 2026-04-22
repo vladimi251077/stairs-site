@@ -1,7 +1,7 @@
 import { GEOMETRY_LIMITS, calculateStairGeometryEngine } from './stair-geometry-engine.js';
 import { calculateMetalMaterials, calculateWoodMaterials, calculateConcreteMaterials } from './stair-materials.js';
 
-const state = { geometry: null, materials: null, price: null, lastConfig: null, dictionaries: { defaults: { labor_rate_per_step: 2500, metal_rate_per_meter: 1800, wood_rate_per_m2: 16000, concrete_rate_per_m3: 14000, install_coef: 1.12, markup_coef: 1.08, delivery_rate_per_km: 110, installation_base: 18000 }, materialRules: [] } };
+const state = { geometry: null, materials: null, price: null, lastConfig: null, dictionaries: { defaults: { labor_rate_per_step: 2500, metal_rate_per_meter: 1800, wood_rate_per_m2: 16000, concrete_rate_per_m3: 14000, install_coef: 1.12, markup_coef: 1.08, delivery_rate_per_km: 110, installation_base: 18000 }, materialRules: [] } } };
 
 const LABELS = {
   base_condition: { empty_opening: 'Пустой проём', ready_frame: 'Готовый каркас' },
@@ -24,7 +24,13 @@ const SCOPE_LABELS = {
   lighting: 'Подсветка',
   installation: 'Монтаж'
 };
-const STAIR_TYPE_HINTS = { straight: { title: 'Прямая лестница', text: 'Подходит для длинных проёмов без поворотов.', invalidAdvice: 'Увеличьте длину проёма или рассмотрите поворотную схему.' }, l_turn_landing: { title: 'Г-образная с площадкой', text: 'Плавный поворот 90° с площадкой.', invalidAdvice: 'Проверьте длину/ширину проёма в зоне поворота.' }, l_turn_winders: { title: 'Г-образная с забежными', text: 'Компактный поворот для ограниченного пространства.', invalidAdvice: 'Чаще всего помогает увеличение ширины проёма.' }, u_turn_landing: { title: 'П-образная с площадкой', text: 'Разворот на 180° с площадкой.', invalidAdvice: 'Нужна достаточная ширина под два марша.' }, u_turn_winders: { title: 'П-образная с забежными', text: 'Компактный разворот 180°.', invalidAdvice: 'Для комфорта критична проверка по линии хода.' } };
+const STAIR_TYPE_HINTS = {
+  straight: { title: 'Прямая лестница', text: 'Подходит для длинных проёмов без поворотов.', invalidAdvice: 'Увеличьте длину проёма или рассмотрите поворотную схему.' },
+  l_turn_landing: { title: 'Г-образная с площадкой', text: 'Плавный поворот 90° с площадкой.', invalidAdvice: 'Проверьте длину/ширину проёма в зоне поворота.' },
+  l_turn_winders: { title: 'Г-образная с забежными', text: 'Компактный поворот для ограниченного пространства.', invalidAdvice: 'Чаще всего помогает увеличение ширины проёма.' },
+  u_turn_landing: { title: 'П-образная с площадкой', text: 'Разворот на 180° с площадкой.', invalidAdvice: 'Нужна достаточная ширина под два марша.' },
+  u_turn_winders: { title: 'П-образная с забежными', text: 'Компактный разворот 180°.', invalidAdvice: 'Для комфорта критична проверка по линии хода.' }
+};
 
 const $ = (id) => document.getElementById(id);
 let currentStep = 1;
@@ -90,10 +96,21 @@ function toggleScenarioFields() {
   toggleReadyFlowFields();
 }
 
+function getEffectiveStairType(config = null) {
+  const source = config || getConfigFromForm();
+  if (source.base_condition === 'ready_frame') {
+    const cfg = source.configuration_type || 'straight';
+    const turn = source.turn_type || 'landing';
+    if (cfg === 'straight') return 'straight';
+    if (cfg === 'l_shaped') return turn === 'winders' ? 'l_turn_winders' : 'l_turn_landing';
+    if (cfg === 'u_shaped') return turn === 'winders' ? 'u_turn_winders' : 'u_turn_landing';
+  }
+  return source.stair_type || 'straight';
+}
+
 function renderStairTypeHint(target, stairType, geometry) { if (!target) return; const hint = STAIR_TYPE_HINTS[stairType] || STAIR_TYPE_HINTS.straight; const invalidHelp = geometry && !geometry.valid ? `<div class="stair-type-hint-invalid">${hint.invalidAdvice}</div>` : ''; target.innerHTML = `<div class="stair-type-hint-card"><div class="stair-type-hint-label">Подсказка по проёму</div><h3>${hint.title}</h3><p>${hint.text}</p>${invalidHelp}</div>`; }
-function updateStairTypeHints(geometry = null) {
-  const base = $('baseCondition')?.value || 'empty_opening';
-  const stairType = base === 'empty_opening' ? ($('stairType')?.value || 'straight') : 'straight';
+function updateStairTypeHints(geometry = null, config = null) {
+  const stairType = getEffectiveStairType(config);
   renderStairTypeHint($('stairTypeHint'), stairType, geometry);
   renderStairTypeHint($('geometryTypeHint'), stairType, geometry);
 }
@@ -151,47 +168,40 @@ function validateBase(config) {
   return null;
 }
 
-function scenarioGeometry(config, scenario) {
-  const summary = {
-    riser_count: config.step_count || 0, tread_count: config.step_count || 0, riser_height: config.riser_height || 0, tread_depth: config.tread_depth || 0, comfort_value: (2 * (config.riser_height || 0)) + (config.tread_depth || 0), stair_angle_deg: 0,
-    headroom_min: 0, headroom_warning_count: 0, headroom_critical_count: 0, score: scenario.score
-  };
-  return { valid: true, status: 'warning', warnings: scenario.warnings, geometrySummary: summary, visualization: null, alternatives: [], scenarioSummary: scenario.summary };
-}
-
 function calculateGeometry(config) {
-  const err = validateBase(config); if (err) return { valid: false, status: 'invalid', warnings: [err], geometrySummary: null, visualization: null, alternatives: [] };
-  if (config.base_condition === 'ready_frame' && config.base_subtype === 'existing_metal_frame') {
-    const riserWarning = (config.riser_height < 150 || config.riser_height > 190)
-      ? [`Высота подступенка ${config.riser_height} мм вне комфортного диапазона 150–190 мм. Рекомендуем инженерное подтверждение.`]
-      : [];
-    return scenarioGeometry(config, {
-      score: 72,
-      summary: 'Fit-check существующего металлокаркаса: учитываем только релевантные отделочные и монтажные работы.',
-      warnings: [
-        'Сценарий "Готовый металлокаркас": считаем объём работ по существующему основанию, без расчёта нового каркаса.',
-        'Подтверждение инженером обязательно: нужно проверить состояние сварных узлов, геометрию и анкеровку.',
-        ...riserWarning,
-        config.existing_condition_notes ? `Примечание по состоянию: ${config.existing_condition_notes}` : 'Добавьте примечание о текущем состоянии каркаса, если есть дефекты.'
-      ]
+  const err = validateBase(config);
+  if (err) return { valid: false, status: 'invalid', warnings: [err], geometrySummary: null, visualization: null, alternatives: [] };
+
+  if (config.base_condition === 'ready_frame') {
+    return calculateStairGeometryEngine({
+      mode: 'ready_frame',
+      stairType: config.stair_type,
+      turnType: config.turn_type,
+      turnDirection: config.turn_direction,
+      stepCount: config.step_count,
+      riserHeight: config.riser_height,
+      treadDepth: config.tread_depth,
+      marchWidth: config.ready_march_width,
+      landingLength: config.landing_length,
+      landingWidth: config.landing_width,
+      winderCount: config.winder_count,
+      slabThickness: config.slab_thickness,
+      topFinish: config.top_finish_thickness,
+      bottomFinish: config.bottom_finish_thickness
     });
   }
-  if (config.base_condition === 'ready_frame' && config.base_subtype === 'existing_concrete_base') {
-    const riserWarning = (config.riser_height < 150 || config.riser_height > 190)
-      ? [`Высота подступенка ${config.riser_height} мм вне комфортного диапазона 150–190 мм. Рекомендуем инженерное подтверждение.`]
-      : [];
-    return scenarioGeometry(config, {
-      score: 74,
-      summary: 'Бетонное основание: считаем только работы по подготовке, облицовке и монтажным узлам.',
-      warnings: [
-        'Сценарий "Готовое бетонное основание": расчёт сфокусирован на существующей бетонной геометрии.',
-        'Рекомендуется проверка инженером уклонов, геометрии кромок и прочности мест крепления ограждений.',
-        ...riserWarning,
-        config.existing_condition_notes ? `Примечание по основанию: ${config.existing_condition_notes}` : 'При наличии сколов/трещин добавьте комментарий для инженерной оценки.'
-      ]
-    });
-  }
-  return calculateStairGeometryEngine({ stairType: config.stair_type, floorHeight: config.floor_to_floor_height, slabThickness: config.slab_thickness, topFinish: config.top_finish_thickness, bottomFinish: config.bottom_finish_thickness, openingLength: config.opening_length, openingWidth: config.opening_width, marchWidth: config.march_width, turnDirection: config.turn_direction });
+
+  return calculateStairGeometryEngine({
+    stairType: config.stair_type,
+    floorHeight: config.floor_to_floor_height,
+    slabThickness: config.slab_thickness,
+    topFinish: config.top_finish_thickness,
+    bottomFinish: config.bottom_finish_thickness,
+    openingLength: config.opening_length,
+    openingWidth: config.opening_width,
+    marchWidth: config.march_width,
+    turnDirection: config.turn_direction
+  });
 }
 
 function dimensionLine({ x1, y1, x2, y2, label, vertical = false }) {
@@ -205,13 +215,15 @@ function renderGeometryVisuals(visualization) {
   const plan = $('geometryPlanSvg'); const elev = $('geometryElevationSvg'); if (!plan || !elev) return;
   if (!visualization) { plan.innerHTML = '<div class="muted">Визуализация будет показана после расчёта.</div>'; elev.innerHTML = '<div class="muted">Нет данных для бокового вида.</div>'; return; }
   const maxX = Math.max(visualization.opening.length, ...visualization.path.map((p) => p.x), 1);
+  const minY = Math.min(0, ...visualization.path.map((p) => p.y));
   const maxY = Math.max(visualization.opening.width, ...visualization.path.map((p) => p.y), 1);
+  const pyRange = Math.max(1, maxY - minY);
   const px = (x) => 26 + (x / maxX) * 488;
-  const py = (y) => 26 + (y / maxY) * 188;
+  const py = (y) => 26 + ((y - minY) / pyRange) * 188;
   const poly = visualization.path.map((p) => `${px(p.x)},${py(p.y)}`).join(' ');
   const warningDots = (visualization.warningZones || []).map((p) => `<circle cx="${px(p.x)}" cy="${py(p.y)}" r="2.4" fill="#f5d98c"/>`).join('');
   const criticalDots = (visualization.criticalZones || []).map((p) => `<circle cx="${px(p.x)}" cy="${py(p.y)}" r="3" fill="#ff9898"/>`).join('');
-  plan.innerHTML = `<svg viewBox="0 0 540 240" class="geo-svg"><rect x="26" y="26" width="488" height="188" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.2)"/><rect x="26" y="26" width="${(visualization.opening.length / maxX) * 488}" height="${(visualization.opening.width / maxY) * 188}" fill="rgba(221,183,134,0.08)" stroke="rgba(221,183,134,.7)"/><polyline points="${poly}" fill="none" stroke="#ddb786" stroke-width="3"/>${warningDots}${criticalDots}${dimensionLine({ x1: 26, y1: 220, x2: 514, y2: 220, label: `Длина проёма ${visualization.dimensions.openingLength} мм` })}${dimensionLine({ x1: 520, y1: 26, x2: 520, y2: 214, label: `Ширина проёма ${visualization.dimensions.openingWidth} мм`, vertical: true })}${dimensionLine({ x1: 26, y1: 16, x2: 26 + (visualization.dimensions.marchWidth / maxX) * 488, y2: 16, label: `Марш ${visualization.dimensions.marchWidth} мм` })}</svg>`;
+  plan.innerHTML = `<svg viewBox="0 0 540 240" class="geo-svg"><rect x="26" y="26" width="488" height="188" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.2)"/><rect x="26" y="${py(0)}" width="${(visualization.opening.length / maxX) * 488}" height="${(visualization.opening.width / pyRange) * 188}" fill="rgba(221,183,134,0.08)" stroke="rgba(221,183,134,.7)"/><polyline points="${poly}" fill="none" stroke="#ddb786" stroke-width="3"/>${warningDots}${criticalDots}${dimensionLine({ x1: 26, y1: 220, x2: 514, y2: 220, label: `Длина зоны ${visualization.dimensions.openingLength} мм` })}${dimensionLine({ x1: 520, y1: 26, x2: 520, y2: 214, label: `Ширина зоны ${visualization.dimensions.openingWidth} мм`, vertical: true })}${dimensionLine({ x1: 26, y1: 16, x2: 26 + (visualization.dimensions.marchWidth / maxX) * 488, y2: 16, label: `Марш ${visualization.dimensions.marchWidth} мм` })}</svg>`;
 
   const n = Math.max(1, visualization.elevation.treadCount || 1); const stepW = 488 / n;
   const stairs = Array.from({ length: n }).map((_, i) => { const x = 26 + i * stepW; const y = 214 - ((i + 1) / n) * 158; return `<path d="M${x} 214 L${x} ${y} L${x + stepW} ${y}" stroke="#ddb786" fill="none" stroke-width="2"/>`; }).join('');
@@ -232,8 +244,15 @@ function renderAlternatives(geometry) {
 }
 
 function getInvalidGeometryGuidance(config) {
+  if (config.base_condition === 'ready_frame') {
+    return [
+      'Сверьте количество ступеней по факту, а не по проектному листу.',
+      'Проверьте высоту подступенка и глубину проступи после чистовой отделки.',
+      'Если основание уже смонтировано, отправьте размеры инженеру Tekstura для ручного fit-check.'
+    ];
+  }
   const steps = ['Проверьте размеры после чистовой отделки.', 'Попробуйте уменьшить ширину марша на 50–100 мм.', 'Сохраните расчёт и отправьте размеры инженеру Tekstura.'];
-  if (config.stair_type.startsWith('u_turn')) steps.push('Для П-образной схемы особенно важна ширина проёма под разворот.');
+  if ((config.stair_type || '').startsWith('u_turn')) steps.push('Для П-образной схемы особенно важна ширина проёма под разворот.');
   return steps;
 }
 
@@ -269,6 +288,8 @@ function renderGeometry(geometry) {
       ['Тип поворота', state.lastConfig.configuration_type === 'straight' ? 'Не требуется' : (LABELS.turn_type[state.lastConfig.turn_type] || state.lastConfig.turn_type)],
       ['Направление поворота', state.lastConfig.configuration_type === 'straight' ? 'Не требуется' : (state.lastConfig.turn_direction === 'left' ? 'Левый' : 'Правый')]
     );
+  } else if (state.lastConfig.stair_type !== 'straight') {
+    rows.splice(2, 0, ['Направление поворота', state.lastConfig.turn_direction === 'left' ? 'Левый' : 'Правый']);
   }
   if (geometry.scenarioSummary) rows.push(['Логика сценария', geometry.scenarioSummary]);
   root.innerHTML = `<table class="result-table"><tbody>${rows.map(([k, v]) => `<tr><th>${k}</th><td>${v}</td></tr>`).join('')}</tbody></table>`;
@@ -281,6 +302,15 @@ function renderGeometry(geometry) {
   renderGeometryVisuals(geometry.visualization);
   renderAlternatives(geometry);
   setProceedAvailability(true);
+}
+
+function getGeometryPayloadForMaterials(geometry) {
+  if (!geometry?.valid) return { valid: false };
+  return {
+    valid: geometry.valid,
+    ...(geometry.geometrySummary || {}),
+    ...(geometry.metrics || {})
+  };
 }
 
 function calculateMaterials(config, geometry) {
@@ -298,9 +328,10 @@ function calculateMaterials(config, geometry) {
     }
     return { valid: true, items, metrics: {} };
   }
-  if (config.frame_material === 'wood') return calculateWoodMaterials(config, geometry.geometrySummary || geometry);
-  if (config.frame_material === 'concrete') return calculateConcreteMaterials(config, geometry.geometrySummary || geometry);
-  return calculateMetalMaterials(config, geometry.geometrySummary || geometry);
+  const geometryPayload = getGeometryPayloadForMaterials(geometry);
+  if (config.frame_material === 'wood') return calculateWoodMaterials(config, geometryPayload);
+  if (config.frame_material === 'concrete') return calculateConcreteMaterials(config, geometryPayload);
+  return calculateMetalMaterials(config, geometryPayload);
 }
 function renderMaterials(materials) { const root = $('materialsResult'); if (!root) return; if (!materials.valid) { root.innerHTML = `<div class="warning">${materials.reason}</div>`; return; } root.innerHTML = `<table class="result-table"><tbody>${materials.items.map((i) => `<tr><th>${i.label}</th><td>${i.value}</td></tr>`).join('')}</tbody></table>`; }
 
@@ -395,8 +426,8 @@ function buildRequestPayload() {
     ? (LABELS.configuration_type[cfg.configuration_type] || cfg.configuration_type)
     : (LABELS.stair_type[cfg.stair_type] || cfg.stair_type);
   const dimensions = isReadyFlow
-    ? { ready_march_width: cfg.ready_march_width, step_count: cfg.step_count, riser_height: cfg.riser_height, tread_depth: cfg.tread_depth, landing_length: cfg.landing_length, landing_width: cfg.landing_width, winder_count: cfg.winder_count }
-    : { floor_to_floor_height: cfg.floor_to_floor_height, opening_length: cfg.opening_length, opening_width: cfg.opening_width, march_width: cfg.march_width, slab_thickness: cfg.slab_thickness, top_finish_thickness: cfg.top_finish_thickness, bottom_finish_thickness: cfg.bottom_finish_thickness };
+    ? { ready_march_width: cfg.ready_march_width, step_count: cfg.step_count, riser_height: cfg.riser_height, tread_depth: cfg.tread_depth, landing_length: cfg.landing_length, landing_width: cfg.landing_width, winder_count: cfg.winder_count, turn_direction: cfg.turn_direction }
+    : { floor_to_floor_height: cfg.floor_to_floor_height, opening_length: cfg.opening_length, opening_width: cfg.opening_width, march_width: cfg.march_width, slab_thickness: cfg.slab_thickness, top_finish_thickness: cfg.top_finish_thickness, bottom_finish_thickness: cfg.bottom_finish_thickness, turn_direction: cfg.turn_direction };
   return {
     base_condition: cfg.base_condition,
     base_subtype: cfg.base_subtype,
@@ -420,7 +451,7 @@ function buildRequestPayload() {
     status: state.geometry?.status || 'invalid',
     warnings: state.geometry?.warnings || [],
     materialsSummary: isReadyFlow
-      ? { base: LABELS.base_subtype[cfg.base_subtype] || cfg.base_subtype, scope_of_work: (cfg.scope_of_work || []).map((x) => SCOPE_LABELS[x] || x) }
+      ? { base: LABELS.base_subtype[cfg.base_subtype] || cfg.base_subtype, configuration: LABELS.configuration_type[cfg.configuration_type] || cfg.configuration_type, turn_type: cfg.configuration_type === 'straight' ? '' : (LABELS.turn_type[cfg.turn_type] || cfg.turn_type), scope_of_work: (cfg.scope_of_work || []).map((x) => SCOPE_LABELS[x] || x) }
       : { frame: LABELS.frame_material[cfg.frame_material], cladding: LABELS.cladding[cfg.cladding], railing: LABELS.railing[cfg.railing], finish: LABELS.finish_level[cfg.finish_level] },
     selectedExtras: isReadyFlow
       ? (cfg.scope_of_work || []).map((x) => ({ code: x, label: SCOPE_LABELS[x] || x }))
@@ -430,8 +461,29 @@ function buildRequestPayload() {
   };
 }
 
-function runGeometryCalculation() { const config = getConfigFromForm(); state.lastConfig = config; state.geometry = calculateGeometry(config); renderGeometry(state.geometry); updateStairTypeHints(state.geometry); setStatus(state.geometry.valid ? 'Геометрия рассчитана' : 'Проверьте параметры'); showStep(2); }
-function runConfigurator() { const config = getConfigFromForm(); state.lastConfig = config; state.geometry = calculateGeometry(config); renderGeometry(state.geometry); updateStairTypeHints(state.geometry); if (!state.geometry.valid || state.geometry.status === 'invalid') { setStatus('Исправьте параметры геометрии, чтобы продолжить'); showStep(2); return; } state.materials = calculateMaterials(config, state.geometry); renderMaterials(state.materials); state.price = calculatePrice(config, state.geometry, state.materials); renderPrice(state.price); setStatus('Расчёт обновлён'); showStep(4); }
+function runGeometryCalculation() {
+  const config = getConfigFromForm();
+  state.lastConfig = config;
+  state.geometry = calculateGeometry(config);
+  renderGeometry(state.geometry);
+  updateStairTypeHints(state.geometry, config);
+  setStatus(state.geometry.valid ? 'Геометрия рассчитана' : 'Проверьте параметры');
+  showStep(2);
+}
+function runConfigurator() {
+  const config = getConfigFromForm();
+  state.lastConfig = config;
+  state.geometry = calculateGeometry(config);
+  renderGeometry(state.geometry);
+  updateStairTypeHints(state.geometry, config);
+  if (!state.geometry.valid || state.geometry.status === 'invalid') { setStatus('Исправьте параметры геометрии, чтобы продолжить'); showStep(2); return; }
+  state.materials = calculateMaterials(config, state.geometry);
+  renderMaterials(state.materials);
+  state.price = calculatePrice(config, state.geometry, state.materials);
+  renderPrice(state.price);
+  setStatus('Расчёт обновлён');
+  showStep(4);
+}
 
 async function loadSupabaseDictionaries() { if (!window.supabase || !window.SUPABASE_CONFIG) return; try { const client = window.supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey); const { data } = await client.from('stair_defaults').select('*').eq('active', true).order('updated_at', { ascending: false }).limit(1).maybeSingle(); if (data) state.dictionaries.defaults = { ...state.dictionaries.defaults, ...data }; } catch { setStatus('Используются встроенные коэффициенты.'); } }
 
@@ -439,8 +491,8 @@ function init() {
   bindVisualSelectors();
   $('stairType')?.addEventListener('change', () => { toggleTurnFields(); updateStairTypeHints(); });
   $('baseCondition')?.addEventListener('change', () => { toggleScenarioFields(); toggleTurnFields(); updateStairTypeHints(); });
-  $('configurationType')?.addEventListener('change', toggleReadyFlowFields);
-  $('turnType')?.addEventListener('change', toggleReadyFlowFields);
+  $('configurationType')?.addEventListener('change', () => { toggleReadyFlowFields(); updateStairTypeHints(); });
+  $('turnType')?.addEventListener('change', () => { toggleReadyFlowFields(); updateStairTypeHints(); });
   $('calculateBtn')?.addEventListener('click', runConfigurator);
   $('toResultsBtn')?.addEventListener('click', runGeometryCalculation);
   setProceedAvailability(false);
