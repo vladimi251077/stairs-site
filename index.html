@@ -365,16 +365,19 @@
 
       const logoImg = document.getElementById('siteLogo');
       const logoText = document.getElementById('siteLogoText');
+      const headerBrand = document.querySelector('.site-header .brand');
       const footerBrand = document.getElementById('footerBrand');
 
       if (s.logo) {
         logoImg.src = s.logo;
         logoImg.style.display = 'block';
         logoText.style.display = 'none';
+        headerBrand?.classList.add('has-logo');
         footerBrand.textContent = 'TEKSTURA';
       } else {
         logoImg.style.display = 'none';
         logoText.style.display = 'inline';
+        headerBrand?.classList.remove('has-logo');
         footerBrand.textContent = 'TEKSTURA';
       }
 
