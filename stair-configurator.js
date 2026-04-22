@@ -214,22 +214,56 @@ function dimensionLine({ x1, y1, x2, y2, label, vertical = false }) {
 function renderGeometryVisuals(visualization) {
   const plan = $('geometryPlanSvg'); const elev = $('geometryElevationSvg'); if (!plan || !elev) return;
   if (!visualization) { plan.innerHTML = '<div class="muted">Визуализация будет показана после расчёта.</div>'; elev.innerHTML = '<div class="muted">Нет данных для бокового вида.</div>'; return; }
-  const maxX = Math.max(visualization.opening.length, ...visualization.path.map((p) => p.x), 1);
-  const minY = Math.min(0, ...visualization.path.map((p) => p.y));
-  const maxY = Math.max(visualization.opening.width, ...visualization.path.map((p) => p.y), 1);
+  const polygons = visualization.planPolygons || [];
+  const walkline = visualization.walkline || [];
+  const allPoints = [...walkline, ...polygons.flatMap((poly) => poly.points || [])];
+  const maxX = Math.max(visualization.opening.length || 0, ...allPoints.map((p) => p.x), 1);
+  const minY = Math.min(0, ...allPoints.map((p) => p.y), 0);
+  const maxY = Math.max(visualization.opening.width || 0, ...allPoints.map((p) => p.y), 1);
   const pyRange = Math.max(1, maxY - minY);
   const px = (x) => 26 + (x / maxX) * 488;
   const py = (y) => 26 + ((y - minY) / pyRange) * 188;
-  const poly = visualization.path.map((p) => `${px(p.x)},${py(p.y)}`).join(' ');
-  const warningDots = (visualization.warningZones || []).map((p) => `<circle cx="${px(p.x)}" cy="${py(p.y)}" r="2.4" fill="#f5d98c"/>`).join('');
-  const criticalDots = (visualization.criticalZones || []).map((p) => `<circle cx="${px(p.x)}" cy="${py(p.y)}" r="3" fill="#ff9898"/>`).join('');
-  plan.innerHTML = `<svg viewBox="0 0 540 240" class="geo-svg"><rect x="26" y="26" width="488" height="188" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.2)"/><rect x="26" y="${py(0)}" width="${(visualization.opening.length / maxX) * 488}" height="${(visualization.opening.width / pyRange) * 188}" fill="rgba(221,183,134,0.08)" stroke="rgba(221,183,134,.7)"/><polyline points="${poly}" fill="none" stroke="#ddb786" stroke-width="3"/>${warningDots}${criticalDots}${dimensionLine({ x1: 26, y1: 220, x2: 514, y2: 220, label: `Длина зоны ${visualization.dimensions.openingLength} мм` })}${dimensionLine({ x1: 520, y1: 26, x2: 520, y2: 214, label: `Ширина зоны ${visualization.dimensions.openingWidth} мм`, vertical: true })}${dimensionLine({ x1: 26, y1: 16, x2: 26 + (visualization.dimensions.marchWidth / maxX) * 488, y2: 16, label: `Марш ${visualization.dimensions.marchWidth} мм` })}</svg>`;
+  const walklinePolyline = walkline.map((p) => `${px(p.x)},${py(p.y)}`).join(' ');
+  const planPolygons = polygons.map((poly) => {
+    const pts = (poly.points || []).map((p) => `${px(p.x)},${py(p.y)}`).join(' ');
+    const fill = poly.type === 'landing' ? 'rgba(133,202,255,.22)' : poly.type === 'winders' ? 'rgba(191,153,255,.2)' : 'rgba(221,183,134,.18)';
+    const stroke = poly.type === 'landing' ? '#85caff' : poly.type === 'winders' ? '#bf99ff' : '#ddb786';
+    return `<polygon points="${pts}" fill="${fill}" stroke="${stroke}" stroke-width="1.4"/>`;
+  }).join('');
+  const sampleDots = (visualization.walkingSamples || []).filter((p) => p.clearance < 2000).map((p) => `<circle cx="${px(p.x)}" cy="${py(p.y)}" r="2.4" fill="${p.clearance < 1900 ? '#ff9898' : '#f5d98c'}"/>`).join('');
+  const openingRect = (visualization.opening.length > 0 && visualization.opening.width > 0)
+    ? `<rect x="26" y="${py(0)}" width="${(visualization.opening.length / maxX) * 488}" height="${(visualization.opening.width / pyRange) * 188}" fill="rgba(221,183,134,0.08)" stroke="rgba(221,183,134,.7)"/>`
+    : '';
+  plan.innerHTML = `<svg viewBox="0 0 540 240" class="geo-svg"><rect x="26" y="26" width="488" height="188" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.2)"/>${openingRect}${planPolygons}<polyline points="${walklinePolyline}" fill="none" stroke="#ffdfad" stroke-width="2.4" stroke-dasharray="5 4"/>${sampleDots}${dimensionLine({ x1: 26, y1: 220, x2: 514, y2: 220, label: `Длина зоны ${visualization.dimensions.openingLength || 0} мм` })}${dimensionLine({ x1: 520, y1: 26, x2: 520, y2: 214, label: `Ширина зоны ${visualization.dimensions.openingWidth || 0} мм`, vertical: true })}${dimensionLine({ x1: 26, y1: 16, x2: 26 + ((visualization.dimensions.marchWidth || 0) / maxX) * 488, y2: 16, label: `Марш ${visualization.dimensions.marchWidth || 0} мм` })}</svg>`;
 
-  const n = Math.max(1, visualization.elevation.treadCount || 1); const stepW = 488 / n;
-  const stairs = Array.from({ length: n }).map((_, i) => { const x = 26 + i * stepW; const y = 214 - ((i + 1) / n) * 158; return `<path d="M${x} 214 L${x} ${y} L${x + stepW} ${y}" stroke="#ddb786" fill="none" stroke-width="2"/>`; }).join('');
-  const slabY = 214 - ((visualization.elevation.slabUnderside || 0) / Math.max(visualization.elevation.floorHeight || 1, 1)) * 176;
+  const profile = visualization.elevationProfile || [];
+  const totalLen = Math.max(1, profile.reduce((acc, seg) => acc + (seg.length || 0), 0));
+  const maxH = Math.max(visualization.dimensions.floorHeight || 1, 1);
+  let cursor = 26;
+  const stairs = profile.map((seg) => {
+    const width = ((seg.length || 0) / totalLen) * 488;
+    if (seg.type === 'landing') {
+      const y = 214 - ((seg.startHeight || 0) / maxH) * 176;
+      const out = `<line x1="${cursor}" y1="${y}" x2="${cursor + width}" y2="${y}" stroke="#85caff" stroke-width="3"/>`;
+      cursor += width;
+      return out;
+    }
+    const steps = Math.max(1, seg.steps || 1);
+    const stepW = width / steps;
+    const riser = seg.riserHeight || 0;
+    const color = seg.type === 'winders' ? '#bf99ff' : '#ddb786';
+    const paths = Array.from({ length: steps }).map((_, idx) => {
+      const x = cursor + idx * stepW;
+      const y = 214 - (((seg.startHeight || 0) + (idx + 1) * riser) / maxH) * 176;
+      return `<path d="M${x} 214 L${x} ${y} L${x + stepW} ${y}" stroke="${color}" fill="none" stroke-width="2"/>`;
+    }).join('');
+    cursor += width;
+    return paths;
+  }).join('');
+  const slabUnderside = (visualization.dimensions.floorHeight || 0) - (state.lastConfig?.slab_thickness || 220) - (state.lastConfig?.top_finish_thickness || 20) - (state.lastConfig?.bottom_finish_thickness || 20);
+  const slabY = 214 - (Math.max(0, slabUnderside) / maxH) * 176;
   const criticalBand = slabY + 10;
-  elev.innerHTML = `<svg viewBox="0 0 540 240" class="geo-svg"><rect x="26" y="26" width="488" height="188" fill="rgba(255,255,255,.02)" stroke="rgba(255,255,255,.2)"/><line x1="26" y1="${slabY}" x2="514" y2="${slabY}" stroke="#f5d98c" stroke-dasharray="6 6"/><rect x="26" y="${criticalBand}" width="488" height="${214 - criticalBand}" fill="rgba(245,123,123,.09)"/>${stairs}${dimensionLine({ x1: 12, y1: 214, x2: 12, y2: 26, label: `Этаж-этаж ${visualization.dimensions.floorHeight} мм`, vertical: true })}</svg>`;
+  elev.innerHTML = `<svg viewBox="0 0 540 240" class="geo-svg"><rect x="26" y="26" width="488" height="188" fill="rgba(255,255,255,.02)" stroke="rgba(255,255,255,.2)"/><line x1="26" y1="${slabY}" x2="514" y2="${slabY}" stroke="#f5d98c" stroke-dasharray="6 6"/><rect x="26" y="${criticalBand}" width="488" height="${214 - criticalBand}" fill="rgba(245,123,123,.09)"/>${stairs}${dimensionLine({ x1: 12, y1: 214, x2: 12, y2: 26, label: `Этаж-этаж ${visualization.dimensions.floorHeight || 0} мм`, vertical: true })}</svg>`;
 }
 
 function renderAlternatives(geometry) {
@@ -261,7 +295,8 @@ function renderGeometry(geometry) {
   if (!geometry.valid || geometry.status === 'invalid') {
     const guidance = getInvalidGeometryGuidance(state.lastConfig || {});
     root.innerHTML = `<div class="warning-block invalid"><div class="warning-title">Для текущих размеров онлайн-подбор не нашёл безопасный и удобный вариант</div><div class="warning-text">Это не отказ — просто нужен ручной инженерный подбор.</div></div>`;
-    warnings.innerHTML = `<div class="warning-block invalid"><div class="warning-text">${(geometry.warnings || []).join(' ')}</div><ul class="warning-list">${guidance.map((x) => `<li>${x}</li>`).join('')}</ul></div>`;
+    const reason = geometry?.diagnostics?.fit?.message || geometry?.diagnostics?.headroom?.message || (geometry.warnings || []).join(' ');
+    warnings.innerHTML = `<div class="warning-block invalid"><div class="warning-text">${reason}</div><ul class="warning-list">${guidance.map((x) => `<li>${x}</li>`).join('')}</ul></div>`;
     if (fallbackCta) fallbackCta.hidden = false; renderGeometryVisuals(null); renderAlternatives(null); setProceedAvailability(false); return;
   }
 
@@ -295,6 +330,9 @@ function renderGeometry(geometry) {
   root.innerHTML = `<table class="result-table"><tbody>${rows.map(([k, v]) => `<tr><th>${k}</th><td>${v}</td></tr>`).join('')}</tbody></table>`;
 
   const warningList = [...(geometry.warnings || [])];
+  if (geometry?.diagnostics?.fit?.message) warningList.push(`Fit-check: ${geometry.diagnostics.fit.message}`);
+  if (geometry?.diagnostics?.comfort?.status === 'warning') warningList.push(`Комфорт: ${geometry.diagnostics.comfort.message}`);
+  if (geometry?.diagnostics?.headroom?.status !== 'ok') warningList.push(`Просвет: ${geometry.diagnostics.headroom.message}`);
   if (geometry.status === 'recommended') warningList.unshift('Геометрия в рекомендованной зоне: сохраняем спокойный премиальный баланс шага и угла.');
   if (geometry.status === 'warning') warningList.unshift('Вариант строится, но перед запуском рекомендуем инженерное подтверждение и контроль на объекте.');
   warnings.innerHTML = warningList.length ? warningList.map((w) => `<div class="warning-block"><div class="warning-text">${w}</div></div>`).join('') : '<div class="ok">Геометрия в рекомендованных пределах.</div>';
