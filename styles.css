@@ -766,7 +766,7 @@ a {
 
 @media (max-width: 760px) {
   :root {
-    --header-offset: 152px;
+    --header-offset: 176px;
   }
 
   .container {
@@ -774,19 +774,24 @@ a {
   }
 
   .site-header__inner {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
     gap: 10px;
-    padding: 14px 0 12px;
+    padding: 12px 0 10px;
   }
 
   .brand {
-    min-height: 52px;
+    min-height: 72px;
+    width: 100%;
+    align-items: center;
   }
 
   #siteLogo {
-    max-height: 50px;
+    max-height: 72px;
+    width: auto;
+    object-fit: contain;
+    object-position: left center;
   }
 
   #siteLogoText {
@@ -795,10 +800,12 @@ a {
   }
 
   .site-nav {
-    flex: 1;
-    justify-content: flex-end;
+    width: 100%;
+    flex: 0 0 auto;
+    justify-content: flex-start;
     gap: 8px;
     overflow-x: auto;
+    padding-top: 2px;
     padding-bottom: 2px;
     scrollbar-width: thin;
     -webkit-overflow-scrolling: touch;
