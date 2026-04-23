@@ -168,7 +168,6 @@ function buildPlanScene(type) {
 }
 
 function buildSideScene() {
-  const mode = getMode();
   const stepsCount = approxStepCount();
   const baseX = 116;
   const baseY = 306;
@@ -263,22 +262,40 @@ function bindSvgClicks(rootId) {
   root.dataset.bound = '1';
 }
 
+function setTabGroupValue(group, hiddenId, value, shouldRender = true) {
+  const hidden = $(hiddenId);
+  if (!hidden) return;
+  hidden.value = value;
+  hidden.dispatchEvent(new Event('change', { bubbles: true }));
+  group.querySelectorAll('[data-value]').forEach((btn) => {
+    btn.classList.toggle('active', btn.getAttribute('data-value') === value);
+  });
+  if (hiddenId === 'shapeType' || hiddenId === 'shapeTurnMode') syncEmptyOpeningType();
+  if (shouldRender) render();
+}
+
 function bindTabGroups() {
   document.querySelectorAll('[data-tab-target]').forEach((group) => {
-    if (group.dataset.bound === '1') return;
     const hiddenId = group.getAttribute('data-tab-target');
-    const hidden = $(hiddenId);
-    const update = (value) => {
-      if (!hidden) return;
-      hidden.value = value;
-      hidden.dispatchEvent(new Event('change', { bubbles: true }));
-      group.querySelectorAll('[data-value]').forEach((btn) => btn.classList.toggle('active', btn.getAttribute('data-value') === value));
-      if (hiddenId === 'shapeType' || hiddenId === 'shapeTurnMode') syncEmptyOpeningType();
-      render();
-    };
-    group.querySelectorAll('[data-value]').forEach((button) => button.addEventListener('click', () => update(button.getAttribute('data-value') || '')));
-    update(hidden?.value || group.querySelector('[data-value]')?.getAttribute('data-value') || '');
+    if (!hiddenId) return;
+    if (group.dataset.bound === '1') {
+      const currentValue = $(hiddenId)?.value;
+      if (currentValue) {
+        group.querySelectorAll('[data-value]').forEach((btn) => {
+          btn.classList.toggle('active', btn.getAttribute('data-value') === currentValue);
+        });
+      }
+      return;
+    }
     group.dataset.bound = '1';
+    group.querySelectorAll('[data-value]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const value = button.getAttribute('data-value') || '';
+        setTabGroupValue(group, hiddenId, value, true);
+      });
+    });
+    const initialValue = $(hiddenId)?.value || group.querySelector('[data-value]')?.getAttribute('data-value') || '';
+    setTabGroupValue(group, hiddenId, initialValue, false);
   });
 }
 
@@ -300,6 +317,7 @@ function updateViewState() {
 
 function render() {
   syncEmptyOpeningType();
+  bindTabGroups();
   const planScene = buildPlanScene(getPlanType());
   renderSvg('visualPlanMount', planScene, 'Интерактивная схема размеров, вид сверху');
   renderOverlays('visualPlanOverlays', planScene.overlays);
@@ -309,7 +327,6 @@ function render() {
   bindSvgClicks('visualPlanMount');
   bindSvgClicks('visualSideMount');
   bindViewSwitches();
-  bindTabGroups();
   updateViewState();
 }
 
