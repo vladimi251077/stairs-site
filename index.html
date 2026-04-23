@@ -14,6 +14,257 @@
   <meta property="og:url" content="https://tekstura.shop/">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/styles.css">
+
+  <style>
+    .site-header__inner {
+      position: relative;
+    }
+
+    .site-nav {
+      margin-left: auto;
+    }
+
+    .site-nav-toggle {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 52px;
+      height: 52px;
+      padding: 0;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 16px;
+      background: rgba(34, 24, 17, 0.58);
+      color: var(--text);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.24);
+      cursor: pointer;
+      transition: transform 0.24s ease, border-color 0.24s ease, background 0.24s ease;
+    }
+
+    .site-nav-toggle:hover {
+      transform: translateY(-1px);
+      border-color: rgba(239, 210, 172, 0.34);
+      background: rgba(44, 31, 22, 0.76);
+    }
+
+    .site-nav-toggle__line {
+      display: block;
+      width: 20px;
+      height: 2px;
+      border-radius: 999px;
+      background: currentColor;
+      transition: transform 0.24s ease, opacity 0.24s ease;
+    }
+
+    .site-nav-toggle__line + .site-nav-toggle__line {
+      margin-top: 4px;
+    }
+
+    .site-nav-toggle[aria-expanded="true"] .site-nav-toggle__line:nth-child(1) {
+      transform: translateY(6px) rotate(45deg);
+    }
+
+    .site-nav-toggle[aria-expanded="true"] .site-nav-toggle__line:nth-child(2) {
+      opacity: 0;
+    }
+
+    .site-nav-toggle[aria-expanded="true"] .site-nav-toggle__line:nth-child(3) {
+      transform: translateY(-6px) rotate(-45deg);
+    }
+
+    .site-nav__link--accent {
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(239, 210, 172, 0.24);
+      background: rgba(239, 210, 172, 0.08);
+      color: var(--gold-1);
+    }
+
+    .hero-premium__subtitle {
+      margin-bottom: 24px;
+    }
+
+    .hero-premium__trust {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 30px;
+    }
+
+    .hero-premium__trust-item {
+      display: inline-flex;
+      align-items: center;
+      min-height: 38px;
+      padding: 0 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-soft);
+      font-size: 13px;
+      letter-spacing: 0.02em;
+      backdrop-filter: blur(10px);
+    }
+
+    .btn-secondary {
+      background: linear-gradient(180deg, rgba(53, 38, 27, 0.74), rgba(31, 22, 16, 0.9));
+      border-color: rgba(255, 255, 255, 0.16);
+      box-shadow: 0 12px 26px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-secondary:hover {
+      border-color: rgba(239, 210, 172, 0.42);
+      color: var(--text);
+      background: linear-gradient(180deg, rgba(60, 43, 31, 0.84), rgba(36, 25, 18, 0.94));
+    }
+
+    .hero-premium__meta {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      max-width: 760px;
+    }
+
+    .hero-premium__meta-item {
+      min-height: 116px;
+      padding: 18px 16px 16px;
+      background: linear-gradient(180deg, rgba(89, 62, 42, 0.26), rgba(45, 31, 22, 0.34));
+    }
+
+    .hero-premium__meta-number {
+      margin-bottom: 6px;
+      color: var(--text);
+      font-size: 22px;
+    }
+
+    .hero-premium__meta-label {
+      color: #cfbca7;
+      font-size: 14px;
+    }
+
+    .floating-contact-menu__toggle {
+      width: auto;
+      min-width: 64px;
+      padding: 0 18px;
+      gap: 10px;
+    }
+
+    .floating-contact-menu__toggle svg {
+      width: 22px;
+      height: 22px;
+      display: block;
+    }
+
+    .floating-contact-menu__toggle-label {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 980px) {
+      .hero-premium__meta {
+        grid-template-columns: 1fr;
+        max-width: 620px;
+      }
+
+      .hero-premium__meta-item {
+        min-height: 0;
+      }
+    }
+
+    @media (max-width: 760px) {
+      :root {
+        --header-offset: 112px;
+      }
+
+      .site-nav-toggle {
+        display: inline-flex;
+      }
+
+      .site-nav {
+        position: absolute;
+        top: calc(100% + 10px);
+        left: 0;
+        right: 0;
+        display: grid;
+        gap: 8px;
+        padding: 12px;
+        border-radius: 22px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: linear-gradient(180deg, rgba(39, 28, 20, 0.96), rgba(25, 18, 13, 0.98));
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.28);
+        backdrop-filter: blur(18px);
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(-6px);
+        transition: opacity 0.22s ease, transform 0.22s ease;
+        overflow: visible;
+      }
+
+      .site-nav.is-open {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(0);
+      }
+
+      .site-nav a {
+        display: flex;
+        align-items: center;
+        min-height: 48px;
+        padding: 0 14px;
+        border-radius: 14px;
+        font-size: 15px;
+        letter-spacing: 0.01em;
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .site-nav__link--accent {
+        justify-content: center;
+        margin-top: 4px;
+        background: rgba(239, 210, 172, 0.12);
+      }
+
+      .hero-premium__eyebrow {
+        margin-bottom: 12px;
+      }
+
+      .hero-premium__title {
+        margin-bottom: 16px;
+        font-size: clamp(42px, 12vw, 60px);
+      }
+
+      .hero-premium__subtitle {
+        margin-bottom: 18px;
+      }
+
+      .hero-premium__trust {
+        margin-bottom: 20px;
+        gap: 8px;
+      }
+
+      .hero-premium__trust-item {
+        min-height: 34px;
+        padding: 0 12px;
+        font-size: 12px;
+      }
+
+      .hero-premium__actions {
+        margin-bottom: 22px;
+      }
+
+      .hero-premium__visual {
+        display: none;
+      }
+
+      .floating-contact-menu__toggle {
+        min-width: 0;
+        padding: 0 16px;
+      }
+
+      .floating-contact-menu__toggle-label {
+        font-size: 12px;
+      }
+    }
+  </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/supabase-config.js"></script>
 </head>
@@ -25,12 +276,27 @@
         <span id="siteLogoText">TEKSTURA</span>
       </a>
 
-      <nav class="site-nav">
+      <button
+        id="siteNavToggle"
+        class="site-nav-toggle"
+        type="button"
+        aria-expanded="false"
+        aria-controls="siteNav"
+        aria-label="Открыть меню"
+      >
+        <span class="site-nav-toggle__lines" aria-hidden="true">
+          <span class="site-nav-toggle__line"></span>
+          <span class="site-nav-toggle__line"></span>
+          <span class="site-nav-toggle__line"></span>
+        </span>
+      </button>
+
+      <nav class="site-nav" id="siteNav" aria-label="Основная навигация">
         <a href="/">Главная</a>
         <a href="/projects.html">Проекты</a>
         <a href="/services.html">Услуги</a>
         <a href="/calculator.html">Калькулятор</a>
-        <a href="/request.html">Заявка</a>
+        <a href="/request.html" class="site-nav__link--accent">Заявка</a>
       </nav>
     </div>
   </header>
@@ -41,43 +307,44 @@
 
       <div class="container hero-premium__inner">
         <div class="hero-premium__content">
-          <div class="hero-premium__eyebrow" id="heroBadge">Премиальные лестницы</div>
+          <div class="hero-premium__eyebrow" id="heroBadge">PREMIUM STAIRS BRAND</div>
 
           <h1 class="hero-premium__title" id="heroTitle">
-            Премиальные лестницы<br>
-            на заказ для вашего дома
+            Лестницы, которые становятся<br>
+            акцентом интерьера
           </h1>
 
           <p class="hero-premium__subtitle" id="heroSubtitle">
-            Проектируем, производим и монтируем лестницы премиум-класса с инженерной
-            проработкой каждого узла, финальным монтажом штатной бригадой и гарантией на конструкцию.
-            Производство Tekstura: Казань, Орнбургский тракт, 340.
+            Проектируем, производим и монтируем премиальные лестницы из дерева и металла
+            для частных домов и вилл. Собственное производство в Казани, инженерный расчёт
+            и монтаж штатной бригадой Tekstura.
           </p>
+
+          <div class="hero-premium__trust" aria-label="Ключевые преимущества">
+            <span class="hero-premium__trust-item">Собственное производство</span>
+            <span class="hero-premium__trust-item">Инженерный расчёт</span>
+            <span class="hero-premium__trust-item">Монтаж под ключ</span>
+          </div>
 
           <div class="hero-premium__actions">
             <a class="btn btn-primary" href="/calculator.html">Рассчитать стоимость</a>
-            <a class="btn btn-secondary" href="/projects.html">Смотреть проекты</a>
+            <a class="btn btn-secondary" href="/projects.html">Посмотреть проекты</a>
           </div>
 
           <div class="hero-premium__meta">
             <div class="hero-premium__meta-item">
-              <span class="hero-premium__meta-number">Собственное</span>
-              <span class="hero-premium__meta-label">производство в Казани</span>
+              <span class="hero-premium__meta-number">Собственное производство</span>
+              <span class="hero-premium__meta-label">Изготавливаем лестницы в Казани под архитектуру вашего дома.</span>
             </div>
 
             <div class="hero-premium__meta-item">
-              <span class="hero-premium__meta-number">Инженерия</span>
-              <span class="hero-premium__meta-label">расчёт геометрии и узлов перед запуском</span>
+              <span class="hero-premium__meta-number">Инженерный расчёт</span>
+              <span class="hero-premium__meta-label">Проверяем геометрию, узлы и посадку до запуска в работу.</span>
             </div>
 
             <div class="hero-premium__meta-item">
-              <span class="hero-premium__meta-number">Монтаж</span>
-              <span class="hero-premium__meta-label">штатной бригадой Tekstura</span>
-            </div>
-
-            <div class="hero-premium__meta-item">
-              <span class="hero-premium__meta-number">Гарантия</span>
-              <span class="hero-premium__meta-label">подтверждаем качество конструкции и монтажа</span>
+              <span class="hero-premium__meta-number">Монтаж под ключ</span>
+              <span class="hero-premium__meta-label">Штатная бригада Tekstura выполняет монтаж и финальную подгонку.</span>
             </div>
           </div>
         </div>
@@ -186,9 +453,10 @@
       type="button"
       aria-expanded="false"
       aria-controls="floatingContactsList"
-      aria-label="Открыть быстрые контакты"
+      aria-label="Открыть контакты"
     >
-      <span class="floating-contact-menu__toggle-icon" aria-hidden="true">✦</span>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h14a2.5 2.5 0 0 1 2.5 2.5v6.6A2.5 2.5 0 0 1 19 16.1h-3.22l-2.88 2.65a1.25 1.25 0 0 1-1.7 0L8.32 16.1H5A2.5 2.5 0 0 1 2.5 13.6V7A2.5 2.5 0 0 1 5 4.5Zm2.4 4.1a1.1 1.1 0 1 0 0 2.2 1.1 1.1 0 0 0 0-2.2Zm4.6 0a1.1 1.1 0 1 0 0 2.2 1.1 1.1 0 0 0 0-2.2Zm4.6 0a1.1 1.1 0 1 0 0 2.2 1.1 1.1 0 0 0 0-2.2Z" fill="currentColor"/></svg>
+      <span class="floating-contact-menu__toggle-label">Контакты</span>
     </button>
     <div id="floatingContactsList" class="floating-contact-menu__list" hidden></div>
   </div>
@@ -210,10 +478,10 @@
     const fallback = {
       settings: {
         logo: '',
-        heroTitle: 'Премиальные лестницы<br>на заказ для вашего дома',
-        heroSubtitle: 'Проектируем, производим и монтируем лестницы премиум-класса с инженерной проработкой каждого узла, финальным монтажом штатной бригадой и гарантией на конструкцию. Производство Tekstura: Казань, Орнбургский тракт, 340.',
+        heroTitle: 'Лестницы, которые становятся<br>акцентом интерьера',
+        heroSubtitle: 'Проектируем, производим и монтируем премиальные лестницы из дерева и металла для частных домов и вилл. Собственное производство в Казани, инженерный расчёт и монтаж штатной бригадой Tekstura.',
         heroImage: '/assets/design/home-showcase.jpg',
-        badge: 'Премиальные лестницы',
+        badge: 'PREMIUM STAIRS BRAND',
         location: 'Казань, Орнбургский тракт, 340',
         phone: '',
         whatsapp: '',
@@ -418,6 +686,46 @@
       }
     }
 
+    function setupSiteNav() {
+      const siteNav = document.getElementById('siteNav');
+      const siteNavToggle = document.getElementById('siteNavToggle');
+
+      if (!siteNav || !siteNavToggle) return;
+
+      function closeNav() {
+        siteNav.classList.remove('is-open');
+        siteNavToggle.setAttribute('aria-expanded', 'false');
+      }
+
+      siteNavToggle.addEventListener('click', () => {
+        const isOpen = siteNav.classList.toggle('is-open');
+        siteNavToggle.setAttribute('aria-expanded', String(isOpen));
+      });
+
+      siteNav.querySelectorAll('a').forEach((link) => {
+        link.addEventListener('click', closeNav);
+      });
+
+      document.addEventListener('click', (event) => {
+        if (window.innerWidth > 760) return;
+        if (!siteNav.contains(event.target) && !siteNavToggle.contains(event.target)) {
+          closeNav();
+        }
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+          closeNav();
+        }
+      });
+
+      window.addEventListener('resize', () => {
+        if (window.innerWidth > 760) {
+          closeNav();
+        }
+      });
+    }
+
     function setupFloatingContactsMenu() {
       const floatingContacts = document.getElementById('floatingContacts');
       const floatingContactsList = document.getElementById('floatingContactsList');
@@ -492,6 +800,7 @@
       }
     }
 
+    setupSiteNav();
     setupFloatingContactsMenu();
     bootHomepageData();
   </script>
