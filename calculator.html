@@ -45,6 +45,12 @@
 .visual-overlay input:focus,.visual-overlay select:focus{outline:none;border-color:#e8c8a2;box-shadow:0 0 0 2px rgba(232,200,162,.12)}
 .visual-dimension-tip{margin-top:14px;padding:13px 14px;border-radius:14px;border:1px solid rgba(232,200,162,.12);background:rgba(255,255,255,.03);color:var(--text-soft)}
 .visual-dimension-tip b{color:var(--text)}
+.manual-fallback{margin-top:14px;border:1px solid rgba(232,200,162,.14);border-radius:16px;background:rgba(255,255,255,.03);overflow:hidden}
+.manual-fallback summary{display:flex;flex-direction:column;gap:2px;cursor:pointer;padding:13px 15px;color:var(--text);font-weight:650;list-style:none}
+.manual-fallback summary::-webkit-details-marker{display:none}
+.manual-fallback__hint{font-size:12px;font-weight:500;color:var(--text-muted)}
+.manual-fallback[open] summary{border-bottom:1px solid rgba(232,200,162,.1)}
+.manual-fallback__body{padding:14px 14px 2px}
 .visual-dimension-svg .sv-shape{fill:rgba(221,183,134,.18);stroke:#ddb786;stroke-width:1.8}
 .visual-dimension-svg .sv-landing{fill:rgba(133,202,255,.18);stroke:#85caff;stroke-width:1.8}
 .visual-dimension-svg .sv-winder{fill:rgba(191,153,255,.18);stroke:#bf99ff;stroke-width:1.8}
@@ -56,7 +62,7 @@
 .visual-dimension-svg .sv-dim-active .sv-measure{stroke:#f1d2a6;stroke-width:2.2}
 .visual-dimension-svg .sv-dim-hit{cursor:pointer}
 @media (max-width:980px){.visual-choice.stair-type-choice{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:760px){.visual-choice,.visual-choice.stair-type-choice{grid-template-columns:1fr}.visual-stage{min-height:360px}.visual-dimension-svg{min-height:360px}.visual-dimension-panel{padding:14px}.visual-overlay{min-width:122px;max-width:146px;padding:8px 9px}.visual-overlay label{font-size:10px}.visual-overlay input,.visual-overlay select{height:34px;padding:0 8px;font-size:13px}}
+@media (max-width:760px){.visual-choice,.visual-choice.stair-type-choice{grid-template-columns:1fr}.visual-stage{min-height:360px}.visual-dimension-svg{min-height:360px}.visual-dimension-panel{padding:14px}.visual-overlay{min-width:122px;max-width:146px;padding:8px 9px}.visual-overlay label{font-size:10px}.visual-overlay input,.visual-overlay select{height:34px;padding:0 8px;font-size:13px}.manual-fallback summary{padding:12px 13px}}
 </style>
 </head>
 <body>
@@ -131,7 +137,7 @@
             <div class="visual-overlay-layer" id="visualSideOverlays"></div>
           </div>
         </article>
-        <div class="visual-dimension-tip"><b>Подсказка Tekstura.</b> Сначала введите размеры в схеме, а затем при необходимости уточните остальные параметры ниже. Так обычному пользователю проще понять, что и где измерять.</div>
+        <div class="visual-dimension-tip"><b>Подсказка Tekstura.</b> Основной ввод размеров — через схему. Ручные поля ниже оставлены только как резервный режим, если удобнее без графики.</div>
       </section>
 
       <div id="readyFlowFields" class="hidden">
@@ -175,17 +181,22 @@
         </div>
       </div>
 
-      <div class="grid" id="emptyOpeningGrid">
-        <div class="field" id="turnDirectionField"><label for="turnDirection">Направление поворота</label><select id="turnDirection"><option value="left">Левый</option><option value="right">Правый</option></select></div>
-        <div class="field"><label for="floorHeight">Высота этаж-этаж (мм)</label><input id="floorHeight" type="number" placeholder="3000"><small class="field-help">Измерение от чистового пола нижнего этажа до чистового пола верхнего.</small></div>
-        <div class="field"><label for="openingLength">Длина проёма (мм)</label><input id="openingLength" type="number" placeholder="4200"><small class="field-help">Полезная длина зоны, в которую должен поместиться марш/марши.</small></div>
-        <div class="field"><label for="openingWidth">Ширина проёма (мм)</label><input id="openingWidth" type="number" placeholder="2100"><small class="field-help">Нужна для разворота и комфортного прохода, особенно для Г/П-образных схем.</small></div>
-        <div class="field"><label for="marchWidth">Ширина марша (мм)</label><input id="marchWidth" type="number" placeholder="1000"><small class="field-help">Рекомендуем 900–1100 мм для удобства и премиального визуального баланса.</small></div>
-        <div class="field"><label for="slabThickness">Толщина плиты (мм)</label><input id="slabThickness" type="number" placeholder="220"></div>
-        <div class="field"><label for="topFinishThickness">Финиш сверху (мм)</label><input id="topFinishThickness" type="number" placeholder="20"></div>
-        <div class="field"><label for="bottomFinishThickness">Финиш снизу (мм)</label><input id="bottomFinishThickness" type="number" placeholder="20"></div>
-        <div class="field"><label for="deliveryDistance">Расстояние доставки (км)</label><input id="deliveryDistance" type="number" placeholder="20"></div>
-      </div>
+      <details class="manual-fallback" id="emptyOpeningFallback">
+        <summary>Ручные поля замера<span class="manual-fallback__hint">Откройте только если хотите ввести размеры без схемы</span></summary>
+        <div class="manual-fallback__body">
+          <div class="grid" id="emptyOpeningGrid">
+            <div class="field" id="turnDirectionField"><label for="turnDirection">Направление поворота</label><select id="turnDirection"><option value="left">Левый</option><option value="right">Правый</option></select></div>
+            <div class="field"><label for="floorHeight">Высота этаж-этаж (мм)</label><input id="floorHeight" type="number" placeholder="3000"><small class="field-help">Измерение от чистового пола нижнего этажа до чистового пола верхнего.</small></div>
+            <div class="field"><label for="openingLength">Длина проёма (мм)</label><input id="openingLength" type="number" placeholder="4200"><small class="field-help">Полезная длина зоны, в которую должен поместиться марш/марши.</small></div>
+            <div class="field"><label for="openingWidth">Ширина проёма (мм)</label><input id="openingWidth" type="number" placeholder="2100"><small class="field-help">Нужна для разворота и комфортного прохода, особенно для Г/П-образных схем.</small></div>
+            <div class="field"><label for="marchWidth">Ширина марша (мм)</label><input id="marchWidth" type="number" placeholder="1000"><small class="field-help">Рекомендуем 900–1100 мм для удобства и премиального визуального баланса.</small></div>
+            <div class="field"><label for="slabThickness">Толщина плиты (мм)</label><input id="slabThickness" type="number" placeholder="220"></div>
+            <div class="field"><label for="topFinishThickness">Финиш сверху (мм)</label><input id="topFinishThickness" type="number" placeholder="20"></div>
+            <div class="field"><label for="bottomFinishThickness">Финиш снизу (мм)</label><input id="bottomFinishThickness" type="number" placeholder="20"></div>
+            <div class="field"><label for="deliveryDistance">Расстояние доставки (км)</label><input id="deliveryDistance" type="number" placeholder="20"></div>
+          </div>
+        </div>
+      </details>
 
       <div class="field" id="frameMaterialField">
         <label for="frameMaterial">Материал каркаса</label>
@@ -256,5 +267,20 @@
 <script type="module" src="/stair-configurator.js"></script>
 <script type="module" src="/stair-visual-configurator.js"></script>
 <script type="module" src="/ready-frame-overlay.js"></script>
+<script>
+(function(){
+  const baseCondition = document.getElementById('baseCondition');
+  const fallback = document.getElementById('emptyOpeningFallback');
+  if(!baseCondition || !fallback) return;
+  const sync = () => {
+    const isEmpty = baseCondition.value === 'empty_opening';
+    fallback.classList.toggle('hidden', !isEmpty);
+    if (!isEmpty) fallback.removeAttribute('open');
+  };
+  baseCondition.addEventListener('change', sync);
+  document.querySelectorAll('[data-target="baseCondition"] .visual-card').forEach((card)=>card.addEventListener('click', ()=>setTimeout(sync,0)));
+  sync();
+})();
+</script>
 </body>
 </html>
