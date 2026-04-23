@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Калькулятор лестницы Tekstura</title>
 <meta name="description" content="Пошаговый калькулятор Tekstura: инженерный расчёт геометрии, материалов и стоимости с передачей результата в заявку.">
-<link rel="canonical" href="https://tekstура.shop/calculator.html">
+<link rel="canonical" href="https://tekstura.shop/calculator.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Tekstura">
 <meta property="og:title" content="Калькулятор лестницы Tekstura">
@@ -20,10 +20,10 @@
 .visual-card b{font-size:14px;line-height:1.25}.visual-card small{color:var(--text-muted)}
 .visual-card span{font-size:20px;color:var(--gold-2);font-weight:700}
 .visual-card.selected{border-color:var(--gold-2);background:rgba(58,39,25,.82);box-shadow:0 10px 20px rgba(0,0,0,.2)}
-.visual-tab-group{display:grid;gap:0;border:1px solid rgba(232,200,162,.18);border-radius:18px;overflow:hidden;background:rgba(255,255,255,.03)}
+.visual-tab-group{display:grid;gap:0;border:1px solid rgba(232,200,162,.2);border-radius:18px;overflow:hidden;background:#090807}
 .visual-tab-group.cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
 .visual-tab-group.cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
-.visual-tab{appearance:none;border:none;background:transparent;color:var(--text-soft);padding:14px 10px;font:inherit;font-weight:600;cursor:pointer;border-right:1px solid rgba(232,200,162,.14)}
+.visual-tab{appearance:none;border:none;background:transparent;color:#f0dcc0;padding:14px 10px;font:inherit;font-weight:600;cursor:pointer;border-right:1px solid rgba(232,200,162,.14)}
 .visual-tab:last-child{border-right:none}
 .visual-tab.active{background:linear-gradient(180deg,#e7c08b,#d2a66d);color:#1f140e}
 .visual-tab-helper{margin-top:8px;color:var(--text-muted);font-size:13px}
@@ -31,26 +31,23 @@
 .extras-list input{margin-top:3px}
 .inline-select{margin-top:8px}
 .ready-frame-note{margin-top:12px;padding:12px 14px;border:1px solid rgba(232,200,162,.22);border-radius:12px;background:rgba(29,21,17,.6);color:var(--text-soft)}
-.visual-dimension-panel{margin:18px 0 22px;padding:18px;border:1px solid rgba(232,200,162,.16);border-radius:22px;background:linear-gradient(180deg,rgba(41,29,22,.88),rgba(21,16,13,.96));box-shadow:0 18px 30px rgba(0,0,0,.18)}
-.visual-dimension-panel h3{margin:0 0 6px;font-size:24px;color:var(--text)}
-.visual-dimension-panel p{margin:0;color:var(--text-soft)}
-.visual-dimension-switch{display:flex;gap:10px;margin:16px 0 14px}
-.visual-switch-btn{flex:1;border:1px solid rgba(232,200,162,.18);border-radius:999px;background:rgba(255,255,255,.03);color:var(--text-soft);padding:10px 14px;font:inherit;cursor:pointer}
-.visual-switch-btn.active{background:linear-gradient(180deg,#e7c08b,#d2a66d);color:#1f140e;border-color:rgba(232,200,162,.42);font-weight:700}
-.visual-stage-card{display:none}
-.visual-stage-card.active{display:block}
-.visual-stage-card h4{margin:0 0 10px;color:var(--text);font-size:18px}
-.visual-stage{position:relative;min-height:430px;border:1px solid rgba(232,200,162,.12);border-radius:18px;background:rgba(255,255,255,.03);overflow:hidden}
-.visual-dimension-svg{min-height:430px}
+.visual-dimension-panel{margin:18px 0 22px;padding:18px;border:1px solid rgba(232,200,162,.16);border-radius:26px;background:linear-gradient(180deg,rgba(28,20,16,.98),rgba(12,9,7,.98));box-shadow:0 18px 30px rgba(0,0,0,.18)}
+.visual-dimension-panel h3{margin:0 0 6px;font-size:26px;color:#fff}
+.visual-dimension-panel p{margin:0;color:#e4d6c4}
+.visual-dual-stack{display:grid;gap:16px;margin-top:16px}
+.visual-stage-card{display:block}
+.visual-stage-card h4{margin:0 0 10px;color:#fff;font-size:18px}
+.visual-stage{position:relative;min-height:420px;border:1px solid rgba(232,200,162,.12);border-radius:22px;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.015));overflow:hidden}
+.visual-dimension-svg{min-height:420px}
 .visual-dimension-svg svg{display:block;width:100%;height:auto}
 .visual-overlay-layer{position:absolute;inset:0;pointer-events:none}
-.visual-overlay{position:absolute;transform:translate(-50%,-50%);pointer-events:auto;min-width:136px;max-width:164px;background:rgba(16,12,10,.94);border:1px solid rgba(232,200,162,.24);border-radius:14px;padding:9px 10px;box-shadow:0 12px 22px rgba(0,0,0,.24)}
+.visual-overlay{position:absolute;transform:translate(-50%,-50%);pointer-events:auto;min-width:136px;max-width:164px;background:rgba(16,12,10,.96);border:1px solid rgba(232,200,162,.28);border-radius:14px;padding:9px 10px;box-shadow:0 12px 22px rgba(0,0,0,.24)}
 .visual-overlay.active{border-color:#e8c8a2;box-shadow:0 12px 22px rgba(0,0,0,.28),0 0 0 1px rgba(232,200,162,.22)}
 .visual-overlay label{display:block;font-size:11px;line-height:1.2;color:#f3dfc3;margin-bottom:6px}
 .visual-overlay input,.visual-overlay select{width:100%;height:36px;border-radius:10px;border:1px solid rgba(232,200,162,.16);background:rgba(255,255,255,.04);color:var(--text);padding:0 10px;font:inherit}
 .visual-overlay input:focus,.visual-overlay select:focus{outline:none;border-color:#e8c8a2;box-shadow:0 0 0 2px rgba(232,200,162,.12)}
-.visual-dimension-tip{margin-top:14px;padding:13px 14px;border-radius:14px;border:1px solid rgba(232,200,162,.12);background:rgba(255,255,255,.03);color:var(--text-soft)}
-.visual-dimension-tip b{color:var(--text)}
+.visual-dimension-tip{margin-top:14px;padding:13px 14px;border-radius:16px;border:1px solid rgba(232,200,162,.12);background:rgba(255,255,255,.03);color:#f0ddd0}
+.visual-dimension-tip b{color:#fff}
 .manual-fallback{margin-top:14px;border:1px solid rgba(232,200,162,.14);border-radius:16px;background:rgba(255,255,255,.03);overflow:hidden}
 .manual-fallback summary{display:flex;flex-direction:column;gap:2px;cursor:pointer;padding:13px 15px;color:var(--text);font-weight:650;list-style:none}
 .manual-fallback summary::-webkit-details-marker{display:none}
@@ -58,17 +55,17 @@
 .manual-fallback[open] summary{border-bottom:1px solid rgba(232,200,162,.1)}
 .manual-fallback__body{padding:14px 14px 2px}
 .visual-managed-field{display:none!important}
-.visual-dimension-svg .sv-shape{fill:rgba(221,183,134,.18);stroke:#ddb786;stroke-width:1.8}
-.visual-dimension-svg .sv-landing{fill:rgba(133,202,255,.18);stroke:#85caff;stroke-width:1.8}
-.visual-dimension-svg .sv-winder{fill:rgba(191,153,255,.18);stroke:#bf99ff;stroke-width:1.8}
-.visual-dimension-svg .sv-line{stroke:rgba(255,255,255,.36);stroke-width:1.2;stroke-dasharray:5 4}
+.visual-dimension-svg .sv-shape{fill:rgba(221,183,134,.16);stroke:#ddb786;stroke-width:1.8}
+.visual-dimension-svg .sv-landing{fill:rgba(133,202,255,.16);stroke:#85caff;stroke-width:1.8}
+.visual-dimension-svg .sv-winder{fill:rgba(191,153,255,.16);stroke:#bf99ff;stroke-width:1.8}
+.visual-dimension-svg .sv-line{stroke:rgba(255,255,255,.22);stroke-width:1.2;stroke-dasharray:5 4}
 .visual-dimension-svg .sv-measure{stroke:#d4ab70;stroke-width:1.5}
 .visual-dimension-svg .sv-anchor{fill:#f0d7b7}
 .visual-dimension-svg .sv-text{fill:#f7ead9;font-size:12px;font-weight:600}
 .visual-dimension-svg .sv-muted{fill:#d8b68d;font-size:11px}
 .visual-dimension-svg .sv-dim-active .sv-measure{stroke:#f1d2a6;stroke-width:2.2}
 .visual-dimension-svg .sv-dim-hit{cursor:pointer}
-@media (max-width:760px){.visual-choice{grid-template-columns:1fr}.visual-tab{padding:12px 8px;font-size:14px}.visual-stage{min-height:360px}.visual-dimension-svg{min-height:360px}.visual-dimension-panel{padding:14px}.visual-overlay{min-width:122px;max-width:146px;padding:8px 9px}.visual-overlay label{font-size:10px}.visual-overlay input,.visual-overlay select{height:34px;padding:0 8px;font-size:13px}.manual-fallback summary{padding:12px 13px}}
+@media (max-width:760px){.visual-choice{grid-template-columns:1fr}.visual-tab{padding:12px 8px;font-size:14px}.visual-stage{min-height:340px}.visual-dimension-svg{min-height:340px}.visual-dimension-panel{padding:14px}.visual-overlay{min-width:118px;max-width:142px;padding:8px 8px}.visual-overlay label{font-size:10px}.visual-overlay input,.visual-overlay select{height:34px;padding:0 8px;font-size:13px}.manual-fallback summary{padding:12px 13px}}
 </style>
 </head>
 <body>
@@ -132,26 +129,24 @@
 
       <section class="visual-dimension-panel" aria-labelledby="visualDimensionTitle">
         <h3 id="visualDimensionTitle">Интерактивная схема размеров</h3>
-        <p>Вводите основные размеры прямо в схеме. Переключайте вид сверху и вид сбоку, чтобы быстрее понять, что и где измерять.</p>
-        <div class="visual-dimension-switch" role="tablist" aria-label="Переключение схемы размеров">
-          <button type="button" class="visual-switch-btn active" data-visual-view="plan">Вид сверху</button>
-          <button type="button" class="visual-switch-btn" data-visual-view="side">Вид сбоку</button>
+        <p>Укажите размеры лестницы — на схемах показано, что и где измерять.</p>
+        <div class="visual-dual-stack">
+          <article class="visual-stage-card">
+            <h4>Вид сверху</h4>
+            <div class="visual-stage">
+              <div class="visual-dimension-svg" id="visualPlanMount"></div>
+              <div class="visual-overlay-layer" id="visualPlanOverlays"></div>
+            </div>
+          </article>
+          <article class="visual-stage-card">
+            <h4>Вид сбоку</h4>
+            <div class="visual-stage">
+              <div class="visual-dimension-svg" id="visualSideMount"></div>
+              <div class="visual-overlay-layer" id="visualSideOverlays"></div>
+            </div>
+          </article>
         </div>
-        <article class="visual-stage-card active" data-visual-stage="plan">
-          <h4>Вид сверху</h4>
-          <div class="visual-stage">
-            <div class="visual-dimension-svg" id="visualPlanMount"></div>
-            <div class="visual-overlay-layer" id="visualPlanOverlays"></div>
-          </div>
-        </article>
-        <article class="visual-stage-card" data-visual-stage="side">
-          <h4>Вид сбоку</h4>
-          <div class="visual-stage">
-            <div class="visual-dimension-svg" id="visualSideMount"></div>
-            <div class="visual-overlay-layer" id="visualSideOverlays"></div>
-          </div>
-        </article>
-        <div class="visual-dimension-tip"><b>Подсказка Tekstura.</b> Основной ввод размеров делайте в схеме. Ниже оставлены только параметры, которые реже меняют во время первого замера.</div>
+        <div class="visual-dimension-tip"><b>Подсказка Tekstura.</b> Заполняйте размеры прямо по схеме — так проще понять, что и где измерять.</div>
       </section>
 
       <div id="readyFlowFields" class="hidden">
@@ -188,18 +183,6 @@
           <div class="field"><label for="existingConditionNotes">Состояние существующего основания</label><input id="existingConditionNotes" type="text" placeholder="Например: требуется усиление узлов"></div>
         </div>
         <div class="ready-frame-note">Ветку «Готовый каркас» используем как удалённый замер и предварительную калькуляцию. Финальный расход материалов и смета подтверждаются инженером Tekstura после замера.</div>
-        <div class="field">
-          <label>Объём работ</label>
-          <div class="extras-list">
-            <label><input type="checkbox" name="scopeWork" value="steps_only"> Только ступени</label>
-            <label><input type="checkbox" name="scopeWork" value="steps_risers"> Ступени + подступенки</label>
-            <label><input type="checkbox" name="scopeWork" value="railing"> Ограждение</label>
-            <label><input type="checkbox" name="scopeWork" value="frame_cladding"> Обшивка каркаса</label>
-            <label><input type="checkbox" name="scopeWork" value="finish_coating"> Финиш/покрытие</label>
-            <label><input type="checkbox" name="scopeWork" value="lighting"> Подсветка</label>
-            <label><input type="checkbox" name="scopeWork" value="installation"> Монтаж</label>
-          </div>
-        </div>
       </div>
 
       <details class="manual-fallback" id="emptyOpeningFallback">
@@ -244,7 +227,7 @@
       </div>
 
       <div class="actions">
-        <button class="btn-primary" id="toResultsBtn" type="button">Рассчитать геометрию</button>
+        <button class="btn-primary" id="toResultsBtn" type="button">Продолжить расчёт</button>
       </div>
     </section>
 

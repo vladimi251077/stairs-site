@@ -18,7 +18,6 @@ const LABELS = {
 };
 
 let activeTarget = '';
-let activeView = 'plan';
 
 function getMode() {
   return $('baseCondition')?.value || 'empty_opening';
@@ -102,8 +101,8 @@ function dimGroup(targetKey, x1, y1, x2, y2, label, tx, ty) {
 
 function turnArrow(left = true) {
   return left
-    ? `<path class="sv-measure" d="M92 286 C56 286 42 304 42 328" fill="none"/><path class="sv-measure" d="M42 328 l-8 -12 l16 0 z" fill="#d4ab70"/>`
-    : `<path class="sv-measure" d="M42 286 C78 286 92 304 92 328" fill="none"/><path class="sv-measure" d="M92 328 l-8 -12 l16 0 z" fill="#d4ab70"/>`;
+    ? `<path class="sv-measure" d="M94 316 C56 316 42 334 42 356" fill="none"/><path class="sv-measure" d="M42 356 l-8 -12 l16 0 z" fill="#d4ab70"/>`
+    : `<path class="sv-measure" d="M42 316 C80 316 94 334 94 356" fill="none"/><path class="sv-measure" d="M94 356 l-8 -12 l16 0 z" fill="#d4ab70"/>`;
 }
 
 function buildPlanScene(type) {
@@ -111,57 +110,57 @@ function buildPlanScene(type) {
   switch (type) {
     case 'straight':
       return {
-        svg: `<rect class="sv-shape" x="132" y="154" width="360" height="80" rx="12"></rect>${dimGroup('marchWidth',132,194,70,194,LABELS.marchWidth,70,182)}${dimGroup('openingLength',188,258,438,258,LABELS.openingLength,314,282)}${dimGroup('openingWidth',510,154,510,234,LABELS.openingWidth,510,144)}<text class="sv-muted" x="312" y="146" text-anchor="middle">Прямая лестница</text>`,
+        svg: `<rect class="sv-shape" x="130" y="168" width="360" height="78" rx="10"></rect>${dimGroup('marchWidth',130,207,66,207,LABELS.marchWidth,68,190)}${dimGroup('openingLength',194,280,428,280,LABELS.openingLength,312,304)}${dimGroup('openingWidth',510,168,510,246,LABELS.openingWidth,510,154)}<text class="sv-muted" x="312" y="154" text-anchor="middle">Прямая лестница</text>`,
         overlays: [
-          { key: 'marchWidth', x: '15%', y: '48%', width: '150px' },
-          { key: 'openingLength', x: '50%', y: '79%', width: '154px' },
+          { key: 'marchWidth', x: '16%', y: '48%', width: '150px' },
+          { key: 'openingLength', x: '50%', y: '80%', width: '154px' },
           { key: 'openingWidth', x: '85%', y: '49%', width: '154px' }
         ]
       };
     case 'l_turn_landing':
       return {
-        svg: `<rect class="sv-shape" x="88" y="214" width="198" height="64" rx="12"></rect><rect class="sv-landing" x="286" y="146" width="118" height="132" rx="12"></rect><rect class="sv-shape" x="286" y="52" width="64" height="94" rx="12"></rect>${dimGroup('marchWidth',88,246,40,246,LABELS.marchWidth,44,230)}${dimGroup('landingLength',286,132,404,132,LABELS.landingLength,346,120)}${dimGroup('landingWidth',420,146,420,278,LABELS.landingWidth,470,212)}${dimGroup('openingLength',144,300,384,300,LABELS.openingLength,266,324)}${dimGroup('openingWidth',66,214,66,52,LABELS.openingWidth,66,40)}<text class="sv-muted" x="96" y="326">${turnLeft ? 'Левый поворот' : 'Правый поворот'}</text>${turnArrow(turnLeft)}`,
+        svg: `<rect class="sv-shape" x="96" y="224" width="188" height="60" rx="10"></rect><rect class="sv-landing" x="284" y="150" width="122" height="134" rx="10"></rect><rect class="sv-shape" x="284" y="64" width="60" height="86" rx="10"></rect>${dimGroup('marchWidth',96,254,44,254,LABELS.marchWidth,44,236)}${dimGroup('landingLength',284,136,406,136,LABELS.landingLength,346,122)}${dimGroup('landingWidth',424,150,424,284,LABELS.landingWidth,488,206)}${dimGroup('openingLength',160,306,388,306,LABELS.openingLength,274,332)}${dimGroup('openingWidth',78,224,78,64,LABELS.openingWidth,78,48)}<text class="sv-muted" x="100" y="344">${turnLeft ? 'Левый поворот' : 'Правый поворот'}</text>${turnArrow(turnLeft)}`,
         overlays: [
-          { key: 'marchWidth', x: '14%', y: '60%', width: '148px' },
-          { key: 'landingLength', x: '54%', y: '16%', width: '156px' },
-          { key: 'landingWidth', x: '86%', y: '47%', width: '150px' },
-          { key: 'openingLength', x: '50%', y: '83%', width: '154px' },
-          { key: 'openingWidth', x: '14%', y: '17%', width: '148px' },
-          { key: 'turnDirection', x: '12%', y: '88%', width: '142px' }
+          { key: 'marchWidth', x: '16%', y: '60%', width: '148px' },
+          { key: 'landingLength', x: '54%', y: '15%', width: '156px' },
+          { key: 'landingWidth', x: '85%', y: '46%', width: '150px' },
+          { key: 'openingLength', x: '50%', y: '82%', width: '154px' },
+          { key: 'openingWidth', x: '15%', y: '14%', width: '148px' },
+          { key: 'turnDirection', x: '14%', y: '88%', width: '142px' }
         ]
       };
     case 'l_turn_winders':
       return {
-        svg: `<rect class="sv-shape" x="88" y="214" width="198" height="64" rx="12"></rect><polygon class="sv-winder" points="286,214 372,214 352,164 286,164"></polygon><polygon class="sv-winder" points="286,214 352,164 318,104 256,166"></polygon><rect class="sv-shape" x="286" y="52" width="64" height="94" rx="12"></rect>${dimGroup('marchWidth',88,246,40,246,LABELS.marchWidth,44,230)}${dimGroup('winderCount',318,164,412,112,LABELS.winderCount,470,92)}${dimGroup('openingLength',144,300,384,300,LABELS.openingLength,266,324)}${dimGroup('openingWidth',66,214,66,52,LABELS.openingWidth,66,40)}<text class="sv-muted" x="96" y="326">${turnLeft ? 'Левый поворот' : 'Правый поворот'}</text>${turnArrow(turnLeft)}`,
+        svg: `<rect class="sv-shape" x="96" y="224" width="188" height="60" rx="10"></rect><polygon class="sv-winder" points="284,224 374,224 350,166 284,166"></polygon><polygon class="sv-winder" points="284,224 350,166 316,108 252,166"></polygon><rect class="sv-shape" x="284" y="64" width="60" height="86" rx="10"></rect>${dimGroup('marchWidth',96,254,44,254,LABELS.marchWidth,44,236)}${dimGroup('winderCount',320,166,412,118,LABELS.winderCount,484,96)}${dimGroup('openingLength',160,306,388,306,LABELS.openingLength,274,332)}${dimGroup('openingWidth',78,224,78,64,LABELS.openingWidth,78,48)}<text class="sv-muted" x="100" y="344">${turnLeft ? 'Левый поворот' : 'Правый поворот'}</text>${turnArrow(turnLeft)}`,
         overlays: [
-          { key: 'marchWidth', x: '14%', y: '60%', width: '148px' },
+          { key: 'marchWidth', x: '16%', y: '60%', width: '148px' },
           { key: 'winderCount', x: '84%', y: '20%', width: '150px' },
-          { key: 'openingLength', x: '50%', y: '83%', width: '154px' },
-          { key: 'openingWidth', x: '14%', y: '17%', width: '148px' },
-          { key: 'turnDirection', x: '12%', y: '88%', width: '142px' }
+          { key: 'openingLength', x: '50%', y: '82%', width: '154px' },
+          { key: 'openingWidth', x: '15%', y: '14%', width: '148px' },
+          { key: 'turnDirection', x: '14%', y: '88%', width: '142px' }
         ]
       };
     case 'u_turn_landing':
       return {
-        svg: `<rect class="sv-shape" x="122" y="66" width="72" height="224" rx="12"></rect><rect class="sv-landing" x="194" y="224" width="236" height="66" rx="12"></rect><rect class="sv-shape" x="430" y="66" width="72" height="224" rx="12"></rect>${dimGroup('marchWidth',122,178,58,178,LABELS.marchWidth,58,164)}${dimGroup('landingLength',194,208,430,208,LABELS.landingLength,312,194)}${dimGroup('landingWidth',520,66,520,290,LABELS.landingWidth,520,54)}${dimGroup('openingLength',224,314,400,314,LABELS.openingLength,312,338)}${dimGroup('openingWidth',194,48,430,48,LABELS.openingWidth,312,34)}<text class="sv-muted" x="104" y="326">${turnLeft ? 'Левый разворот' : 'Правый разворот'}</text>${turnArrow(turnLeft)}`,
+        svg: `<rect class="sv-shape" x="122" y="70" width="70" height="232" rx="10"></rect><rect class="sv-landing" x="192" y="236" width="238" height="66" rx="10"></rect><rect class="sv-shape" x="430" y="70" width="70" height="232" rx="10"></rect>${dimGroup('marchWidth',122,186,56,186,LABELS.marchWidth,56,170)}${dimGroup('landingLength',192,220,430,220,LABELS.landingLength,312,204)}${dimGroup('landingWidth',516,70,516,302,LABELS.landingWidth,516,56)}${dimGroup('openingLength',220,328,404,328,LABELS.openingLength,312,350)}${dimGroup('openingWidth',192,52,430,52,LABELS.openingWidth,312,36)}<text class="sv-muted" x="106" y="344">${turnLeft ? 'Левый разворот' : 'Правый разворот'}</text>${turnArrow(turnLeft)}`,
         overlays: [
-          { key: 'marchWidth', x: '13%', y: '43%', width: '148px' },
-          { key: 'landingLength', x: '50%', y: '20%', width: '156px' },
+          { key: 'marchWidth', x: '14%', y: '43%', width: '148px' },
+          { key: 'landingLength', x: '50%', y: '19%', width: '156px' },
           { key: 'landingWidth', x: '86%', y: '43%', width: '150px' },
-          { key: 'openingLength', x: '50%', y: '86%', width: '154px' },
+          { key: 'openingLength', x: '50%', y: '87%', width: '154px' },
           { key: 'openingWidth', x: '50%', y: '8%', width: '154px' },
-          { key: 'turnDirection', x: '12%', y: '88%', width: '142px' }
+          { key: 'turnDirection', x: '14%', y: '88%', width: '142px' }
         ]
       };
     default:
       return {
-        svg: `<rect class="sv-shape" x="122" y="66" width="72" height="224" rx="12"></rect><polygon class="sv-winder" points="194,224 282,224 246,178 194,178"></polygon><polygon class="sv-winder" points="430,178 378,178 344,224 430,224"></polygon><rect class="sv-shape" x="430" y="66" width="72" height="224" rx="12"></rect>${dimGroup('marchWidth',122,178,58,178,LABELS.marchWidth,58,164)}${dimGroup('winderCount',310,176,310,98,LABELS.winderCount,310,84)}${dimGroup('openingLength',224,314,400,314,LABELS.openingLength,312,338)}${dimGroup('openingWidth',194,48,430,48,LABELS.openingWidth,312,34)}<text class="sv-muted" x="104" y="326">${turnLeft ? 'Левый разворот' : 'Правый разворот'}</text>${turnArrow(turnLeft)}`,
+        svg: `<rect class="sv-shape" x="122" y="70" width="70" height="232" rx="10"></rect><polygon class="sv-winder" points="192,236 282,236 246,188 192,188"></polygon><polygon class="sv-winder" points="430,188 376,188 342,236 430,236"></polygon><rect class="sv-shape" x="430" y="70" width="70" height="232" rx="10"></rect>${dimGroup('marchWidth',122,186,56,186,LABELS.marchWidth,56,170)}${dimGroup('winderCount',312,188,312,110,LABELS.winderCount,312,92)}${dimGroup('openingLength',220,328,404,328,LABELS.openingLength,312,350)}${dimGroup('openingWidth',192,52,430,52,LABELS.openingWidth,312,36)}<text class="sv-muted" x="106" y="344">${turnLeft ? 'Левый разворот' : 'Правый разворот'}</text>${turnArrow(turnLeft)}`,
         overlays: [
-          { key: 'marchWidth', x: '13%', y: '43%', width: '148px' },
+          { key: 'marchWidth', x: '14%', y: '43%', width: '148px' },
           { key: 'winderCount', x: '50%', y: '14%', width: '150px' },
-          { key: 'openingLength', x: '50%', y: '86%', width: '154px' },
+          { key: 'openingLength', x: '50%', y: '87%', width: '154px' },
           { key: 'openingWidth', x: '50%', y: '8%', width: '154px' },
-          { key: 'turnDirection', x: '12%', y: '88%', width: '142px' }
+          { key: 'turnDirection', x: '14%', y: '88%', width: '142px' }
         ]
       };
   }
@@ -169,10 +168,10 @@ function buildPlanScene(type) {
 
 function buildSideScene() {
   const stepsCount = approxStepCount();
-  const baseX = 116;
-  const baseY = 306;
-  const totalW = 340;
-  const totalH = 186;
+  const baseX = 118;
+  const baseY = 318;
+  const totalW = 332;
+  const totalH = 188;
   const stepW = totalW / stepsCount;
   const stepH = totalH / stepsCount;
   const stairs = Array.from({ length: stepsCount }).map((_, index) => {
@@ -180,10 +179,10 @@ function buildSideScene() {
     const y = baseY - (index + 1) * stepH;
     return `<path class="sv-shape" d="M${x} ${baseY} L${x} ${y} L${x + stepW} ${y}"></path>`;
   }).join('');
-  const shared = `<line class="sv-line" x1="82" y1="306" x2="500" y2="306"></line><line class="sv-line" x1="82" y1="92" x2="500" y2="92"></line>${stairs}`;
+  const shared = `<line class="sv-line" x1="86" y1="318" x2="500" y2="318"></line><line class="sv-line" x1="86" y1="96" x2="500" y2="96"></line>${stairs}`;
   if (getMode() === 'ready_frame') {
     return {
-      svg: `${shared}${dimGroup('riserHeight',356,212,356,168,LABELS.riserHeight,448,172)}${dimGroup('treadDepth',326,234,382,234,LABELS.treadDepth,468,234)}${dimGroup('stepCount',430,120,470,120,LABELS.stepCount,470,104)}<text class="sv-muted" x="92" y="332">Удалённый замер существующего основания</text>`,
+      svg: `${shared}${dimGroup('riserHeight',360,220,360,176,LABELS.riserHeight,466,172)}${dimGroup('treadDepth',330,244,386,244,LABELS.treadDepth,470,244)}${dimGroup('stepCount',432,126,470,126,LABELS.stepCount,470,110)}<text class="sv-muted" x="96" y="344">Удалённый замер существующего основания</text>`,
       overlays: [
         { key: 'riserHeight', x: '84%', y: '24%', width: '150px' },
         { key: 'treadDepth', x: '84%', y: '52%', width: '150px' },
@@ -192,7 +191,7 @@ function buildSideScene() {
     };
   }
   return {
-    svg: `${shared}${dimGroup('floorHeight',90,306,90,92,LABELS.floorHeight,90,80)}${dimGroup('slabThickness',454,92,454,58,LABELS.slabThickness,454,46)}${dimGroup('topFinishThickness',402,114,446,114,LABELS.topFinishThickness,470,114)}${dimGroup('bottomFinishThickness',122,306,162,306,LABELS.bottomFinishThickness,182,330)}<text class="sv-muted" x="312" y="332">Ввод по проектному проёму и чистовым отметкам</text>`,
+    svg: `${shared}${dimGroup('floorHeight',92,318,92,96,LABELS.floorHeight,92,82)}${dimGroup('slabThickness',454,96,454,60,LABELS.slabThickness,454,46)}${dimGroup('topFinishThickness',402,120,448,120,LABELS.topFinishThickness,476,120)}${dimGroup('bottomFinishThickness',124,318,164,318,LABELS.bottomFinishThickness,188,344)}<text class="sv-muted" x="312" y="344">Ввод по проектному проёму и чистовым отметкам</text>`,
       overlays: [
         { key: 'floorHeight', x: '12%', y: '36%', width: '154px' },
         { key: 'slabThickness', x: '84%', y: '12%', width: '148px' },
@@ -200,13 +199,13 @@ function buildSideScene() {
         { key: 'bottomFinishThickness', x: '12%', y: '84%', width: '148px' }
       ]
     };
-  };
+  }
 }
 
 function renderSvg(mountId, scene, ariaLabel) {
   const mount = $(mountId);
   if (!mount) return;
-  mount.innerHTML = `<svg viewBox="0 0 620 380" role="img" aria-label="${esc(ariaLabel)}"><rect x="16" y="16" width="588" height="348" rx="24" fill="rgba(255,255,255,.02)" stroke="rgba(255,255,255,.12)"></rect>${scene.svg}</svg>`;
+  mount.innerHTML = `<svg viewBox="0 0 620 390" role="img" aria-label="${esc(ariaLabel)}"><rect x="16" y="16" width="588" height="358" rx="24" fill="rgba(255,255,255,.02)" stroke="rgba(255,255,255,.12)"></rect>${scene.svg}</svg>`;
 }
 
 function overlayControl(def) {
@@ -299,22 +298,6 @@ function bindTabGroups() {
   });
 }
 
-function bindViewSwitches() {
-  document.querySelectorAll('[data-visual-view]').forEach((button) => {
-    if (button.dataset.bound === '1') return;
-    button.addEventListener('click', () => {
-      activeView = button.getAttribute('data-visual-view') || 'plan';
-      updateViewState();
-    });
-    button.dataset.bound = '1';
-  });
-}
-
-function updateViewState() {
-  document.querySelectorAll('[data-visual-view]').forEach((button) => button.classList.toggle('active', button.getAttribute('data-visual-view') === activeView));
-  document.querySelectorAll('[data-visual-stage]').forEach((card) => card.classList.toggle('active', card.getAttribute('data-visual-stage') === activeView));
-}
-
 function render() {
   syncEmptyOpeningType();
   bindTabGroups();
@@ -326,8 +309,6 @@ function render() {
   renderOverlays('visualSideOverlays', sideScene.overlays);
   bindSvgClicks('visualPlanMount');
   bindSvgClicks('visualSideMount');
-  bindViewSwitches();
-  updateViewState();
 }
 
 function attachWatchers() {
