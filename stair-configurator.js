@@ -27,6 +27,9 @@ const LABELS = {
   stair_type: { straight: 'Прямая', l_turn_landing: 'Г-образная с площадкой', l_turn_winders: 'Г-образная с забежными', u_turn_landing: 'П-образная с площадкой', u_turn_winders: 'П-образная с забежными' },
   configuration_type: { straight: 'Прямая', l_shaped: 'Г-образная', u_shaped: 'П-образная' },
   turn_type: { landing: 'Площадка', winders: 'Забежные' },
+  ready_material: { ash: 'Ясень', oak: 'Дуб', pine: 'Сосна', mdf: 'MDF' },
+  ready_railing_type: { none: 'Без ограждения', round_tube_16mm: 'Труба круглая 16 мм', mdf: 'MDF', glass: 'Стекло', pattern_2d: 'Узор 2D', custom: 'Индивидуальное' },
+  pricing_profile: { balanced: 'Сбалансированный', value: 'Рациональный', premium: 'Премиум' },
   frame_material: { metal: 'Металлокаркас', concrete: 'Бетонный каркас', wood: 'Деревянный каркас' },
   cladding: { none: 'Без облицовки', standard: 'Стандартная облицовка', premium: 'Премиальная облицовка' },
   railing: { none: 'Без ограждения', metal: 'Металлическое ограждение', glass: 'Стеклянное ограждение', wood: 'Деревянное ограждение' },
@@ -52,6 +55,11 @@ const STAIR_TYPE_HINTS = {
 
 const $ = (id) => document.getElementById(id);
 let currentStep = 1;
+const step1State = {
+  scenario: 'empty_opening',
+  stairFamily: 'straight',
+  turnMode: 'landing'
+};
 
 function getAvailableSteps() { return [...document.querySelectorAll('.step')].map((n) => Number((n.id || '').replace('step', ''))).filter(Number.isFinite).sort((a, b) => a - b); }
 function showStep(step) { const available = getAvailableSteps(); const target = available.includes(step) ? step : (available[0] || 1); document.querySelectorAll('.step').forEach((n) => n.classList.remove('active')); $(`step${target}`)?.classList.add('active'); currentStep = target; const progress = $('stepProgress'); if (progress) { const labels = { 1: 'Конфигурация', 2: 'Геометрия', 4: 'Материалы и стоимость' }; const order = { 1: 1, 2: 2, 4: 3 }; progress.textContent = `Шаг ${order[target] || 1} из 3 · ${labels[target] || 'Конфигурация'}`; } }
@@ -59,18 +67,68 @@ window.prevStep = () => { const prev = [...getAvailableSteps()].reverse().find((
 function setStatus(message = '') { const n = $('pageStatus'); if (n) n.textContent = message; }
 function setProceedAvailability(canProceed) { const btn = $('calculateBtn'); if (!btn) return; btn.disabled = !canProceed; btn.setAttribute('aria-disabled', String(!canProceed)); }
 
-function bindVisualSelectors() {
-  document.querySelectorAll('.visual-choice').forEach((group) => {
-    const cards = [...group.querySelectorAll('.visual-card')];
-    const hiddenInput = $(group.dataset.target);
-    const apply = (card) => { if (!card || !hiddenInput) return; hiddenInput.value = card.dataset.value; cards.forEach((c) => c.classList.toggle('selected', c === card)); hiddenInput.dispatchEvent(new Event('change')); };
-    group.addEventListener('click', (e) => { const card = e.target.closest('.visual-card'); if (card) apply(card); });
+function staircaseTypeFromState() {
+  if (step1State.stairFamily === 'straight') return 'straight';
+  if (step1State.stairFamily === 'l-shaped') return step1State.turnMode === 'winders' ? 'l_turn_winders' : 'l_turn_landing';
+  return step1State.turnMode === 'winders' ? 'u_turn_winders' : 'u_turn_landing';
+}
+
+function syncStep1DerivedFields() {
+  const scenario = step1State.scenario;
+  const stairType = staircaseTypeFromState();
+  const configurationType = step1State.stairFamily === 'straight' ? 'straight' : (step1State.stairFamily === 'l-shaped' ? 'l_shaped' : 'u_shaped');
+  const turnRequired = step1State.stairFamily !== 'straight';
+  const baseCondition = $('baseCondition');
+  if (baseCondition) baseCondition.value = scenario;
+  const stairTypeInput = $('stairType');
+  if (stairTypeInput) stairTypeInput.value = stairType;
+  const configurationInput = $('configurationType');
+  if (configurationInput) configurationInput.value = configurationType;
+  const turnTypeInput = $('turnType');
+  if (turnTypeInput) turnTypeInput.value = step1State.turnMode;
+  $('turnModeSwitchField')?.classList.toggle('hidden', !turnRequired);
+}
+
+function updateStep1Visual() {
+  const stage = $('visualStage');
+  const title = $('visualTitle');
+  const subtitle = $('visualSubtitle');
+  if (!stage || !title || !subtitle) return;
+  const familyLabel = step1State.stairFamily === 'straight'
+    ? 'Прямая'
+    : (step1State.stairFamily === 'l-shaped' ? 'Г-образная' : 'П-образная');
+  const scenarioLabel = step1State.scenario === 'empty_opening' ? 'Пустой проём' : 'Готовый каркас';
+  stage.dataset.family = step1State.stairFamily;
+  title.textContent = `${familyLabel} лестница · ${scenarioLabel}`;
+  subtitle.textContent = step1State.scenario === 'empty_opening'
+    ? 'Укажите габариты проёма и конструктивные размеры.'
+    : 'Укажите параметры существующего каркаса и комплектацию.';
+}
+
+function initStep1Controller() {
+  document.querySelectorAll('[data-step1-group]').forEach((group) => {
+    group.addEventListener('click', (event) => {
+      const button = event.target.closest('.segmented__item');
+      if (!button) return;
+      const groupName = group.dataset.step1Group;
+      if (!groupName) return;
+      const value = button.dataset.value;
+      if (!value) return;
+      step1State[groupName] = value;
+      group.querySelectorAll('.segmented__item').forEach((item) => item.classList.toggle('is-active', item === button));
+      syncStep1DerivedFields();
+      toggleScenarioFields();
+      toggleTurnFields();
+      toggleReadyFlowFields();
+      updateStep1Visual();
+      updateStairTypeHints();
+    });
   });
 }
 
 function toggleTurnFields() {
-  const stairType = $('stairType')?.value || 'straight';
-  const base = $('baseCondition')?.value || 'empty_opening';
+  const stairType = staircaseTypeFromState();
+  const base = step1State.scenario;
   const field = $('turnDirectionField');
   const input = $('turnDirection');
   if (!field || !input) return;
@@ -79,8 +137,8 @@ function toggleTurnFields() {
   input.disabled = !show;
 }
 function toggleReadyFlowFields() {
-  const configuration = $('configurationType')?.value || 'straight';
-  const turnType = $('turnType')?.value || 'landing';
+  const configuration = step1State.stairFamily === 'straight' ? 'straight' : (step1State.stairFamily === 'l-shaped' ? 'l_shaped' : 'u_shaped');
+  const turnType = step1State.turnMode;
   const showTurn = configuration !== 'straight';
   $('turnTypeField')?.classList.toggle('hidden', !showTurn);
   $('readyTurnDirectionField')?.classList.toggle('hidden', !showTurn);
@@ -99,18 +157,19 @@ function setSectionEnabled(sectionId, enabled) {
   });
 }
 function toggleScenarioFields() {
-  const base = $('baseCondition')?.value || 'empty_opening';
+  const base = step1State.scenario;
   const empty = base === 'empty_opening';
   $('baseSubtypeField')?.classList.toggle('hidden', empty);
   $('readyFlowFields')?.classList.toggle('hidden', empty);
-  $('emptyStairTypeField')?.classList.toggle('hidden', !empty);
   $('emptyOpeningGrid')?.classList.toggle('hidden', !empty);
   $('frameMaterialField')?.classList.toggle('hidden', !empty);
-  $('finishGrid')?.classList.toggle('hidden', !empty);
   setSectionEnabled('readyFlowFields', !empty);
   setSectionEnabled('emptyOpeningGrid', empty);
   setSectionEnabled('frameMaterialField', empty);
-  setSectionEnabled('finishGrid', empty);
+  ['claddingType', 'railingType', 'finishLevel', 'deliveryDistance'].forEach((id) => {
+    const el = $(id);
+    if (el) el.disabled = !empty;
+  });
   toggleReadyFlowFields();
 }
 
@@ -134,23 +193,16 @@ function updateStairTypeHints(geometry = null, config = null) {
 }
 
 function getConfigFromForm() {
-  const baseCondition = $('baseCondition')?.value || 'empty_opening';
+  const baseCondition = step1State.scenario;
   const readyFlow = baseCondition === 'ready_frame';
   const scope_of_work = [...document.querySelectorAll('input[name="scopeWork"]:checked')].map((x) => x.value);
-  const stairTypeFromReady = (() => {
-    const cfg = $('configurationType')?.value || 'straight';
-    const turn = $('turnType')?.value || 'landing';
-    if (cfg === 'straight') return 'straight';
-    if (cfg === 'l_shaped') return turn === 'winders' ? 'l_turn_winders' : 'l_turn_landing';
-    if (cfg === 'u_shaped') return turn === 'winders' ? 'u_turn_winders' : 'u_turn_landing';
-    return 'straight';
-  })();
+  const stairTypeFromReady = staircaseTypeFromState();
   return {
     base_condition: baseCondition,
     base_subtype: $('baseSubtype')?.value || 'existing_metal_frame',
     stair_type: readyFlow ? stairTypeFromReady : ($('stairType')?.value || 'straight'),
-    configuration_type: $('configurationType')?.value || 'straight',
-    turn_type: $('turnType')?.value || 'landing',
+    configuration_type: step1State.stairFamily === 'straight' ? 'straight' : (step1State.stairFamily === 'l-shaped' ? 'l_shaped' : 'u_shaped'),
+    turn_type: step1State.turnMode,
     turn_direction: baseCondition === 'empty_opening' ? ($('turnDirection')?.value || 'left') : ($('readyTurnDirection')?.value || 'left'),
     floor_to_floor_height: Number($('floorHeight')?.value || 0), slab_thickness: Number($('slabThickness')?.value || 220), top_finish_thickness: Number($('topFinishThickness')?.value || 20), bottom_finish_thickness: Number($('bottomFinishThickness')?.value || 20),
     opening_length: Number($('openingLength')?.value || 0), opening_width: Number($('openingWidth')?.value || 0), march_width: Number($('marchWidth')?.value || 0),
@@ -161,9 +213,13 @@ function getConfigFromForm() {
     landing_length: Number($('landingLength')?.value || 0),
     landing_width: Number($('landingWidth')?.value || 0),
     winder_count: Number($('winderCount')?.value || 0),
+    ready_material: $('readyMaterial')?.value || 'ash',
+    ready_railing_type: $('readyRailingType')?.value || 'none',
+    top_floor_railing_length: Number($('topFloorRailingLength')?.value || 0),
+    pricing_profile: $('pricingProfile')?.value || 'balanced',
     frame_material: $('frameMaterial')?.value || 'metal', finish_level: $('finishLevel')?.value || 'basic', cladding: $('claddingType')?.value || 'standard', railing: $('railingType')?.value || 'metal',
     delivery_distance: Number($('deliveryDistance')?.value || 20), existing_condition_notes: $('existingConditionNotes')?.value?.trim() || '',
-    scope_of_work: readyFlow ? scope_of_work : [],
+    scope_of_work: readyFlow ? (scope_of_work.length ? scope_of_work : ['steps_only', 'installation']) : [],
     extras: readyFlow ? [] : [...document.querySelectorAll('input[name="extras"]:checked')].map((x) => x.value)
   };
 }
@@ -176,7 +232,9 @@ function validateBase(config) {
     if (config.tread_depth <= 0) return 'Укажите глубину проступи.';
     if (config.configuration_type !== 'straight' && config.turn_type === 'landing' && (config.landing_length <= 0 || config.landing_width <= 0)) return 'Для площадки укажите длину и ширину площадки.';
     if (config.configuration_type !== 'straight' && config.turn_type === 'winders' && config.winder_count <= 0) return 'Для забежной схемы укажите количество забежных ступеней.';
-    if (!config.scope_of_work.length) return 'Выберите хотя бы один пункт в объёме работ.';
+    if (!config.ready_material) return 'Выберите материал ступеней.';
+    if (!config.ready_railing_type) return 'Выберите тип ограждения.';
+    if (!config.pricing_profile) return 'Выберите профиль расчёта.';
     return null;
   }
   if (config.floor_to_floor_height <= 0) return 'Укажите корректную высоту этаж-этаж.';
@@ -459,6 +517,10 @@ function buildRequestPayload() {
     landing_length: cfg.landing_length,
     landing_width: cfg.landing_width,
     winder_count: cfg.winder_count,
+    ready_material: cfg.ready_material,
+    ready_railing_type: cfg.ready_railing_type,
+    top_floor_railing_length: cfg.top_floor_railing_length,
+    pricing_profile: cfg.pricing_profile,
     scope_of_work: cfg.scope_of_work || [],
     existing_condition_notes: cfg.existing_condition_notes || '',
     staircaseType: stairTypeLabel,
@@ -469,7 +531,15 @@ function buildRequestPayload() {
     status: state.geometry?.status || 'invalid',
     warnings: state.geometry?.warnings || [],
     materialsSummary: isReadyFlow
-      ? { base: LABELS.base_subtype[cfg.base_subtype] || cfg.base_subtype, configuration: LABELS.configuration_type[cfg.configuration_type] || cfg.configuration_type, turn_type: cfg.configuration_type === 'straight' ? '' : (LABELS.turn_type[cfg.turn_type] || cfg.turn_type), scope_of_work: (cfg.scope_of_work || []).map((x) => SCOPE_LABELS[x] || x) }
+      ? {
+          base: LABELS.base_subtype[cfg.base_subtype] || cfg.base_subtype,
+          configuration: LABELS.configuration_type[cfg.configuration_type] || cfg.configuration_type,
+          turn_type: cfg.configuration_type === 'straight' ? '' : (LABELS.turn_type[cfg.turn_type] || cfg.turn_type),
+          ready_material: LABELS.ready_material[cfg.ready_material] || cfg.ready_material,
+          ready_railing_type: LABELS.ready_railing_type[cfg.ready_railing_type] || cfg.ready_railing_type,
+          pricing_profile: LABELS.pricing_profile[cfg.pricing_profile] || cfg.pricing_profile,
+          top_floor_railing_length: cfg.top_floor_railing_length
+        }
       : { frame: LABELS.frame_material[cfg.frame_material], cladding: LABELS.cladding[cfg.cladding], railing: LABELS.railing[cfg.railing], finish: LABELS.finish_level[cfg.finish_level] },
     selectedExtras: isReadyFlow
       ? (cfg.scope_of_work || []).map((x) => ({ code: x, label: SCOPE_LABELS[x] || x }))
@@ -506,16 +576,14 @@ function runConfigurator() {
 async function loadSupabaseDictionaries() { if (!window.supabase || !window.SUPABASE_CONFIG) return; try { const client = window.supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey); const { data } = await client.from('stair_defaults').select('*').eq('active', true).order('updated_at', { ascending: false }).limit(1).maybeSingle(); if (data) state.dictionaries.defaults = { ...state.dictionaries.defaults, ...data }; } catch { setStatus('Используются встроенные коэффициенты.'); } }
 
 function init() {
-  bindVisualSelectors();
-  $('stairType')?.addEventListener('change', () => { toggleTurnFields(); updateStairTypeHints(); });
-  $('baseCondition')?.addEventListener('change', () => { toggleScenarioFields(); toggleTurnFields(); updateStairTypeHints(); });
-  $('configurationType')?.addEventListener('change', () => { toggleReadyFlowFields(); updateStairTypeHints(); });
-  $('turnType')?.addEventListener('change', () => { toggleReadyFlowFields(); updateStairTypeHints(); });
+  initStep1Controller();
   $('calculateBtn')?.addEventListener('click', runConfigurator);
   $('toResultsBtn')?.addEventListener('click', runGeometryCalculation);
   setProceedAvailability(false);
+  syncStep1DerivedFields();
   toggleScenarioFields();
   toggleTurnFields();
+  updateStep1Visual();
   updateStairTypeHints();
   loadSupabaseDictionaries();
 }
