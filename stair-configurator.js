@@ -1,7 +1,25 @@
 import { GEOMETRY_LIMITS, calculateStairGeometryEngine } from './stair-geometry-engine.js';
 import { calculateMetalMaterials, calculateWoodMaterials, calculateConcreteMaterials } from './stair-materials.js';
 
-const state = { geometry: null, materials: null, price: null, lastConfig: null, dictionaries: { defaults: { labor_rate_per_step: 2500, metal_rate_per_meter: 1800, wood_rate_per_m2: 16000, concrete_rate_per_m3: 14000, install_coef: 1.12, markup_coef: 1.08, delivery_rate_per_km: 110, installation_base: 18000 }, materialRules: [] } };
+const state = {
+  geometry: null,
+  materials: null,
+  price: null,
+  lastConfig: null,
+  dictionaries: {
+    defaults: {
+      labor_rate_per_step: 2500,
+      metal_rate_per_meter: 1800,
+      wood_rate_per_m2: 16000,
+      concrete_rate_per_m3: 14000,
+      install_coef: 1.12,
+      markup_coef: 1.08,
+      delivery_rate_per_km: 110,
+      installation_base: 18000
+    },
+    materialRules: []
+  }
+};
 
 const LABELS = {
   base_condition: { empty_opening: 'Пустой проём', ready_frame: 'Готовый каркас' },
