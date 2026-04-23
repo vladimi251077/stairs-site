@@ -1,3 +1,5 @@
+import './stair-geometry-premium-step.js';
+
 const $ = (id) => document.getElementById(id);
 
 const LABELS = {
@@ -79,7 +81,7 @@ function originalField(key) {
 }
 
 function esc(text) {
-  return String(text ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  return String(text ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;');
 }
 
 function numericOf(key, fallback = 0) {
@@ -192,7 +194,7 @@ function buildSideScene() {
   }
   return {
     svg: `${shared}${dimGroup('floorHeight',92,318,92,96,LABELS.floorHeight,92,82)}${dimGroup('slabThickness',454,96,454,60,LABELS.slabThickness,454,46)}${dimGroup('topFinishThickness',402,120,448,120,LABELS.topFinishThickness,476,120)}${dimGroup('bottomFinishThickness',124,318,164,318,LABELS.bottomFinishThickness,188,344)}<text class="sv-muted" x="312" y="344">Ввод по проектному проёму и чистовым отметкам</text>`,
-      overlays: [
+    overlays: [
         { key: 'floorHeight', x: '12%', y: '36%', width: '154px' },
         { key: 'slabThickness', x: '84%', y: '12%', width: '148px' },
         { key: 'topFinishThickness', x: '84%', y: '36%', width: '148px' },
