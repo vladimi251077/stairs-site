@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Калькулятор лестницы Tekstura</title>
 <meta name="description" content="Пошаговый калькулятор Tekstura: инженерный расчёт геометрии, материалов и стоимости с передачей результата в заявку.">
-<link rel="canonical" href="https://tekstura.shop/calculator.html">
+<link rel="canonical" href="https://tekstура.shop/calculator.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Tekstura">
 <meta property="og:title" content="Калькулятор лестницы Tekstura">
@@ -15,12 +15,18 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/supabase-config.js"></script>
 <style>
-.visual-choice{display:grid;gap:10px;grid-template-columns:repeat(3,minmax(0,1fr))}
-.visual-choice.stair-type-choice{grid-template-columns:repeat(5,minmax(0,1fr))}
+.visual-choice{display:grid;gap:10px;grid-template-columns:repeat(2,minmax(0,1fr))}
 .visual-card{border:1px solid var(--line);border-radius:14px;background:rgba(33,23,17,.72);color:var(--text);padding:12px;text-align:left;display:flex;flex-direction:column;gap:6px;cursor:pointer}
 .visual-card b{font-size:14px;line-height:1.25}.visual-card small{color:var(--text-muted)}
 .visual-card span{font-size:20px;color:var(--gold-2);font-weight:700}
 .visual-card.selected{border-color:var(--gold-2);background:rgba(58,39,25,.82);box-shadow:0 10px 20px rgba(0,0,0,.2)}
+.visual-tab-group{display:grid;gap:0;border:1px solid rgba(232,200,162,.18);border-radius:18px;overflow:hidden;background:rgba(255,255,255,.03)}
+.visual-tab-group.cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.visual-tab-group.cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.visual-tab{appearance:none;border:none;background:transparent;color:var(--text-soft);padding:14px 10px;font:inherit;font-weight:600;cursor:pointer;border-right:1px solid rgba(232,200,162,.14)}
+.visual-tab:last-child{border-right:none}
+.visual-tab.active{background:linear-gradient(180deg,#e7c08b,#d2a66d);color:#1f140e}
+.visual-tab-helper{margin-top:8px;color:var(--text-muted);font-size:13px}
 .extras-list{display:grid;gap:8px}.extras-list label{display:flex;gap:8px;align-items:flex-start;font-size:14px;color:var(--text-soft)}
 .extras-list input{margin-top:3px}
 .inline-select{margin-top:8px}
@@ -51,6 +57,7 @@
 .manual-fallback__hint{font-size:12px;font-weight:500;color:var(--text-muted)}
 .manual-fallback[open] summary{border-bottom:1px solid rgba(232,200,162,.1)}
 .manual-fallback__body{padding:14px 14px 2px}
+.visual-managed-field{display:none!important}
 .visual-dimension-svg .sv-shape{fill:rgba(221,183,134,.18);stroke:#ddb786;stroke-width:1.8}
 .visual-dimension-svg .sv-landing{fill:rgba(133,202,255,.18);stroke:#85caff;stroke-width:1.8}
 .visual-dimension-svg .sv-winder{fill:rgba(191,153,255,.18);stroke:#bf99ff;stroke-width:1.8}
@@ -61,8 +68,7 @@
 .visual-dimension-svg .sv-muted{fill:#d8b68d;font-size:11px}
 .visual-dimension-svg .sv-dim-active .sv-measure{stroke:#f1d2a6;stroke-width:2.2}
 .visual-dimension-svg .sv-dim-hit{cursor:pointer}
-@media (max-width:980px){.visual-choice.stair-type-choice{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:760px){.visual-choice,.visual-choice.stair-type-choice{grid-template-columns:1fr}.visual-stage{min-height:360px}.visual-dimension-svg{min-height:360px}.visual-dimension-panel{padding:14px}.visual-overlay{min-width:122px;max-width:146px;padding:8px 9px}.visual-overlay label{font-size:10px}.visual-overlay input,.visual-overlay select{height:34px;padding:0 8px;font-size:13px}.manual-fallback summary{padding:12px 13px}}
+@media (max-width:760px){.visual-choice{grid-template-columns:1fr}.visual-tab{padding:12px 8px;font-size:14px}.visual-stage{min-height:360px}.visual-dimension-svg{min-height:360px}.visual-dimension-panel{padding:14px}.visual-overlay{min-width:122px;max-width:146px;padding:8px 9px}.visual-overlay label{font-size:10px}.visual-overlay input,.visual-overlay select{height:34px;padding:0 8px;font-size:13px}.manual-fallback summary{padding:12px 13px}}
 </style>
 </head>
 <body>
@@ -104,13 +110,21 @@
 
       <div class="field stair-type-field" id="emptyStairTypeField">
         <label for="stairType">Тип лестницы</label>
-        <div class="visual-choice stair-type-choice" data-target="stairType">
-          <button type="button" class="visual-card selected" data-value="straight"><span>↗</span><b>Прямая</b><small>Классическая одномаршевая</small></button>
-          <button type="button" class="visual-card" data-value="l_turn_landing"><span>└</span><b>Г-образная с площадкой</b><small>Поворот 90°</small></button>
-          <button type="button" class="visual-card" data-value="l_turn_winders"><span>⤴</span><b>Г-образная с забежными</b><small>Компактная поворотная</small></button>
-          <button type="button" class="visual-card" data-value="u_turn_landing"><span>∪</span><b>П-образная с площадкой</b><small>Разворот 180°</small></button>
-          <button type="button" class="visual-card" data-value="u_turn_winders"><span>⤿</span><b>П-образная с забежными</b><small>Компактный разворот</small></button>
+        <div class="visual-tab-group cols-3" data-tab-target="shapeType">
+          <button type="button" class="visual-tab active" data-value="straight">Прямая</button>
+          <button type="button" class="visual-tab" data-value="l">Г-образная</button>
+          <button type="button" class="visual-tab" data-value="u">П-образная</button>
         </div>
+        <div class="visual-tab-helper">Сначала выберите общую конфигурацию лестницы.</div>
+        <div class="field hidden" id="shapeTurnField" style="margin-top:12px">
+          <label for="shapeTurnMode">Тип поворота</label>
+          <div class="visual-tab-group cols-2" data-tab-target="shapeTurnMode">
+            <button type="button" class="visual-tab active" data-value="landing">С площадкой</button>
+            <button type="button" class="visual-tab" data-value="winders">С забежными</button>
+          </div>
+        </div>
+        <input type="hidden" id="shapeType" value="straight">
+        <input type="hidden" id="shapeTurnMode" value="landing">
         <input type="hidden" id="stairType" value="straight">
       </div>
 
@@ -118,7 +132,7 @@
 
       <section class="visual-dimension-panel" aria-labelledby="visualDimensionTitle">
         <h3 id="visualDimensionTitle">Интерактивная схема размеров</h3>
-        <p>Вводите ключевые размеры прямо на схеме. Переключайте вид сверху и вид сбоку, чтобы было понятно, где именно измерять.</p>
+        <p>Вводите основные размеры прямо в схеме. Переключайте вид сверху и вид сбоку, чтобы быстрее понять, что и где измерять.</p>
         <div class="visual-dimension-switch" role="tablist" aria-label="Переключение схемы размеров">
           <button type="button" class="visual-switch-btn active" data-visual-view="plan">Вид сверху</button>
           <button type="button" class="visual-switch-btn" data-visual-view="side">Вид сбоку</button>
@@ -137,29 +151,36 @@
             <div class="visual-overlay-layer" id="visualSideOverlays"></div>
           </div>
         </article>
-        <div class="visual-dimension-tip"><b>Подсказка Tekstura.</b> Основной ввод размеров — через схему. Ручные поля ниже оставлены только как резервный режим, если удобнее без графики.</div>
+        <div class="visual-dimension-tip"><b>Подсказка Tekstura.</b> Основной ввод размеров делайте в схеме. Ниже оставлены только параметры, которые реже меняют во время первого замера.</div>
       </section>
 
       <div id="readyFlowFields" class="hidden">
         <div class="field">
           <label for="configurationType">Конфигурация</label>
-          <div class="visual-choice" data-target="configurationType">
-            <button type="button" class="visual-card selected" data-value="straight"><span>↗</span><b>Прямая</b></button>
-            <button type="button" class="visual-card" data-value="l_shaped"><span>└</span><b>Г-образная</b></button>
-            <button type="button" class="visual-card" data-value="u_shaped"><span>∪</span><b>П-образная</b></button>
+          <div class="visual-tab-group cols-3" data-tab-target="configurationType">
+            <button type="button" class="visual-tab active" data-value="straight">Прямая</button>
+            <button type="button" class="visual-tab" data-value="l_shaped">Г-образная</button>
+            <button type="button" class="visual-tab" data-value="u_shaped">П-образная</button>
           </div>
           <input type="hidden" id="configurationType" value="straight">
         </div>
+        <div class="field hidden" id="turnTypeField">
+          <label for="turnType">Тип поворота</label>
+          <div class="visual-tab-group cols-2" data-tab-target="turnType">
+            <button type="button" class="visual-tab active" data-value="landing">Площадка</button>
+            <button type="button" class="visual-tab" data-value="winders">Забежные</button>
+          </div>
+          <input type="hidden" id="turnType" value="landing">
+        </div>
         <div class="grid">
-          <div class="field hidden" id="turnTypeField"><label for="turnType">Тип поворота</label><select id="turnType"><option value="landing">Площадка</option><option value="winders">Забежные</option></select></div>
-          <div class="field"><label for="stepCount">Количество ступеней</label><input id="stepCount" type="number" placeholder="15"></div>
-          <div class="field"><label for="readyMarchWidth">Ширина марша (мм)</label><input id="readyMarchWidth" type="number" placeholder="1000"></div>
-          <div class="field"><label for="riserHeight">Высота подступенка (мм)</label><input id="riserHeight" type="number" placeholder="170" required><small class="field-help">Рекомендуемая зона комфорта: 150–190 мм.</small></div>
-          <div class="field"><label for="treadDepth">Глубина проступи (мм)</label><input id="treadDepth" type="number" placeholder="280"></div>
-          <div class="field hidden" id="readyTurnDirectionField"><label for="readyTurnDirection">Направление поворота</label><select id="readyTurnDirection"><option value="left">Левый</option><option value="right">Правый</option></select></div>
-          <div class="field hidden" id="landingLengthField"><label for="landingLength">Длина площадки (мм)</label><input id="landingLength" type="number" placeholder="1000"></div>
-          <div class="field hidden" id="landingWidthField"><label for="landingWidth">Ширина площадки (мм)</label><input id="landingWidth" type="number" placeholder="1000"></div>
-          <div class="field hidden" id="winderCountField"><label for="winderCount">Количество забежных ступеней</label><input id="winderCount" type="number" placeholder="3"></div>
+          <div class="field visual-managed-field" id="readyStepCountField"><label for="stepCount">Количество ступеней</label><input id="stepCount" type="number" placeholder="15"></div>
+          <div class="field visual-managed-field" id="readyMarchWidthField"><label for="readyMarchWidth">Ширина марша (мм)</label><input id="readyMarchWidth" type="number" placeholder="1000"></div>
+          <div class="field visual-managed-field" id="readyRiserHeightField"><label for="riserHeight">Высота подступенка (мм)</label><input id="riserHeight" type="number" placeholder="170" required><small class="field-help">Рекомендуемая зона комфорта: 150–190 мм.</small></div>
+          <div class="field visual-managed-field" id="readyTreadDepthField"><label for="treadDepth">Глубина проступи (мм)</label><input id="treadDepth" type="number" placeholder="280"></div>
+          <div class="field visual-managed-field hidden" id="readyTurnDirectionField"><label for="readyTurnDirection">Направление поворота</label><select id="readyTurnDirection"><option value="left">Левый</option><option value="right">Правый</option></select></div>
+          <div class="field visual-managed-field hidden" id="landingLengthField"><label for="landingLength">Длина площадки (мм)</label><input id="landingLength" type="number" placeholder="1000"></div>
+          <div class="field visual-managed-field hidden" id="landingWidthField"><label for="landingWidth">Ширина площадки (мм)</label><input id="landingWidth" type="number" placeholder="1000"></div>
+          <div class="field visual-managed-field hidden" id="winderCountField"><label for="winderCount">Количество забежных ступеней</label><input id="winderCount" type="number" placeholder="3"></div>
           <div class="field"><label for="readyMaterial">Материал ступеней / площадки</label><select id="readyMaterial"><option value="ash">Ясень</option><option value="oak">Дуб</option><option value="pine">Сосна</option><option value="mdf">МДФ</option></select></div>
           <div class="field"><label for="readyRailingType">Тип ограждения</label><select id="readyRailingType"><option value="none">Без ограждения</option><option value="round_tube_16mm">Круглые трубки 16 мм</option><option value="mdf">МДФ</option><option value="glass">Стекло</option><option value="pattern_2d">2D узор</option><option value="custom">Своё / по договорённости</option></select></div>
           <div class="field"><label for="topFloorRailingLength">Прямое ограждение верхнего этажа (м)</label><input id="topFloorRailingLength" type="number" step="0.1" placeholder="2.4"></div>
@@ -185,7 +206,7 @@
         <summary>Ручные поля замера<span class="manual-fallback__hint">Откройте только если хотите ввести размеры без схемы</span></summary>
         <div class="manual-fallback__body">
           <div class="grid" id="emptyOpeningGrid">
-            <div class="field" id="turnDirectionField"><label for="turnDirection">Направление поворота</label><select id="turnDirection"><option value="left">Левый</option><option value="right">Правый</option></select></div>
+            <div class="field"><label for="turnDirection">Направление поворота</label><select id="turnDirection"><option value="left">Левый</option><option value="right">Правый</option></select></div>
             <div class="field"><label for="floorHeight">Высота этаж-этаж (мм)</label><input id="floorHeight" type="number" placeholder="3000"><small class="field-help">Измерение от чистового пола нижнего этажа до чистового пола верхнего.</small></div>
             <div class="field"><label for="openingLength">Длина проёма (мм)</label><input id="openingLength" type="number" placeholder="4200"><small class="field-help">Полезная длина зоны, в которую должен поместиться марш/марши.</small></div>
             <div class="field"><label for="openingWidth">Ширина проёма (мм)</label><input id="openingWidth" type="number" placeholder="2100"><small class="field-help">Нужна для разворота и комфортного прохода, особенно для Г/П-образных схем.</small></div>

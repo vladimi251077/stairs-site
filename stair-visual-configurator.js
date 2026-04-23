@@ -24,7 +24,26 @@ function getMode() {
   return $('baseCondition')?.value || 'empty_opening';
 }
 
+function syncEmptyOpeningType() {
+  const shape = $('shapeType')?.value || 'straight';
+  const turn = $('shapeTurnMode')?.value || 'landing';
+  const stairType = $('stairType');
+  const turnField = $('shapeTurnField');
+  if (turnField) turnField.classList.toggle('hidden', shape === 'straight');
+  if (!stairType) return;
+  const next = shape === 'straight'
+    ? 'straight'
+    : shape === 'l'
+      ? (turn === 'winders' ? 'l_turn_winders' : 'l_turn_landing')
+      : (turn === 'winders' ? 'u_turn_winders' : 'u_turn_landing');
+  if (stairType.value !== next) {
+    stairType.value = next;
+    stairType.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+}
+
 function getPlanType() {
+  syncEmptyOpeningType();
   if (getMode() === 'ready_frame') {
     const cfg = $('configurationType')?.value || 'straight';
     const turn = $('turnType')?.value || 'landing';
@@ -62,13 +81,6 @@ function originalField(key) {
 
 function esc(text) {
   return String(text ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-function valueOf(key, fallback = '—') {
-  const field = originalField(key);
-  if (!field) return fallback;
-  if (field.tagName === 'SELECT') return field.options[field.selectedIndex]?.text || fallback;
-  return field.value || fallback;
 }
 
 function numericOf(key, fallback = 0) {
@@ -170,7 +182,7 @@ function buildSideScene() {
     return `<path class="sv-shape" d="M${x} ${baseY} L${x} ${y} L${x + stepW} ${y}"></path>`;
   }).join('');
   const shared = `<line class="sv-line" x1="82" y1="306" x2="500" y2="306"></line><line class="sv-line" x1="82" y1="92" x2="500" y2="92"></line>${stairs}`;
-  if (mode === 'ready_frame') {
+  if (getMode() === 'ready_frame') {
     return {
       svg: `${shared}${dimGroup('riserHeight',356,212,356,168,LABELS.riserHeight,448,172)}${dimGroup('treadDepth',326,234,382,234,LABELS.treadDepth,468,234)}${dimGroup('stepCount',430,120,470,120,LABELS.stepCount,470,104)}<text class="sv-muted" x="92" y="332">Удалённый замер существующего основания</text>`,
       overlays: [
@@ -182,12 +194,13 @@ function buildSideScene() {
   }
   return {
     svg: `${shared}${dimGroup('floorHeight',90,306,90,92,LABELS.floorHeight,90,80)}${dimGroup('slabThickness',454,92,454,58,LABELS.slabThickness,454,46)}${dimGroup('topFinishThickness',402,114,446,114,LABELS.topFinishThickness,470,114)}${dimGroup('bottomFinishThickness',122,306,162,306,LABELS.bottomFinishThickness,182,330)}<text class="sv-muted" x="312" y="332">Ввод по проектному проёму и чистовым отметкам</text>`,
-    overlays: [
-      { key: 'floorHeight', x: '12%', y: '36%', width: '154px' },
-      { key: 'slabThickness', x: '84%', y: '12%', width: '148px' },
-      { key: 'topFinishThickness', x: '84%', y: '36%', width: '148px' },
-      { key: 'bottomFinishThickness', x: '12%', y: '84%', width: '148px' }
-    ]
+      overlays: [
+        { key: 'floorHeight', x: '12%', y: '36%', width: '154px' },
+        { key: 'slabThickness', x: '84%', y: '12%', width: '148px' },
+        { key: 'topFinishThickness', x: '84%', y: '36%', width: '148px' },
+        { key: 'bottomFinishThickness', x: '12%', y: '84%', width: '148px' }
+      ]
+    };
   };
 }
 
@@ -210,8 +223,7 @@ function overlayControl(def) {
   }
   const type = original.type === 'number' ? 'number' : 'text';
   const step = original.step ? ` step="${esc(original.step)}"` : '';
-  const value = original.value || '';
-  return `<div class="visual-overlay${active}" data-target="${esc(targetId)}" style="${style}"><label>${esc(LABELS[def.key])}</label><input type="${type}" data-sync-target="${esc(targetId)}" value="${esc(value)}"${step}></div>`;
+  return `<div class="visual-overlay${active}" data-target="${esc(targetId)}" style="${style}"><label>${esc(LABELS[def.key])}</label><input type="${type}" data-sync-target="${esc(targetId)}" value="${esc(original.value || '')}"${step}></div>`;
 }
 
 function renderOverlays(containerId, overlays) {
@@ -234,26 +246,6 @@ function renderOverlays(containerId, overlays) {
       render();
     });
   });
-  container.querySelectorAll('.visual-overlay').forEach((card) => {
-    card.addEventListener('click', () => {
-      const targetId = card.getAttribute('data-target');
-      activeTarget = targetId || '';
-      render();
-      card.querySelector('input,select')?.focus();
-    });
-  });
-}
-
-function renderPlan() {
-  const scene = buildPlanScene(getPlanType());
-  renderSvg('visualPlanMount', scene, 'Интерактивная схема размеров, вид сверху');
-  renderOverlays('visualPlanOverlays', scene.overlays);
-}
-
-function renderSide() {
-  const scene = buildSideScene();
-  renderSvg('visualSideMount', scene, 'Интерактивная схема размеров, вид сбоку');
-  renderOverlays('visualSideOverlays', scene.overlays);
 }
 
 function bindSvgClicks(rootId) {
@@ -266,12 +258,28 @@ function bindSvgClicks(rootId) {
     if (!targetId) return;
     activeTarget = targetId;
     render();
-    setTimeout(() => {
-      const overlay = document.querySelector(`.visual-overlay[data-target="${CSS.escape(targetId)}"] input, .visual-overlay[data-target="${CSS.escape(targetId)}"] select`);
-      overlay?.focus();
-    }, 0);
+    setTimeout(() => document.querySelector(`.visual-overlay[data-target="${CSS.escape(targetId)}"] input, .visual-overlay[data-target="${CSS.escape(targetId)}"] select`)?.focus(), 0);
   });
   root.dataset.bound = '1';
+}
+
+function bindTabGroups() {
+  document.querySelectorAll('[data-tab-target]').forEach((group) => {
+    if (group.dataset.bound === '1') return;
+    const hiddenId = group.getAttribute('data-tab-target');
+    const hidden = $(hiddenId);
+    const update = (value) => {
+      if (!hidden) return;
+      hidden.value = value;
+      hidden.dispatchEvent(new Event('change', { bubbles: true }));
+      group.querySelectorAll('[data-value]').forEach((btn) => btn.classList.toggle('active', btn.getAttribute('data-value') === value));
+      if (hiddenId === 'shapeType' || hiddenId === 'shapeTurnMode') syncEmptyOpeningType();
+      render();
+    };
+    group.querySelectorAll('[data-value]').forEach((button) => button.addEventListener('click', () => update(button.getAttribute('data-value') || '')));
+    update(hidden?.value || group.querySelector('[data-value]')?.getAttribute('data-value') || '');
+    group.dataset.bound = '1';
+  });
 }
 
 function bindViewSwitches() {
@@ -291,16 +299,22 @@ function updateViewState() {
 }
 
 function render() {
-  renderPlan();
-  renderSide();
+  syncEmptyOpeningType();
+  const planScene = buildPlanScene(getPlanType());
+  renderSvg('visualPlanMount', planScene, 'Интерактивная схема размеров, вид сверху');
+  renderOverlays('visualPlanOverlays', planScene.overlays);
+  const sideScene = buildSideScene();
+  renderSvg('visualSideMount', sideScene, 'Интерактивная схема размеров, вид сбоку');
+  renderOverlays('visualSideOverlays', sideScene.overlays);
   bindSvgClicks('visualPlanMount');
   bindSvgClicks('visualSideMount');
   bindViewSwitches();
+  bindTabGroups();
   updateViewState();
 }
 
 function attachWatchers() {
-  ['baseCondition','stairType','configurationType','turnType','turnDirection','readyTurnDirection','openingLength','openingWidth','marchWidth','landingLength','landingWidth','floorHeight','slabThickness','topFinishThickness','bottomFinishThickness','readyMarchWidth','riserHeight','treadDepth','stepCount','winderCount'].forEach((id) => {
+  ['baseCondition','baseSubtype','stairType','shapeType','shapeTurnMode','configurationType','turnType','turnDirection','readyTurnDirection','openingLength','openingWidth','marchWidth','landingLength','landingWidth','floorHeight','slabThickness','topFinishThickness','bottomFinishThickness','readyMarchWidth','riserHeight','treadDepth','stepCount','winderCount'].forEach((id) => {
     const element = $(id);
     if (!element) return;
     element.addEventListener('input', render);
