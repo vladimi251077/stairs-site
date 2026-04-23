@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Проекты лестниц — портфолио Tekstura</title>
   <meta name="description" content="Реализованные проекты премиальных лестниц Tekstura: современные решения для частных домов, вилл и интерьерных пространств.">
   <link rel="canonical" href="https://tekstura.shop/projects.html">
@@ -14,108 +14,483 @@
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/supabase-config.js"></script>
-  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/stair-configurator.css">
   <style>
-    .projects-wrap{max-width:1140px;margin:0 auto;padding:30px 16px 60px}
-    .projects-top{display:flex;justify-content:space-between;gap:16px;align-items:flex-end;flex-wrap:wrap;margin-bottom:22px}
-    .projects-title p{max-width:720px;color:#c9b8a4;margin:8px 0 0}
-    .chip{border:1px solid rgba(255,255,255,.18);padding:8px 12px;border-radius:999px;font-size:14px;color:#ead3b5;background:rgba(255,255,255,.03)}
-    .projects-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px}
-    .projects-grid.projects-grid--curated{grid-template-columns:repeat(2,minmax(0,1fr));max-width:900px}
-    .project-card{border:1px solid rgba(255,255,255,.1);border-radius:18px;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.015));text-decoration:none;color:inherit;transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease;display:flex;flex-direction:column}
-    .project-card:hover{transform:translateY(-2px);border-color:rgba(232,200,162,.44);box-shadow:0 16px 28px rgba(0,0,0,.2)}
-    .project-card img{width:100%;height:210px;object-fit:cover;background:#201b18}
-    .project-body{padding:15px 16px 16px;display:flex;flex-direction:column;gap:8px}
-    .project-body h2{margin:0;font-size:21px}
-    .project-body p{margin:0;color:#b8aa98;line-height:1.55}
-    .project-note{font-size:12px;color:#ceb79c}
-    .project-tags{display:flex;flex-wrap:wrap;gap:8px}
-    .project-tag{font-size:12px;padding:5px 9px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);color:#dbc2a3}
-    .price{margin-top:4px;font-weight:700;color:#efd8bb}
-    .empty,.state{border:1px dashed rgba(255,255,255,.22);padding:18px;border-radius:16px;color:#c5b39e;background:rgba(255,255,255,.02);grid-column:1/-1;line-height:1.6}
-    .loading-skeleton{height:250px;border-radius:16px;border:1px solid rgba(255,255,255,.08);background:linear-gradient(90deg,rgba(255,255,255,.03),rgba(255,255,255,.08),rgba(255,255,255,.03));background-size:200% 100%;animation:shine 1.5s linear infinite}
-    @keyframes shine{to{background-position:-200% 0}}
-    @media(max-width:760px){.projects-wrap{padding:20px 14px 40px}.projects-grid.projects-grid--curated{grid-template-columns:1fr}.project-card img{height:190px}}
+    .projects-hero {
+      background:
+        linear-gradient(118deg, rgba(20, 14, 10, 0.72), rgba(34, 24, 17, 0.58) 56%, rgba(95, 64, 34, 0.3)),
+        url('/assets/design/calculator-hero.jpg') center/cover no-repeat;
+    }
+
+    .projects-hero::before {
+      background:
+        linear-gradient(120deg, rgba(22, 15, 10, 0.58), rgba(38, 26, 18, 0.48) 55%, rgba(88, 61, 34, 0.3));
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .hero-actions .btn-primary,
+    .hero-actions .back-link {
+      text-decoration: none;
+      min-height: 46px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 16px;
+      border-radius: 12px;
+      font-weight: 700;
+    }
+
+    .hero-actions .btn-primary {
+      color: #1d130d;
+      background-image: linear-gradient(132deg, #f3dcb4 0%, #d8ad69 48%, #f0cca0 100%);
+      background-size: 180% 180%;
+      box-shadow: 0 8px 16px rgba(184, 130, 61, 0.22);
+    }
+
+    .hero-actions .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 20px rgba(184, 130, 61, 0.28);
+      filter: saturate(1.06);
+      background-position: 90% 40%;
+    }
+
+    .projects-panel {
+      padding: 26px;
+    }
+
+    .projects-panel__top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 18px;
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+    }
+
+    .projects-panel__top h2 {
+      margin-bottom: 10px;
+    }
+
+    .projects-panel__lead {
+      max-width: 760px;
+      margin: 0;
+      color: var(--text-soft);
+    }
+
+    .projects-panel__meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .project-chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 42px;
+      padding: 0 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-soft);
+      font-size: 13px;
+    }
+
+    .project-chip strong {
+      color: var(--text);
+      margin-left: 6px;
+    }
+
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .project-card {
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 22px;
+      overflow: hidden;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.018)),
+        rgba(48, 34, 24, 0.58);
+      box-shadow: var(--shadow-md);
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      min-height: 100%;
+      transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+    }
+
+    .project-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(240, 210, 163, 0.38);
+      box-shadow: 0 18px 32px rgba(0, 0, 0, 0.22);
+    }
+
+    .project-card__media {
+      position: relative;
+      aspect-ratio: 1.18 / 1;
+      overflow: hidden;
+      background: rgba(21, 16, 12, 0.8);
+    }
+
+    .project-card__media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .project-card__body {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .project-card__title {
+      margin: 0;
+      font-size: clamp(24px, 3vw, 30px);
+      line-height: 1.06;
+      letter-spacing: 0.01em;
+    }
+
+    .project-card__description {
+      margin: 0;
+      color: var(--text-soft);
+      font-size: 16px;
+      line-height: 1.55;
+    }
+
+    .project-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .project-tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 0 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      color: #e4d0b6;
+      font-size: 12px;
+    }
+
+    .project-card__note {
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .project-card__footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-top: auto;
+      padding-top: 4px;
+      flex-wrap: wrap;
+    }
+
+    .project-card__price {
+      font-size: 32px;
+      font-weight: 800;
+      color: #f0d7b7;
+      letter-spacing: 0.01em;
+      line-height: 1;
+    }
+
+    .project-card__cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 0 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(240, 210, 163, 0.2);
+      background: rgba(240, 210, 163, 0.08);
+      color: var(--gold-1);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .state,
+    .empty {
+      grid-column: 1 / -1;
+      border: 1px dashed rgba(255, 255, 255, 0.18);
+      border-radius: 18px;
+      padding: 18px;
+      color: var(--text-soft);
+      background: rgba(255, 255, 255, 0.03);
+      line-height: 1.65;
+    }
+
+    .loading-skeleton {
+      height: 420px;
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: linear-gradient(90deg, rgba(255,255,255,0.03), rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+      background-size: 200% 100%;
+      animation: shine 1.5s linear infinite;
+    }
+
+    .projects-cta {
+      margin-top: 22px;
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 20px;
+    }
+
+    .projects-cta__text {
+      max-width: 680px;
+      color: var(--text-soft);
+    }
+
+    .projects-cta__actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .projects-cta__actions a {
+      text-decoration: none;
+      min-height: 46px;
+      padding: 0 16px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+    }
+
+    .projects-cta__actions .secondary-link {
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text);
+    }
+
+    .projects-cta__actions .secondary-link:hover {
+      color: var(--gold-1);
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    @keyframes shine {
+      to { background-position: -200% 0; }
+    }
+
+    @media (max-width: 760px) {
+      .top {
+        align-items: stretch;
+      }
+
+      .hero-actions {
+        width: 100%;
+        flex-direction: column;
+      }
+
+      .hero-actions .btn-primary,
+      .hero-actions .back-link {
+        width: 100%;
+      }
+
+      .projects-panel {
+        padding: 18px;
+      }
+
+      .projects-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .project-card__body {
+        padding: 16px;
+      }
+
+      .project-card__title {
+        font-size: 22px;
+      }
+
+      .project-card__description {
+        font-size: 15px;
+      }
+
+      .project-card__price {
+        font-size: 26px;
+      }
+
+      .project-card__footer,
+      .projects-cta,
+      .projects-cta__actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .projects-cta__actions a {
+        width: 100%;
+      }
+
+      .loading-skeleton {
+        height: 360px;
+      }
+    }
   </style>
 </head>
 <body>
-  <main class="projects-wrap">
-    <div class="projects-top">
-      <div class="projects-title">
-        <h1>Проекты лестниц Tekstura</h1>
-        <p>Кураторская подборка реализованных решений. Даже при небольшом количестве кейсов мы показываем только актуальные проекты с реальными параметрами и ценовым ориентиром.</p>
+  <main class="wrap">
+    <section class="hero panel projects-hero">
+      <div class="top">
+        <div class="hero-content">
+          <p class="eyebrow">Tekstura Portfolio</p>
+          <h1>Проекты лестниц Tekstura</h1>
+          <p class="hero-subtitle">Кураторская подборка реализованных лестниц для частных домов и вилл. Показываем только актуальные кейсы с реальными параметрами и понятным ценовым ориентиром.</p>
+        </div>
+        <div class="hero-actions">
+          <a class="back-link" href="/">На главную</a>
+          <a class="btn-primary" href="/calculator.html">Рассчитать свою лестницу</a>
+        </div>
       </div>
-      <div class="chip" id="projectsCount" aria-live="polite">Загрузка кураторской коллекции...</div>
-    </div>
-    <section id="projectsRoot" class="projects-grid" aria-live="polite">
-      <div class="loading-skeleton"></div><div class="loading-skeleton"></div><div class="loading-skeleton"></div>
+    </section>
+
+    <section class="panel projects-panel">
+      <div class="projects-panel__top">
+        <div>
+          <h2>Актуальные реализованные проекты</h2>
+          <p class="projects-panel__lead">Даже при небольшом количестве кейсов мы оставляем в публичной подборке только те проекты, которые реально показывают уровень инженерии, реализации и визуального качества Tekstura.</p>
+        </div>
+        <div class="projects-panel__meta">
+          <div class="project-chip">Реализованных кейсов: <strong id="projectsCount">Загрузка...</strong></div>
+        </div>
+      </div>
+
+      <section id="projectsRoot" class="projects-grid" aria-live="polite">
+        <div class="loading-skeleton"></div>
+        <div class="loading-skeleton"></div>
+      </section>
+
+      <div class="projects-cta">
+        <div class="projects-cta__text">Нужна похожая конфигурация под ваш проём? Передайте размеры через калькулятор или оставьте заявку — инженер Tekstura подберёт подходящие реализованные решения и подготовит ориентир по стоимости.</div>
+        <div class="projects-cta__actions">
+          <a class="secondary-link" href="/request.html">Оставить заявку</a>
+          <a class="btn-primary" href="/calculator.html">Перейти в калькулятор</a>
+        </div>
+      </div>
     </section>
   </main>
-<script>
-const cfg = window.SUPABASE_CONFIG;
-const projectsCount = document.getElementById('projectsCount');
-const projectsRoot = document.getElementById('projectsRoot');
-const client = (cfg?.url && cfg?.anonKey && window.supabase)
-  ? window.supabase.createClient(cfg.url, cfg.anonKey)
-  : null;
-const esc = (s='') => String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
-const getPrice = (project) => project.price ? `${project.price} ₽` : (project.price_from ? `от ${project.price_from} ₽` : 'по запросу');
-const tagsFor = (project) => {
-  const tags = [];
-  if (project.category) tags.push(project.category);
-  if (project.staircase_type) tags.push(project.staircase_type);
-  if (project.lead_time) tags.push(`Срок: ${project.lead_time}`);
-  return tags.slice(0, 3);
-};
 
-const render = (items=[]) => {
-  projectsCount.textContent = items.length ? `Реализованных кейсов: ${items.length}` : 'Коллекция обновляется';
-  projectsRoot.classList.toggle('projects-grid--curated', items.length > 0 && items.length <= 2);
+  <script>
+    const cfg = window.SUPABASE_CONFIG;
+    const projectsCount = document.getElementById('projectsCount');
+    const projectsRoot = document.getElementById('projectsRoot');
+    const client = (cfg?.url && cfg?.anonKey && window.supabase)
+      ? window.supabase.createClient(cfg.url, cfg.anonKey)
+      : null;
 
-  if (!items.length) {
-    projectsRoot.innerHTML = '<div class="empty">В публичной коллекции сейчас ограниченное число проектов — показываем только актуальные кейсы. Отправьте заявку, и инженер Tekstura подберёт релевантные реализованные объекты под ваш проём.</div>';
-    return;
-  }
+    const esc = (s = '') => String(s)
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;');
 
-  projectsRoot.innerHTML = items.map((p)=>{
-    const title = p.title || 'Проект Tekstura';
-    const shortDescription = p.short_description || p.description || 'Индивидуальная инженерная проработка и премиальная реализация.';
-    const image = p.cover_image || p.image || '/logo.jpg.png';
-    const tags = tagsFor(p);
-    return `<a class="project-card" href="/project.html?id=${encodeURIComponent(p.id)}">
-      <img src="${esc(image)}" alt="${esc(title)}">
-      <div class="project-body">
-        <h2>${esc(title)}</h2>
-        <p>${esc(shortDescription)}</p>
-        ${tags.length ? `<div class="project-tags">${tags.map((tag)=>`<span class="project-tag">${esc(tag)}</span>`).join('')}</div>` : ''}
-        <div class="project-note">Инженерная реализация и монтаж штатной бригадой Tekstura.</div>
-        <div class="price">${esc(getPrice(p))}</div>
-      </div>
-    </a>`;
-  }).join('');
-};
+    const getPrice = (project) => {
+      if (project.price) return `${project.price} ₽`;
+      if (project.price_from) return `от ${project.price_from} ₽`;
+      return 'по запросу';
+    };
 
-(async function load(){
-  try {
-    if (!client) {
-      projectsCount.textContent = 'Каталог в базовом режиме';
-      projectsRoot.innerHTML = '<div class="state">Каталог временно недоступен. Оставьте заявку — отправим curated-подборку реализованных объектов Tekstura вручную.</div>';
-      return;
-    }
-    const { data, error } = await client.from('projects').select('*').order('created_at', { ascending: false });
-    if (error) throw error;
-    const items = data || [];
-    if (!items.length) return render([]);
-    const { data: images } = await client.from('project_images').select('project_id,image_url,is_cover,sort_order').in('project_id', items.map((i)=>i.id)).order('sort_order', { ascending: true });
-    const coverMap = new Map();
-    (images||[]).forEach((img)=>{ if(!coverMap.has(img.project_id) || img.is_cover) coverMap.set(img.project_id, img.image_url); });
-    render(items.map((p)=>({ ...p, cover_image: coverMap.get(p.id) || p.cover_image })));
-  } catch (err) {
-    console.error(err);
-    projectsCount.textContent='Не удалось загрузить коллекцию';
-    projectsRoot.innerHTML='<div class="state">Не удалось загрузить каталог из Supabase. Оставьте заявку, и инженер отправит актуальные кейсы из реализованных объектов Tekstura.</div>';
-  }
-})();
-</script>
+    const tagsFor = (project) => {
+      const tags = [];
+      if (project.category) tags.push(project.category);
+      if (project.staircase_type) tags.push(project.staircase_type);
+      if (project.lead_time) tags.push(`Срок: ${project.lead_time}`);
+      return tags.slice(0, 3);
+    };
+
+    const render = (items = []) => {
+      projectsCount.textContent = String(items.length || 0);
+
+      if (!items.length) {
+        projectsRoot.innerHTML = '<div class="empty">В публичной коллекции сейчас ограниченное число проектов — показываем только актуальные кейсы. Оставьте заявку или перейдите в калькулятор, и инженер Tekstura подберёт релевантные реализованные объекты под ваш проём.</div>';
+        return;
+      }
+
+      projectsRoot.innerHTML = items.map((project) => {
+        const title = project.title || 'Проект Tekstura';
+        const shortDescription = project.short_description || project.description || 'Индивидуальная инженерная проработка и премиальная реализация.';
+        const image = project.cover_image || project.image || '/logo.jpg.png';
+        const tags = tagsFor(project);
+        return `
+          <a class="project-card" href="/project.html?id=${encodeURIComponent(project.id)}">
+            <div class="project-card__media">
+              <img src="${esc(image)}" alt="${esc(title)}">
+            </div>
+            <div class="project-card__body">
+              <h3 class="project-card__title">${esc(title)}</h3>
+              <p class="project-card__description">${esc(shortDescription)}</p>
+              ${tags.length ? `<div class="project-tags">${tags.map((tag) => `<span class="project-tag">${esc(tag)}</span>`).join('')}</div>` : ''}
+              <div class="project-card__note">Инженерная реализация, производство и монтаж штатной бригадой Tekstura.</div>
+              <div class="project-card__footer">
+                <div class="project-card__price">${esc(getPrice(project))}</div>
+                <div class="project-card__cta">Смотреть проект</div>
+              </div>
+            </div>
+          </a>`;
+      }).join('');
+    };
+
+    (async function load() {
+      try {
+        if (!client) {
+          projectsCount.textContent = '0';
+          projectsRoot.innerHTML = '<div class="state">Каталог временно недоступен. Оставьте заявку — отправим curated-подборку реализованных объектов Tekstura вручную.</div>';
+          return;
+        }
+
+        const { data, error } = await client.from('projects').select('*').order('created_at', { ascending: false });
+        if (error) throw error;
+
+        const items = data || [];
+        if (!items.length) {
+          render([]);
+          return;
+        }
+
+        const { data: images } = await client
+          .from('project_images')
+          .select('project_id,image_url,is_cover,sort_order')
+          .in('project_id', items.map((item) => item.id))
+          .order('sort_order', { ascending: true });
+
+        const coverMap = new Map();
+        (images || []).forEach((img) => {
+          if (!coverMap.has(img.project_id) || img.is_cover) {
+            coverMap.set(img.project_id, img.image_url);
+          }
+        });
+
+        render(items.map((project) => ({ ...project, cover_image: coverMap.get(project.id) || project.cover_image })));
+      } catch (err) {
+        console.error(err);
+        projectsCount.textContent = '0';
+        projectsRoot.innerHTML = '<div class="state">Не удалось загрузить каталог из Supabase. Оставьте заявку, и инженер отправит актуальные кейсы из реализованных объектов Tekstura.</div>';
+      }
+    })();
+  </script>
 </body>
 </html>

@@ -15,17 +15,57 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/supabase-config.js"></script>
 <style>
-.visual-choice{display:grid;gap:10px;grid-template-columns:repeat(3,minmax(0,1fr))}
-.visual-choice.stair-type-choice{grid-template-columns:repeat(5,minmax(0,1fr))}
+.visual-choice{display:grid;gap:10px;grid-template-columns:repeat(2,minmax(0,1fr))}
 .visual-card{border:1px solid var(--line);border-radius:14px;background:rgba(33,23,17,.72);color:var(--text);padding:12px;text-align:left;display:flex;flex-direction:column;gap:6px;cursor:pointer}
 .visual-card b{font-size:14px;line-height:1.25}.visual-card small{color:var(--text-muted)}
 .visual-card span{font-size:20px;color:var(--gold-2);font-weight:700}
 .visual-card.selected{border-color:var(--gold-2);background:rgba(58,39,25,.82);box-shadow:0 10px 20px rgba(0,0,0,.2)}
+.visual-tab-group{display:grid;gap:0;border:1px solid rgba(232,200,162,.2);border-radius:18px;overflow:hidden;background:#090807}
+.visual-tab-group.cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.visual-tab-group.cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.visual-tab{appearance:none;border:none;background:transparent;color:#f0dcc0;padding:14px 10px;font:inherit;font-weight:600;cursor:pointer;border-right:1px solid rgba(232,200,162,.14)}
+.visual-tab:last-child{border-right:none}
+.visual-tab.active{background:linear-gradient(180deg,#e7c08b,#d2a66d);color:#1f140e}
+.visual-tab-helper{margin-top:8px;color:var(--text-muted);font-size:13px}
 .extras-list{display:grid;gap:8px}.extras-list label{display:flex;gap:8px;align-items:flex-start;font-size:14px;color:var(--text-soft)}
 .extras-list input{margin-top:3px}
 .inline-select{margin-top:8px}
-@media (max-width:980px){.visual-choice.stair-type-choice{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:760px){.visual-choice,.visual-choice.stair-type-choice{grid-template-columns:1fr}}
+.ready-frame-note{margin-top:12px;padding:12px 14px;border:1px solid rgba(232,200,162,.22);border-radius:12px;background:rgba(29,21,17,.6);color:var(--text-soft)}
+.visual-dimension-panel{margin:18px 0 22px;padding:18px;border:1px solid rgba(232,200,162,.16);border-radius:26px;background:linear-gradient(180deg,rgba(28,20,16,.98),rgba(12,9,7,.98));box-shadow:0 18px 30px rgba(0,0,0,.18)}
+.visual-dimension-panel h3{margin:0 0 6px;font-size:26px;color:#fff}
+.visual-dimension-panel p{margin:0;color:#e4d6c4}
+.visual-dual-stack{display:grid;gap:16px;margin-top:16px}
+.visual-stage-card{display:block}
+.visual-stage-card h4{margin:0 0 10px;color:#fff;font-size:18px}
+.visual-stage{position:relative;min-height:420px;border:1px solid rgba(232,200,162,.12);border-radius:22px;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.015));overflow:hidden}
+.visual-dimension-svg{min-height:420px}
+.visual-dimension-svg svg{display:block;width:100%;height:auto}
+.visual-overlay-layer{position:absolute;inset:0;pointer-events:none}
+.visual-overlay{position:absolute;transform:translate(-50%,-50%);pointer-events:auto;min-width:136px;max-width:164px;background:rgba(16,12,10,.96);border:1px solid rgba(232,200,162,.28);border-radius:14px;padding:9px 10px;box-shadow:0 12px 22px rgba(0,0,0,.24)}
+.visual-overlay.active{border-color:#e8c8a2;box-shadow:0 12px 22px rgba(0,0,0,.28),0 0 0 1px rgba(232,200,162,.22)}
+.visual-overlay label{display:block;font-size:11px;line-height:1.2;color:#f3dfc3;margin-bottom:6px}
+.visual-overlay input,.visual-overlay select{width:100%;height:36px;border-radius:10px;border:1px solid rgba(232,200,162,.16);background:rgba(255,255,255,.04);color:var(--text);padding:0 10px;font:inherit}
+.visual-overlay input:focus,.visual-overlay select:focus{outline:none;border-color:#e8c8a2;box-shadow:0 0 0 2px rgba(232,200,162,.12)}
+.visual-dimension-tip{margin-top:14px;padding:13px 14px;border-radius:16px;border:1px solid rgba(232,200,162,.12);background:rgba(255,255,255,.03);color:#f0ddd0}
+.visual-dimension-tip b{color:#fff}
+.manual-fallback{margin-top:14px;border:1px solid rgba(232,200,162,.14);border-radius:16px;background:rgba(255,255,255,.03);overflow:hidden}
+.manual-fallback summary{display:flex;flex-direction:column;gap:2px;cursor:pointer;padding:13px 15px;color:var(--text);font-weight:650;list-style:none}
+.manual-fallback summary::-webkit-details-marker{display:none}
+.manual-fallback__hint{font-size:12px;font-weight:500;color:var(--text-muted)}
+.manual-fallback[open] summary{border-bottom:1px solid rgba(232,200,162,.1)}
+.manual-fallback__body{padding:14px 14px 2px}
+.visual-managed-field{display:none!important}
+.visual-dimension-svg .sv-shape{fill:rgba(221,183,134,.16);stroke:#ddb786;stroke-width:1.8}
+.visual-dimension-svg .sv-landing{fill:rgba(133,202,255,.16);stroke:#85caff;stroke-width:1.8}
+.visual-dimension-svg .sv-winder{fill:rgba(191,153,255,.16);stroke:#bf99ff;stroke-width:1.8}
+.visual-dimension-svg .sv-line{stroke:rgba(255,255,255,.22);stroke-width:1.2;stroke-dasharray:5 4}
+.visual-dimension-svg .sv-measure{stroke:#d4ab70;stroke-width:1.5}
+.visual-dimension-svg .sv-anchor{fill:#f0d7b7}
+.visual-dimension-svg .sv-text{fill:#f7ead9;font-size:12px;font-weight:600}
+.visual-dimension-svg .sv-muted{fill:#d8b68d;font-size:11px}
+.visual-dimension-svg .sv-dim-active .sv-measure{stroke:#f1d2a6;stroke-width:2.2}
+.visual-dimension-svg .sv-dim-hit{cursor:pointer}
+@media (max-width:760px){.visual-choice{grid-template-columns:1fr}.visual-tab{padding:12px 8px;font-size:14px}.visual-stage{min-height:340px}.visual-dimension-svg{min-height:340px}.visual-dimension-panel{padding:14px}.visual-overlay{min-width:118px;max-width:142px;padding:8px 8px}.visual-overlay label{font-size:10px}.visual-overlay input,.visual-overlay select{height:34px;padding:0 8px;font-size:13px}.manual-fallback summary{padding:12px 13px}}
 </style>
 </head>
 <body>
@@ -67,65 +107,100 @@
 
       <div class="field stair-type-field" id="emptyStairTypeField">
         <label for="stairType">Тип лестницы</label>
-        <div class="visual-choice stair-type-choice" data-target="stairType">
-          <button type="button" class="visual-card selected" data-value="straight"><span>↗</span><b>Прямая</b><small>Классическая одномаршевая</small></button>
-          <button type="button" class="visual-card" data-value="l_turn_landing"><span>└</span><b>Г-образная с площадкой</b><small>Поворот 90°</small></button>
-          <button type="button" class="visual-card" data-value="l_turn_winders"><span>⤴</span><b>Г-образная с забежными</b><small>Компактная поворотная</small></button>
-          <button type="button" class="visual-card" data-value="u_turn_landing"><span>∪</span><b>П-образная с площадкой</b><small>Разворот 180°</small></button>
-          <button type="button" class="visual-card" data-value="u_turn_winders"><span>⤿</span><b>П-образная с забежными</b><small>Компактный разворот</small></button>
+        <div class="visual-tab-group cols-3" data-tab-target="shapeType">
+          <button type="button" class="visual-tab active" data-value="straight">Прямая</button>
+          <button type="button" class="visual-tab" data-value="l">Г-образная</button>
+          <button type="button" class="visual-tab" data-value="u">П-образная</button>
         </div>
+        <div class="visual-tab-helper">Сначала выберите общую конфигурацию лестницы.</div>
+        <div class="field hidden" id="shapeTurnField" style="margin-top:12px">
+          <label for="shapeTurnMode">Тип поворота</label>
+          <div class="visual-tab-group cols-2" data-tab-target="shapeTurnMode">
+            <button type="button" class="visual-tab active" data-value="landing">С площадкой</button>
+            <button type="button" class="visual-tab" data-value="winders">С забежными</button>
+          </div>
+        </div>
+        <input type="hidden" id="shapeType" value="straight">
+        <input type="hidden" id="shapeTurnMode" value="landing">
         <input type="hidden" id="stairType" value="straight">
       </div>
 
       <div id="stairTypeHint" class="stair-type-hint"></div>
 
+      <section class="visual-dimension-panel" aria-labelledby="visualDimensionTitle">
+        <h3 id="visualDimensionTitle">Интерактивная схема размеров</h3>
+        <p>Укажите размеры лестницы — на схемах показано, что и где измерять.</p>
+        <div class="visual-dual-stack">
+          <article class="visual-stage-card">
+            <h4>Вид сверху</h4>
+            <div class="visual-stage">
+              <div class="visual-dimension-svg" id="visualPlanMount"><svg viewBox="0 0 620 390" role="img" aria-label="Схема размеров, вид сверху"><rect x="16" y="16" width="588" height="358" rx="24" fill="rgba(255,255,255,.02)" stroke="rgba(255,255,255,.12)"></rect><rect class="sv-shape" x="122" y="70" width="70" height="232" rx="10"></rect><rect class="sv-landing" x="192" y="236" width="238" height="66" rx="10"></rect><rect class="sv-shape" x="430" y="70" width="70" height="232" rx="10"></rect><line class="sv-measure" x1="122" y1="186" x2="56" y2="186"></line><line class="sv-measure" x1="192" y1="220" x2="430" y2="220"></line><line class="sv-measure" x1="516" y1="70" x2="516" y2="302"></line><line class="sv-measure" x1="220" y1="328" x2="404" y2="328"></line><line class="sv-measure" x1="192" y1="52" x2="430" y2="52"></line><text class="sv-text" x="56" y="170">Ширина марша</text><text class="sv-text" x="312" y="204">Длина площадки</text><text class="sv-text" x="516" y="56">Ширина площадки</text><text class="sv-text" x="312" y="350">Длина проёма</text><text class="sv-text" x="312" y="36">Ширина проёма</text><text class="sv-muted" x="104" y="344">Левый разворот</text></svg></div>
+              <div class="visual-overlay-layer" id="visualPlanOverlays"></div>
+            </div>
+          </article>
+          <article class="visual-stage-card">
+            <h4>Вид сбоку</h4>
+            <div class="visual-stage">
+              <div class="visual-dimension-svg" id="visualSideMount"><svg viewBox="0 0 620 390" role="img" aria-label="Схема размеров, вид сбоку"><rect x="16" y="16" width="588" height="358" rx="24" fill="rgba(255,255,255,.02)" stroke="rgba(255,255,255,.12)"></rect><line class="sv-line" x1="86" y1="318" x2="500" y2="318"></line><line class="sv-line" x1="86" y1="96" x2="500" y2="96"></line><path class="sv-shape" d="M118 318 L118 302 L145 302"></path><path class="sv-shape" d="M145 318 L145 286 L172 286"></path><path class="sv-shape" d="M172 318 L172 270 L199 270"></path><path class="sv-shape" d="M199 318 L199 254 L226 254"></path><path class="sv-shape" d="M226 318 L226 238 L253 238"></path><path class="sv-shape" d="M253 318 L253 222 L280 222"></path><path class="sv-shape" d="M280 318 L280 206 L307 206"></path><path class="sv-shape" d="M307 318 L307 190 L334 190"></path><path class="sv-shape" d="M334 318 L334 174 L361 174"></path><path class="sv-shape" d="M361 318 L361 158 L388 158"></path><path class="sv-shape" d="M388 318 L388 142 L415 142"></path><path class="sv-shape" d="M415 318 L415 126 L442 126"></path><path class="sv-shape" d="M442 318 L442 110 L469 110"></path><line class="sv-measure" x1="92" y1="318" x2="92" y2="96"></line><line class="sv-measure" x1="454" y1="96" x2="454" y2="60"></line><line class="sv-measure" x1="402" y1="120" x2="448" y2="120"></line><line class="sv-measure" x1="124" y1="318" x2="164" y2="318"></line><text class="sv-text" x="92" y="82">Высота этаж-этаж</text><text class="sv-text" x="454" y="46">Толщина плиты</text><text class="sv-text" x="476" y="120">Финиш сверху</text><text class="sv-text" x="188" y="344">Финиш снизу</text></svg></div>
+              <div class="visual-overlay-layer" id="visualSideOverlays"></div>
+            </div>
+          </article>
+        </div>
+        <div class="visual-dimension-tip"><b>Подсказка Tekstura.</b> Заполняйте размеры прямо по схеме — так проще понять, что и где измерять.</div>
+      </section>
+
       <div id="readyFlowFields" class="hidden">
         <div class="field">
           <label for="configurationType">Конфигурация</label>
-          <div class="visual-choice" data-target="configurationType">
-            <button type="button" class="visual-card selected" data-value="straight"><span>↗</span><b>Прямая</b></button>
-            <button type="button" class="visual-card" data-value="l_shaped"><span>└</span><b>Г-образная</b></button>
-            <button type="button" class="visual-card" data-value="u_shaped"><span>∪</span><b>П-образная</b></button>
+          <div class="visual-tab-group cols-3" data-tab-target="configurationType">
+            <button type="button" class="visual-tab active" data-value="straight">Прямая</button>
+            <button type="button" class="visual-tab" data-value="l_shaped">Г-образная</button>
+            <button type="button" class="visual-tab" data-value="u_shaped">П-образная</button>
           </div>
           <input type="hidden" id="configurationType" value="straight">
         </div>
+        <div class="field hidden" id="turnTypeField">
+          <label for="turnType">Тип поворота</label>
+          <div class="visual-tab-group cols-2" data-tab-target="turnType">
+            <button type="button" class="visual-tab active" data-value="landing">Площадка</button>
+            <button type="button" class="visual-tab" data-value="winders">Забежные</button>
+          </div>
+          <input type="hidden" id="turnType" value="landing">
+        </div>
         <div class="grid">
-          <div class="field hidden" id="turnTypeField"><label for="turnType">Тип поворота</label><select id="turnType"><option value="landing">Площадка</option><option value="winders">Забежные</option></select></div>
-          <div class="field"><label for="stepCount">Количество ступеней</label><input id="stepCount" type="number" placeholder="15"></div>
-          <div class="field"><label for="readyMarchWidth">Ширина марша (мм)</label><input id="readyMarchWidth" type="number" placeholder="1000"></div>
-          <div class="field"><label for="riserHeight">Высота подступенка (мм)</label><input id="riserHeight" type="number" placeholder="170" required><small class="field-help">Рекомендуемая зона комфорта: 150–190 мм.</small></div>
-          <div class="field"><label for="treadDepth">Глубина проступи (мм)</label><input id="treadDepth" type="number" placeholder="280"></div>
-          <div class="field hidden" id="readyTurnDirectionField"><label for="readyTurnDirection">Направление поворота</label><select id="readyTurnDirection"><option value="left">Левый</option><option value="right">Правый</option></select></div>
-          <div class="field hidden" id="landingLengthField"><label for="landingLength">Длина площадки (мм)</label><input id="landingLength" type="number" placeholder="1000"></div>
-          <div class="field hidden" id="landingWidthField"><label for="landingWidth">Ширина площадки (мм)</label><input id="landingWidth" type="number" placeholder="1000"></div>
-          <div class="field hidden" id="winderCountField"><label for="winderCount">Количество забежных ступеней</label><input id="winderCount" type="number" placeholder="3"></div>
+          <div class="field visual-managed-field" id="readyStepCountField"><label for="stepCount">Количество ступеней</label><input id="stepCount" type="number" placeholder="15"></div>
+          <div class="field visual-managed-field" id="readyMarchWidthField"><label for="readyMarchWidth">Ширина марша (мм)</label><input id="readyMarchWidth" type="number" placeholder="1000"></div>
+          <div class="field visual-managed-field" id="readyRiserHeightField"><label for="riserHeight">Высота подступенка (мм)</label><input id="riserHeight" type="number" placeholder="170" required><small class="field-help">Рекомендуемая зона комфорта: 150–190 мм.</small></div>
+          <div class="field visual-managed-field" id="readyTreadDepthField"><label for="treadDepth">Глубина проступи (мм)</label><input id="treadDepth" type="number" placeholder="280"></div>
+          <div class="field visual-managed-field hidden" id="readyTurnDirectionField"><label for="readyTurnDirection">Направление поворота</label><select id="readyTurnDirection"><option value="left">Левый</option><option value="right">Правый</option></select></div>
+          <div class="field visual-managed-field hidden" id="landingLengthField"><label for="landingLength">Длина площадки (мм)</label><input id="landingLength" type="number" placeholder="1000"></div>
+          <div class="field visual-managed-field hidden" id="landingWidthField"><label for="landingWidth">Ширина площадки (мм)</label><input id="landingWidth" type="number" placeholder="1000"></div>
+          <div class="field visual-managed-field hidden" id="winderCountField"><label for="winderCount">Количество забежных ступеней</label><input id="winderCount" type="number" placeholder="3"></div>
+          <div class="field"><label for="readyMaterial">Материал ступеней / площадки</label><select id="readyMaterial"><option value="ash">Ясень</option><option value="oak">Дуб</option><option value="pine">Сосна</option><option value="mdf">МДФ</option></select></div>
+          <div class="field"><label for="readyRailingType">Тип ограждения</label><select id="readyRailingType"><option value="none">Без ограждения</option><option value="round_tube_16mm">Круглые трубки 16 мм</option><option value="mdf">МДФ</option><option value="glass">Стекло</option><option value="pattern_2d">2D узор</option><option value="custom">Своё / по договорённости</option></select></div>
+          <div class="field"><label for="topFloorRailingLength">Прямое ограждение верхнего этажа (м)</label><input id="topFloorRailingLength" type="number" step="0.1" placeholder="2.4"></div>
+          <div class="field"><label for="pricingProfile">Ценовой профиль</label><select id="pricingProfile"><option value="base">Базовый</option><option value="tatarstan">Татарстан</option><option value="moscow">Москва</option></select></div>
           <div class="field"><label for="existingConditionNotes">Состояние существующего основания</label><input id="existingConditionNotes" type="text" placeholder="Например: требуется усиление узлов"></div>
         </div>
-        <div class="field">
-          <label>Объём работ</label>
-          <div class="extras-list">
-            <label><input type="checkbox" name="scopeWork" value="steps_only"> Только ступени</label>
-            <label><input type="checkbox" name="scopeWork" value="steps_risers"> Ступени + подступенки</label>
-            <label><input type="checkbox" name="scopeWork" value="railing"> Ограждение</label>
-            <label><input type="checkbox" name="scopeWork" value="frame_cladding"> Обшивка каркаса</label>
-            <label><input type="checkbox" name="scopeWork" value="finish_coating"> Финиш/покрытие</label>
-            <label><input type="checkbox" name="scopeWork" value="lighting"> Подсветка</label>
-            <label><input type="checkbox" name="scopeWork" value="installation"> Монтаж</label>
-          </div>
-        </div>
+        <div class="ready-frame-note">Ветку «Готовый каркас» используем как удалённый замер и предварительную калькуляцию. Финальный расход материалов и смета подтверждаются инженером Tekstura после замера.</div>
       </div>
 
-      <div class="grid" id="emptyOpeningGrid">
-        <div class="field" id="turnDirectionField"><label for="turnDirection">Направление поворота</label><select id="turnDirection"><option value="left">Левый</option><option value="right">Правый</option></select></div>
-        <div class="field"><label for="floorHeight">Высота этаж-этаж (мм)</label><input id="floorHeight" type="number" placeholder="3000"><small class="field-help">Измерение от чистового пола нижнего этажа до чистового пола верхнего.</small></div>
-        <div class="field"><label for="openingLength">Длина проёма (мм)</label><input id="openingLength" type="number" placeholder="4200"><small class="field-help">Полезная длина зоны, в которую должен поместиться марш/марши.</small></div>
-        <div class="field"><label for="openingWidth">Ширина проёма (мм)</label><input id="openingWidth" type="number" placeholder="2100"><small class="field-help">Нужна для разворота и комфортного прохода, особенно для Г/П-образных схем.</small></div>
-        <div class="field"><label for="marchWidth">Ширина марша (мм)</label><input id="marchWidth" type="number" placeholder="1000"><small class="field-help">Рекомендуем 900–1100 мм для удобства и премиального визуального баланса.</small></div>
-        <div class="field"><label for="slabThickness">Толщина плиты (мм)</label><input id="slabThickness" type="number" placeholder="220"></div>
-        <div class="field"><label for="topFinishThickness">Финиш сверху (мм)</label><input id="topFinishThickness" type="number" placeholder="20"></div>
-        <div class="field"><label for="bottomFinishThickness">Финиш снизу (мм)</label><input id="bottomFinishThickness" type="number" placeholder="20"></div>
-        <div class="field"><label for="deliveryDistance">Расстояние доставки (км)</label><input id="deliveryDistance" type="number" placeholder="20"></div>
-      </div>
+      <details class="manual-fallback" id="emptyOpeningFallback">
+        <summary>Ручные поля замера<span class="manual-fallback__hint">Откройте только если хотите ввести размеры без схемы</span></summary>
+        <div class="manual-fallback__body">
+          <div class="grid" id="emptyOpeningGrid">
+            <div class="field"><label for="turnDirection">Направление поворота</label><select id="turnDirection"><option value="left">Левый</option><option value="right">Правый</option></select></div>
+            <div class="field"><label for="floorHeight">Высота этаж-этаж (мм)</label><input id="floorHeight" type="number" placeholder="3000"><small class="field-help">Измерение от чистового пола нижнего этажа до чистового пола верхнего.</small></div>
+            <div class="field"><label for="openingLength">Длина проёма (мм)</label><input id="openingLength" type="number" placeholder="4200"><small class="field-help">Полезная длина зоны, в которую должен поместиться марш/марши.</small></div>
+            <div class="field"><label for="openingWidth">Ширина проёма (мм)</label><input id="openingWidth" type="number" placeholder="2100"><small class="field-help">Нужна для разворота и комфортного прохода, особенно для Г/П-образных схем.</small></div>
+            <div class="field"><label for="marchWidth">Ширина марша (мм)</label><input id="marchWidth" type="number" placeholder="1000"><small class="field-help">Рекомендуем 900–1100 мм для удобства и премиального визуального баланса.</small></div>
+            <div class="field"><label for="slabThickness">Толщина плиты (мм)</label><input id="slabThickness" type="number" placeholder="220"></div>
+            <div class="field"><label for="topFinishThickness">Финиш сверху (мм)</label><input id="topFinishThickness" type="number" placeholder="20"></div>
+            <div class="field"><label for="bottomFinishThickness">Финиш снизу (мм)</label><input id="bottomFinishThickness" type="number" placeholder="20"></div>
+            <div class="field"><label for="deliveryDistance">Расстояние доставки (км)</label><input id="deliveryDistance" type="number" placeholder="20"></div>
+          </div>
+        </div>
+      </details>
 
       <div class="field" id="frameMaterialField">
         <label for="frameMaterial">Материал каркаса</label>
@@ -152,7 +227,7 @@
       </div>
 
       <div class="actions">
-        <button class="btn-primary" id="toResultsBtn" type="button">Рассчитать геометрию</button>
+        <button class="btn-primary" id="toResultsBtn" type="button">Продолжить расчёт</button>
       </div>
     </section>
 
@@ -194,5 +269,22 @@
   </section>
 </main>
 <script type="module" src="/stair-configurator.js"></script>
+<script type="module" src="/stair-visual-configurator.js"></script>
+<script type="module" src="/ready-frame-overlay.js"></script>
+<script>
+(function(){
+  const baseCondition = document.getElementById('baseCondition');
+  const fallback = document.getElementById('emptyOpeningFallback');
+  if(!baseCondition || !fallback) return;
+  const sync = () => {
+    const isEmpty = baseCondition.value === 'empty_opening';
+    fallback.classList.toggle('hidden', !isEmpty);
+    if (!isEmpty) fallback.removeAttribute('open');
+  };
+  baseCondition.addEventListener('change', sync);
+  document.querySelectorAll('[data-target="baseCondition"] .visual-card').forEach((card)=>card.addEventListener('click', ()=>setTimeout(sync,0)));
+  sync();
+})();
+</script>
 </body>
 </html>
