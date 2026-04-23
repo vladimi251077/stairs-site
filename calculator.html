@@ -25,28 +25,38 @@
 .extras-list input{margin-top:3px}
 .inline-select{margin-top:8px}
 .ready-frame-note{margin-top:12px;padding:12px 14px;border:1px solid rgba(232,200,162,.22);border-radius:12px;background:rgba(29,21,17,.6);color:var(--text-soft)}
-.visual-dimension-panel{margin:18px 0 22px;padding:16px;border:1px solid rgba(232,200,162,.16);border-radius:18px;background:linear-gradient(180deg,rgba(41,29,22,.88),rgba(25,19,15,.94));box-shadow:0 18px 30px rgba(0,0,0,.18)}
-.visual-dimension-panel h3{margin:0 0 6px;font-size:22px;color:var(--text)}
+.visual-dimension-panel{margin:18px 0 22px;padding:18px;border:1px solid rgba(232,200,162,.16);border-radius:22px;background:linear-gradient(180deg,rgba(41,29,22,.88),rgba(21,16,13,.96));box-shadow:0 18px 30px rgba(0,0,0,.18)}
+.visual-dimension-panel h3{margin:0 0 6px;font-size:24px;color:var(--text)}
 .visual-dimension-panel p{margin:0;color:var(--text-soft)}
-.visual-dimension-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
-.visual-dimension-card{border:1px solid rgba(232,200,162,.14);border-radius:16px;background:rgba(255,255,255,.03);padding:14px}
-.visual-dimension-card h4{margin:0 0 10px;color:var(--text);font-size:16px}
-.visual-dimension-svg{width:100%;min-height:260px;overflow:hidden;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(232,200,162,.12)}
-.visual-dimension-tip{margin-top:14px;padding:12px 14px;border-radius:14px;border:1px solid rgba(232,200,162,.12);background:rgba(255,255,255,.03);color:var(--text-soft)}
-.visual-dimension-tip b{color:var(--text)}
+.visual-dimension-switch{display:flex;gap:10px;margin:16px 0 14px}
+.visual-switch-btn{flex:1;border:1px solid rgba(232,200,162,.18);border-radius:999px;background:rgba(255,255,255,.03);color:var(--text-soft);padding:10px 14px;font:inherit;cursor:pointer}
+.visual-switch-btn.active{background:linear-gradient(180deg,#e7c08b,#d2a66d);color:#1f140e;border-color:rgba(232,200,162,.42);font-weight:700}
+.visual-stage-card{display:none}
+.visual-stage-card.active{display:block}
+.visual-stage-card h4{margin:0 0 10px;color:var(--text);font-size:18px}
+.visual-stage{position:relative;min-height:430px;border:1px solid rgba(232,200,162,.12);border-radius:18px;background:rgba(255,255,255,.03);overflow:hidden}
+.visual-dimension-svg{min-height:430px}
 .visual-dimension-svg svg{display:block;width:100%;height:auto}
-.visual-dimension-svg .sv-shape{fill:rgba(221,183,134,.18);stroke:#ddb786;stroke-width:1.6}
-.visual-dimension-svg .sv-landing{fill:rgba(133,202,255,.18);stroke:#85caff;stroke-width:1.6}
-.visual-dimension-svg .sv-winder{fill:rgba(191,153,255,.18);stroke:#bf99ff;stroke-width:1.6}
+.visual-overlay-layer{position:absolute;inset:0;pointer-events:none}
+.visual-overlay{position:absolute;transform:translate(-50%,-50%);pointer-events:auto;min-width:136px;max-width:164px;background:rgba(16,12,10,.94);border:1px solid rgba(232,200,162,.24);border-radius:14px;padding:9px 10px;box-shadow:0 12px 22px rgba(0,0,0,.24)}
+.visual-overlay.active{border-color:#e8c8a2;box-shadow:0 12px 22px rgba(0,0,0,.28),0 0 0 1px rgba(232,200,162,.22)}
+.visual-overlay label{display:block;font-size:11px;line-height:1.2;color:#f3dfc3;margin-bottom:6px}
+.visual-overlay input,.visual-overlay select{width:100%;height:36px;border-radius:10px;border:1px solid rgba(232,200,162,.16);background:rgba(255,255,255,.04);color:var(--text);padding:0 10px;font:inherit}
+.visual-overlay input:focus,.visual-overlay select:focus{outline:none;border-color:#e8c8a2;box-shadow:0 0 0 2px rgba(232,200,162,.12)}
+.visual-dimension-tip{margin-top:14px;padding:13px 14px;border-radius:14px;border:1px solid rgba(232,200,162,.12);background:rgba(255,255,255,.03);color:var(--text-soft)}
+.visual-dimension-tip b{color:var(--text)}
+.visual-dimension-svg .sv-shape{fill:rgba(221,183,134,.18);stroke:#ddb786;stroke-width:1.8}
+.visual-dimension-svg .sv-landing{fill:rgba(133,202,255,.18);stroke:#85caff;stroke-width:1.8}
+.visual-dimension-svg .sv-winder{fill:rgba(191,153,255,.18);stroke:#bf99ff;stroke-width:1.8}
 .visual-dimension-svg .sv-line{stroke:rgba(255,255,255,.36);stroke-width:1.2;stroke-dasharray:5 4}
+.visual-dimension-svg .sv-measure{stroke:#d4ab70;stroke-width:1.5}
 .visual-dimension-svg .sv-anchor{fill:#f0d7b7}
-.visual-dimension-svg .sv-badge{fill:rgba(24,17,14,.96);stroke:rgba(232,200,162,.28);stroke-width:1.2;cursor:pointer;transition:all .2s ease}
-.visual-dimension-svg .sv-badge.active{fill:rgba(77,56,36,.98);stroke:#e8c8a2}
-.visual-dimension-svg .sv-label{fill:#f7ead9;font-size:10px;font-weight:600;pointer-events:none}
-.visual-dimension-svg .sv-value{fill:#d9b88c;font-size:10px;pointer-events:none}
+.visual-dimension-svg .sv-text{fill:#f7ead9;font-size:12px;font-weight:600}
+.visual-dimension-svg .sv-muted{fill:#d8b68d;font-size:11px}
+.visual-dimension-svg .sv-dim-active .sv-measure{stroke:#f1d2a6;stroke-width:2.2}
+.visual-dimension-svg .sv-dim-hit{cursor:pointer}
 @media (max-width:980px){.visual-choice.stair-type-choice{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:860px){.visual-dimension-grid{grid-template-columns:1fr}}
-@media (max-width:760px){.visual-choice,.visual-choice.stair-type-choice{grid-template-columns:1fr}}
+@media (max-width:760px){.visual-choice,.visual-choice.stair-type-choice{grid-template-columns:1fr}.visual-stage{min-height:360px}.visual-dimension-svg{min-height:360px}.visual-dimension-panel{padding:14px}.visual-overlay{min-width:122px;max-width:146px;padding:8px 9px}.visual-overlay label{font-size:10px}.visual-overlay input,.visual-overlay select{height:34px;padding:0 8px;font-size:13px}}
 </style>
 </head>
 <body>
@@ -102,18 +112,26 @@
 
       <section class="visual-dimension-panel" aria-labelledby="visualDimensionTitle">
         <h3 id="visualDimensionTitle">Интерактивная схема размеров</h3>
-        <p>Нажмите на подпись на схеме — откроется нужное поле. Схема меняется по типу лестницы, площадке и забежным ступеням.</p>
-        <div class="visual-dimension-grid">
-          <article class="visual-dimension-card">
-            <h4>Вид сверху</h4>
-            <div class="visual-dimension-svg" id="visualPlanMount"></div>
-          </article>
-          <article class="visual-dimension-card">
-            <h4>Вид сбоку</h4>
-            <div class="visual-dimension-svg" id="visualSideMount"></div>
-          </article>
+        <p>Вводите ключевые размеры прямо на схеме. Переключайте вид сверху и вид сбоку, чтобы было понятно, где именно измерять.</p>
+        <div class="visual-dimension-switch" role="tablist" aria-label="Переключение схемы размеров">
+          <button type="button" class="visual-switch-btn active" data-visual-view="plan">Вид сверху</button>
+          <button type="button" class="visual-switch-btn" data-visual-view="side">Вид сбоку</button>
         </div>
-        <div class="visual-dimension-tip"><b>Подсказка Tekstura.</b> Для обычного пользователя так проще понять, где измерять ширину марша, размеры площадки, проёма и высоту этаж-этаж.</div>
+        <article class="visual-stage-card active" data-visual-stage="plan">
+          <h4>Вид сверху</h4>
+          <div class="visual-stage">
+            <div class="visual-dimension-svg" id="visualPlanMount"></div>
+            <div class="visual-overlay-layer" id="visualPlanOverlays"></div>
+          </div>
+        </article>
+        <article class="visual-stage-card" data-visual-stage="side">
+          <h4>Вид сбоку</h4>
+          <div class="visual-stage">
+            <div class="visual-dimension-svg" id="visualSideMount"></div>
+            <div class="visual-overlay-layer" id="visualSideOverlays"></div>
+          </div>
+        </article>
+        <div class="visual-dimension-tip"><b>Подсказка Tekstura.</b> Сначала введите размеры в схеме, а затем при необходимости уточните остальные параметры ниже. Так обычному пользователю проще понять, что и где измерять.</div>
       </section>
 
       <div id="readyFlowFields" class="hidden">

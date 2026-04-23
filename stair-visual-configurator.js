@@ -1,6 +1,6 @@
 const $ = (id) => document.getElementById(id);
 
-const PLAN_LABELS = {
+const LABELS = {
   openingLength: 'Длина проёма',
   openingWidth: 'Ширина проёма',
   marchWidth: 'Ширина марша',
@@ -8,6 +8,8 @@ const PLAN_LABELS = {
   landingWidth: 'Ширина площадки',
   floorHeight: 'Высота этаж-этаж',
   slabThickness: 'Толщина плиты',
+  topFinishThickness: 'Финиш сверху',
+  bottomFinishThickness: 'Финиш снизу',
   riserHeight: 'Высота подступенка',
   treadDepth: 'Глубина проступи',
   stepCount: 'Количество ступеней',
@@ -16,6 +18,7 @@ const PLAN_LABELS = {
 };
 
 let activeTarget = '';
+let activeView = 'plan';
 
 function getMode() {
   return $('baseCondition')?.value || 'empty_opening';
@@ -34,35 +37,44 @@ function getPlanType() {
 
 function getFieldId(name) {
   const ready = getMode() === 'ready_frame';
-  const map = {
+  return {
     openingLength: ready ? 'landingLength' : 'openingLength',
     openingWidth: ready ? 'landingWidth' : 'openingWidth',
     marchWidth: ready ? 'readyMarchWidth' : 'marchWidth',
     landingLength: 'landingLength',
     landingWidth: 'landingWidth',
-    floorHeight: 'floorHeight',
+    floorHeight: ready ? 'riserHeight' : 'floorHeight',
     slabThickness: 'slabThickness',
+    topFinishThickness: 'topFinishThickness',
+    bottomFinishThickness: 'bottomFinishThickness',
     riserHeight: 'riserHeight',
     treadDepth: 'treadDepth',
     stepCount: 'stepCount',
     winderCount: 'winderCount',
     turnDirection: ready ? 'readyTurnDirection' : 'turnDirection'
-  };
-  return map[name];
+  }[name];
 }
 
-function valueOf(name) {
-  const id = getFieldId(name);
-  const el = id ? $(id) : null;
-  if (!el) return getMode() === 'ready_frame' && name === 'floorHeight' ? 'по факту' : '—';
-  if (el.tagName === 'SELECT') return el.options[el.selectedIndex]?.text || el.value;
-  return el.value || '—';
+function originalField(key) {
+  const id = getFieldId(key);
+  return id ? $(id) : null;
 }
 
-function numericOf(name, fallback = 0) {
-  const id = getFieldId(name);
-  const raw = Number($(id)?.value || 0);
-  return raw > 0 ? raw : fallback;
+function esc(text) {
+  return String(text ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function valueOf(key, fallback = '—') {
+  const field = originalField(key);
+  if (!field) return fallback;
+  if (field.tagName === 'SELECT') return field.options[field.selectedIndex]?.text || fallback;
+  return field.value || fallback;
+}
+
+function numericOf(key, fallback = 0) {
+  const field = originalField(key);
+  const value = Number(field?.value || 0);
+  return Number.isFinite(value) && value > 0 ? value : fallback;
 }
 
 function approxStepCount() {
@@ -70,116 +82,181 @@ function approxStepCount() {
   return Math.max(12, Math.round(numericOf('floorHeight', 3000) / 175));
 }
 
-function esc(text) {
-  return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+function dimGroup(targetKey, x1, y1, x2, y2, label, tx, ty) {
+  const targetId = getFieldId(targetKey);
+  const active = activeTarget === targetId ? ' sv-dim-active' : '';
+  return `<g class="sv-dim-hit${active}" data-target="${esc(targetId || '')}"><line class="sv-measure" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/><circle class="sv-anchor" cx="${x1}" cy="${y1}" r="3"></circle><circle class="sv-anchor" cx="${x2}" cy="${y2}" r="3"></circle><text class="sv-text" x="${tx}" y="${ty}" text-anchor="middle">${esc(label)}</text></g>`;
 }
 
-function badge(labelKey, value, x, y, tx, ty) {
-  const target = getFieldId(labelKey);
-  const active = activeTarget === target ? ' active' : '';
-  const width = 128;
-  return `<line class="sv-line" x1="${x}" y1="${y}" x2="${tx}" y2="${ty}"/><circle class="sv-anchor" cx="${x}" cy="${y}" r="3"/><g class="sv-hit" data-target="${target || ''}"><rect class="sv-badge${active}" x="${tx - width / 2}" y="${ty - 18}" rx="11" ry="11" width="${width}" height="36"></rect><text class="sv-label" x="${tx}" y="${ty - 4}" text-anchor="middle">${esc(PLAN_LABELS[labelKey])}</text><text class="sv-value" x="${tx}" y="${ty + 10}" text-anchor="middle">${esc(value)}</text></g>`;
+function turnArrow(left = true) {
+  return left
+    ? `<path class="sv-measure" d="M92 286 C56 286 42 304 42 328" fill="none"/><path class="sv-measure" d="M42 328 l-8 -12 l16 0 z" fill="#d4ab70"/>`
+    : `<path class="sv-measure" d="M42 286 C78 286 92 304 92 328" fill="none"/><path class="sv-measure" d="M92 328 l-8 -12 l16 0 z" fill="#d4ab70"/>`;
 }
 
-function planShapes(type) {
+function buildPlanScene(type) {
+  const turnLeft = (originalField('turnDirection')?.value || 'left') === 'left';
   switch (type) {
     case 'straight':
       return {
-        shapes: `<rect class="sv-shape" x="120" y="90" width="300" height="70" rx="8"></rect>`,
-        labels: [
-          ['marchWidth', `${valueOf('marchWidth')} мм`, 120, 125, 70, 125],
-          ['openingLength', `${valueOf('openingLength')} мм`, 270, 170, 270, 214],
-          ['openingWidth', `${valueOf('openingWidth')} мм`, 424, 125, 468, 125]
+        svg: `<rect class="sv-shape" x="132" y="154" width="360" height="80" rx="12"></rect>${dimGroup('marchWidth',132,194,70,194,LABELS.marchWidth,70,182)}${dimGroup('openingLength',188,258,438,258,LABELS.openingLength,314,282)}${dimGroup('openingWidth',510,154,510,234,LABELS.openingWidth,510,144)}<text class="sv-muted" x="312" y="146" text-anchor="middle">Прямая лестница</text>`,
+        overlays: [
+          { key: 'marchWidth', x: '15%', y: '48%', width: '150px' },
+          { key: 'openingLength', x: '50%', y: '79%', width: '154px' },
+          { key: 'openingWidth', x: '85%', y: '49%', width: '154px' }
         ]
       };
     case 'l_turn_landing':
       return {
-        shapes: `<rect class="sv-shape" x="80" y="150" width="170" height="58" rx="8"></rect><rect class="sv-landing" x="250" y="94" width="84" height="114" rx="8"></rect><rect class="sv-shape" x="250" y="40" width="58" height="54" rx="8"></rect>`,
-        labels: [
-          ['marchWidth', `${valueOf('marchWidth')} мм`, 82, 178, 60, 178],
-          ['landingLength', `${valueOf('landingLength')} мм`, 292, 92, 292, 38],
-          ['landingWidth', `${valueOf('landingWidth')} мм`, 336, 144, 462, 144],
-          ['openingLength', `${valueOf('openingLength')} мм`, 210, 210, 210, 238],
-          ['openingWidth', `${valueOf('openingWidth')} мм`, 42, 124, 42, 52],
-          ['turnDirection', `${valueOf('turnDirection')}`, 250, 92, 400, 42]
+        svg: `<rect class="sv-shape" x="88" y="214" width="198" height="64" rx="12"></rect><rect class="sv-landing" x="286" y="146" width="118" height="132" rx="12"></rect><rect class="sv-shape" x="286" y="52" width="64" height="94" rx="12"></rect>${dimGroup('marchWidth',88,246,40,246,LABELS.marchWidth,44,230)}${dimGroup('landingLength',286,132,404,132,LABELS.landingLength,346,120)}${dimGroup('landingWidth',420,146,420,278,LABELS.landingWidth,470,212)}${dimGroup('openingLength',144,300,384,300,LABELS.openingLength,266,324)}${dimGroup('openingWidth',66,214,66,52,LABELS.openingWidth,66,40)}<text class="sv-muted" x="96" y="326">${turnLeft ? 'Левый поворот' : 'Правый поворот'}</text>${turnArrow(turnLeft)}`,
+        overlays: [
+          { key: 'marchWidth', x: '14%', y: '60%', width: '148px' },
+          { key: 'landingLength', x: '54%', y: '16%', width: '156px' },
+          { key: 'landingWidth', x: '86%', y: '47%', width: '150px' },
+          { key: 'openingLength', x: '50%', y: '83%', width: '154px' },
+          { key: 'openingWidth', x: '14%', y: '17%', width: '148px' },
+          { key: 'turnDirection', x: '12%', y: '88%', width: '142px' }
         ]
       };
     case 'l_turn_winders':
       return {
-        shapes: `<rect class="sv-shape" x="80" y="150" width="170" height="58" rx="8"></rect><polygon class="sv-winder" points="250,150 322,150 322,92 278,92"></polygon><polygon class="sv-winder" points="250,150 278,92 250,40 220,94"></polygon><rect class="sv-shape" x="250" y="40" width="58" height="54" rx="8"></rect>`,
-        labels: [
-          ['marchWidth', `${valueOf('marchWidth')} мм`, 82, 178, 60, 178],
-          ['winderCount', `${valueOf('winderCount')} шт`, 278, 110, 430, 46],
-          ['openingLength', `${valueOf('openingLength')} мм`, 206, 210, 206, 238],
-          ['openingWidth', `${valueOf('openingWidth')} мм`, 42, 124, 42, 52],
-          ['turnDirection', `${valueOf('turnDirection')}`, 250, 92, 402, 82]
+        svg: `<rect class="sv-shape" x="88" y="214" width="198" height="64" rx="12"></rect><polygon class="sv-winder" points="286,214 372,214 352,164 286,164"></polygon><polygon class="sv-winder" points="286,214 352,164 318,104 256,166"></polygon><rect class="sv-shape" x="286" y="52" width="64" height="94" rx="12"></rect>${dimGroup('marchWidth',88,246,40,246,LABELS.marchWidth,44,230)}${dimGroup('winderCount',318,164,412,112,LABELS.winderCount,470,92)}${dimGroup('openingLength',144,300,384,300,LABELS.openingLength,266,324)}${dimGroup('openingWidth',66,214,66,52,LABELS.openingWidth,66,40)}<text class="sv-muted" x="96" y="326">${turnLeft ? 'Левый поворот' : 'Правый поворот'}</text>${turnArrow(turnLeft)}`,
+        overlays: [
+          { key: 'marchWidth', x: '14%', y: '60%', width: '148px' },
+          { key: 'winderCount', x: '84%', y: '20%', width: '150px' },
+          { key: 'openingLength', x: '50%', y: '83%', width: '154px' },
+          { key: 'openingWidth', x: '14%', y: '17%', width: '148px' },
+          { key: 'turnDirection', x: '12%', y: '88%', width: '142px' }
         ]
       };
     case 'u_turn_landing':
       return {
-        shapes: `<rect class="sv-shape" x="76" y="40" width="60" height="168" rx="8"></rect><rect class="sv-landing" x="136" y="150" width="240" height="58" rx="8"></rect><rect class="sv-shape" x="376" y="40" width="60" height="168" rx="8"></rect>`,
-        labels: [
-          ['marchWidth', `${valueOf('marchWidth')} мм`, 74, 124, 40, 124],
-          ['landingLength', `${valueOf('landingLength')} мм`, 256, 148, 256, 224],
-          ['landingWidth', `${valueOf('landingWidth')} мм`, 440, 124, 494, 124],
-          ['openingLength', `${valueOf('openingLength')} мм`, 256, 210, 256, 242],
-          ['openingWidth', `${valueOf('openingWidth')} мм`, 256, 40, 256, 16],
-          ['turnDirection', `${valueOf('turnDirection')}`, 376, 150, 468, 200]
+        svg: `<rect class="sv-shape" x="122" y="66" width="72" height="224" rx="12"></rect><rect class="sv-landing" x="194" y="224" width="236" height="66" rx="12"></rect><rect class="sv-shape" x="430" y="66" width="72" height="224" rx="12"></rect>${dimGroup('marchWidth',122,178,58,178,LABELS.marchWidth,58,164)}${dimGroup('landingLength',194,208,430,208,LABELS.landingLength,312,194)}${dimGroup('landingWidth',520,66,520,290,LABELS.landingWidth,520,54)}${dimGroup('openingLength',224,314,400,314,LABELS.openingLength,312,338)}${dimGroup('openingWidth',194,48,430,48,LABELS.openingWidth,312,34)}<text class="sv-muted" x="104" y="326">${turnLeft ? 'Левый разворот' : 'Правый разворот'}</text>${turnArrow(turnLeft)}`,
+        overlays: [
+          { key: 'marchWidth', x: '13%', y: '43%', width: '148px' },
+          { key: 'landingLength', x: '50%', y: '20%', width: '156px' },
+          { key: 'landingWidth', x: '86%', y: '43%', width: '150px' },
+          { key: 'openingLength', x: '50%', y: '86%', width: '154px' },
+          { key: 'openingWidth', x: '50%', y: '8%', width: '154px' },
+          { key: 'turnDirection', x: '12%', y: '88%', width: '142px' }
         ]
       };
     default:
       return {
-        shapes: `<rect class="sv-shape" x="76" y="40" width="60" height="168" rx="8"></rect><polygon class="sv-winder" points="136,150 220,150 190,112 136,112"></polygon><polygon class="sv-winder" points="322,112 376,112 376,150 290,150"></polygon><rect class="sv-shape" x="376" y="40" width="60" height="168" rx="8"></rect>`,
-        labels: [
-          ['marchWidth', `${valueOf('marchWidth')} мм`, 74, 124, 40, 124],
-          ['winderCount', `${valueOf('winderCount')} шт`, 256, 96, 256, 18],
-          ['openingLength', `${valueOf('openingLength')} мм`, 256, 210, 256, 242],
-          ['openingWidth', `${valueOf('openingWidth')} мм`, 256, 40, 256, 16],
-          ['turnDirection', `${valueOf('turnDirection')}`, 376, 150, 468, 200]
+        svg: `<rect class="sv-shape" x="122" y="66" width="72" height="224" rx="12"></rect><polygon class="sv-winder" points="194,224 282,224 246,178 194,178"></polygon><polygon class="sv-winder" points="430,178 378,178 344,224 430,224"></polygon><rect class="sv-shape" x="430" y="66" width="72" height="224" rx="12"></rect>${dimGroup('marchWidth',122,178,58,178,LABELS.marchWidth,58,164)}${dimGroup('winderCount',310,176,310,98,LABELS.winderCount,310,84)}${dimGroup('openingLength',224,314,400,314,LABELS.openingLength,312,338)}${dimGroup('openingWidth',194,48,430,48,LABELS.openingWidth,312,34)}<text class="sv-muted" x="104" y="326">${turnLeft ? 'Левый разворот' : 'Правый разворот'}</text>${turnArrow(turnLeft)}`,
+        overlays: [
+          { key: 'marchWidth', x: '13%', y: '43%', width: '148px' },
+          { key: 'winderCount', x: '50%', y: '14%', width: '150px' },
+          { key: 'openingLength', x: '50%', y: '86%', width: '154px' },
+          { key: 'openingWidth', x: '50%', y: '8%', width: '154px' },
+          { key: 'turnDirection', x: '12%', y: '88%', width: '142px' }
         ]
       };
   }
 }
 
-function renderPlan() {
-  const mount = $('visualPlanMount');
+function buildSideScene() {
+  const mode = getMode();
+  const stepsCount = approxStepCount();
+  const baseX = 116;
+  const baseY = 306;
+  const totalW = 340;
+  const totalH = 186;
+  const stepW = totalW / stepsCount;
+  const stepH = totalH / stepsCount;
+  const stairs = Array.from({ length: stepsCount }).map((_, index) => {
+    const x = baseX + index * stepW;
+    const y = baseY - (index + 1) * stepH;
+    return `<path class="sv-shape" d="M${x} ${baseY} L${x} ${y} L${x + stepW} ${y}"></path>`;
+  }).join('');
+  const shared = `<line class="sv-line" x1="82" y1="306" x2="500" y2="306"></line><line class="sv-line" x1="82" y1="92" x2="500" y2="92"></line>${stairs}`;
+  if (mode === 'ready_frame') {
+    return {
+      svg: `${shared}${dimGroup('riserHeight',356,212,356,168,LABELS.riserHeight,448,172)}${dimGroup('treadDepth',326,234,382,234,LABELS.treadDepth,468,234)}${dimGroup('stepCount',430,120,470,120,LABELS.stepCount,470,104)}<text class="sv-muted" x="92" y="332">Удалённый замер существующего основания</text>`,
+      overlays: [
+        { key: 'riserHeight', x: '84%', y: '24%', width: '150px' },
+        { key: 'treadDepth', x: '84%', y: '52%', width: '150px' },
+        { key: 'stepCount', x: '84%', y: '79%', width: '150px' }
+      ]
+    };
+  }
+  return {
+    svg: `${shared}${dimGroup('floorHeight',90,306,90,92,LABELS.floorHeight,90,80)}${dimGroup('slabThickness',454,92,454,58,LABELS.slabThickness,454,46)}${dimGroup('topFinishThickness',402,114,446,114,LABELS.topFinishThickness,470,114)}${dimGroup('bottomFinishThickness',122,306,162,306,LABELS.bottomFinishThickness,182,330)}<text class="sv-muted" x="312" y="332">Ввод по проектному проёму и чистовым отметкам</text>`,
+    overlays: [
+      { key: 'floorHeight', x: '12%', y: '36%', width: '154px' },
+      { key: 'slabThickness', x: '84%', y: '12%', width: '148px' },
+      { key: 'topFinishThickness', x: '84%', y: '36%', width: '148px' },
+      { key: 'bottomFinishThickness', x: '12%', y: '84%', width: '148px' }
+    ]
+  };
+}
+
+function renderSvg(mountId, scene, ariaLabel) {
+  const mount = $(mountId);
   if (!mount) return;
-  const type = getPlanType();
-  const { shapes, labels } = planShapes(type);
-  mount.innerHTML = `<svg viewBox="0 0 520 260" role="img" aria-label="Схема размеров, вид сверху"><rect x="12" y="12" width="496" height="236" rx="18" fill="rgba(255,255,255,.02)" stroke="rgba(255,255,255,.12)"></rect>${shapes}${labels.map((item) => badge(...item)).join('')}</svg>`;
+  mount.innerHTML = `<svg viewBox="0 0 620 380" role="img" aria-label="${esc(ariaLabel)}"><rect x="16" y="16" width="588" height="348" rx="24" fill="rgba(255,255,255,.02)" stroke="rgba(255,255,255,.12)"></rect>${scene.svg}</svg>`;
+}
+
+function overlayControl(def) {
+  const targetId = getFieldId(def.key);
+  const original = targetId ? $(targetId) : null;
+  if (!targetId || !original) return '';
+  const isSelect = original.tagName === 'SELECT';
+  const active = activeTarget === targetId ? ' active' : '';
+  const style = `left:${def.x};top:${def.y};width:${def.width || '150px'}`;
+  if (isSelect) {
+    const options = [...original.options].map((option) => `<option value="${esc(option.value)}" ${option.value === original.value ? 'selected' : ''}>${esc(option.text)}</option>`).join('');
+    return `<div class="visual-overlay${active}" data-target="${esc(targetId)}" style="${style}"><label>${esc(LABELS[def.key])}</label><select data-sync-target="${esc(targetId)}">${options}</select></div>`;
+  }
+  const type = original.type === 'number' ? 'number' : 'text';
+  const step = original.step ? ` step="${esc(original.step)}"` : '';
+  const value = original.value || '';
+  return `<div class="visual-overlay${active}" data-target="${esc(targetId)}" style="${style}"><label>${esc(LABELS[def.key])}</label><input type="${type}" data-sync-target="${esc(targetId)}" value="${esc(value)}"${step}></div>`;
+}
+
+function renderOverlays(containerId, overlays) {
+  const container = $(containerId);
+  if (!container) return;
+  container.innerHTML = overlays.map(overlayControl).join('');
+  container.querySelectorAll('[data-sync-target]').forEach((input) => {
+    const targetId = input.getAttribute('data-sync-target');
+    const original = $(targetId);
+    if (!original) return;
+    const sync = () => {
+      original.value = input.value;
+      original.dispatchEvent(new Event('input', { bubbles: true }));
+      original.dispatchEvent(new Event('change', { bubbles: true }));
+    };
+    input.addEventListener('input', sync);
+    input.addEventListener('change', sync);
+    input.addEventListener('focus', () => {
+      activeTarget = targetId;
+      render();
+    });
+  });
+  container.querySelectorAll('.visual-overlay').forEach((card) => {
+    card.addEventListener('click', () => {
+      const targetId = card.getAttribute('data-target');
+      activeTarget = targetId || '';
+      render();
+      card.querySelector('input,select')?.focus();
+    });
+  });
+}
+
+function renderPlan() {
+  const scene = buildPlanScene(getPlanType());
+  renderSvg('visualPlanMount', scene, 'Интерактивная схема размеров, вид сверху');
+  renderOverlays('visualPlanOverlays', scene.overlays);
 }
 
 function renderSide() {
-  const mount = $('visualSideMount');
-  if (!mount) return;
-  const mode = getMode();
-  const count = approxStepCount();
-  const width = 320;
-  const baseX = 90;
-  const baseY = 206;
-  const stepW = width / count;
-  const stairHeight = 132;
-  const stepH = stairHeight / count;
-  const steps = Array.from({ length: count }).map((_, i) => {
-    const x = baseX + i * stepW;
-    const y = baseY - (i + 1) * stepH;
-    return `<path class="sv-shape" d="M${x} ${baseY} L${x} ${y} L${x + stepW} ${y}"></path>`;
-  }).join('');
-  const labels = mode === 'ready_frame'
-    ? [
-        badge('riserHeight', `${valueOf('riserHeight')} мм`, baseX + 64, baseY - 72, 46, 44),
-        badge('treadDepth', `${valueOf('treadDepth')} мм`, baseX + 180, baseY - 108, 250, 34),
-        badge('stepCount', `${valueOf('stepCount')} шт`, baseX + width, baseY - stairHeight, 432, 68)
-      ].join('')
-    : [
-        badge('floorHeight', `${valueOf('floorHeight')} мм`, baseX - 20, 72, 54, 72),
-        badge('slabThickness', `${valueOf('slabThickness')} мм`, baseX + width + 16, 48, 446, 36),
-        badge('openingLength', `${valueOf('openingLength')} мм`, baseX + width / 2, baseY + 2, 258, 236)
-      ].join('');
-  mount.innerHTML = `<svg viewBox="0 0 520 260" role="img" aria-label="Схема размеров, вид сбоку"><rect x="12" y="12" width="496" height="236" rx="18" fill="rgba(255,255,255,.02)" stroke="rgba(255,255,255,.12)"></rect><line class="sv-line" x1="70" y1="206" x2="456" y2="206"></line><line class="sv-line" x1="70" y1="42" x2="456" y2="42"></line>${steps}${labels}</svg>`;
+  const scene = buildSideScene();
+  renderSvg('visualSideMount', scene, 'Интерактивная схема размеров, вид сбоку');
+  renderOverlays('visualSideOverlays', scene.overlays);
 }
 
-function bindClicks(rootId) {
+function bindSvgClicks(rootId) {
   const root = $(rootId);
   if (!root || root.dataset.bound === '1') return;
   root.addEventListener('click', (event) => {
@@ -187,36 +264,54 @@ function bindClicks(rootId) {
     if (!hit) return;
     const targetId = hit.getAttribute('data-target');
     if (!targetId) return;
-    const target = $(targetId);
-    if (!target) return;
     activeTarget = targetId;
-    target.focus();
-    target.scrollIntoView({ block: 'center', behavior: 'smooth' });
     render();
+    setTimeout(() => {
+      const overlay = document.querySelector(`.visual-overlay[data-target="${CSS.escape(targetId)}"] input, .visual-overlay[data-target="${CSS.escape(targetId)}"] select`);
+      overlay?.focus();
+    }, 0);
   });
   root.dataset.bound = '1';
+}
+
+function bindViewSwitches() {
+  document.querySelectorAll('[data-visual-view]').forEach((button) => {
+    if (button.dataset.bound === '1') return;
+    button.addEventListener('click', () => {
+      activeView = button.getAttribute('data-visual-view') || 'plan';
+      updateViewState();
+    });
+    button.dataset.bound = '1';
+  });
+}
+
+function updateViewState() {
+  document.querySelectorAll('[data-visual-view]').forEach((button) => button.classList.toggle('active', button.getAttribute('data-visual-view') === activeView));
+  document.querySelectorAll('[data-visual-stage]').forEach((card) => card.classList.toggle('active', card.getAttribute('data-visual-stage') === activeView));
 }
 
 function render() {
   renderPlan();
   renderSide();
-  bindClicks('visualPlanMount');
-  bindClicks('visualSideMount');
+  bindSvgClicks('visualPlanMount');
+  bindSvgClicks('visualSideMount');
+  bindViewSwitches();
+  updateViewState();
 }
 
-function attach() {
-  const watched = [
-    'baseCondition','stairType','configurationType','turnType','turnDirection','readyTurnDirection','openingLength','openingWidth','marchWidth','landingLength','landingWidth','floorHeight','slabThickness','topFinishThickness','bottomFinishThickness','readyMarchWidth','riserHeight','treadDepth','stepCount','winderCount'
-  ];
-  watched.forEach((id) => {
-    const el = $(id);
-    if (!el) return;
-    el.addEventListener('input', render);
-    el.addEventListener('change', render);
-    el.addEventListener('focus', () => { activeTarget = id; render(); });
+function attachWatchers() {
+  ['baseCondition','stairType','configurationType','turnType','turnDirection','readyTurnDirection','openingLength','openingWidth','marchWidth','landingLength','landingWidth','floorHeight','slabThickness','topFinishThickness','bottomFinishThickness','readyMarchWidth','riserHeight','treadDepth','stepCount','winderCount'].forEach((id) => {
+    const element = $(id);
+    if (!element) return;
+    element.addEventListener('input', render);
+    element.addEventListener('change', render);
+    element.addEventListener('focus', () => {
+      activeTarget = id;
+      render();
+    });
   });
   document.querySelectorAll('.visual-card').forEach((card) => card.addEventListener('click', () => setTimeout(render, 0)));
-  render();
 }
 
-attach();
+attachWatchers();
+render();
