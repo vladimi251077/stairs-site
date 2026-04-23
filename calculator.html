@@ -24,6 +24,7 @@
 .extras-list{display:grid;gap:8px}.extras-list label{display:flex;gap:8px;align-items:flex-start;font-size:14px;color:var(--text-soft)}
 .extras-list input{margin-top:3px}
 .inline-select{margin-top:8px}
+.ready-frame-note{margin-top:12px;padding:12px 14px;border:1px solid rgba(232,200,162,.22);border-radius:12px;background:rgba(29,21,17,.6);color:var(--text-soft)}
 @media (max-width:980px){.visual-choice.stair-type-choice{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:760px){.visual-choice,.visual-choice.stair-type-choice{grid-template-columns:1fr}}
 </style>
@@ -99,8 +100,13 @@
           <div class="field hidden" id="landingLengthField"><label for="landingLength">Длина площадки (мм)</label><input id="landingLength" type="number" placeholder="1000"></div>
           <div class="field hidden" id="landingWidthField"><label for="landingWidth">Ширина площадки (мм)</label><input id="landingWidth" type="number" placeholder="1000"></div>
           <div class="field hidden" id="winderCountField"><label for="winderCount">Количество забежных ступеней</label><input id="winderCount" type="number" placeholder="3"></div>
+          <div class="field"><label for="readyMaterial">Материал ступеней / площадки</label><select id="readyMaterial"><option value="ash">Ясень</option><option value="oak">Дуб</option><option value="pine">Сосна</option><option value="mdf">МДФ</option></select></div>
+          <div class="field"><label for="readyRailingType">Тип ограждения</label><select id="readyRailingType"><option value="none">Без ограждения</option><option value="round_tube_16mm">Круглые трубки 16 мм</option><option value="mdf">МДФ</option><option value="glass">Стекло</option><option value="pattern_2d">2D узор</option><option value="custom">Своё / по договорённости</option></select></div>
+          <div class="field"><label for="topFloorRailingLength">Прямое ограждение верхнего этажа (м)</label><input id="topFloorRailingLength" type="number" step="0.1" placeholder="2.4"></div>
+          <div class="field"><label for="pricingProfile">Ценовой профиль</label><select id="pricingProfile"><option value="base">Базовый</option><option value="tatarstan">Татарстан</option><option value="moscow">Москва</option></select></div>
           <div class="field"><label for="existingConditionNotes">Состояние существующего основания</label><input id="existingConditionNotes" type="text" placeholder="Например: требуется усиление узлов"></div>
         </div>
+        <div class="ready-frame-note">Ветку «Готовый каркас» используем как удалённый замер и предварительную калькуляцию. Финальный расход материалов и смета подтверждаются инженером Tekstura после замера.</div>
         <div class="field">
           <label>Объём работ</label>
           <div class="extras-list">
