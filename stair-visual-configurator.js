@@ -21,8 +21,70 @@ const LABELS = {
 
 let activeTarget = '';
 
+function ensureStepOneBaseStyles() {
+  if (document.getElementById('teksturaStepOneBaseStyles')) return;
+  const style = document.createElement('style');
+  style.id = 'teksturaStepOneBaseStyles';
+  style.textContent = `
+    .hidden{display:none !important;}
+    .visual-choice .visual-card.selected{border-color:#e7c08b;background:rgba(62,42,27,.92);box-shadow:0 10px 22px rgba(0,0,0,.22),0 0 0 1px rgba(231,192,139,.18) inset;}
+    .visual-choice .visual-card:not(.selected){opacity:.86;}
+  `;
+  document.head.appendChild(style);
+}
+
 function getMode() {
   return $('baseCondition')?.value || 'empty_opening';
+}
+
+function setSectionEnabled(sectionId, enabled) {
+  const root = $(sectionId);
+  if (!root) return;
+  root.querySelectorAll('input, select, textarea, button').forEach((el) => {
+    if (el.id === 'toResultsBtn' || el.id === 'calculateBtn') return;
+    el.disabled = !enabled;
+  });
+}
+
+function syncScenarioVisibility() {
+  const empty = getMode() === 'empty_opening';
+  $('baseSubtypeField')?.classList.toggle('hidden', empty);
+  $('readyFlowFields')?.classList.toggle('hidden', empty);
+  $('emptyStairTypeField')?.classList.toggle('hidden', !empty);
+  $('emptyOpeningFallback')?.classList.toggle('hidden', !empty);
+  $('frameMaterialField')?.classList.toggle('hidden', !empty);
+  $('finishGrid')?.classList.toggle('hidden', !empty);
+  setSectionEnabled('readyFlowFields', !empty);
+  setSectionEnabled('frameMaterialField', empty);
+  setSectionEnabled('finishGrid', empty);
+}
+
+function setVisualCardState(group, value) {
+  group.querySelectorAll('.visual-card').forEach((card) => {
+    card.classList.toggle('selected', card.dataset.value === value);
+  });
+}
+
+function bindVisualChoices() {
+  document.querySelectorAll('.visual-choice').forEach((group) => {
+    if (group.dataset.bound === '1') return;
+    const targetId = group.dataset.target;
+    const hidden = $(targetId);
+    if (!hidden) return;
+    setVisualCardState(group, hidden.value);
+    group.addEventListener('click', (event) => {
+      const card = event.target.closest('.visual-card');
+      if (!card) return;
+      const value = card.dataset.value || '';
+      hidden.value = value;
+      hidden.dispatchEvent(new Event('input', { bubbles: true }));
+      hidden.dispatchEvent(new Event('change', { bubbles: true }));
+      setVisualCardState(group, value);
+      if (targetId === 'baseCondition') syncScenarioVisibility();
+      render();
+    });
+    group.dataset.bound = '1';
+  });
 }
 
 function syncEmptyOpeningType() {
@@ -44,7 +106,6 @@ function syncEmptyOpeningType() {
 }
 
 function getPlanType() {
-  syncEmptyOpeningType();
   if (getMode() === 'ready_frame') {
     const cfg = $('configurationType')?.value || 'straight';
     const turn = $('turnType')?.value || 'landing';
@@ -52,7 +113,11 @@ function getPlanType() {
     if (cfg === 'l_shaped') return turn === 'winders' ? 'l_turn_winders' : 'l_turn_landing';
     return turn === 'winders' ? 'u_turn_winders' : 'u_turn_landing';
   }
-  return $('stairType')?.value || 'straight';
+  const shape = $('shapeType')?.value || 'straight';
+  const turn = $('shapeTurnMode')?.value || 'landing';
+  if (shape === 'straight') return 'straight';
+  if (shape === 'l') return turn === 'winders' ? 'l_turn_winders' : 'l_turn_landing';
+  return turn === 'winders' ? 'u_turn_winders' : 'u_turn_landing';
 }
 
 function getFieldId(name) {
@@ -194,14 +259,14 @@ function buildSideScene() {
   }
   return {
     svg: `${shared}${dimGroup('floorHeight',92,318,92,96,LABELS.floorHeight,92,82)}${dimGroup('slabThickness',454,96,454,60,LABELS.slabThickness,454,46)}${dimGroup('topFinishThickness',402,120,448,120,LABELS.topFinishThickness,476,120)}${dimGroup('bottomFinishThickness',124,318,164,318,LABELS.bottomFinishThickness,188,344)}<text class="sv-muted" x="312" y="344">Ввод по проектному проёму и чистовым отметкам</text>`,
-    overlays: [
+      overlays: [
         { key: 'floorHeight', x: '12%', y: '36%', width: '154px' },
         { key: 'slabThickness', x: '84%', y: '12%', width: '148px' },
         { key: 'topFinishThickness', x: '84%', y: '36%', width: '148px' },
         { key: 'bottomFinishThickness', x: '12%', y: '84%', width: '148px' }
       ]
     };
-  }
+  };
 }
 
 function renderSvg(mountId, scene, ariaLabel) {
@@ -301,6 +366,9 @@ function bindTabGroups() {
 }
 
 function render() {
+  ensureStepOneBaseStyles();
+  bindVisualChoices();
+  syncScenarioVisibility();
   syncEmptyOpeningType();
   bindTabGroups();
   const planScene = buildPlanScene(getPlanType());
@@ -324,8 +392,9 @@ function attachWatchers() {
       render();
     });
   });
-  document.querySelectorAll('.visual-card').forEach((card) => card.addEventListener('click', () => setTimeout(render, 0)));
 }
 
+ensureStepOneBaseStyles();
+bindVisualChoices();
 attachWatchers();
 render();
