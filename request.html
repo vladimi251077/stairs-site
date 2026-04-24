@@ -27,6 +27,7 @@
     .trust-chip{border:1px solid var(--line);border-radius:10px;padding:8px;color:#cfb79a;background:#1b1512;font-size:13px}
     .expect-list{margin:10px 0 0;padding-left:18px;color:#d5c2ab}
     .success-card{border:1px solid rgba(157,220,176,.35);background:rgba(82,122,92,.18);border-radius:12px;padding:12px;margin-top:8px;line-height:1.6}
+    .success-card--warning{border-color:rgba(255,207,122,.35);background:rgba(130,100,45,.18)}
     @media(max-width:700px){.grid{grid-template-columns:1fr}.trust-grid{grid-template-columns:1fr}}
   </style>
 </head>
@@ -148,11 +149,36 @@ async function insertLead(payload){
   throw lastError;
 }
 
+function buildNotifyUiMessage(notifyResult) {
+  const emailResult = notifyResult?.deliveryResults?.email;
+  const notifyRecipient = notifyResult?.notifyRecipient || {};
+
+  if (emailResult?.ok) {
+    return {
+      warning: false,
+      text: 'Спасибо за обращение в Tekstura. Заявка сохранена, email-уведомление инженеру отправлено. Мы свяжемся с вами в ближайшее рабочее время и уточним финальные параметры.'
+    };
+  }
+
+  let hint = '';
+  if (notifyRecipient.source === 'fallback-env') {
+    hint = ' Для уведомлений использован резервный адрес.';
+  } else if (notifyRecipient.warning === 'settings-notify-email-empty' || notifyRecipient.warning === 'missing-recipient') {
+    hint = ' Email получателя сейчас не настроен.';
+  }
+
+  return {
+    warning: true,
+    text: `Спасибо за обращение в Tekstura. Заявка сохранена, но отправка email-уведомления не подтверждена.${hint} Мы всё равно свяжемся с вами в ближайшее рабочее время.`
+  };
+}
+
 async function sendRequest() {
   const status = document.getElementById('status');
   const sendBtn = document.getElementById('sendBtn');
   const successState = document.getElementById('successState');
   successState.hidden = true;
+  successState.classList.remove('success-card--warning');
   status.className = '';
   status.textContent = 'Отправляем заявку...';
   sendBtn.disabled = true;
@@ -180,13 +206,26 @@ async function sendRequest() {
   try {
     const { data } = await insertLead(payload);
     status.className = 'ok';
-    status.textContent = 'Заявка отправлена ✅';
+    status.textContent = 'Заявка сохранена ✅';
     successState.hidden = false;
-    successState.textContent = 'Спасибо за обращение в Tekstura. Заявка сохранена и передана инженеру. Мы свяжемся с вами в ближайшее рабочее время и уточним финальные параметры.';
+    successState.textContent = 'Спасибо за обращение в Tekstura. Заявка сохранена. Проверяем отправку уведомления инженеру...';
     document.getElementById('sendBtn').disabled = true;
+
     try {
-      await fetch('/api/notify-lead', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lead: data || payload }) });
-    } catch (err) { console.error('notify failed', err); }
+      const notifyResponse = await fetch('/api/notify-lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lead: data || payload })
+      });
+      const notifyResult = await notifyResponse.json().catch(() => null);
+      const uiMessage = buildNotifyUiMessage(notifyResponse.ok ? notifyResult : null);
+      successState.classList.toggle('success-card--warning', uiMessage.warning);
+      successState.textContent = uiMessage.text;
+    } catch (err) {
+      console.error('notify failed', err);
+      successState.classList.add('success-card--warning');
+      successState.textContent = 'Спасибо за обращение в Tekstura. Заявка сохранена, но статус email-уведомления проверить не удалось. Мы всё равно свяжемся с вами в ближайшее рабочее время.';
+    }
   } catch (error) {
     console.error(error);
     status.className = 'err';
