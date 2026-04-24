@@ -16,6 +16,11 @@ create table if not exists public.settings (
   updated_at timestamptz default now()
 );
 
+alter table if exists public.settings
+  drop constraint if exists settings_singleton_id_check;
+alter table if exists public.settings
+  add constraint settings_singleton_id_check check (id = 1);
+
 create table if not exists public.services (
   id uuid primary key default gen_random_uuid(),
   title text not null,

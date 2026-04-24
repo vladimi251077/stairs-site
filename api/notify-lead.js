@@ -93,30 +93,71 @@ async function sendTelegram(message) {
 async function resolveNotifyEmailRecipient() {
   const supabaseUrl = process.env.SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const fallback = (process.env.NOTIFY_EMAIL_TO || '').trim();
 
   if (!supabaseUrl || !serviceRoleKey) {
-    return process.env.NOTIFY_EMAIL_TO || '';
+    return {
+      recipient: fallback,
+      source: fallback ? 'fallback-env' : 'missing-config',
+      warning: 'missing-supabase-config'
+    };
   }
 
   try {
-    const response = await fetch(`${supabaseUrl.replace(/\/$/, '')}/rest/v1/settings?select=notify_email&id=eq.1&limit=1`, {
+    const baseUrl = supabaseUrl.replace(/\/$/, '');
+    const headers = {
+      apikey: serviceRoleKey,
+      Authorization: `Bearer ${serviceRoleKey}`
+    };
+    const response = await fetch(`${baseUrl}/rest/v1/settings?select=id,notify_email&id=eq.1&limit=1`, {
+      headers
+    });
+
+    const rowsResponse = await fetch(`${baseUrl}/rest/v1/settings?select=id&order=id.asc&limit=10`, {
       headers: {
-        apikey: serviceRoleKey,
-        Authorization: `Bearer ${serviceRoleKey}`
+        ...headers
       }
     });
+    let extraRowsDetected = false;
+    if (rowsResponse.ok) {
+      const rowsPayload = await rowsResponse.json().catch(() => []);
+      extraRowsDetected = Array.isArray(rowsPayload) && rowsPayload.some((row) => Number(row?.id) !== 1);
+      if (extraRowsDetected) {
+        console.warn('[notify-lead] settings table contains non-canonical rows; only id=1 is used');
+      }
+    }
 
     if (!response.ok) {
       console.error('[notify-lead] failed to load settings.notify_email', { status: response.status });
-      return process.env.NOTIFY_EMAIL_TO || '';
+      return {
+        recipient: fallback,
+        source: fallback ? 'fallback-env' : 'missing-recipient',
+        warning: 'settings-fetch-failed'
+      };
     }
 
     const payload = await response.json().catch(() => []);
     const fromSettings = payload?.[0]?.notify_email;
-    return (fromSettings || process.env.NOTIFY_EMAIL_TO || '').trim();
+    const settingsRecipient = (fromSettings || '').trim();
+    if (settingsRecipient) {
+      return {
+        recipient: settingsRecipient,
+        source: 'settings.id=1',
+        warning: extraRowsDetected ? 'extra-settings-rows-detected' : null
+      };
+    }
+    return {
+      recipient: fallback,
+      source: fallback ? 'fallback-env' : 'missing-recipient',
+      warning: 'settings-notify-email-empty'
+    };
   } catch (error) {
     console.error('[notify-lead] settings notify_email fetch error', error?.message || error);
-    return process.env.NOTIFY_EMAIL_TO || '';
+    return {
+      recipient: fallback,
+      source: fallback ? 'fallback-env' : 'missing-recipient',
+      warning: 'settings-fetch-exception'
+    };
   }
 }
 
@@ -236,7 +277,15 @@ module.exports = async function handler(req, res) {
 
   const message = formatLeadMessage(lead);
   const emailHtml = formatLeadEmailHtml(lead);
-  const notifyEmailTo = await resolveNotifyEmailRecipient();
+  const notifyEmail = await resolveNotifyEmailRecipient();
+  const notifyEmailTo = notifyEmail.recipient;
+  if (notifyEmail.warning) {
+    console.warn('[notify-lead] email recipient resolution warning', {
+      warning: notifyEmail.warning,
+      source: notifyEmail.source,
+      recipient: notifyEmailTo || null
+    });
+  }
 
   const deliveryResults = {
     telegram: await sendTelegram(message),
@@ -253,16 +302,28 @@ module.exports = async function handler(req, res) {
         leadId: lead.id,
         channel,
         status,
-        error: errorMessage
+        error: errorMessage,
+        recipientSource: channel === 'email' ? notifyEmail.source : undefined,
+        recipient: channel === 'email' ? (notifyEmailTo || null) : undefined
       });
     }
 
-    await persistNotificationLog(lead.id, channel, status, errorMessage);
+    const enrichedErrorMessage = channel === 'email' && !result.ok
+      ? [errorMessage, `recipient_source=${notifyEmail.source}`, notifyEmail.warning ? `recipient_warning=${notifyEmail.warning}` : null]
+        .filter(Boolean)
+        .join(' | ')
+      : errorMessage;
+    await persistNotificationLog(lead.id, channel, status, enrichedErrorMessage);
   }
 
   return res.status(200).json({
     ok: true,
     leadSaved: true,
-    deliveryResults
+    deliveryResults,
+    notifyRecipient: {
+      recipient: notifyEmailTo || null,
+      source: notifyEmail.source,
+      warning: notifyEmail.warning || null
+    }
   });
 };
