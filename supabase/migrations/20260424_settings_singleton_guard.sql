@@ -10,69 +10,33 @@ begin
     values (1, now());
   end if;
 
+  with latest as (
+    select
+      (select nullif(trim(s.phone), '') from public.settings s where nullif(trim(s.phone), '') is not null order by s.updated_at desc nulls last, s.id desc limit 1) as phone,
+      (select nullif(trim(s.whatsapp), '') from public.settings s where nullif(trim(s.whatsapp), '') is not null order by s.updated_at desc nulls last, s.id desc limit 1) as whatsapp,
+      (select nullif(trim(s.telegram), '') from public.settings s where nullif(trim(s.telegram), '') is not null order by s.updated_at desc nulls last, s.id desc limit 1) as telegram,
+      (select nullif(trim(s.notify_email), '') from public.settings s where nullif(trim(s.notify_email), '') is not null order by s.updated_at desc nulls last, s.id desc limit 1) as notify_email,
+      (select nullif(trim(s."heroTitle"), '') from public.settings s where nullif(trim(s."heroTitle"), '') is not null order by s.updated_at desc nulls last, s.id desc limit 1) as "heroTitle",
+      (select nullif(trim(s."heroSubtitle"), '') from public.settings s where nullif(trim(s."heroSubtitle"), '') is not null order by s.updated_at desc nulls last, s.id desc limit 1) as "heroSubtitle",
+      (select nullif(trim(s."heroImage"), '') from public.settings s where nullif(trim(s."heroImage"), '') is not null order by s.updated_at desc nulls last, s.id desc limit 1) as "heroImage",
+      (select nullif(trim(s.logo), '') from public.settings s where nullif(trim(s.logo), '') is not null order by s.updated_at desc nulls last, s.id desc limit 1) as logo,
+      (select nullif(trim(s.badge), '') from public.settings s where nullif(trim(s.badge), '') is not null order by s.updated_at desc nulls last, s.id desc limit 1) as badge,
+      (select s."baseRate" from public.settings s where s."baseRate" is not null order by s.updated_at desc nulls last, s.id desc limit 1) as "baseRate"
+  )
   update public.settings as canonical
   set
-    phone = coalesce(nullif(canonical.phone, ''), (
-      select s.phone from public.settings s
-      where s.id <> 1 and nullif(s.phone, '') is not null
-      order by s.updated_at desc nulls last
-      limit 1
-    )),
-    whatsapp = coalesce(nullif(canonical.whatsapp, ''), (
-      select s.whatsapp from public.settings s
-      where s.id <> 1 and nullif(s.whatsapp, '') is not null
-      order by s.updated_at desc nulls last
-      limit 1
-    )),
-    telegram = coalesce(nullif(canonical.telegram, ''), (
-      select s.telegram from public.settings s
-      where s.id <> 1 and nullif(s.telegram, '') is not null
-      order by s.updated_at desc nulls last
-      limit 1
-    )),
-    notify_email = coalesce(nullif(canonical.notify_email, ''), (
-      select s.notify_email from public.settings s
-      where s.id <> 1 and nullif(s.notify_email, '') is not null
-      order by s.updated_at desc nulls last
-      limit 1
-    )),
-    "heroTitle" = coalesce(nullif(canonical."heroTitle", ''), (
-      select s."heroTitle" from public.settings s
-      where s.id <> 1 and nullif(s."heroTitle", '') is not null
-      order by s.updated_at desc nulls last
-      limit 1
-    )),
-    "heroSubtitle" = coalesce(nullif(canonical."heroSubtitle", ''), (
-      select s."heroSubtitle" from public.settings s
-      where s.id <> 1 and nullif(s."heroSubtitle", '') is not null
-      order by s.updated_at desc nulls last
-      limit 1
-    )),
-    "heroImage" = coalesce(nullif(canonical."heroImage", ''), (
-      select s."heroImage" from public.settings s
-      where s.id <> 1 and nullif(s."heroImage", '') is not null
-      order by s.updated_at desc nulls last
-      limit 1
-    )),
-    logo = coalesce(nullif(canonical.logo, ''), (
-      select s.logo from public.settings s
-      where s.id <> 1 and nullif(s.logo, '') is not null
-      order by s.updated_at desc nulls last
-      limit 1
-    )),
-    badge = coalesce(nullif(canonical.badge, ''), (
-      select s.badge from public.settings s
-      where s.id <> 1 and nullif(s.badge, '') is not null
-      order by s.updated_at desc nulls last
-      limit 1
-    )),
-    "baseRate" = coalesce(canonical."baseRate", (
-      select s."baseRate" from public.settings s
-      where s.id <> 1 and s."baseRate" is not null
-      order by s.updated_at desc nulls last
-      limit 1
-    )),
+    phone = coalesce(latest.phone, canonical.phone),
+    whatsapp = coalesce(latest.whatsapp, canonical.whatsapp),
+    telegram = coalesce(latest.telegram, canonical.telegram),
+    notify_email = coalesce(latest.notify_email, canonical.notify_email),
+    "heroTitle" = coalesce(latest."heroTitle", canonical."heroTitle"),
+    "heroSubtitle" = coalesce(latest."heroSubtitle", canonical."heroSubtitle"),
+    "heroImage" = coalesce(latest."heroImage", canonical."heroImage"),
+    logo = coalesce(latest.logo, canonical.logo),
+    badge = coalesce(latest.badge, canonical.badge),
+    "baseRate" = coalesce(latest."baseRate", canonical."baseRate"),
     updated_at = now()
+  from latest
   where canonical.id = 1;
 
   delete from public.settings
