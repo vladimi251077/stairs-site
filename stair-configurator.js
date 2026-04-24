@@ -98,8 +98,10 @@ function updateStep1Visual() {
     ? 'Прямая'
     : (step1State.stairFamily === 'l-shaped' ? 'Г-образная' : 'П-образная');
   const scenarioLabel = step1State.scenario === 'empty_opening' ? 'Пустой проём' : 'Готовый каркас';
+  const turnLabel = step1State.stairFamily === 'straight' ? '' : (step1State.turnMode === 'landing' ? ' · Площадка' : ' · Забежные');
   stage.dataset.family = step1State.stairFamily;
-  title.textContent = `${familyLabel} лестница · ${scenarioLabel}`;
+  stage.dataset.turn = step1State.turnMode;
+  title.textContent = `${familyLabel} лестница${turnLabel} · ${scenarioLabel}`;
   subtitle.textContent = step1State.scenario === 'empty_opening'
     ? 'Укажите габариты проёма и конструктивные размеры.'
     : 'Укажите параметры существующего каркаса и комплектацию.';
