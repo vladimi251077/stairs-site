@@ -102,6 +102,8 @@
       color:var(--muted);
       white-space:pre-wrap;
     }
+    .status.success{color:#7bdc9d}
+    .status.warning{color:#ffcf7a}
     .status.error{color:var(--danger)}
     .preview{
       display:block;
@@ -251,6 +253,8 @@
         <div class="row" style="margin-top:12px">
           <button id="saveContacts" class="btn">Сохранить контакты</button>
         </div>
+        <div id="contactsStatus" class="status small" aria-live="polite"></div>
+        <div id="effectiveNotifyEmail" class="status small" aria-live="polite"></div>
       </section>
 
       <section class="panel">
@@ -330,6 +334,8 @@
     const adminApp = document.getElementById('adminApp');
     const authStatus = document.getElementById('authStatus');
     const statusBox = document.getElementById('status');
+    const contactsStatusBox = document.getElementById('contactsStatus');
+    const effectiveNotifyEmailBox = document.getElementById('effectiveNotifyEmail');
     const logoutBtn = document.getElementById('logoutBtn');
 
     const phoneInput = document.getElementById('phone');
@@ -364,6 +370,25 @@
       statusBox.textContent = msg || '';
       statusBox.classList.toggle('error', !!isError);
       console[isError ? 'error' : 'log'](msg);
+    }
+
+    function setContactsStatus(msg, type = 'info') {
+      contactsStatusBox.textContent = msg || '';
+      contactsStatusBox.classList.remove('error', 'warning', 'success');
+      if (type === 'error' || type === 'warning' || type === 'success') {
+        contactsStatusBox.classList.add(type);
+      }
+    }
+
+    function renderEffectiveNotifyEmail(settings = {}) {
+      const email = String(settings.notifyEmail || '').trim();
+      if (email) {
+        effectiveNotifyEmailBox.textContent = `Текущий получатель заявок: ${email} (из settings.id = 1).`;
+        effectiveNotifyEmailBox.classList.remove('warning');
+      } else {
+        effectiveNotifyEmailBox.textContent = 'Email в settings.id = 1 пустой — сервер использует fallback NOTIFY_EMAIL_TO.';
+        effectiveNotifyEmailBox.classList.add('warning');
+      }
     }
 
     function setAuthStatus(msg, isError = false) {
@@ -427,6 +452,7 @@
       baseRateInput.value = settings.baseRate || 5000;
       showPreview(heroImagePreview, settings.heroImage || '');
       showPreview(logoPreview, settings.logo || '');
+      renderEffectiveNotifyEmail(settings);
     }
 
     function serviceItem(item = {}) {
@@ -679,8 +705,7 @@
       const { data, error } = await client
         .from('settings')
         .select('*')
-        .order('updated_at', { ascending: false })
-        .limit(1)
+        .eq('id', 1)
         .maybeSingle();
 
       if (error) throw error;
@@ -813,20 +838,26 @@
 
     document.getElementById('saveContacts').onclick = async () => {
       try {
+        const notifyEmail = notifyEmailInput.value.trim();
+        if (!notifyEmail) {
+          setContactsStatus('Предупреждение: email пустой. Уведомления пойдут в fallback NOTIFY_EMAIL_TO (если он настроен на сервере).', 'warning');
+        }
         const contactsRes = await client.from('settings').upsert({
           id: 1,
           phone: phoneInput.value.trim(),
           whatsapp: whatsappInput.value.trim(),
           telegram: telegramInput.value.trim(),
-          notify_email: notifyEmailInput.value.trim(),
+          notify_email: notifyEmail,
           max: maxInput.value.trim(),
           updated_at: new Date().toISOString()
         }, { onConflict: 'id' });
         throwIfSupabaseError(contactsRes, 'Не удалось сохранить контакты');
 
+        setContactsStatus('Контакты сохранены в settings.id = 1.', 'success');
         setStatus('Контакты сохранены');
         await loadSettings();
       } catch (err) {
+        setContactsStatus('Ошибка сохранения контактов: ' + explainError(err), 'error');
         setStatus('Ошибка сохранения контактов: ' + explainError(err), true);
       }
     };
