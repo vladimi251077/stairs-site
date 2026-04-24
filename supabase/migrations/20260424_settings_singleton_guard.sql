@@ -6,8 +6,8 @@ begin
   select exists(select 1 from public.settings where id = 1) into canonical_exists;
 
   if not canonical_exists then
-    insert into public.settings (id, updated_at)
-    values (1, now());
+    insert into public.settings (id, updated_at, "baseRate")
+    values (1, now(), null);
   end if;
 
   with latest as (
