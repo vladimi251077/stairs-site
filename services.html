@@ -15,30 +15,58 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/supabase-config.js"></script>
   <link rel="stylesheet" href="/styles.css">
-  <style>
-    .wrap{max-width:1100px;margin:0 auto;padding:24px 16px 48px}
-    .lead{max-width:780px;color:#c8b7a2;line-height:1.6}
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:16px}
-    .card{border:1px solid rgba(255,255,255,.11);border-radius:16px;padding:16px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));display:flex;flex-direction:column;gap:8px}
-    .card h2{margin:0 0 8px}
-    .price{color:#efd8bb;font-weight:700;margin-top:auto;padding-top:6px}
-    .service-cta{margin-top:20px;padding:16px;border:1px solid rgba(255,255,255,.14);border-radius:16px;background:rgba(255,255,255,.025);display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
-    .service-cta a{text-decoration:none;padding:10px 14px;border-radius:10px;background:#e8c8a2;color:#1a120e;font-weight:700}
-    @media(max-width:760px){.wrap{padding:16px 14px 36px}.service-cta{padding:14px}}
-  </style>
 </head>
-<body>
-  <main class="wrap">
-    <h1>Услуги Tekstura</h1>
-    <p class="lead">Премиальный цикл: инженерное проектирование, производство, монтаж и сопровождение проекта до финальной сдачи объекта.</p>
-    <p class="lead">Производство Tekstura: Казань, Орнбургский тракт, 340.</p>
-    <div id="servicesStatus" class="subtitle" aria-live="polite"></div>
-    <section id="servicesRoot" class="grid"></section>
-    <div class="service-cta">
-      <div>Нужна комплексная оценка и подбор решения под ваш проём? Подготовим персональную конфигурацию и дорожную карту работ.</div>
-      <a href="/request.html">Оставить заявку</a>
+<body class="public-page">
+  <header class="site-header">
+    <div class="container site-header__inner">
+      <a class="brand" href="/">TEKSTURA</a>
+      <nav class="site-nav" aria-label="Основная навигация">
+        <a href="/projects.html">Проекты</a>
+        <a href="/services.html">Услуги</a>
+        <a href="/calculator.html">Калькулятор</a>
+        <a href="/request.html">Заявка</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="public-main">
+    <div class="container">
+      <section class="public-header">
+        <span class="public-eyebrow">Tekstura services</span>
+        <h1 class="public-title">Услуги Tekstura</h1>
+        <p class="public-lead">Премиальный цикл: инженерное проектирование, производство, монтаж и сопровождение проекта до финальной сдачи объекта.</p>
+        <p class="public-lead">Производство Tekstura: Казань, Орнбургский тракт, 340.</p>
+      </section>
+
+      <div id="servicesStatus" class="public-status" aria-live="polite"></div>
+      <section id="servicesRoot" class="public-grid public-grid--3" aria-live="polite"></section>
+
+      <section class="public-mini-footer">
+        <div class="cta-box">
+          <div>
+            <h2>Нужна комплексная оценка?</h2>
+            <p>Подготовим персональную конфигурацию, ориентир по бюджету и дорожную карту работ под ваш проём.</p>
+          </div>
+          <div class="cta-box__actions">
+            <a class="btn btn-primary" href="/request.html">Оставить заявку</a>
+            <a class="btn btn-secondary" href="/calculator.html">Рассчитать стоимость</a>
+          </div>
+        </div>
+      </section>
     </div>
   </main>
+
+  <footer class="site-footer">
+    <div class="container site-footer__inner">
+      <div class="site-footer__brand">TEKSTURA</div>
+      <div class="site-footer__links">
+        <a href="/projects.html">Проекты</a>
+        <a href="/calculator.html">Калькулятор</a>
+        <a href="/request.html">Заявка</a>
+      </div>
+    </div>
+  </footer>
+
 <script>
 const fallback=[
   {title:'Проектирование',description:'Инженерный расчёт, подбор геометрии, материалов и визуальная концепция лестницы под конкретный объект.',price:'от 35 000 ₽'},
@@ -49,7 +77,7 @@ const fallback=[
 const root=document.getElementById('servicesRoot');
 const status=document.getElementById('servicesStatus');
 const esc=(s='')=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
-function render(items){root.innerHTML=(items||[]).map((s)=>`<article class="card"><h2>${esc(s.title||'Услуга')}</h2><p>${esc(s.description||'')}</p><div class="price">${esc(s.price||'по запросу')}</div></article>`).join('');}
+function render(items){root.innerHTML=(items||[]).map((s)=>`<article class="public-card service-card-public"><span class="public-eyebrow">Услуга</span><h2>${esc(s.title||'Услуга')}</h2><p>${esc(s.description||'')}</p><div class="public-price">${esc(s.price||'по запросу')}</div></article>`).join('');}
 (async function load(){
   try {
     const cfg = window.SUPABASE_CONFIG;
