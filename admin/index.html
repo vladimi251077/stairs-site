@@ -103,6 +103,7 @@
       white-space:pre-wrap;
     }
     .status.error{color:var(--danger)}
+    .status.warning{color:#ffd08d}
     .preview{
       display:block;
       max-width:220px;
@@ -123,6 +124,8 @@
       font-size:13px;
       color:var(--muted);
     }
+    .small.warning{color:#ffd08d}
+    .small.error{color:var(--danger)}
     .gallery-tools{
       display:flex;
       flex-wrap:wrap;
@@ -242,6 +245,7 @@
           <div>
             <label for="notifyEmail">Email для уведомлений</label>
             <input id="notifyEmail" type="email" placeholder="leads@tekstura.shop" />
+            <div id="notifyEmailHint" class="small" style="margin-top:6px;"></div>
           </div>
           <div>
             <label for="max">MAX</label>
@@ -336,6 +340,7 @@
     const whatsappInput = document.getElementById('whatsapp');
     const telegramInput = document.getElementById('telegram');
     const notifyEmailInput = document.getElementById('notifyEmail');
+    const notifyEmailHint = document.getElementById('notifyEmailHint');
     const maxInput = document.getElementById('max');
 
     const heroTitleInput = document.getElementById('heroTitle');
@@ -358,12 +363,20 @@
       settings: null,
       services: [],
       projects: [],
+      notifyEmailFallback: ''
     };
 
-    function setStatus(msg, isError = false) {
+    function setStatus(msg, isError = false, isWarning = false) {
       statusBox.textContent = msg || '';
       statusBox.classList.toggle('error', !!isError);
-      console[isError ? 'error' : 'log'](msg);
+      statusBox.classList.toggle('warning', !!isWarning && !isError);
+      if (isError) {
+        console.error(msg);
+      } else if (isWarning) {
+        console.warn(msg);
+      } else {
+        console.log(msg);
+      }
     }
 
     function setAuthStatus(msg, isError = false) {
@@ -413,11 +426,38 @@
       };
     }
 
+    function readFallbackNotifyEmail() {
+      const fromConfig = (window.SUPABASE_CONFIG?.notifyEmailFallback || '').trim();
+      if (fromConfig) return fromConfig;
+      const fromMeta = (document.querySelector('meta[name="notify-email-fallback"]')?.content || '').trim();
+      return fromMeta;
+    }
+
+    function updateNotifyEmailHint(notifyEmailValue) {
+      const current = (notifyEmailValue || '').trim();
+      const fallback = (state.notifyEmailFallback || '').trim();
+      notifyEmailHint.classList.remove('error', 'warning');
+
+      if (current) {
+        notifyEmailHint.textContent = `Текущий получатель уведомлений: ${current} (из settings.id=1).`;
+        return;
+      }
+      if (fallback) {
+        notifyEmailHint.classList.add('warning');
+        notifyEmailHint.textContent = `Email в settings.id=1 пустой. Будет использован fallback из окружения: ${fallback}.`;
+        return;
+      }
+
+      notifyEmailHint.classList.add('error');
+      notifyEmailHint.textContent = 'Email в settings.id=1 пустой и fallback не задан. Email-уведомления будут пропущены.';
+    }
+
     function fillSettingsForm(settings) {
       phoneInput.value = settings.phone || '';
       whatsappInput.value = settings.whatsapp || '';
       telegramInput.value = settings.telegram || '';
       notifyEmailInput.value = settings.notifyEmail || '';
+      updateNotifyEmailHint(settings.notifyEmail || '');
       maxInput.value = settings.max || '';
       heroTitleInput.value = settings.heroTitle || '';
       heroSubtitleInput.value = settings.heroSubtitle || '';
@@ -676,14 +716,38 @@
     }
 
     async function loadSettings() {
-      const { data, error } = await client
+      const { data: canonicalRows, error: canonicalError } = await client
         .from('settings')
         .select('*')
-        .order('updated_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        .eq('id', 1)
+        .limit(1);
+      if (canonicalError) throw canonicalError;
 
-      if (error) throw error;
+      let data = canonicalRows?.[0] || null;
+      if (!data) {
+        const createRes = await client.from('settings').upsert({
+          id: 1,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'id' });
+        throwIfSupabaseError(createRes, 'Не удалось создать каноническую запись settings.id=1');
+
+        const { data: recreatedRows, error: recreatedError } = await client
+          .from('settings')
+          .select('*')
+          .eq('id', 1)
+          .limit(1);
+        if (recreatedError) throw recreatedError;
+        data = recreatedRows?.[0] || null;
+      }
+
+      const { count, error: countError } = await client
+        .from('settings')
+        .select('id', { count: 'exact', head: true });
+      if (countError) throw countError;
+      if ((count || 0) > 1) {
+        setStatus(`Предупреждение: найдено ${count} строк в settings. Используется только каноническая запись settings.id=1.`, true);
+      }
+
       const settings = normalizeSettings(data || {});
       state.settings = settings;
       fillSettingsForm(settings);
@@ -810,21 +874,27 @@
 
     heroImageInput.addEventListener('input', () => showPreview(heroImagePreview, heroImageInput.value.trim()));
     logoInput.addEventListener('input', () => showPreview(logoPreview, logoInput.value.trim()));
+    notifyEmailInput.addEventListener('input', () => updateNotifyEmailHint(notifyEmailInput.value));
 
     document.getElementById('saveContacts').onclick = async () => {
       try {
+        const notifyEmailValue = notifyEmailInput.value.trim().toLowerCase();
         const contactsRes = await client.from('settings').upsert({
           id: 1,
           phone: phoneInput.value.trim(),
           whatsapp: whatsappInput.value.trim(),
           telegram: telegramInput.value.trim(),
-          notify_email: notifyEmailInput.value.trim(),
+          notify_email: notifyEmailValue,
           max: maxInput.value.trim(),
           updated_at: new Date().toISOString()
         }, { onConflict: 'id' });
         throwIfSupabaseError(contactsRes, 'Не удалось сохранить контакты');
 
-        setStatus('Контакты сохранены');
+        if (notifyEmailValue) {
+          setStatus(`Контакты сохранены. Email уведомлений: ${notifyEmailValue}`);
+        } else {
+          setStatus('Контакты сохранены, но Email для уведомлений пустой. Будет использован fallback NOTIFY_EMAIL_TO (если задан).', false, true);
+        }
         await loadSettings();
       } catch (err) {
         setStatus('Ошибка сохранения контактов: ' + explainError(err), true);
@@ -972,6 +1042,8 @@
 
     (async function boot() {
       try {
+        state.notifyEmailFallback = readFallbackNotifyEmail();
+        updateNotifyEmailHint('');
         await initAuth();
       } catch (err) {
         const msg = explainError(err);

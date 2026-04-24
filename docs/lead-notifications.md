@@ -28,6 +28,7 @@
 1. Основной получатель: `settings.notify_email` (из таблицы `settings`, запись `id=1`).
 2. Fallback: `NOTIFY_EMAIL_TO`.
 3. Если оба пустые, лид сохраняется как обычно, email канал отмечается как `skipped` с ошибкой `email-not-configured`.
+4. В ответе `/api/notify-lead` возвращается `emailRecipientResolution` (`recipient`, `source`, `reason`) для диагностики.
 
 ### WhatsApp (Meta Cloud API)
 - `WHATSAPP_ACCESS_TOKEN`

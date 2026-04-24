@@ -93,9 +93,14 @@ async function sendTelegram(message) {
 async function resolveNotifyEmailRecipient() {
   const supabaseUrl = process.env.SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const fallback = (process.env.NOTIFY_EMAIL_TO || '').trim();
 
   if (!supabaseUrl || !serviceRoleKey) {
-    return process.env.NOTIFY_EMAIL_TO || '';
+    return {
+      recipient: fallback,
+      source: fallback ? 'env.NOTIFY_EMAIL_TO' : 'none',
+      reason: 'missing-supabase-env'
+    };
   }
 
   try {
@@ -108,15 +113,35 @@ async function resolveNotifyEmailRecipient() {
 
     if (!response.ok) {
       console.error('[notify-lead] failed to load settings.notify_email', { status: response.status });
-      return process.env.NOTIFY_EMAIL_TO || '';
+      return {
+        recipient: fallback,
+        source: fallback ? 'env.NOTIFY_EMAIL_TO' : 'none',
+        reason: `settings-fetch-http-${response.status}`
+      };
     }
 
     const payload = await response.json().catch(() => []);
-    const fromSettings = payload?.[0]?.notify_email;
-    return (fromSettings || process.env.NOTIFY_EMAIL_TO || '').trim();
+    const fromSettings = (payload?.[0]?.notify_email || '').trim();
+    if (fromSettings) {
+      return {
+        recipient: fromSettings,
+        source: 'settings.id=1.notify_email',
+        reason: 'settings-hit'
+      };
+    }
+
+    return {
+      recipient: fallback,
+      source: fallback ? 'env.NOTIFY_EMAIL_TO' : 'none',
+      reason: 'settings-empty'
+    };
   } catch (error) {
     console.error('[notify-lead] settings notify_email fetch error', error?.message || error);
-    return process.env.NOTIFY_EMAIL_TO || '';
+    return {
+      recipient: fallback,
+      source: fallback ? 'env.NOTIFY_EMAIL_TO' : 'none',
+      reason: 'settings-fetch-exception'
+    };
   }
 }
 
@@ -236,13 +261,21 @@ module.exports = async function handler(req, res) {
 
   const message = formatLeadMessage(lead);
   const emailHtml = formatLeadEmailHtml(lead);
-  const notifyEmailTo = await resolveNotifyEmailRecipient();
+  const emailRecipientResolution = await resolveNotifyEmailRecipient();
+  const notifyEmailTo = emailRecipientResolution.recipient;
 
   const deliveryResults = {
     telegram: await sendTelegram(message),
     email: await sendEmail(emailHtml, notifyEmailTo),
     whatsapp: await sendWhatsApp(message)
   };
+
+  console.log('[notify-lead] email recipient resolved', {
+    leadId: lead.id,
+    recipient: notifyEmailTo || null,
+    source: emailRecipientResolution.source,
+    reason: emailRecipientResolution.reason
+  });
 
   for (const [channel, result] of Object.entries(deliveryResults)) {
     const status = result.ok ? 'sent' : (result.skipped ? 'skipped' : 'failed');
@@ -253,7 +286,8 @@ module.exports = async function handler(req, res) {
         leadId: lead.id,
         channel,
         status,
-        error: errorMessage
+        error: errorMessage,
+        emailRecipientSource: channel === 'email' ? emailRecipientResolution.source : undefined
       });
     }
 
@@ -263,6 +297,7 @@ module.exports = async function handler(req, res) {
   return res.status(200).json({
     ok: true,
     leadSaved: true,
-    deliveryResults
+    deliveryResults,
+    emailRecipientResolution
   });
 };
