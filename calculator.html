@@ -79,33 +79,83 @@
             <p id="visualSubtitle">Заполните ключевые размеры прямо на схеме.</p>
           </div>
 
-          <div class="visual-overlay grid" id="emptyOpeningGrid">
-            <div class="field" id="turnDirectionField"><label for="turnDirection">Направление поворота</label><select id="turnDirection"><option value="left">Левый</option><option value="right">Правый</option></select></div>
-            <div class="field"><label for="floorHeight">Высота этаж-этаж (мм)</label><input id="floorHeight" type="number" placeholder="3000"></div>
-            <div class="field"><label for="openingLength">Длина проёма (мм)</label><input id="openingLength" type="number" placeholder="4200"></div>
-            <div class="field"><label for="openingWidth">Ширина проёма (мм)</label><input id="openingWidth" type="number" placeholder="2100"></div>
-            <div class="field"><label for="marchWidth">Ширина марша (мм)</label><input id="marchWidth" type="number" placeholder="1000"></div>
-            <div class="field"><label for="slabThickness">Толщина плиты (мм)</label><input id="slabThickness" type="number" placeholder="220"></div>
-            <div class="field"><label for="topFinishThickness">Финиш сверху (мм)</label><input id="topFinishThickness" type="number" placeholder="20"></div>
-            <div class="field"><label for="bottomFinishThickness">Финиш снизу (мм)</label><input id="bottomFinishThickness" type="number" placeholder="20"></div>
+          <div id="emptyOpeningGrid" class="visual-schemes">
+            <article class="scheme-card">
+              <h4>Вид сверху</h4>
+              <div class="scheme-canvas scheme-canvas--top">
+                <svg viewBox="0 0 360 180" aria-hidden="true">
+                  <rect x="12" y="12" width="336" height="156" rx="14"></rect>
+                  <path class="scheme-stair-path" d="M56 140 L162 140 L162 118 L248 118 L248 88 L304 88"></path>
+                  <path class="scheme-stair-path is-straight" d="M56 140 L304 140"></path>
+                </svg>
+                <div class="scheme-fields">
+                  <div class="field field--compact"><label for="openingLength">Длина проёма, мм</label><input id="openingLength" type="number" placeholder="4200"></div>
+                  <div class="field field--compact"><label for="openingWidth">Ширина проёма, мм</label><input id="openingWidth" type="number" placeholder="2100"></div>
+                  <div class="field field--compact"><label for="marchWidth">Ширина марша, мм</label><input id="marchWidth" type="number" placeholder="1000"></div>
+                  <div class="field field--compact hidden" id="turnDirectionField"><label for="turnDirection">Направление поворота</label><select id="turnDirection"><option value="left">Левый</option><option value="right">Правый</option></select></div>
+                </div>
+              </div>
+            </article>
+
+            <article class="scheme-card">
+              <h4>Боковой вид</h4>
+              <div class="scheme-canvas scheme-canvas--side">
+                <svg viewBox="0 0 360 180" aria-hidden="true">
+                  <rect x="14" y="18" width="332" height="146" rx="14"></rect>
+                  <path class="scheme-rise" d="M48 148 L76 148 L76 134 L104 134 L104 120 L132 120 L132 106 L160 106 L160 92 L188 92 L188 78 L216 78 L216 64 L244 64"></path>
+                  <line x1="46" y1="26" x2="46" y2="148"></line>
+                </svg>
+                <div class="scheme-fields">
+                  <div class="field field--compact"><label for="floorHeight">Высота этаж-этаж, мм</label><input id="floorHeight" type="number" placeholder="3000"></div>
+                  <div class="field field--compact"><label for="slabThickness">Толщина плиты, мм</label><input id="slabThickness" type="number" placeholder="220"></div>
+                  <div class="field field--compact"><label for="topFinishThickness">Финиш сверху, мм</label><input id="topFinishThickness" type="number" placeholder="20"></div>
+                  <div class="field field--compact"><label for="bottomFinishThickness">Финиш снизу, мм</label><input id="bottomFinishThickness" type="number" placeholder="20"></div>
+                </div>
+              </div>
+            </article>
           </div>
 
-          <div id="readyFlowFields" class="visual-overlay grid hidden">
-            <div class="field"><label for="configurationType">Конфигурация</label><select id="configurationType"><option value="straight">Прямая</option><option value="l_shaped">Г-образная</option><option value="u_shaped">П-образная</option></select></div>
-            <div class="field hidden" id="turnTypeField"><label for="turnType">Тип поворота</label><select id="turnType"><option value="landing">Площадка</option><option value="winders">Забежные</option></select></div>
-            <div class="field hidden" id="readyTurnDirectionField"><label for="readyTurnDirection">Направление поворота</label><select id="readyTurnDirection"><option value="left">Левый</option><option value="right">Правый</option></select></div>
-            <div class="field"><label for="stepCount">Количество ступеней</label><input id="stepCount" type="number" placeholder="15"></div>
-            <div class="field"><label for="readyMarchWidth">Ширина марша (мм)</label><input id="readyMarchWidth" type="number" placeholder="1000"></div>
-            <div class="field"><label for="riserHeight">Высота подступенка (мм)</label><input id="riserHeight" type="number" placeholder="170"></div>
-            <div class="field"><label for="treadDepth">Глубина проступи (мм)</label><input id="treadDepth" type="number" placeholder="280"></div>
-            <div class="field hidden" id="landingLengthField"><label for="landingLength">Длина площадки (мм)</label><input id="landingLength" type="number" placeholder="1000"></div>
-            <div class="field hidden" id="landingWidthField"><label for="landingWidth">Ширина площадки (мм)</label><input id="landingWidth" type="number" placeholder="1000"></div>
-            <div class="field hidden" id="winderCountField"><label for="winderCount">Количество забежных ступеней</label><input id="winderCount" type="number" placeholder="3"></div>
-            <div class="field"><label for="readyMaterial">Материал ступеней</label><select id="readyMaterial"><option value="ash">Ясень</option><option value="oak">Дуб</option><option value="pine">Сосна</option><option value="mdf">MDF</option></select></div>
-            <div class="field"><label for="readyRailingType">Ограждение</label><select id="readyRailingType"><option value="none">Без ограждения</option><option value="round_tube_16mm">Труба круглая 16 мм</option><option value="mdf">MDF</option><option value="glass">Стекло</option><option value="pattern_2d">Узор 2D</option><option value="custom">Индивидуальное</option></select></div>
-            <div class="field"><label for="topFloorRailingLength">Длина ограждения верхнего этажа (мм)</label><input id="topFloorRailingLength" type="number" placeholder="1200"></div>
-            <div class="field"><label for="pricingProfile">Профиль расчёта</label><select id="pricingProfile"><option value="balanced">Сбалансированный</option><option value="value">Рациональный</option><option value="premium">Премиум</option></select></div>
-            <div class="field"><label for="existingConditionNotes">Состояние существующего основания</label><input id="existingConditionNotes" type="text" placeholder="Например: требуется усиление узлов"></div>
+          <div id="readyFlowFields" class="visual-schemes hidden">
+            <article class="scheme-card">
+              <h4>Вид сверху</h4>
+              <div class="scheme-canvas scheme-canvas--top">
+                <svg viewBox="0 0 360 180" aria-hidden="true">
+                  <rect x="12" y="12" width="336" height="156" rx="14"></rect>
+                  <path class="scheme-stair-path" d="M56 140 L162 140 L162 118 L248 118 L248 88 L304 88"></path>
+                  <path class="scheme-stair-path is-straight" d="M56 140 L304 140"></path>
+                </svg>
+                <div class="scheme-fields">
+                  <div class="field field--compact"><label for="stepCount">Количество ступеней</label><input id="stepCount" type="number" placeholder="15"></div>
+                  <div class="field field--compact"><label for="readyMarchWidth">Ширина марша, мм</label><input id="readyMarchWidth" type="number" placeholder="1000"></div>
+                  <div class="field field--compact hidden" id="readyTurnDirectionField"><label for="readyTurnDirection">Направление поворота</label><select id="readyTurnDirection"><option value="left">Левый</option><option value="right">Правый</option></select></div>
+                  <div class="field field--compact hidden" id="landingLengthField"><label for="landingLength">Длина площадки, мм</label><input id="landingLength" type="number" placeholder="1000"></div>
+                  <div class="field field--compact hidden" id="landingWidthField"><label for="landingWidth">Ширина площадки, мм</label><input id="landingWidth" type="number" placeholder="1000"></div>
+                  <div class="field field--compact hidden" id="winderCountField"><label for="winderCount">Количество забежных</label><input id="winderCount" type="number" placeholder="3"></div>
+                </div>
+              </div>
+            </article>
+
+            <article class="scheme-card">
+              <h4>Боковой вид</h4>
+              <div class="scheme-canvas scheme-canvas--side">
+                <svg viewBox="0 0 360 180" aria-hidden="true">
+                  <rect x="14" y="18" width="332" height="146" rx="14"></rect>
+                  <path class="scheme-rise" d="M48 148 L76 148 L76 134 L104 134 L104 120 L132 120 L132 106 L160 106 L160 92 L188 92 L188 78 L216 78 L216 64 L244 64"></path>
+                  <line x1="46" y1="26" x2="46" y2="148"></line>
+                </svg>
+                <div class="scheme-fields">
+                  <div class="field field--compact"><label for="riserHeight">Высота подступенка, мм</label><input id="riserHeight" type="number" placeholder="170"></div>
+                  <div class="field field--compact"><label for="treadDepth">Глубина проступи, мм</label><input id="treadDepth" type="number" placeholder="280"></div>
+                  <div class="field field--compact"><label for="readyMaterial">Материал ступеней</label><select id="readyMaterial"><option value="ash">Ясень</option><option value="oak">Дуб</option><option value="pine">Сосна</option><option value="mdf">МДФ</option></select></div>
+                  <div class="field field--compact"><label for="readyRailingType">Ограждение</label><select id="readyRailingType"><option value="none">Без ограждения</option><option value="round_tube_16mm">Труба круглая 16 мм</option><option value="mdf">МДФ</option><option value="glass">Стекло</option><option value="pattern_2d">Узор 2D</option><option value="custom">Индивидуальное</option></select></div>
+                  <div class="field field--compact"><label for="topFloorRailingLength">Ограждение верхнего этажа, мм</label><input id="topFloorRailingLength" type="number" placeholder="1200"></div>
+                  <div class="field field--compact"><label for="pricingProfile">Профиль расчёта</label><select id="pricingProfile"><option value="balanced">Сбалансированный</option><option value="value">Рациональный</option><option value="premium">Премиум</option></select></div>
+                  <div class="field field--compact"><label for="existingConditionNotes">Комментарий по основанию</label><input id="existingConditionNotes" type="text" placeholder="Например: требуется усиление"></div>
+                  <div class="field field--compact"><label for="configurationType">Конфигурация</label><select id="configurationType"><option value="straight">Прямая</option><option value="l_shaped">Г-образная</option><option value="u_shaped">П-образная</option></select></div>
+                  <div class="field field--compact hidden" id="turnTypeField"><label for="turnType">Тип поворота</label><select id="turnType"><option value="landing">Площадка</option><option value="winders">Забежные</option></select></div>
+                </div>
+              </div>
+            </article>
           </div>
         </div>
       </section>
