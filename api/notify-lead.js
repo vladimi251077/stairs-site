@@ -1,5 +1,71 @@
 const DEFAULT_WHATSAPP_API_URL = 'https://graph.facebook.com';
 
+function parseSenderEmail(senderValue) {
+  const value = String(senderValue || '').trim();
+  if (!value) return '';
+  const bracketMatch = value.match(/<([^>]+)>/);
+  if (bracketMatch?.[1]) return bracketMatch[1].trim().toLowerCase();
+  return value.toLowerCase();
+}
+
+function isResendDevSender(senderValue) {
+  const email = parseSenderEmail(senderValue);
+  return email.endsWith('@resend.dev');
+}
+
+function buildEmailPreflight(notifyEmail) {
+  const apiKeyConfigured = Boolean((process.env.RESEND_API_KEY || '').trim());
+  const senderRaw = (process.env.NOTIFY_EMAIL_FROM || '').trim();
+  const sender = senderRaw || 'Tekstura <onboarding@resend.dev>';
+  const senderConfigured = Boolean(senderRaw);
+  const senderUsesResendDev = isResendDevSender(sender);
+  const recipientResolved = Boolean((notifyEmail?.recipient || '').trim());
+  const recipientSource = notifyEmail?.source || 'missing-recipient';
+  const recipientViaFallbackEnv = recipientSource === 'fallback-env';
+
+  const errors = [];
+  const warnings = [];
+
+  if (!apiKeyConfigured) {
+    errors.push('missing-resend-api-key');
+  }
+  if (!recipientResolved) {
+    errors.push('missing-recipient');
+  }
+  if (!senderConfigured) {
+    warnings.push('missing-notify-email-from');
+  }
+  if (senderUsesResendDev) {
+    warnings.push('sender-uses-resend-dev');
+  }
+  if (recipientViaFallbackEnv) {
+    warnings.push('recipient-from-fallback-env');
+  }
+  if (notifyEmail?.warning) {
+    warnings.push(`recipient-resolution:${notifyEmail.warning}`);
+  }
+
+  const emailChannelState = errors.length
+    ? 'blocked'
+    : warnings.length
+      ? 'degraded'
+      : 'ready';
+
+  return {
+    sender,
+    senderConfigured,
+    senderUsesResendDev,
+    recipientResolved,
+    recipientSource,
+    recipientViaFallbackEnv,
+    apiKeyConfigured,
+    warnings,
+    errors,
+    emailChannelState,
+    emailError: errors[0] || null
+  };
+}
+
 function escapeHtml(value) {
   return String(value ?? '')
     .replace(/&/g, '&amp;')
@@ -161,17 +227,26 @@ async function resolveNotifyEmailRecipient() {
   }
 }
 
-async function sendEmail(html, recipientEmail) {
+async function sendEmail(html, recipientEmail, preflight = null) {
   const apiKey = process.env.RESEND_API_KEY;
   const to = (recipientEmail || '').trim();
   const from = process.env.NOTIFY_EMAIL_FROM || 'Tekstura <onboarding@resend.dev>';
 
+  if (preflight?.emailChannelState === 'blocked') {
+    return {
+      ok: false,
+      skipped: true,
+      error: preflight.emailError || 'email-channel-blocked',
+      reason: 'preflight-blocked'
+    };
+  }
+
   if (!to) {
-    return { ok: false, skipped: true, error: 'email-not-configured' };
+    return { ok: false, skipped: true, error: 'missing-recipient', reason: 'preflight-recipient-check' };
   }
 
   if (!apiKey) {
-    return { ok: false, skipped: true, error: 'Missing RESEND_API_KEY' };
+    return { ok: false, skipped: true, error: 'missing-resend-api-key', reason: 'preflight-api-key-check' };
   }
 
   const response = await fetch('https://api.resend.com/emails', {
@@ -191,10 +266,14 @@ async function sendEmail(html, recipientEmail) {
   const payload = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    return { ok: false, error: payload?.message || `Resend API ${response.status}` };
+    return {
+      ok: false,
+      error: payload?.message || `Resend API ${response.status}`,
+      reason: `resend-http-${response.status}`
+    };
   }
 
-  return { ok: true };
+  return { ok: true, reason: 'sent' };
 }
 
 async function sendWhatsApp(message) {
@@ -279,6 +358,7 @@ module.exports = async function handler(req, res) {
   const emailHtml = formatLeadEmailHtml(lead);
   const notifyEmail = await resolveNotifyEmailRecipient();
   const notifyEmailTo = notifyEmail.recipient;
+  const emailPreflight = buildEmailPreflight(notifyEmail);
   if (notifyEmail.warning) {
     console.warn('[notify-lead] email recipient resolution warning', {
       warning: notifyEmail.warning,
@@ -287,9 +367,21 @@ module.exports = async function handler(req, res) {
     });
   }
 
+  if (emailPreflight.emailChannelState !== 'ready') {
+    console.warn('[notify-lead] email preflight state', {
+      leadId: lead.id,
+      state: emailPreflight.emailChannelState,
+      errors: emailPreflight.errors,
+      warnings: emailPreflight.warnings,
+      recipientSource: emailPreflight.recipientSource,
+      senderConfigured: emailPreflight.senderConfigured,
+      senderUsesResendDev: emailPreflight.senderUsesResendDev
+    });
+  }
+
   const deliveryResults = {
     telegram: await sendTelegram(message),
-    email: await sendEmail(emailHtml, notifyEmailTo),
+    email: await sendEmail(emailHtml, notifyEmailTo, emailPreflight),
     whatsapp: await sendWhatsApp(message)
   };
 
@@ -324,6 +416,13 @@ module.exports = async function handler(req, res) {
       recipient: notifyEmailTo || null,
       source: notifyEmail.source,
       warning: notifyEmail.warning || null
-    }
+    },
+    senderConfigured: emailPreflight.senderConfigured,
+    senderUsesResendDev: emailPreflight.senderUsesResendDev,
+    recipientResolved: emailPreflight.recipientResolved,
+    emailChannelState: emailPreflight.emailChannelState,
+    emailError: deliveryResults.email?.ok
+      ? null
+      : (deliveryResults.email?.error || emailPreflight.emailError || 'email-delivery-failed')
   });
 };

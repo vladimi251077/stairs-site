@@ -152,6 +152,8 @@ async function insertLead(payload){
 function buildNotifyUiMessage(notifyResult) {
   const emailResult = notifyResult?.deliveryResults?.email;
   const notifyRecipient = notifyResult?.notifyRecipient || {};
+  const emailChannelState = notifyResult?.emailChannelState;
+  const senderUsesResendDev = Boolean(notifyResult?.senderUsesResendDev);
 
   if (emailResult?.ok) {
     return {
@@ -162,14 +164,20 @@ function buildNotifyUiMessage(notifyResult) {
 
   let hint = '';
   if (notifyRecipient.source === 'fallback-env') {
-    hint = ' Для уведомлений использован резервный адрес.';
+    hint = ' Для уведомлений использован резервный адрес из переменных окружения.';
   } else if (notifyRecipient.warning === 'settings-notify-email-empty' || notifyRecipient.warning === 'missing-recipient') {
     hint = ' Email получателя сейчас не настроен.';
   }
 
+  if (emailChannelState === 'blocked') {
+    hint += ' Канал email временно не готов и требует настройки на стороне сервера.';
+  } else if (senderUsesResendDev) {
+    hint += ' Используется технический адрес resend.dev — для production нужен подтверждённый домен.';
+  }
+
   return {
     warning: true,
-    text: `Спасибо за обращение в Tekstura. Заявка сохранена, но отправка email-уведомления не подтверждена.${hint} Мы всё равно свяжемся с вами в ближайшее рабочее время.`
+    text: `Спасибо за обращение в Tekstura. Заявка сохранена, но отправка email-уведомления не подтверждена.${hint} Это не означает потерю заявки: она уже записана и доступна менеджеру. Мы всё равно свяжемся с вами в ближайшее рабочее время.`
   };
 }
 
