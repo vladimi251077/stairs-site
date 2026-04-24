@@ -16,41 +16,65 @@
   <script src="/supabase-config.js"></script>
   <link rel="stylesheet" href="/styles.css">
   <style>
-    .projects-wrap{max-width:1140px;margin:0 auto;padding:30px 16px 60px}
-    .projects-top{display:flex;justify-content:space-between;gap:16px;align-items:flex-end;flex-wrap:wrap;margin-bottom:22px}
-    .projects-title p{max-width:720px;color:#c9b8a4;margin:8px 0 0}
-    .chip{border:1px solid rgba(255,255,255,.18);padding:8px 12px;border-radius:999px;font-size:14px;color:#ead3b5;background:rgba(255,255,255,.03)}
-    .projects-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px}
-    .projects-grid.projects-grid--curated{grid-template-columns:repeat(2,minmax(0,1fr));max-width:900px}
-    .project-card{border:1px solid rgba(255,255,255,.1);border-radius:18px;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.015));text-decoration:none;color:inherit;transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease;display:flex;flex-direction:column}
-    .project-card:hover{transform:translateY(-2px);border-color:rgba(232,200,162,.44);box-shadow:0 16px 28px rgba(0,0,0,.2)}
-    .project-card img{width:100%;height:210px;object-fit:cover;background:#201b18}
-    .project-body{padding:15px 16px 16px;display:flex;flex-direction:column;gap:8px}
-    .project-body h2{margin:0;font-size:21px}
-    .project-body p{margin:0;color:#b8aa98;line-height:1.55}
-    .project-note{font-size:12px;color:#ceb79c}
-    .project-tags{display:flex;flex-wrap:wrap;gap:8px}
-    .project-tag{font-size:12px;padding:5px 9px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);color:#dbc2a3}
-    .price{margin-top:4px;font-weight:700;color:#efd8bb}
-    .empty,.state{border:1px dashed rgba(255,255,255,.22);padding:18px;border-radius:16px;color:#c5b39e;background:rgba(255,255,255,.02);grid-column:1/-1;line-height:1.6}
-    .loading-skeleton{height:250px;border-radius:16px;border:1px solid rgba(255,255,255,.08);background:linear-gradient(90deg,rgba(255,255,255,.03),rgba(255,255,255,.08),rgba(255,255,255,.03));background-size:200% 100%;animation:shine 1.5s linear infinite}
+    .loading-skeleton{height:280px;border-radius:22px;border:1px solid rgba(255,255,255,.08);background:linear-gradient(90deg,rgba(255,255,255,.03),rgba(255,255,255,.08),rgba(255,255,255,.03));background-size:200% 100%;animation:shine 1.5s linear infinite}
     @keyframes shine{to{background-position:-200% 0}}
-    @media(max-width:760px){.projects-wrap{padding:20px 14px 40px}.projects-grid.projects-grid--curated{grid-template-columns:1fr}.project-card img{height:190px}}
   </style>
 </head>
-<body>
-  <main class="projects-wrap">
-    <div class="projects-top">
-      <div class="projects-title">
-        <h1>Проекты лестниц Tekstura</h1>
-        <p>Кураторская подборка реализованных решений. Даже при небольшом количестве кейсов мы показываем только актуальные проекты с реальными параметрами и ценовым ориентиром.</p>
-      </div>
-      <div class="chip" id="projectsCount" aria-live="polite">Загрузка кураторской коллекции...</div>
+<body class="public-page">
+  <header class="site-header">
+    <div class="container site-header__inner">
+      <a class="brand" href="/">TEKSTURA</a>
+      <nav class="site-nav" aria-label="Основная навигация">
+        <a href="/projects.html">Проекты</a>
+        <a href="/services.html">Услуги</a>
+        <a href="/calculator.html">Калькулятор</a>
+        <a href="/request.html">Заявка</a>
+      </nav>
     </div>
-    <section id="projectsRoot" class="projects-grid" aria-live="polite">
-      <div class="loading-skeleton"></div><div class="loading-skeleton"></div><div class="loading-skeleton"></div>
-    </section>
+  </header>
+
+  <main class="public-main">
+    <div class="container">
+      <section class="public-header">
+        <span class="public-eyebrow">Tekstura portfolio</span>
+        <h1 class="public-title">Проекты лестниц Tekstura</h1>
+        <p class="public-lead">Кураторская подборка реализованных решений. Показываем актуальные проекты с реальными параметрами, материалами и ценовым ориентиром.</p>
+        <div class="public-chip-list" style="margin-top:18px">
+          <span class="public-chip" id="projectsCount" aria-live="polite">Загрузка кураторской коллекции...</span>
+          <span class="public-chip">Собственное производство</span>
+          <span class="public-chip">Казань · Орнбургский тракт, 340</span>
+        </div>
+      </section>
+
+      <section id="projectsRoot" class="public-grid public-grid--3" aria-live="polite">
+        <div class="loading-skeleton"></div><div class="loading-skeleton"></div><div class="loading-skeleton"></div>
+      </section>
+
+      <section class="public-mini-footer">
+        <div class="cta-box">
+          <div>
+            <h2>Хотите похожую лестницу?</h2>
+            <p>Инженер Tekstura подберёт близкие реализованные решения под ваш проём, стиль интерьера и бюджет.</p>
+          </div>
+          <div class="cta-box__actions">
+            <a class="btn btn-primary" href="/request.html">Оставить заявку</a>
+            <a class="btn btn-secondary" href="/calculator.html">Рассчитать стоимость</a>
+          </div>
+        </div>
+      </section>
+    </div>
   </main>
+
+  <footer class="site-footer">
+    <div class="container site-footer__inner">
+      <div class="site-footer__brand">TEKSTURA</div>
+      <div class="site-footer__links">
+        <a href="/services.html">Услуги</a>
+        <a href="/calculator.html">Калькулятор</a>
+        <a href="/request.html">Заявка</a>
+      </div>
+    </div>
+  </footer>
 <script>
 const cfg = window.SUPABASE_CONFIG;
 const projectsCount = document.getElementById('projectsCount');
@@ -70,10 +94,11 @@ const tagsFor = (project) => {
 
 const render = (items=[]) => {
   projectsCount.textContent = items.length ? `Реализованных кейсов: ${items.length}` : 'Коллекция обновляется';
-  projectsRoot.classList.toggle('projects-grid--curated', items.length > 0 && items.length <= 2);
+  projectsRoot.classList.toggle('public-grid--2', items.length > 0 && items.length <= 2);
+  projectsRoot.classList.toggle('public-grid--3', !(items.length > 0 && items.length <= 2));
 
   if (!items.length) {
-    projectsRoot.innerHTML = '<div class="empty">В публичной коллекции сейчас ограниченное число проектов — показываем только актуальные кейсы. Отправьте заявку, и инженер Tekstura подберёт релевантные реализованные объекты под ваш проём.</div>';
+    projectsRoot.innerHTML = '<div class="public-empty">В публичной коллекции сейчас ограниченное число проектов — показываем только актуальные кейсы. Отправьте заявку, и инженер Tekstura подберёт релевантные реализованные объекты под ваш проём.</div>';
     return;
   }
 
@@ -82,14 +107,14 @@ const render = (items=[]) => {
     const shortDescription = p.short_description || p.description || 'Индивидуальная инженерная проработка и премиальная реализация.';
     const image = p.cover_image || p.image || '/logo.jpg.png';
     const tags = tagsFor(p);
-    return `<a class="project-card" href="/project.html?id=${encodeURIComponent(p.id)}">
+    return `<a class="public-card project-card-public" href="/project.html?id=${encodeURIComponent(p.id)}">
       <img src="${esc(image)}" alt="${esc(title)}">
-      <div class="project-body">
+      <div class="project-card-public__body">
         <h2>${esc(title)}</h2>
         <p>${esc(shortDescription)}</p>
-        ${tags.length ? `<div class="project-tags">${tags.map((tag)=>`<span class="project-tag">${esc(tag)}</span>`).join('')}</div>` : ''}
-        <div class="project-note">Инженерная реализация и монтаж штатной бригадой Tekstura.</div>
-        <div class="price">${esc(getPrice(p))}</div>
+        ${tags.length ? `<div class="public-chip-list">${tags.map((tag)=>`<span class="public-chip">${esc(tag)}</span>`).join('')}</div>` : ''}
+        <p>Инженерная реализация и монтаж штатной бригадой Tekstura.</p>
+        <div class="public-price">${esc(getPrice(p))}</div>
       </div>
     </a>`;
   }).join('');
@@ -99,7 +124,7 @@ const render = (items=[]) => {
   try {
     if (!client) {
       projectsCount.textContent = 'Каталог в базовом режиме';
-      projectsRoot.innerHTML = '<div class="state">Каталог временно недоступен. Оставьте заявку — отправим curated-подборку реализованных объектов Tekstura вручную.</div>';
+      projectsRoot.innerHTML = '<div class="public-empty">Каталог временно недоступен. Оставьте заявку — отправим curated-подборку реализованных объектов Tekstura вручную.</div>';
       return;
     }
     const { data, error } = await client.from('projects').select('*').order('created_at', { ascending: false });
@@ -113,7 +138,7 @@ const render = (items=[]) => {
   } catch (err) {
     console.error(err);
     projectsCount.textContent='Не удалось загрузить коллекцию';
-    projectsRoot.innerHTML='<div class="state">Не удалось загрузить каталог из Supabase. Оставьте заявку, и инженер отправит актуальные кейсы из реализованных объектов Tekstura.</div>';
+    projectsRoot.innerHTML='<div class="public-empty">Не удалось загрузить каталог из Supabase. Оставьте заявку, и инженер отправит актуальные кейсы из реализованных объектов Tekstura.</div>';
   }
 })();
 </script>

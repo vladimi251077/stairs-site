@@ -7,38 +7,106 @@
 <link rel="canonical" href="https://tekstura.shop/project.html">
 <meta property="og:type" content="website"><meta property="og:site_name" content="Tekstura"><meta property="og:title" content="Проект лестницы — Tekstura"><meta property="og:description" content="Проект премиальной лестницы Tekstura: детали решения, материалы, конструкция и особенности реализации."><meta property="og:url" content="https://tekstura.shop/project.html"><link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="/supabase-config.js"></script>
-<style>
-body{margin:0;background:#0f0c0a;color:#f4e7d4;font-family:Inter,Arial,sans-serif}.wrap{max-width:1040px;margin:0 auto;padding:22px 16px 44px}a{color:#e8c8a2;text-decoration:none}h1{font-size:clamp(30px,4vw,44px);margin:0 0 8px}p{color:#b9aa97;line-height:1.6}
-.story{margin-top:14px;padding:18px;border:1px solid rgba(255,255,255,.11);border-radius:16px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.01))}
-.story b{display:block;color:#e7cfb1;margin-bottom:6px}
-.gallery-main{width:100%;border-radius:14px;margin:18px 0;background:#201b18;object-fit:cover;max-height:560px;cursor:pointer}
-.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:10px;margin-bottom:16px}.thumbs img{width:100%;height:72px;object-fit:cover;border-radius:10px;border:1px solid rgba(255,255,255,.15);cursor:pointer}.thumbs img.active{border-color:#e8c8a2}
-.price{font-size:22px;color:#f0d7b7;font-weight:bold;margin:10px 0}.meta,.config,.trust{margin-top:18px;padding:18px;border:1px solid rgba(255,255,255,.08);border-radius:16px;background:rgba(255,255,255,.02)}
-.meta p{margin:8px 0}.meta p.is-empty{display:none}.meta.is-empty{display:none}
-.btn{display:inline-block;margin-top:18px;padding:14px 20px;border-radius:12px;background:#e8c8a2;color:#1a120e;font-weight:700}
-.config-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.config select,.config input{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:#171310;color:#f4e7d4}
-.muted{font-size:13px;color:#ad9e8d}.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.86);display:none;align-items:center;justify-content:center}.lightbox.open{display:flex}.lightbox img{max-width:92vw;max-height:92vh;border-radius:12px}
-@media(max-width:760px){.config-grid{grid-template-columns:1fr}.wrap{padding:18px 14px 34px}}
-</style></head><body><div class="wrap">
-<a href="/projects.html">← Назад к проектам</a><h1 id="title">Загрузка...</h1><p id="subtitle"></p>
-<div class="story"><b>Идея проекта</b><p id="storyText">Этот кейс показывает подход Tekstura: сначала инженерная логика и эргономика, затем эстетика, материалы и точная подгонка узлов под архитектуру объекта.</p><p class="muted">Производство Tekstura: Казань, Орнбургский тракт, 340. Финальный монтаж выполняет штатная бригада.</p></div>
-<img id="mainImage" class="gallery-main" src="/logo.jpg.png" alt="Проект"><div class="thumbs" id="thumbs"></div>
-<div id="price" class="price"></div><p id="description"></p>
-<div class="meta" id="metaBox"><p id="materials"></p><p id="type"></p><p id="category"></p><p id="leadTime"></p></div>
-<div class="config"><h3>Мини-конфигуратор проекта</h3><p class="muted">Мягкий апселл: можно быстро посмотреть, как изменится ориентировочная стоимость при других материалах и опциях. Финальная смета подтверждается инженером.</p>
-<div class="config-grid">
-<div><label>Ограждение</label><select id="cfgRailing"></select></div>
-<div><label>Облицовка</label><select id="cfgCladding"></select></div>
-<div><label>Каркас</label><select id="cfgFrame"></select></div>
-<div><label>Финиш</label><select id="cfgFinish"></select></div>
-<div><label>Подсветка</label><select id="cfgLighting"><option value="0">Нет</option><option value="1">Да</option></select></div>
-<div><label>Покраска/покрытие</label><select id="cfgCoating"><option value="0">Базовое</option><option value="1">Премиум</option></select></div>
-</div>
-<p id="cfgBase" class="muted"></p><p id="cfgDelta" class="muted"></p><p id="cfgTotal" class="price"></p>
-<a id="cfgRequest" class="btn" href="/request.html">Отправить запрос по изменениям</a>
-</div>
-<div class="trust"><b>Что дальше после заявки:</b><p>Вам ответит инженер Tekstura, уточнит размеры и предложит 1–2 оптимальные конфигурации под ваш проём. Обычно связываемся в течение рабочего дня.</p><p class="muted">Вы общаетесь напрямую с командой производства в Казани, без посредников: Орнбургский тракт, 340.</p></div>
-<a class="btn" href="/request.html">Оставить заявку по проекту</a></div>
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body class="public-page">
+<header class="site-header">
+  <div class="container site-header__inner">
+    <a class="brand" href="/">TEKSTURA</a>
+    <nav class="site-nav" aria-label="Основная навигация">
+      <a href="/projects.html">Проекты</a>
+      <a href="/services.html">Услуги</a>
+      <a href="/calculator.html">Калькулятор</a>
+      <a href="/request.html">Заявка</a>
+    </nav>
+  </div>
+</header>
+
+<main class="public-main">
+  <div class="container">
+    <section class="public-header">
+      <a class="public-back" href="/projects.html">← Назад к проектам</a>
+      <span class="public-eyebrow">Tekstura project</span>
+      <h1 class="public-title" id="title">Загрузка...</h1>
+      <p class="public-lead" id="subtitle"></p>
+    </section>
+
+    <section class="public-card">
+      <span class="public-eyebrow">Идея проекта</span>
+      <p id="storyText">Этот кейс показывает подход Tekstura: сначала инженерная логика и эргономика, затем эстетика, материалы и точная подгонка узлов под архитектуру объекта.</p>
+      <p class="public-status">Производство Tekstura: Казань, Орнбургский тракт, 340. Финальный монтаж выполняет штатная бригада.</p>
+    </section>
+
+    <img id="mainImage" class="gallery-main" src="/logo.jpg.png" alt="Проект">
+    <div class="thumbs" id="thumbs"></div>
+
+    <section class="public-grid public-grid--2">
+      <div class="public-card">
+        <span class="public-eyebrow">Описание</span>
+        <div id="price" class="public-price"></div>
+        <p id="description" class="public-status"></p>
+        <div class="public-chip-list" id="metaBox">
+          <span class="public-chip" id="materials"></span>
+          <span class="public-chip" id="type"></span>
+          <span class="public-chip" id="category"></span>
+          <span class="public-chip" id="leadTime"></span>
+        </div>
+      </div>
+
+      <div class="public-card">
+        <span class="public-eyebrow">Что дальше</span>
+        <h2>После заявки</h2>
+        <p class="public-status">Вам ответит инженер Tekstura, уточнит размеры и предложит 1–2 оптимальные конфигурации под ваш проём. Обычно связываемся в течение рабочего дня.</p>
+        <div class="public-chip-list">
+          <span class="public-chip">Команда производства</span>
+          <span class="public-chip">Без посредников</span>
+          <span class="public-chip">Казань</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="public-card" style="margin-top:18px">
+      <span class="public-eyebrow">Мини-конфигуратор</span>
+      <h2>Изменить материалы проекта</h2>
+      <p class="public-status">Можно быстро посмотреть, как изменится ориентировочная стоимость при других материалах и опциях. Финальная смета подтверждается инженером.</p>
+      <div class="public-form-grid">
+        <div><label>Ограждение</label><select class="public-select" id="cfgRailing"></select></div>
+        <div><label>Облицовка</label><select class="public-select" id="cfgCladding"></select></div>
+        <div><label>Каркас</label><select class="public-select" id="cfgFrame"></select></div>
+        <div><label>Финиш</label><select class="public-select" id="cfgFinish"></select></div>
+        <div><label>Подсветка</label><select class="public-select" id="cfgLighting"><option value="0">Нет</option><option value="1">Да</option></select></div>
+        <div><label>Покраска/покрытие</label><select class="public-select" id="cfgCoating"><option value="0">Базовое</option><option value="1">Премиум</option></select></div>
+      </div>
+      <p id="cfgBase" class="public-status"></p><p id="cfgDelta" class="public-status"></p><p id="cfgTotal" class="public-price"></p>
+      <a id="cfgRequest" class="btn btn-primary" href="/request.html">Отправить запрос по изменениям</a>
+    </section>
+
+    <section class="public-mini-footer">
+      <div class="cta-box">
+        <div>
+          <h2>Хотите похожую лестницу?</h2>
+          <p>Передайте этот проект инженеру Tekstura — мы адаптируем решение под ваш проём, материалы и бюджет.</p>
+        </div>
+        <div class="cta-box__actions">
+          <a class="btn btn-primary" href="/request.html">Оставить заявку</a>
+          <a class="btn btn-secondary" href="/projects.html">Смотреть проекты</a>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container site-footer__inner">
+    <div class="site-footer__brand">TEKSTURA</div>
+    <div class="site-footer__links">
+      <a href="/projects.html">Проекты</a>
+      <a href="/services.html">Услуги</a>
+      <a href="/calculator.html">Калькулятор</a>
+    </div>
+  </div>
+</footer>
+
 <div id="lightbox" class="lightbox"><img id="lightboxImage" src="" alt="Просмотр"></div>
 <script>
 const SITE_URL = 'https://tekstura.shop';
@@ -68,7 +136,7 @@ function setMetaLine(id, value, prefix){
 }
 function syncMetaVisibility() {
   const metaBox = document.getElementById('metaBox');
-  const hasRows = [...metaBox.querySelectorAll('p')].some((item) => !item.classList.contains('is-empty'));
+  const hasRows = [...metaBox.querySelectorAll('span')].some((item) => !item.classList.contains('is-empty'));
   metaBox.classList.toggle('is-empty', !hasRows);
 }
 async function loadProject(){try{if(!client){document.getElementById('title').textContent='Каталог временно недоступен';document.getElementById('description').textContent='Сервис проектов временно недоступен. Оставьте заявку, и мы подберём решение.';return;}
