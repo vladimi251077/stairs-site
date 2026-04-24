@@ -7,6 +7,12 @@
 3. `/api/notify-lead` sends notifications to Telegram, Email, and WhatsApp (official API path structure).
 4. Delivery result per channel is persisted to `lead_notification_logs`.
 5. If one channel fails or is not configured, the lead still remains saved.
+6. Email channel now includes preflight diagnostics in `/api/notify-lead` response:
+   - `senderConfigured`
+   - `senderUsesResendDev`
+   - `recipientResolved`
+   - `emailChannelState` (`ready`, `degraded`, `blocked`)
+   - `emailError`
 
 ## Required environment variables
 
@@ -27,7 +33,11 @@
 
 1. Основной получатель: `settings.notify_email` (из таблицы `settings`, запись `id=1`).
 2. Fallback: `NOTIFY_EMAIL_TO`.
-3. Если оба пустые, лид сохраняется как обычно, email канал отмечается как `skipped` с ошибкой `email-not-configured`.
+3. Если оба пустые, лид сохраняется как обычно, email канал отмечается как `skipped` с ошибкой `missing-recipient`.
+
+## Ручные шаги после merge
+
+См. `docs/email-setup-checklist.md` — там собран короткий чеклист для Resend/Vercel и финальной проверки в production.
 
 ### WhatsApp (Meta Cloud API)
 - `WHATSAPP_ACCESS_TOKEN`
