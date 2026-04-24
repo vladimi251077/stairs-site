@@ -141,8 +141,8 @@ async function insertLead(payload){
   const tables = ['leads', 'calculator_requests'];
   let lastError = null;
   for (const table of tables) {
-    const { data, error } = await client.from(table).insert([payload]).select('*').single();
-    if (!error) return { data, table };
+    const { error } = await client.from(table).insert([payload]);
+    if (!error) return { data: payload, table };
     lastError = error;
   }
   throw lastError;
