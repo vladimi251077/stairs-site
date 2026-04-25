@@ -1149,3 +1149,27 @@ a {
     grid-template-columns: 1fr;
   }
 }
+
+.featured-projects-grid,
+.detail-visuals-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.section-heading--small {
+  margin-top: 22px;
+}
+
+.detail-visuals-grid .photo-card img {
+  height: 220px;
+  object-fit: cover;
+  background: #201712;
+}
+
+@media (max-width: 900px) {
+  .featured-projects-grid,
+  .detail-visuals-grid {
+    grid-template-columns: 1fr;
+  }
+}
