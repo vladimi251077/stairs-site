@@ -124,6 +124,14 @@ function buildCalcSummary(payload) {
   ];
 }
 
+
+function makeLeadId() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return `lead-${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
+}
+
 function parseCalc(){
   const queryRaw = new URLSearchParams(location.search).get('calc');
   const sessionRaw = sessionStorage.getItem('tekstura_calc_payload');
@@ -202,16 +210,39 @@ async function sendRequest() {
     return;
   }
 
+  const isCalculatorLead = Boolean(calcPayload && (calcPayload.staircaseType || calcPayload.total || calcPayload.base_condition));
+  const leadId = makeLeadId();
+
   const payload = {
+    id: leadId,
     name: document.getElementById('name').value.trim(),
     phone,
     messenger: document.getElementById('messenger').value.trim(),
     city: document.getElementById('city').value.trim(),
     comment: document.getElementById('comment').value.trim(),
     staircase_type: calcPayload?.staircaseType || '',
-    dimensions_json: calcPayload?.dimensions || {},
-    materials_json: calcPayload?.materialsSummary || {},
-    options_json: { selected: calcPayload?.selectedExtras || [], price_breakdown: calcPayload?.priceBreakdown || {} },
+    dimensions_json: {
+      ...(calcPayload?.dimensions || {}),
+      geometry: calcPayload?.geometrySummary || {},
+      base_condition: calcPayload?.base_condition || '',
+      base_subtype: calcPayload?.base_subtype || '',
+      configuration_type: calcPayload?.configuration_type || '',
+      turn_type: calcPayload?.turn_type || '',
+      turn_direction: calcPayload?.turn_direction || ''
+    },
+    materials_json: {
+      ...(calcPayload?.materialsSummary || {})
+    },
+    options_json: {
+      selected: calcPayload?.selectedExtras || [],
+      labels: (calcPayload?.selectedExtras || []).map((item) => item?.label || item?.code || ''),
+      price_breakdown: calcPayload?.priceBreakdown || {},
+      meta: {
+        request_source: isCalculatorLead ? 'calculator' : 'manual',
+        has_calc_payload: isCalculatorLead,
+        submitted_at: new Date().toISOString()
+      }
+    },
     calculated_price: Number(calcPayload?.total || 0)
   };
 

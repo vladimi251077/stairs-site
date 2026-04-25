@@ -75,57 +75,215 @@ function escapeHtml(value) {
     .replace(/'/g, '&#039;');
 }
 
-function formatLeadMessage(lead) {
-  const optionsLabels = Array.isArray(lead?.options_json?.labels)
-    ? lead.options_json.labels.map((option) => option?.label || option).filter(Boolean)
-    : [];
-  const selectedOptions = lead?.options_json?.extras || [];
+const CONFIGURATION_LABELS = { straight: 'Прямая', l_shaped: 'Г-образная', u_shaped: 'П-образная' };
+const TURN_TYPE_LABELS = { landing: 'Площадка', winders: 'Забежные' };
 
-  return [
+function formatCurrency(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number) || number <= 0) return 'не рассчитана';
+  return `${number.toLocaleString('ru-RU')} ₽`;
+}
+
+function toHumanText(value, fallback = 'не указано') {
+  const normalized = String(value ?? '').trim();
+  return normalized ? normalized : fallback;
+}
+
+
+function hasMeaningfulObjectData(obj = {}) {
+  if (!obj || typeof obj !== 'object') return false;
+  return Object.values(obj).some((value) => {
+    if (value == null) return false;
+    if (typeof value === 'number') return Number.isFinite(value) && value > 0;
+    if (typeof value === 'string') return value.trim().length > 0;
+    if (Array.isArray(value)) return value.length > 0;
+    if (typeof value === 'object') return hasMeaningfulObjectData(value);
+    return false;
+  });
+}
+
+function collectSelectedOptions(optionsJson = {}) {
+  const selected = Array.isArray(optionsJson?.selected) ? optionsJson.selected : [];
+  const labels = Array.isArray(optionsJson?.labels) ? optionsJson.labels : [];
+  const candidates = [...selected, ...labels];
+  const prepared = candidates
+    .map((item) => (typeof item === 'string' ? item : (item?.label || item?.code || '')))
+    .map((item) => String(item || '').trim())
+    .filter(Boolean);
+  return [...new Set(prepared)];
+}
+
+function resolveLeadContext(lead = {}) {
+  const dimensions = lead?.dimensions_json && typeof lead.dimensions_json === 'object' ? lead.dimensions_json : {};
+  const materials = lead?.materials_json && typeof lead.materials_json === 'object' ? lead.materials_json : {};
+  const options = lead?.options_json && typeof lead.options_json === 'object' ? lead.options_json : {};
+  const selectedOptions = collectSelectedOptions(options);
+
+  const baseCondition = dimensions.base_condition || dimensions.scenario || lead.base_condition || '';
+  const scenario = baseCondition === 'ready_frame'
+    ? 'Готовый каркас'
+    : (baseCondition === 'empty_opening' ? 'Пустой проём' : 'Не указан');
+
+  const configuration = dimensions.configuration_type || dimensions.configuration || lead.configuration_type || '';
+  const turnType = dimensions.turn_type || lead.turn_type || '';
+  const turnDirection = dimensions.turn_direction || lead.turn_direction || '';
+
+  const calculatedPrice = Number(lead?.calculated_price || 0);
+  const explicitSource = options?.meta?.request_source;
+  const inferredCalculatorData = Boolean(
+    lead?.staircase_type ||
+    calculatedPrice > 0 ||
+    hasMeaningfulObjectData(dimensions) ||
+    hasMeaningfulObjectData(materials) ||
+    selectedOptions.length
+  );
+  const hasCalculatorData = explicitSource
+    ? explicitSource === 'calculator'
+    : inferredCalculatorData;
+  const source = hasCalculatorData ? 'Заявка из калькулятора' : 'Ручная заявка без расчёта';
+
+  const leadId = String(lead?.id || '').trim();
+
+  return {
+    source,
+    isCalculatorLead: hasCalculatorData,
+    leadIdText: leadId || 'Lead ID будет доступен в админке / базе',
+    customer: {
+      name: toHumanText(lead?.name, 'не указано'),
+      phone: toHumanText(lead?.phone, 'не указан'),
+      messenger: toHumanText(lead?.messenger, 'не указан'),
+      city: toHumanText(lead?.city, 'не указан'),
+      comment: toHumanText(lead?.comment, 'без комментария')
+    },
+    staircase: {
+      type: toHumanText(lead?.staircase_type, 'Тип лестницы не выбран'),
+      scenario,
+      configuration: toHumanText(CONFIGURATION_LABELS[configuration] || configuration, 'не указана'),
+      turnType: toHumanText(TURN_TYPE_LABELS[turnType] || turnType, 'не указан'),
+      turnDirection: turnDirection === 'left' ? 'Левый' : (turnDirection === 'right' ? 'Правый' : 'не указано'),
+      marchWidth: dimensions.march_width || dimensions.ready_march_width || '',
+      floorHeight: dimensions.floor_to_floor_height || '',
+      stepCount: dimensions.step_count || dimensions.riser_count || '',
+      riserHeight: dimensions.riser_height || '',
+      treadDepth: dimensions.tread_depth || ''
+    },
+    materials: {
+      frame: materials.frame || materials.frame_material || '',
+      cladding: materials.cladding || '',
+      finish: materials.finish || materials.finish_level || '',
+      railing: materials.railing || materials.ready_railing_type || '',
+      readyMaterial: materials.ready_material || ''
+    },
+    selectedOptions,
+    calculatedPriceText: formatCurrency(calculatedPrice)
+  };
+}
+
+function formatLeadMessage(lead) {
+  const ctx = resolveLeadContext(lead);
+  const staircase = ctx.staircase;
+  const materials = ctx.materials;
+  const optionsText = ctx.selectedOptions.length ? ctx.selectedOptions.join(', ') : 'не выбраны';
+
+  const lines = [
     'Новая заявка Tekstura',
-    `Имя: ${lead?.name || '-'}`,
-    `Телефон: ${lead?.phone || '-'}`,
-    `Мессенджер: ${lead?.messenger || '-'}`,
-    `Город: ${lead?.city || '-'}`,
-    `Комментарий: ${lead?.comment || '-'}`,
-    `Тип лестницы: ${lead?.staircase_type || '-'}`,
-    `Рассчитанная цена: ${lead?.calculated_price || 0} ₽`,
-    `Опции: ${optionsLabels.join(', ') || 'нет'}`,
-    `Выбранные опции: ${JSON.stringify(selectedOptions)}`,
-    `Материалы: ${JSON.stringify(lead?.materials_json?.summary || {})}`,
-    `Геометрия: ${JSON.stringify(lead?.dimensions_json?.geometry || {})}`
-  ].join('\n');
+    `Источник: ${ctx.source}`,
+    '',
+    `Имя: ${ctx.customer.name}`,
+    `Телефон: ${ctx.customer.phone}`,
+    `Мессенджер: ${ctx.customer.messenger}`,
+    `Город: ${ctx.customer.city}`,
+    `Комментарий: ${ctx.customer.comment}`,
+    '',
+    `Тип лестницы: ${staircase.type}`,
+    `Сценарий: ${staircase.scenario}`,
+    `Конфигурация: ${staircase.configuration}`,
+    `Тип поворота: ${staircase.turnType}`,
+    `Направление поворота: ${staircase.turnDirection}`,
+    `Ширина марша: ${staircase.marchWidth ? `${staircase.marchWidth} мм` : 'не указана'}`,
+    `Высота этаж-этаж: ${staircase.floorHeight ? `${staircase.floorHeight} мм` : 'не указана'}`,
+    `Количество ступеней: ${staircase.stepCount || 'не указано'}`,
+    `Подступенок: ${staircase.riserHeight ? `${staircase.riserHeight} мм` : 'не указан'}`,
+    `Проступь: ${staircase.treadDepth ? `${staircase.treadDepth} мм` : 'не указана'}`,
+    '',
+    `Материал каркаса: ${toHumanText(materials.frame, 'не указан')}`,
+    `Облицовка: ${toHumanText(materials.cladding, 'не указана')}`,
+    `Финиш: ${toHumanText(materials.finish, 'не указан')}`,
+    `Ограждение: ${toHumanText(materials.railing, 'не указано')}`,
+    `Материал ступеней: ${toHumanText(materials.readyMaterial, 'не указан')}`,
+    `Выбранные опции: ${optionsText}`,
+    `Рассчитанная цена: ${ctx.calculatedPriceText}`,
+    `Lead ID: ${ctx.leadIdText}`
+  ];
+
+  if (!ctx.isCalculatorLead) {
+    lines.push('', 'Расчёт не прикреплён. Требуется ручной созвон и уточнение параметров.');
+  }
+
+  return lines.join('\n');
 }
 
 function formatLeadEmailHtml(lead) {
-  const optionsLabels = Array.isArray(lead?.options_json?.labels)
-    ? lead.options_json.labels.map((option) => option?.label || option).filter(Boolean)
-    : [];
-  const selectedOptions = lead?.options_json?.extras || [];
+  const ctx = resolveLeadContext(lead);
+  const staircase = ctx.staircase;
+  const materials = ctx.materials;
+  const optionsText = ctx.selectedOptions.length ? ctx.selectedOptions.join(', ') : 'не выбраны';
 
-  const rows = [
-    ['Имя', lead?.name || '-'],
-    ['Телефон', lead?.phone || '-'],
-    ['Мессенджер', lead?.messenger || '-'],
-    ['Город', lead?.city || '-'],
-    ['Комментарий', lead?.comment || '-'],
-    ['Тип лестницы', lead?.staircase_type || '-'],
-    ['Рассчитанная цена', `${lead?.calculated_price || 0} ₽`],
-    ['Опции', optionsLabels.join(', ') || 'нет'],
-    ['Выбранные опции', JSON.stringify(selectedOptions)],
-    ['Материалы', JSON.stringify(lead?.materials_json?.summary || {})],
-    ['Геометрия', JSON.stringify(lead?.dimensions_json?.geometry || {})]
+  const customerRows = [
+    ['Имя', ctx.customer.name],
+    ['Телефон', ctx.customer.phone],
+    ['Мессенджер', ctx.customer.messenger],
+    ['Город', ctx.customer.city],
+    ['Комментарий', ctx.customer.comment]
   ];
 
-  const tableRows = rows
-    .map(([label, value]) => `<tr><td style="padding:8px;border:1px solid #ddd;"><b>${escapeHtml(label)}</b></td><td style="padding:8px;border:1px solid #ddd;">${escapeHtml(value)}</td></tr>`)
+  const projectRows = [
+    ['Источник заявки', ctx.source],
+    ['Тип лестницы', staircase.type],
+    ['Сценарий', staircase.scenario],
+    ['Конфигурация', staircase.configuration],
+    ['Тип поворота', staircase.turnType],
+    ['Направление поворота', staircase.turnDirection],
+    ['Ширина марша', staircase.marchWidth ? `${staircase.marchWidth} мм` : 'не указана'],
+    ['Высота этаж-этаж', staircase.floorHeight ? `${staircase.floorHeight} мм` : 'не указана'],
+    ['Количество ступеней', staircase.stepCount || 'не указано'],
+    ['Подступенок', staircase.riserHeight ? `${staircase.riserHeight} мм` : 'не указан'],
+    ['Проступь', staircase.treadDepth ? `${staircase.treadDepth} мм` : 'не указана']
+  ];
+
+  const materialRows = [
+    ['Материал каркаса', toHumanText(materials.frame, 'не указан')],
+    ['Облицовка', toHumanText(materials.cladding, 'не указана')],
+    ['Финиш', toHumanText(materials.finish, 'не указан')],
+    ['Ограждение', toHumanText(materials.railing, 'не указано')],
+    ['Материал ступеней', toHumanText(materials.readyMaterial, 'не указан')],
+    ['Выбранные опции', optionsText],
+    ['Рассчитанная цена', ctx.calculatedPriceText],
+    ['Lead ID', ctx.leadIdText]
+  ];
+
+  const tableRows = (rows) => rows
+    .map(([label, value]) => `<tr><td style="padding:8px;border:1px solid #ddd;width:38%;"><b>${escapeHtml(label)}</b></td><td style="padding:8px;border:1px solid #ddd;">${escapeHtml(value)}</td></tr>`)
     .join('');
 
+  const manualNote = ctx.isCalculatorLead
+    ? ''
+    : '<p style="margin:14px 0 0;color:#7b5c35;"><b>Расчёт не прикреплён.</b> Требуется ручной созвон и уточнение параметров.</p>';
+
   return `
-    <div style="font-family:Arial,sans-serif;color:#211a15;">
-      <h2>Новая заявка Tekstura</h2>
-      <table style="border-collapse:collapse;width:100%;max-width:760px;">${tableRows}</table>
-      <p style="margin-top:16px;color:#666;">Lead ID: ${escapeHtml(lead?.id || '')}</p>
+    <div style="font-family:Arial,sans-serif;color:#211a15;line-height:1.45;">
+      <h2 style="margin:0 0 12px;">Новая заявка Tekstura</h2>
+
+      <h3 style="margin:16px 0 8px;">Контакты клиента</h3>
+      <table style="border-collapse:collapse;width:100%;max-width:780px;margin-bottom:10px;">${tableRows(customerRows)}</table>
+
+      <h3 style="margin:16px 0 8px;">Параметры проекта</h3>
+      <table style="border-collapse:collapse;width:100%;max-width:780px;margin-bottom:10px;">${tableRows(projectRows)}</table>
+
+      <h3 style="margin:16px 0 8px;">Материалы и стоимость</h3>
+      <table style="border-collapse:collapse;width:100%;max-width:780px;">${tableRows(materialRows)}</table>
+
+      ${manualNote}
     </div>
   `;
 }
