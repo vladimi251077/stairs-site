@@ -22,7 +22,7 @@ body{margin:0;background:#0f0c0a;color:#f4e7d4;font-family:Inter,Arial,sans-seri
 .muted{font-size:13px;color:#ad9e8d}.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.86);display:none;align-items:center;justify-content:center}.lightbox.open{display:flex}.lightbox img{max-width:92vw;max-height:92vh;border-radius:12px}
 @media(max-width:760px){.config-grid{grid-template-columns:1fr}.wrap{padding:18px 14px 34px}}
 </style></head><body><div class="wrap">
-<nav class="top-nav"><a href="/">Главная</a><a href="/projects.html">Проекты</a><a href="/services.html">Услуги</a><a href="/articles.html">Статьи</a><a href="/calculator.html">Калькулятор</a><a href="/request.html">Заявка</a></nav>
+<nav class="top-nav"><a href="/">Главная</a><a href="/projects.html">Проекты</a><a href="/services.html">Услуги</a><a href="/articles.html">Статьи</a><a href="/norms.html">Нормы и уход</a><a href="/calculator.html">Калькулятор</a><a href="/request.html">Заявка</a></nav>
 <a href="/projects.html">← Назад к проектам</a><h1 id="title">Загрузка...</h1><p id="subtitle"></p>
 <div class="story"><b>Идея проекта</b><p id="storyText">Этот кейс показывает подход Tekstura: сначала инженерная логика и эргономика, затем эстетика, материалы и точная подгонка узлов под архитектуру объекта.</p><p class="muted">Производство Tekstura: Казань, Оренбургский тракт, 340. Финальный монтаж выполняет штатная бригада.</p></div>
 <img id="mainImage" class="gallery-main" src="/logo.jpg.png" alt="Проект"><div class="thumbs" id="thumbs"></div>
@@ -95,4 +95,6 @@ updateSeoMeta(data.title,data.short_description||data.description||data.full_des
 }catch(err){console.error(err);document.getElementById('title').textContent='Ошибка загрузки';document.getElementById('description').textContent='Не удалось загрузить проект. Попробуйте позже.';}}
 
 const lb=document.getElementById('lightbox');const lbi=document.getElementById('lightboxImage');document.getElementById('mainImage').addEventListener('click',()=>{lbi.src=document.getElementById('mainImage').src;lb.classList.add('open');});lb.addEventListener('click',()=>lb.classList.remove('open'));
-</script></body></html>
+</script>
+<footer class="site-footer"><div class="container site-footer__inner"><div class="site-footer__brand">TEKSTURA</div><div class="site-footer__links"><a href="/">Главная</a><a href="/projects.html">Проекты</a><a href="/services.html">Услуги</a><a href="/articles.html">Статьи</a><a href="/norms.html">Нормы и уход</a><a href="/about.html">О компании</a><a href="/faq.html">FAQ</a><a href="/calculator.html">Калькулятор</a><a href="/request.html">Заявка</a></div></div></footer>
+</body></html>

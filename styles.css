@@ -1063,3 +1063,30 @@ a {
   .page-shell { padding-top: 86px; }
   .page-hero { padding: 18px; }
 }
+
+.section-dark--compact {
+  padding-top: 54px;
+}
+
+.content-card__image {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  background: #251a13;
+}
+
+.section-actions {
+  margin-top: 16px;
+}
+
+.section-articles-preview,
+.section-norms-preview {
+  padding: 0 0 58px;
+}
+
+.section-norms-preview .info-section ul {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+}

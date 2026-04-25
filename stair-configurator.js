@@ -58,7 +58,8 @@ let currentStep = 1;
 const step1State = {
   scenario: 'empty_opening',
   stairFamily: 'straight',
-  turnMode: 'landing'
+  turnMode: 'landing',
+  inputMode: 'scheme'
 };
 
 function getAvailableSteps() { return [...document.querySelectorAll('.step')].map((n) => Number((n.id || '').replace('step', ''))).filter(Number.isFinite).sort((a, b) => a - b); }
@@ -100,9 +101,26 @@ function updateStep1Visual() {
   const scenarioLabel = step1State.scenario === 'empty_opening' ? 'Пустой проём' : 'Готовый каркас';
   stage.dataset.family = step1State.stairFamily;
   title.textContent = `${familyLabel} лестница · ${scenarioLabel}`;
-  subtitle.textContent = step1State.scenario === 'empty_opening'
-    ? 'Укажите габариты проёма и конструктивные размеры.'
-    : 'Укажите параметры существующего каркаса и комплектацию.';
+  subtitle.textContent = step1State.inputMode === 'manual'
+    ? 'Ручной ввод активен: заполняйте поля напрямую, без опоры на схему.'
+    : (step1State.scenario === 'empty_opening'
+      ? 'Укажите габариты проёма и конструктивные размеры.'
+      : 'Укажите параметры существующего каркаса и комплектацию.');
+}
+
+
+function updateInputModeUI() {
+  const stage = $('visualStage');
+  const panelTitle = $('manualPanelTitle');
+  const panelLead = $('manualPanelLead');
+  const isManual = step1State.inputMode === 'manual';
+  if (stage) stage.classList.toggle('is-manual', isManual);
+  if (panelTitle) panelTitle.textContent = isManual ? 'Ручной ввод параметров' : 'Параметры комплектации';
+  if (panelLead) {
+    panelLead.textContent = isManual
+      ? 'Заполните размеры и комплектацию вручную. Все поля участвуют в расчёте наравне с режимом ввода по схеме.'
+      : 'Эти параметры помогают уточнить материалы и стоимость на следующих шагах.';
+  }
 }
 
 function initStep1Controller() {
@@ -121,6 +139,7 @@ function initStep1Controller() {
       toggleTurnFields();
       toggleReadyFlowFields();
       updateStep1Visual();
+      updateInputModeUI();
       updateStairTypeHints();
     });
   });
@@ -584,6 +603,7 @@ function init() {
   toggleScenarioFields();
   toggleTurnFields();
   updateStep1Visual();
+  updateInputModeUI();
   updateStairTypeHints();
   loadSupabaseDictionaries();
 }
