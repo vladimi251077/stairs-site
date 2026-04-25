@@ -38,8 +38,9 @@
     @media(max-width:760px){.projects-wrap{padding:20px 14px 40px}.projects-grid.projects-grid--curated{grid-template-columns:1fr}.project-card img{height:190px}}
   </style>
 </head>
-<body>
-  <main class="projects-wrap">
+<body class="page-shell">
+  <header class="site-header"><div class="container site-header__inner"><a href="/" class="brand">TEKSTURA</a><nav class="site-nav"><a href="/">Главная</a><a href="/projects.html">Проекты</a><a href="/services.html">Услуги</a><a href="/articles.html">Статьи</a><a href="/calculator.html">Калькулятор</a><a href="/request.html">Заявка</a></nav></div></header>
+  <main class="projects-wrap page-main">
     <div class="projects-top">
       <div class="projects-title">
         <h1>Проекты лестниц Tekstura</h1>
@@ -51,6 +52,7 @@
       <div class="loading-skeleton"></div><div class="loading-skeleton"></div><div class="loading-skeleton"></div>
     </section>
   </main>
+  <footer class="site-footer"><div class="container site-footer__inner"><div class="site-footer__brand">TEKSTURA</div><div class="site-footer__links"><a href="/">Главная</a><a href="/services.html">Услуги</a><a href="/articles.html">Статьи</a><a href="/calculator.html">Калькулятор</a><a href="/request.html">Заявка</a></div></div></footer>
 <script>
 const cfg = window.SUPABASE_CONFIG;
 const projectsCount = document.getElementById('projectsCount');
