@@ -789,3 +789,41 @@ button:hover {
     grid-template-columns: 1fr;
   }
 }
+
+.calc-quick-schemes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 0 16px;
+}
+
+.calc-scheme-card {
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 14px;
+  padding: 12px;
+  background: rgba(255,255,255,0.03);
+}
+
+.calc-scheme-card h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+
+.calc-scheme-icons {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.calc-scheme-icons svg,
+.calc-scheme-card svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+@media (max-width: 860px) {
+  .calc-quick-schemes {
+    grid-template-columns: 1fr;
+  }
+}
