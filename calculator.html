@@ -14,9 +14,12 @@
 <link rel="stylesheet" href="/stair-configurator.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/supabase-config.js"></script>
+<link rel="stylesheet" href="/styles.css">
+<style>.calc-nav{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px;padding:10px;border:1px solid rgba(255,255,255,.14);border-radius:12px;background:rgba(28,22,18,.72)}.calc-nav a{text-decoration:none;color:#e8c8a2;font-size:14px}</style>
 </head>
 <body>
 <main class="wrap">
+  <nav class="calc-nav"><a href="/">Главная</a><a href="/projects.html">Проекты</a><a href="/services.html">Услуги</a><a href="/articles.html">Статьи</a><a href="/norms.html">Нормы и уход</a><a href="/calculator.html">Калькулятор</a><a href="/request.html">Заявка</a></nav>
   <section class="hero panel">
     <div class="top">
       <div class="hero-content">
@@ -34,7 +37,20 @@
 
     <section class="step active" id="step1">
       <h2>Шаг 1. Конфигурация</h2>
-      <p class="step1-intro">Выберите сценарий и конфигурацию. Поля на схеме меняются под задачу и ведут в текущий расчёт без смены потока.</p>
+      <p class="step1-intro">Выберите сценарий, конфигурацию и способ ввода. Ручной ввод — полноценный режим с теми же расчётами.</p>
+
+
+      <section class="calc-quick-schemes" aria-label="Подсказки по типам лестниц и размерам">
+        <article class="calc-scheme-card"><h3>Прямая</h3><img src="/assets/schemes/stair-straight.svg" alt="Схема прямой лестницы"></article>
+        <article class="calc-scheme-card"><h3>Г-образная</h3><img src="/assets/schemes/stair-l-shaped.svg" alt="Схема Г-образной лестницы"></article>
+        <article class="calc-scheme-card"><h3>П-образная</h3><img src="/assets/schemes/stair-u-shaped.svg" alt="Схема П-образной лестницы"></article>
+        <article class="calc-scheme-card"><h3>Поворот влево</h3><img src="/assets/schemes/turn-left.svg" alt="Схема поворота лестницы влево"></article>
+        <article class="calc-scheme-card"><h3>Поворот вправо</h3><img src="/assets/schemes/turn-right.svg" alt="Схема поворота лестницы вправо"></article>
+        <article class="calc-scheme-card"><h3>Размеры проёма</h3><img src="/assets/schemes/opening-dimensions.svg" alt="Схема размеров проёма"></article>
+        <article class="calc-scheme-card"><h3>Вид сверху</h3><img src="/assets/schemes/plan-view.svg" alt="Схема лестницы сверху"></article>
+        <article class="calc-scheme-card"><h3>Вид сбоку</h3><img src="/assets/schemes/side-view.svg" alt="Схема лестницы сбоку"></article>
+      </section>
+
 
       <div class="step1-controls">
         <div class="field">
@@ -60,6 +76,15 @@
             <button type="button" class="segmented__item is-active" data-value="straight">Прямая</button>
             <button type="button" class="segmented__item" data-value="l-shaped">Г-образная</button>
             <button type="button" class="segmented__item" data-value="u-shaped">П-образная</button>
+          </div>
+        </div>
+
+
+        <div class="field">
+          <label>Способ ввода</label>
+          <div class="segmented" data-step1-group="inputMode" role="radiogroup" aria-label="Способ ввода">
+            <button type="button" class="segmented__item is-active" data-value="scheme">Ввод по схеме</button>
+            <button type="button" class="segmented__item" data-value="manual">Ручной ввод</button>
           </div>
         </div>
 
@@ -110,9 +135,10 @@
         </div>
       </section>
 
-      <details class="manual-fallback">
-        <summary>Ручной ввод и дополнительные параметры</summary>
-        <div class="grid manual-fallback__grid">
+      <section class="manual-panel" id="manualPanel">
+        <h3 id="manualPanelTitle">Параметры комплектации</h3>
+        <p class="manual-panel__lead" id="manualPanelLead">Эти параметры помогают уточнить материалы и стоимость на следующих шагах.</p>
+        <div class="grid manual-panel__grid">
           <div class="field" id="frameMaterialField">
             <label for="frameMaterial">Материал каркаса</label>
             <select id="frameMaterial">
@@ -126,7 +152,7 @@
           <div class="field"><label for="railingType">Ограждение</label><select id="railingType" class="inline-select"><option value="none">Без ограждения</option><option value="metal" selected>Металлическое</option><option value="glass">Стеклянное</option><option value="wood">Деревянное</option></select></div>
           <div class="field"><label for="finishLevel">Уровень финиша</label><select id="finishLevel" class="inline-select"><option value="basic">Базовый</option><option value="standard">Стандарт</option><option value="premium">Премиум</option></select></div>
         </div>
-      </details>
+      </section>
 
       <input type="hidden" id="stairType" value="straight">
 <div class="actions">
@@ -171,6 +197,7 @@
     </section>
   </section>
 </main>
+<footer class="site-footer"><div class="container site-footer__inner"><div class="site-footer__brand">TEKSTURA</div><div class="site-footer__links"><a href="/">Главная</a><a href="/projects.html">Проекты</a><a href="/services.html">Услуги</a><a href="/articles.html">Статьи</a><a href="/norms.html">Нормы и уход</a><a href="/about.html">О компании</a><a href="/faq.html">FAQ</a><a href="/calculator.html">Калькулятор</a><a href="/request.html">Заявка</a></div></div></footer>
 <script type="module" src="/stair-configurator.js"></script>
 </body>
 </html>

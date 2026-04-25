@@ -14,6 +14,7 @@
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/supabase-config.js"></script>
+  <link rel="stylesheet" href="/styles.css">
   <style>
     :root{--bg:#0f0c0a;--panel:#19130f;--line:#3d332b;--text:#f4e7d4;--muted:#baa894;--accent:#e8c8a2;--ok:#9ddcb0;--err:#ff9e9e}
     *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 Inter,sans-serif}
@@ -29,10 +30,12 @@
     .success-card{border:1px solid rgba(157,220,176,.35);background:rgba(82,122,92,.18);border-radius:12px;padding:12px;margin-top:8px;line-height:1.6}
     .success-card--warning{border-color:rgba(255,207,122,.35);background:rgba(130,100,45,.18)}
     @media(max-width:700px){.grid{grid-template-columns:1fr}.trust-grid{grid-template-columns:1fr}}
+    .top-nav{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 12px;padding:10px;border:1px solid var(--line);border-radius:12px;background:#1b1512}.top-nav a{color:#e8c8a2;text-decoration:none;font-size:14px}
   </style>
 </head>
 <body>
   <div class="wrap">
+    <nav class="top-nav"><a href="/">Главная</a><a href="/projects.html">Проекты</a><a href="/services.html">Услуги</a><a href="/articles.html">Статьи</a><a href="/norms.html">Нормы и уход</a><a href="/calculator.html">Калькулятор</a><a href="/request.html">Заявка</a></nav>
     <h1>Заявка на лестницу</h1>
     <p class="muted">Заполните контакты — с вами свяжется инженер Tekstura для уточнения размеров и подбора оптимальной конфигурации под ваш объект.</p>
 
@@ -50,7 +53,7 @@
       </ul>
       <div class="trust-grid">
         <div class="trust-chip">Собственное производство</div>
-        <div class="trust-chip">Казань, Орнбургский тракт, 340</div>
+        <div class="trust-chip">Казань, Оренбургский тракт, 340</div>
         <div class="trust-chip">Монтаж штатной бригадой</div>
       </div>
     </div>
@@ -68,6 +71,7 @@
       <div id="successState" hidden class="success-card">Спасибо за обращение в Tekstura. Заявка сохранена, инженер уже получил уведомление.</div>
     </div>
   </div>
+<footer class="site-footer"><div class="container site-footer__inner"><div class="site-footer__brand">TEKSTURA</div><div class="site-footer__links"><a href="/">Главная</a><a href="/projects.html">Проекты</a><a href="/services.html">Услуги</a><a href="/articles.html">Статьи</a><a href="/norms.html">Нормы и уход</a><a href="/about.html">О компании</a><a href="/faq.html">FAQ</a><a href="/calculator.html">Калькулятор</a><a href="/request.html">Заявка</a></div></div></footer>
 <script>
 const cfg = window.SUPABASE_CONFIG;
 const client = (cfg?.url && cfg?.anonKey && window.supabase)
@@ -118,6 +122,14 @@ function buildCalcSummary(payload) {
     `Предупреждения: ${formatWarnings(payload.warnings)}`,
     `Итоговая стоимость: ${Number(payload.total || 0).toLocaleString('ru-RU')} ₽`
   ];
+}
+
+
+function makeLeadId() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return `lead-${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
 }
 
 function parseCalc(){
@@ -198,16 +210,39 @@ async function sendRequest() {
     return;
   }
 
+  const isCalculatorLead = Boolean(calcPayload && (calcPayload.staircaseType || calcPayload.total || calcPayload.base_condition));
+  const leadId = makeLeadId();
+
   const payload = {
+    id: leadId,
     name: document.getElementById('name').value.trim(),
     phone,
     messenger: document.getElementById('messenger').value.trim(),
     city: document.getElementById('city').value.trim(),
     comment: document.getElementById('comment').value.trim(),
     staircase_type: calcPayload?.staircaseType || '',
-    dimensions_json: calcPayload?.dimensions || {},
-    materials_json: calcPayload?.materialsSummary || {},
-    options_json: { selected: calcPayload?.selectedExtras || [], price_breakdown: calcPayload?.priceBreakdown || {} },
+    dimensions_json: {
+      ...(calcPayload?.dimensions || {}),
+      geometry: calcPayload?.geometrySummary || {},
+      base_condition: calcPayload?.base_condition || '',
+      base_subtype: calcPayload?.base_subtype || '',
+      configuration_type: calcPayload?.configuration_type || '',
+      turn_type: calcPayload?.turn_type || '',
+      turn_direction: calcPayload?.turn_direction || ''
+    },
+    materials_json: {
+      ...(calcPayload?.materialsSummary || {})
+    },
+    options_json: {
+      selected: calcPayload?.selectedExtras || [],
+      labels: (calcPayload?.selectedExtras || []).map((item) => item?.label || item?.code || ''),
+      price_breakdown: calcPayload?.priceBreakdown || {},
+      meta: {
+        request_source: isCalculatorLead ? 'calculator' : 'manual',
+        has_calc_payload: isCalculatorLead,
+        submitted_at: new Date().toISOString()
+      }
+    },
     calculated_price: Number(calcPayload?.total || 0)
   };
 

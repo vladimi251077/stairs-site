@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 140" fill="none">
+  <rect x="1" y="1" width="218" height="138" rx="12" stroke="#5b4a38"/>
+  <polyline points="20,112 62,112 62,48 158,48 158,112 200,112" stroke="#ddb786" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="14" y="24" fill="#f2dec6" font-size="12" font-family="Inter,Arial">П-образная</text>
+</svg>

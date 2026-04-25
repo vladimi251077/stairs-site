@@ -198,13 +198,13 @@ h3 {
 
 .step1-controls {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
 }
 
 .segmented {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -243,27 +243,15 @@ h3 {
 }
 
 .visual-stage[data-family="straight"] {
-  background-image:
-    linear-gradient(135deg, rgba(244, 203, 153, 0.12), rgba(255, 255, 255, 0.02)),
-    linear-gradient(32deg, transparent 48%, rgba(221, 183, 134, 0.32) 49%, rgba(221, 183, 134, 0.32) 52%, transparent 53%),
-    rgba(41, 29, 20, 0.72);
+  background: rgba(41, 29, 20, 0.72);
 }
 
 .visual-stage[data-family="l-shaped"] {
-  background-image:
-    linear-gradient(135deg, rgba(244, 203, 153, 0.12), rgba(255, 255, 255, 0.02)),
-    linear-gradient(90deg, transparent 38%, rgba(221, 183, 134, 0.28) 39%, rgba(221, 183, 134, 0.28) 44%, transparent 45%),
-    linear-gradient(0deg, transparent 46%, rgba(221, 183, 134, 0.28) 47%, rgba(221, 183, 134, 0.28) 52%, transparent 53%),
-    rgba(41, 29, 20, 0.72);
+  background: rgba(41, 29, 20, 0.72);
 }
 
 .visual-stage[data-family="u-shaped"] {
-  background-image:
-    linear-gradient(135deg, rgba(244, 203, 153, 0.12), rgba(255, 255, 255, 0.02)),
-    linear-gradient(90deg, transparent 28%, rgba(221, 183, 134, 0.25) 29%, rgba(221, 183, 134, 0.25) 34%, transparent 35%),
-    linear-gradient(90deg, transparent 66%, rgba(221, 183, 134, 0.25) 67%, rgba(221, 183, 134, 0.25) 72%, transparent 73%),
-    linear-gradient(0deg, transparent 64%, rgba(221, 183, 134, 0.25) 65%, rgba(221, 183, 134, 0.25) 70%, transparent 71%),
-    rgba(41, 29, 20, 0.72);
+  background: rgba(41, 29, 20, 0.72);
 }
 
 .visual-stage__header h3 {
@@ -279,21 +267,29 @@ h3 {
   margin-bottom: 10px;
 }
 
-.manual-fallback {
+.visual-stage.is-manual {
+  background: rgba(34, 24, 17, 0.86);
+  border-color: rgba(238, 196, 143, 0.22);
+}
+
+.manual-panel {
   border: 1px solid rgba(255, 255, 255, 0.11);
   border-radius: 14px;
-  padding: 10px 12px;
+  padding: 14px;
   background: rgba(255, 255, 255, 0.03);
 }
 
-.manual-fallback > summary {
-  cursor: pointer;
-  color: var(--gold-1);
-  font-weight: 600;
+.manual-panel h3 {
+  margin: 0 0 8px;
 }
 
-.manual-fallback__grid {
-  margin-top: 12px;
+.manual-panel__lead {
+  margin: 0 0 14px;
+  color: var(--text-muted);
+}
+
+.manual-panel__grid {
+  margin-top: 8px;
 }
 
 .grid {
@@ -790,6 +786,45 @@ button:hover {
   }
 
   .alt-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.calc-quick-schemes {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 0 16px;
+}
+
+.calc-scheme-card {
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 14px;
+  padding: 12px;
+  background: rgba(255,255,255,0.03);
+}
+
+.calc-scheme-card h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+
+.calc-scheme-card img,
+.calc-scheme-card svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+@media (max-width: 860px) {
+   .calc-quick-schemes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+
+@media (max-width: 560px) {
+  .calc-quick-schemes {
     grid-template-columns: 1fr;
   }
 }
