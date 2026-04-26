@@ -15,54 +15,102 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/supabase-config.js"></script>
   <link rel="stylesheet" href="/styles.css">
-  <style>
-    .projects-wrap{max-width:1140px;margin:0 auto;padding:30px 16px 60px}
-    .projects-top{display:flex;justify-content:space-between;gap:16px;align-items:flex-end;flex-wrap:wrap;margin-bottom:22px}
-    .projects-title p{max-width:720px;color:#c9b8a4;margin:8px 0 0}
-    .chip{border:1px solid rgba(255,255,255,.18);padding:8px 12px;border-radius:999px;font-size:14px;color:#ead3b5;background:rgba(255,255,255,.03)}
-    .projects-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px}
-    .projects-grid.projects-grid--curated{grid-template-columns:repeat(2,minmax(0,1fr));max-width:900px}
-    .project-card{border:1px solid rgba(255,255,255,.1);border-radius:18px;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.015));text-decoration:none;color:inherit;transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease;display:flex;flex-direction:column}
-    .project-card:hover{transform:translateY(-2px);border-color:rgba(232,200,162,.44);box-shadow:0 16px 28px rgba(0,0,0,.2)}
-    .project-card img{width:100%;height:210px;object-fit:cover;background:#201b18}
-    .project-body{padding:15px 16px 16px;display:flex;flex-direction:column;gap:8px}
-    .project-body h2{margin:0;font-size:21px}
-    .project-body p{margin:0;color:#b8aa98;line-height:1.55}
-    .project-note{font-size:12px;color:#ceb79c}
-    .project-tags{display:flex;flex-wrap:wrap;gap:8px}
-    .project-tag{font-size:12px;padding:5px 9px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);color:#dbc2a3}
-    .price{margin-top:4px;font-weight:700;color:#efd8bb}
-    .empty,.state{border:1px dashed rgba(255,255,255,.22);padding:18px;border-radius:16px;color:#c5b39e;background:rgba(255,255,255,.02);grid-column:1/-1;line-height:1.6}
-    .loading-skeleton{height:250px;border-radius:16px;border:1px solid rgba(255,255,255,.08);background:linear-gradient(90deg,rgba(255,255,255,.03),rgba(255,255,255,.08),rgba(255,255,255,.03));background-size:200% 100%;animation:shine 1.5s linear infinite}
-    @keyframes shine{to{background-position:-200% 0}}
-    @media(max-width:760px){.projects-wrap{padding:20px 14px 40px}.projects-grid.projects-grid--curated{grid-template-columns:1fr}.project-card img{height:190px}}
-  </style>
+  <link rel="stylesheet" href="/projects.css">
 </head>
-<body class="page-shell">
-  <header class="site-header"><div class="container site-header__inner"><a href="/" class="brand">TEKSTURA</a><nav class="site-nav"><a href="/">Главная</a><a href="/projects.html">Проекты</a><a href="/services.html">Услуги</a><a href="/articles.html">Статьи</a><a href="/norms.html">Нормы и уход</a><a href="/calculator.html">Калькулятор</a><a href="/request.html">Заявка</a></nav></div></header>
-  <main class="projects-wrap page-main">
-    <div class="projects-top">
-      <div class="projects-title">
-        <h1>Проекты лестниц Tekstura</h1>
-        <p>Кураторская подборка реализованных решений. Даже при небольшом количестве кейсов мы показываем только актуальные проекты с реальными параметрами и ценовым ориентиром.</p>
-      </div>
-      <div class="chip" id="projectsCount" aria-live="polite">Загрузка кураторской коллекции...</div>
+<body class="projects-page">
+  <header class="site-header">
+    <div class="container site-header__inner">
+      <a href="/" class="brand" aria-label="ТЕКСТУРА — премиальные лестницы">
+        <span class="brand__fallback">ТЕКСТУРА</span>
+      </a>
+      <nav class="site-nav" aria-label="Основная навигация">
+        <a href="/">Главная</a>
+        <a href="/projects.html" aria-current="page">Проекты</a>
+        <a href="/services.html">Услуги</a>
+        <a href="/articles.html">Статьи</a>
+        <a href="/norms.html">Нормы и уход</a>
+        <a href="/calculator.html">Калькулятор</a>
+        <a href="/request.html">Заявка</a>
+      </nav>
     </div>
-    <section id="projectsRoot" class="projects-grid" aria-live="polite">
-      <div class="loading-skeleton"></div><div class="loading-skeleton"></div><div class="loading-skeleton"></div>
+  </header>
+
+  <main>
+    <section class="projects-hero" aria-labelledby="projectsHeroTitle">
+      <div class="container projects-hero__inner">
+        <div class="projects-hero__content">
+          <div class="projects-hero__eyebrow">Портфолио Tekstura</div>
+          <h1 id="projectsHeroTitle">Реальные лестницы в частных интерьерах</h1>
+          <p>Собираем здесь реализованные объекты и близкие по стилю решения: конструкция, материалы, сроки и ценовой ориентир. Каждый проект начинается с проверки проёма, инженерной логики и спокойной премиальной эстетики.</p>
+          <div class="projects-hero__actions">
+            <a class="btn btn-primary" href="/request.html">Обсудить похожую лестницу</a>
+            <a class="btn btn-secondary" href="/calculator.html">Рассчитать стоимость</a>
+          </div>
+        </div>
+        <aside class="projects-hero__panel" aria-label="Принципы отбора проектов">
+          <div class="projects-hero__panel-title">Что показываем в проектах</div>
+          <ul>
+            <li>реальные параметры и понятный ценовой ориентир;</li>
+            <li>материалы: дерево, металл, стекло, тёплая бронза;</li>
+            <li>решения, которые можно адаптировать под ваш дом.</li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+
+    <section class="projects-section" aria-labelledby="projectsListTitle">
+      <div class="container">
+        <div class="projects-toolbar">
+          <div class="projects-toolbar__title">
+            <div class="section-eyebrow">Избранные работы</div>
+            <h2 id="projectsListTitle">Кейсы и варианты лестниц</h2>
+            <p>Карточки подгружаются из каталога Tekstura. Если публичная коллекция временно недоступна, оставьте заявку — инженер подберёт релевантные объекты вручную.</p>
+          </div>
+          <div class="projects-count" id="projectsCount" aria-live="polite">Загрузка коллекции...</div>
+        </div>
+
+        <div id="projectsRoot" class="projects-grid" aria-live="polite">
+          <div class="loading-skeleton"></div>
+          <div class="loading-skeleton"></div>
+          <div class="loading-skeleton"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="projects-cta" aria-label="Заявка на похожую лестницу">
+      <div class="container">
+        <div class="cta-box">
+          <div class="cta-box__content">
+            <div class="section-eyebrow">Индивидуальный проект</div>
+            <h2>Хотите похожую лестницу?</h2>
+            <p>Пришлите размеры проёма, фото интерьера или желаемый стиль. Мы предложим конструкцию, материалы и понятный ориентир по бюджету.</p>
+          </div>
+          <div class="cta-box__actions">
+            <a class="btn btn-primary" href="/request.html">Оставить заявку</a>
+            <a class="btn btn-secondary" href="/calculator.html">Рассчитать стоимость</a>
+          </div>
+        </div>
+      </div>
     </section>
   </main>
-  <footer class="site-footer"><div class="container site-footer__inner"><div class="site-footer__brand">TEKSTURA</div><div class="site-footer__links">
+
+  <footer class="site-footer">
+    <div class="container site-footer__inner">
+      <div class="site-footer__brand">TEKSTURA</div>
+      <div class="site-footer__links">
         <a href="/">Главная</a>
-                <a href="/projects.html">Проекты</a>
-                <a href="/services.html">Услуги</a>
-                <a href="/articles.html">Статьи</a>
-                <a href="/norms.html">Нормы и уход</a>
-                <a href="/about.html">О компании</a>
-                <a href="/faq.html">FAQ</a>
-                <a href="/calculator.html">Калькулятор</a>
-                <a href="/request.html">Заявка</a>
-      </div></div></footer>
+        <a href="/projects.html">Проекты</a>
+        <a href="/services.html">Услуги</a>
+        <a href="/articles.html">Статьи</a>
+        <a href="/norms.html">Нормы и уход</a>
+        <a href="/about.html">О компании</a>
+        <a href="/faq.html">FAQ</a>
+        <a href="/calculator.html">Калькулятор</a>
+        <a href="/request.html">Заявка</a>
+      </div>
+    </div>
+  </footer>
+
 <script>
 const cfg = window.SUPABASE_CONFIG;
 const projectsCount = document.getElementById('projectsCount');
@@ -70,8 +118,9 @@ const projectsRoot = document.getElementById('projectsRoot');
 const client = (cfg?.url && cfg?.anonKey && window.supabase)
   ? window.supabase.createClient(cfg.url, cfg.anonKey)
   : null;
-const esc = (s='') => String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
-const getPrice = (project) => project.price ? `${project.price} ₽` : (project.price_from ? `от ${project.price_from} ₽` : 'по запросу');
+const fallbackProjectImage = '/assets/design/home-showcase.jpg';
+const esc = (s='') => String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'", '&#039;');
+const getPrice = (project) => project.price ? `${new Intl.NumberFormat('ru-RU').format(project.price)} ₽` : (project.price_from ? `от ${new Intl.NumberFormat('ru-RU').format(project.price_from)} ₽` : 'по запросу');
 const tagsFor = (project) => {
   const tags = [];
   if (project.category) tags.push(project.category);
@@ -79,29 +128,39 @@ const tagsFor = (project) => {
   if (project.lead_time) tags.push(`Срок: ${project.lead_time}`);
   return tags.slice(0, 3);
 };
+const resolveProjectImage = (project) => {
+  const raw = String(project.cover_image || project.image || '').trim();
+  if (!raw || /logo|tekstura-logo|tekstura-header-logo|tekstura-mark|mark/i.test(raw)) return fallbackProjectImage;
+  return raw;
+};
 
 const render = (items=[]) => {
   projectsCount.textContent = items.length ? `Реализованных кейсов: ${items.length}` : 'Коллекция обновляется';
   projectsRoot.classList.toggle('projects-grid--curated', items.length > 0 && items.length <= 2);
 
   if (!items.length) {
-    projectsRoot.innerHTML = '<div class="empty">В публичной коллекции сейчас ограниченное число проектов — показываем только актуальные кейсы. Отправьте заявку, и инженер Tekstura подберёт релевантные реализованные объекты под ваш проём.</div>';
+    projectsRoot.innerHTML = '<div class="projects-empty">Публичная коллекция сейчас обновляется. Мы показываем только актуальные кейсы, поэтому часть объектов может быть скрыта до подготовки описаний и фото. Оставьте заявку — инженер Tekstura подберёт похожие реализованные лестницы под ваш проём.</div>';
     return;
   }
 
   projectsRoot.innerHTML = items.map((p)=>{
     const title = p.title || 'Проект Tekstura';
-    const shortDescription = p.short_description || p.description || 'Индивидуальная инженерная проработка и премиальная реализация.';
-    const image = p.cover_image || p.image || '/logo.jpg.png';
+    const shortDescription = p.short_description || p.description || 'Индивидуальная инженерная проработка, точные узлы и премиальная реализация под интерьер дома.';
+    const image = resolveProjectImage(p);
     const tags = tagsFor(p);
-    return `<a class="project-card" href="/project.html?id=${encodeURIComponent(p.id)}">
-      <img src="${esc(image)}" alt="${esc(title)}">
-      <div class="project-body">
-        <h2>${esc(title)}</h2>
+    return `<a class="project-card" href="/project.html?id=${encodeURIComponent(p.id)}" aria-label="Смотреть проект ${esc(title)}">
+      <figure class="project-card__media">
+        <img src="${esc(image)}" alt="${esc(title)}" loading="lazy" onerror="this.onerror=null;this.src='${fallbackProjectImage}';">
+      </figure>
+      <div class="project-card__body">
+        <h3>${esc(title)}</h3>
         <p>${esc(shortDescription)}</p>
         ${tags.length ? `<div class="project-tags">${tags.map((tag)=>`<span class="project-tag">${esc(tag)}</span>`).join('')}</div>` : ''}
-        <div class="project-note">Инженерная реализация и монтаж штатной бригадой Tekstura.</div>
-        <div class="price">${esc(getPrice(p))}</div>
+        <div class="project-card__note">Инженерная реализация и монтаж штатной бригадой Tekstura.</div>
+        <div class="project-card__footer">
+          <div class="project-card__price">${esc(getPrice(p))}</div>
+          <span class="project-card__link">Смотреть проект</span>
+        </div>
       </div>
     </a>`;
   }).join('');
@@ -111,7 +170,7 @@ const render = (items=[]) => {
   try {
     if (!client) {
       projectsCount.textContent = 'Каталог в базовом режиме';
-      projectsRoot.innerHTML = '<div class="state">Каталог временно недоступен. Оставьте заявку — отправим curated-подборку реализованных объектов Tekstura вручную.</div>';
+      projectsRoot.innerHTML = '<div class="projects-state">Каталог временно недоступен. Оставьте заявку — отправим curated-подборку реализованных объектов Tekstura вручную.</div>';
       return;
     }
     const { data, error } = await client.from('projects').select('*').order('created_at', { ascending: false });
@@ -125,7 +184,7 @@ const render = (items=[]) => {
   } catch (err) {
     console.error(err);
     projectsCount.textContent='Не удалось загрузить коллекцию';
-    projectsRoot.innerHTML='<div class="state">Не удалось загрузить каталог из Supabase. Оставьте заявку, и инженер отправит актуальные кейсы из реализованных объектов Tekstura.</div>';
+    projectsRoot.innerHTML='<div class="projects-state">Не удалось загрузить каталог из Supabase. Оставьте заявку, и инженер отправит актуальные кейсы из реализованных объектов Tekstura.</div>';
   }
 })();
 </script>
