@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" fill="none">
-  <rect width="900" height="520" rx="24" fill="#241912"/>
-  <rect x="80" y="86" width="740" height="320" rx="16" fill="#2f2118" stroke="#6b503d"/>
-  <line x1="180" y1="340" x2="720" y2="150" stroke="#ddb786" stroke-width="8"/>
-  <circle cx="280" cy="304" r="22" fill="#e3c095"/>
-  <circle cx="560" cy="206" r="22" fill="#e3c095"/>
-  <text x="56" y="42" fill="#efcfab" font-size="30" font-family="Inter,Arial">Узлы и крепления</text>
-  <text x="56" y="468" fill="#b59b7f" font-size="20" font-family="Inter,Arial">Контроль точек крепления ограждений и примыкания ступеней.</text>
-</svg>
