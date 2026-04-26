@@ -19,7 +19,7 @@
   text-decoration: none !important;
   color: transparent !important;
   letter-spacing: 0 !important;
-  background: none !important;
+  background: transparent !important;
   border: 0 !important;
   box-shadow: none !important;
   backdrop-filter: none !important;
@@ -32,13 +32,15 @@
   display: block !important;
   width: 100% !important;
   height: 100% !important;
-  background-image: url('/assets/design/tekstura-logo-header.png') !important;
+  background-color: transparent !important;
+  background-image: url('/assets/design/tekstura-header-logo.png') !important;
   background-repeat: no-repeat !important;
   background-position: left center !important;
   background-size: contain !important;
   filter:
-    drop-shadow(0 5px 14px rgba(0, 0, 0, 0.55))
-    drop-shadow(0 0 14px rgba(214, 160, 72, 0.26));
+    drop-shadow(0 5px 14px rgba(0, 0, 0, 0.58))
+    drop-shadow(0 0 12px rgba(214, 160, 72, 0.34))
+    drop-shadow(0 0 24px rgba(214, 160, 72, 0.16));
 }
 
 .site-header .brand::after {
