@@ -21,9 +21,20 @@
 <body>
   <header class="site-header">
     <div class="container site-header__inner">
-      <a href="/" class="brand" aria-label="Tekstura">
+      <a href="/" class="brand brand--tek" aria-label="ТЕКСТУРА — премиальные лестницы">
+        <img
+          src="/assets/design/tekstura-mark.svg"
+          alt=""
+          aria-hidden="true"
+          class="brand__mark"
+        >
+        <span class="brand__copy">
+          <span class="brand__title">ТЕКСТУРА</span>
+          <span class="brand__subtitle">ПРЕМИАЛЬНЫЕ ЛЕСТНИЦЫ</span>
+        </span>
+
         <img id="siteLogo" src="" alt="Tekstura" style="display:none;width:auto;">
-        <span id="siteLogoText">TEKSTURA</span>
+        <span id="siteLogoText" style="display:none;">TEKSTURA</span>
       </a>
 
       <nav class="site-nav">
@@ -291,13 +302,22 @@
       return contacts;
     }
 
+    function resolveHeroImage(value) {
+      const raw = String(value || '').trim();
+      if (!raw) return fallback.settings.heroImage;
+      if (/logo|tekstura-logo|tekstura-header-logo|tekstura-mark|mark/i.test(raw)) {
+        return fallback.settings.heroImage;
+      }
+      return raw;
+    }
+
     function renderSettings(settings) {
       const s = normalizeSettings(settings);
       const rawHeroTitle = String(s.heroTitle || fallback.settings.heroTitle).replace(/<br\s*\/?>/gi, '\n');
       document.getElementById('heroBadge').textContent = s.badge || fallback.settings.badge;
       document.getElementById('heroTitle').innerHTML = escapeHtml(rawHeroTitle).replace(/\n/g, '<br>');
       document.getElementById('heroSubtitle').textContent = s.heroSubtitle || fallback.settings.heroSubtitle;
-      document.getElementById('heroImage').src = s.heroImage || fallback.settings.heroImage;
+      document.getElementById('heroImage').src = resolveHeroImage(s.heroImage);
       const logoImg = document.getElementById('siteLogo');
       const logoText = document.getElementById('siteLogoText');
       const footerBrand = document.getElementById('footerBrand');
