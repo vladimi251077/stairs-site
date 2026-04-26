@@ -223,6 +223,7 @@
     flex-basis: 42px;
     border-radius: 12px 17px 12px 17px;
   }
+}
 
   .site-header .brand::after {
     font-size: 20px;
@@ -262,6 +263,7 @@
   .section-contacts {
     animation: none;
   }
+}
 
   .photo-card,
   .photo-card img {
