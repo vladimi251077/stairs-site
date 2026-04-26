@@ -1,8 +1,8 @@
-/* Homepage polish for PR #62: uploaded transparent logo, contrast and soft motion. */
+/* Homepage polish for PR #62: transparent logo, contrast and soft motion. */
 
 .site-header__inner{padding:16px 0!important}
-.site-header .brand{position:relative;display:inline-flex!important;align-items:center!important;justify-content:flex-start!important;flex:0 0 auto;width:390px!important;height:96px!important;min-width:390px!important;min-height:96px!important;padding:0!important;margin:0!important;text-decoration:none!important;color:transparent!important;letter-spacing:0!important;background:none!important;border:0!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;overflow:visible!important}
-.site-header .brand::before{content:""!important;display:block!important;width:100%!important;height:100%!important;background-image:url('/assets/design/tekstura-logo-header.png')!important;background-repeat:no-repeat!important;background-position:left center!important;background-size:contain!important;filter:drop-shadow(0 5px 14px rgba(0,0,0,.55)) drop-shadow(0 0 14px rgba(214,160,72,.26))}
+.site-header .brand{position:relative;display:inline-flex!important;align-items:center!important;justify-content:flex-start!important;flex:0 0 auto;width:390px!important;height:96px!important;min-width:390px!important;min-height:96px!important;padding:0!important;margin:0!important;text-decoration:none!important;color:transparent!important;letter-spacing:0!important;background:transparent!important;border:0!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;overflow:visible!important}
+.site-header .brand::before{content:""!important;display:block!important;width:100%!important;height:100%!important;background-color:transparent!important;background-image:url('/assets/design/tekstura-header-logo.svg')!important;background-repeat:no-repeat!important;background-position:left center!important;background-size:contain!important;filter:drop-shadow(0 5px 14px rgba(0,0,0,.58)) drop-shadow(0 0 12px rgba(214,160,72,.34)) drop-shadow(0 0 24px rgba(214,160,72,.16))}
 .site-header .brand::after{content:none!important;display:none!important}
 .site-header .brand #siteLogo,.site-header .brand #siteLogoText{display:none!important}
 
