@@ -29,6 +29,22 @@
   content: none !important;
 }
 
+.hero-premium__title {
+  position: relative;
+  color: transparent;
+  text-shadow: none !important;
+}
+
+.hero-premium__title::before {
+  content: "Лестницы как\A часть архитектуры";
+  position: absolute;
+  inset: 0 auto auto 0;
+  white-space: pre-line;
+  color: var(--text);
+  text-shadow: 0 10px 34px rgba(0, 0, 0, 0.46);
+  pointer-events: none;
+}
+
 .section-eyebrow {
   display: inline-flex;
   align-items: center;
@@ -51,8 +67,7 @@
   border-radius: 999px;
 }
 
-.section-heading h2,
-.hero-premium__title {
+.section-heading h2 {
   text-shadow: 0 10px 34px rgba(0, 0, 0, 0.46);
 }
 
@@ -112,6 +127,10 @@
     max-width: 100%;
     font-size: 11px;
     letter-spacing: 0.16em;
+  }
+
+  .hero-premium__title::before {
+    content: "Лестницы как\A часть архитектуры";
   }
 
   .section-eyebrow {
