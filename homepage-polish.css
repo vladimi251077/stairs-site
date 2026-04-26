@@ -1,4 +1,55 @@
-/* Homepage overrides: real uploaded Tekstura logo in header. */
+/* Homepage overrides: Tekstura logo + single premium hero scene. */
+
+body {
+  background:
+    radial-gradient(circle at 16% 4%, rgba(213, 151, 83, 0.13), transparent 30rem),
+    radial-gradient(circle at 84% 18%, rgba(129, 82, 43, 0.1), transparent 34rem),
+    linear-gradient(180deg, #120d09 0%, #17100c 44%, #100c08 100%) !important;
+  background-attachment: scroll !important;
+}
+
+body::after {
+  display: none !important;
+}
+
+main {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    linear-gradient(180deg, #120d09 0%, #17100c 36%, #110c09 100%);
+}
+
+main::before {
+  content: "";
+  position: absolute;
+  inset: 58vh 0 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(219, 158, 91, 0.08), transparent 28rem),
+    radial-gradient(circle at 86% 24%, rgba(103, 64, 35, 0.12), transparent 34rem),
+    linear-gradient(180deg, #17100c 0%, #120d09 100%);
+}
+
+main > section {
+  position: relative;
+  z-index: 1;
+}
+
+.site-header {
+  isolation: isolate;
+}
+
+.site-header::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 156px;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(10, 7, 5, 0.82), rgba(10, 7, 5, 0));
+}
 
 .site-header__inner {
   padding: 16px 0 !important;
@@ -34,9 +85,9 @@
   background-position: left center !important;
   background-size: contain !important;
   filter:
-    drop-shadow(0 5px 14px rgba(0, 0, 0, 0.60))
-    drop-shadow(0 0 12px rgba(214, 160, 72, 0.34))
-    drop-shadow(0 0 24px rgba(214, 160, 72, 0.16));
+    drop-shadow(0 5px 14px rgba(0, 0, 0, 0.64))
+    drop-shadow(0 0 12px rgba(214, 160, 72, 0.32))
+    drop-shadow(0 0 24px rgba(214, 160, 72, 0.14));
 }
 
 .site-header .brand::after {
@@ -56,6 +107,62 @@
   max-height: 0 !important;
   opacity: 0 !important;
   pointer-events: none !important;
+}
+
+.site-nav a {
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.56);
+}
+
+.hero-premium {
+  min-height: 100svh;
+  padding: var(--header-offset) 0 96px !important;
+  overflow: hidden;
+  isolation: isolate;
+  background: #120d09;
+}
+
+.hero-premium__bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  transform: none !important;
+  background:
+    linear-gradient(90deg, rgba(9, 6, 4, 0.9) 0%, rgba(14, 9, 6, 0.76) 34%, rgba(28, 18, 10, 0.4) 68%, rgba(42, 25, 13, 0.22) 100%),
+    linear-gradient(180deg, rgba(12, 8, 5, 0.34) 0%, rgba(16, 11, 8, 0.18) 44%, rgba(18, 12, 8, 0.92) 100%),
+    url('/assets/design/home-hero.jpg') center center / cover no-repeat;
+}
+
+.hero-premium::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 42%;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(18, 13, 9, 0) 0%, rgba(18, 13, 9, 0.86) 68%, #17100c 100%);
+}
+
+.hero-premium__inner {
+  position: relative;
+  z-index: 2;
+  display: grid !important;
+  grid-template-columns: minmax(0, 720px) !important;
+  align-items: center !important;
+  min-height: calc(100svh - 206px) !important;
+}
+
+.hero-premium__content {
+  max-width: 720px !important;
+  padding: 18px 0 34px;
+}
+
+.hero-premium__visual,
+.hero-premium__visual-card,
+.hero-premium__image {
+  display: none !important;
+  visibility: hidden !important;
 }
 
 .hero-premium__eyebrow {
@@ -82,7 +189,8 @@
 }
 
 .hero-premium__title {
-  text-shadow: 0 10px 34px rgba(0, 0, 0, 0.46);
+  max-width: 760px;
+  text-shadow: 0 12px 38px rgba(0, 0, 0, 0.58);
 }
 
 .hero-premium__subtitle,
@@ -90,28 +198,42 @@
   color: #ddc9b1;
 }
 
-/* Keep the hero card as a staircase photo even if the CMS has a logo saved as heroImage. */
-.hero-premium__visual-card {
-  position: relative !important;
-  min-height: 520px !important;
-  background: url('/assets/design/home-showcase.jpg') center center / cover no-repeat !important;
+.hero-premium__meta-item {
+  background: rgba(34, 24, 17, 0.52) !important;
+  border-color: rgba(255, 236, 204, 0.12) !important;
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.22);
 }
 
-.hero-premium__visual-card::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(180deg, rgba(255, 255, 255, .02), rgba(0, 0, 0, .06));
-  pointer-events: none;
+.section-dark {
+  margin-top: -1px;
+  padding-top: 86px !important;
+  background:
+    linear-gradient(180deg, #17100c 0%, rgba(23, 16, 12, 0.92) 42%, rgba(18, 13, 9, 0.86) 100%) !important;
 }
 
-.hero-premium__image {
-  opacity: 0 !important;
-  visibility: hidden !important;
-  width: 100% !important;
-  min-height: 520px !important;
-  object-fit: cover !important;
+.section-dark::before {
+  background:
+    radial-gradient(circle at top left, rgba(214, 162, 98, 0.08), transparent 30rem),
+    radial-gradient(circle at top right, rgba(112, 71, 40, 0.08), transparent 34rem) !important;
+}
+
+.section-project-photos,
+.section-process,
+.section-articles-preview,
+.section-norms-preview,
+.section-cta,
+.section-contacts {
+  background: transparent !important;
+}
+
+.feature-card,
+.process-card,
+.content-card,
+.info-section,
+.cta-box,
+.contact-premium-card,
+.photo-card {
+  border-color: rgba(255, 236, 204, 0.1) !important;
 }
 
 .photo-card {
@@ -126,7 +248,7 @@
 
 .photo-card:hover {
   transform: translateY(-4px);
-  border-color: rgba(239, 210, 172, 0.34);
+  border-color: rgba(239, 210, 172, 0.34) !important;
   box-shadow: 0 22px 52px rgba(0, 0, 0, 0.36);
 }
 
@@ -159,11 +281,15 @@
   .site-nav a {
     font-size: 13px;
   }
+
+  .hero-premium__bg {
+    background-position: 58% center;
+  }
 }
 
 @media (max-width: 760px) {
   :root {
-    --header-offset: 150px;
+    --header-offset: 148px;
   }
 
   .site-header__inner {
@@ -173,9 +299,9 @@
   }
 
   .site-header .brand {
-    width: 300px !important;
+    width: min(300px, 56vw) !important;
     height: 76px !important;
-    min-width: 300px !important;
+    min-width: min(300px, 56vw) !important;
     min-height: 76px !important;
   }
 
@@ -187,23 +313,56 @@
     font-size: 12px !important;
   }
 
+  .hero-premium {
+    min-height: auto;
+    padding: var(--header-offset) 0 66px !important;
+  }
+
+  .hero-premium__bg {
+    background:
+      linear-gradient(180deg, rgba(11, 7, 5, 0.52) 0%, rgba(16, 11, 7, 0.5) 42%, rgba(18, 12, 8, 0.95) 100%),
+      linear-gradient(90deg, rgba(8, 5, 4, 0.88) 0%, rgba(17, 11, 7, 0.68) 52%, rgba(36, 22, 12, 0.2) 100%),
+      url('/assets/design/home-hero.jpg') 62% center / cover no-repeat;
+  }
+
+  .hero-premium::after {
+    height: 46%;
+  }
+
+  .hero-premium__inner {
+    min-height: auto !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  .hero-premium__content {
+    padding: 0 0 12px;
+  }
+
   .hero-premium__eyebrow {
     font-size: 11px;
     letter-spacing: 0.16em;
   }
 
-  .hero-premium__visual-card,
-  .hero-premium__image {
-    min-height: 280px !important;
+  .hero-premium__title {
+    font-size: clamp(38px, 13vw, 52px);
+    line-height: 0.95;
+  }
+
+  .hero-premium__subtitle {
+    font-size: 16px;
+  }
+
+  .section-dark {
+    padding-top: 58px !important;
   }
 }
 
 @media (max-width: 420px) {
   .site-header .brand {
-    width: 270px !important;
-    height: 68px !important;
-    min-width: 270px !important;
-    min-height: 68px !important;
+    width: 232px !important;
+    height: 60px !important;
+    min-width: 232px !important;
+    min-height: 60px !important;
   }
 }
 
