@@ -1,4 +1,4 @@
-/* Homepage overrides: composite Tekstura logo in header */
+/* Homepage overrides: clean Tekstura header without the wrong generated icon. */
 
 .site-header__inner {
   padding: 16px 0 !important;
@@ -7,7 +7,6 @@
 .site-header .brand {
   display: inline-flex !important;
   align-items: center !important;
-  gap: 14px !important;
   width: auto !important;
   min-width: 0 !important;
   height: auto !important;
@@ -30,19 +29,24 @@
 .site-header .brand #siteLogo,
 .site-header .brand #siteLogoText {
   display: none !important;
+  visibility: hidden !important;
+  width: 0 !important;
+  height: 0 !important;
+  max-width: 0 !important;
+  max-height: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
+/* This was the wrong generated tree/spruce-looking icon. Hide it completely. */
 .brand__mark {
-  width: 62px;
-  height: 62px;
-  flex: 0 0 62px;
-  object-fit: contain;
-  display: block;
-  background: transparent !important;
-  filter:
-    drop-shadow(0 4px 10px rgba(0, 0, 0, 0.58))
-    drop-shadow(0 0 10px rgba(214, 160, 72, 0.30))
-    drop-shadow(0 0 18px rgba(214, 160, 72, 0.16));
+  display: none !important;
+  visibility: hidden !important;
+  width: 0 !important;
+  height: 0 !important;
+  flex: 0 0 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 .brand__copy {
@@ -50,11 +54,15 @@
   flex-direction: column;
   align-items: flex-start;
   line-height: 1;
+  filter:
+    drop-shadow(0 4px 12px rgba(0, 0, 0, 0.62))
+    drop-shadow(0 0 12px rgba(214, 160, 72, 0.34))
+    drop-shadow(0 0 24px rgba(214, 160, 72, 0.16));
 }
 
 .brand__title {
   font-family: Georgia, "Times New Roman", serif;
-  font-size: 40px;
+  font-size: 44px;
   font-weight: 700;
   letter-spacing: 0.08em;
   color: #f4d79a;
@@ -67,8 +75,8 @@
 }
 
 .brand__subtitle {
-  margin-top: 6px;
-  font-size: 12px;
+  margin-top: 7px;
+  font-size: 13px;
   font-weight: 800;
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -110,6 +118,30 @@
   color: #ddc9b1;
 }
 
+/* Force the hero card to remain a staircase photo even if the CMS has a logo saved as heroImage. */
+.hero-premium__visual-card {
+  position: relative !important;
+  min-height: 520px !important;
+  background: url('/assets/design/home-showcase.jpg') center center / cover no-repeat !important;
+}
+
+.hero-premium__visual-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(0,0,0,.06));
+  pointer-events: none;
+}
+
+.hero-premium__image {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  width: 100% !important;
+  min-height: 520px !important;
+  object-fit: cover !important;
+}
+
 .photo-card {
   position: relative;
   overflow: hidden;
@@ -138,14 +170,8 @@
 }
 
 @media (max-width: 980px) {
-  .brand__mark {
-    width: 52px;
-    height: 52px;
-    flex-basis: 52px;
-  }
-
   .brand__title {
-    font-size: 32px;
+    font-size: 34px;
   }
 
   .brand__subtitle {
@@ -169,22 +195,12 @@
     padding: 12px 0 !important;
   }
 
-  .site-header .brand {
-    gap: 10px !important;
-  }
-
-  .brand__mark {
-    width: 42px;
-    height: 42px;
-    flex-basis: 42px;
-  }
-
   .brand__title {
-    font-size: 24px;
+    font-size: 28px;
   }
 
   .brand__subtitle {
-    font-size: 8px;
+    font-size: 9px;
     letter-spacing: 0.12em;
   }
 
@@ -199,6 +215,11 @@
   .hero-premium__eyebrow {
     font-size: 11px;
     letter-spacing: 0.16em;
+  }
+
+  .hero-premium__visual-card,
+  .hero-premium__image {
+    min-height: 280px !important;
   }
 }
 
