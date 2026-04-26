@@ -1,18 +1,18 @@
 /* Homepage polish for PR #62: contrast, clean eyebrow labels and soft motion. */
 
 .site-header .brand {
-  min-height: 72px;
+  min-height: 86px;
   display: inline-flex;
   align-items: center;
 }
 
 .site-header .brand #siteLogo {
-  height: 58px !important;
+  height: 78px !important;
   width: auto !important;
-  max-width: 178px;
+  max-width: 246px;
   max-height: none !important;
   object-fit: contain;
-  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.35));
+  filter: drop-shadow(0 12px 20px rgba(0, 0, 0, 0.42));
 }
 
 .hero-premium__eyebrow {
@@ -143,12 +143,12 @@
 
 @media (max-width: 760px) {
   .site-header .brand {
-    min-height: 62px;
+    min-height: 72px;
   }
 
   .site-header .brand #siteLogo {
-    height: 46px !important;
-    max-width: 146px;
+    height: 58px !important;
+    max-width: 188px;
   }
 
   .hero-premium__eyebrow {
