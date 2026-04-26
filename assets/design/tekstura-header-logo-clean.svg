@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="220" viewBox="0 0 900 220" role="img" aria-label="ТЕКСТУРА — премиальные лестницы">
+  <defs>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff0bf"/>
+      <stop offset=".36" stop-color="#d8a84f"/>
+      <stop offset=".68" stop-color="#8d5f25"/>
+      <stop offset="1" stop-color="#f4d88c"/>
+    </linearGradient>
+    <linearGradient id="steel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e2e0d2"/>
+      <stop offset=".48" stop-color="#68736a"/>
+      <stop offset="1" stop-color="#1f2925"/>
+    </linearGradient>
+    <filter id="softGlow" x="-25%" y="-35%" width="150%" height="170%">
+      <feDropShadow dx="0" dy="6" stdDeviation="5" flood-color="#000" flood-opacity=".55"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="5" flood-color="#d6a048" flood-opacity=".34"/>
+    </filter>
+  </defs>
+  <g filter="url(#softGlow)">
+    <g transform="translate(18 16)">
+      <path d="M82 175 C66 130 70 78 102 28 C112 62 110 111 98 175 Z" fill="url(#steel)" stroke="#f8e4a7" stroke-width="1.6" opacity=".96"/>
+      <path d="M95 176 C113 126 129 92 171 68 C151 108 143 141 142 176 Z" fill="url(#gold)" stroke="#3a2612" stroke-width="1.7" opacity=".96"/>
+      <path d="M44 176 C72 160 100 147 144 152 C130 170 92 184 44 176Z" fill="url(#steel)" stroke="#efe0b1" stroke-width="1.5"/>
+      <path d="M121 151 L174 151 L174 162 L112 162 Z" fill="url(#gold)" stroke="#3b2611" stroke-width="1"/>
+      <path d="M109 132 L167 132 L167 143 L101 143 Z" fill="url(#gold)" stroke="#3b2611" stroke-width="1"/>
+      <path d="M101 114 L158 114 L158 124 L95 124 Z" fill="url(#gold)" stroke="#3b2611" stroke-width="1"/>
+      <path d="M99 98 L148 98 L148 107 L94 107 Z" fill="url(#gold)" stroke="#3b2611" stroke-width="1"/>
+      <path d="M96 88 C110 62 129 45 151 31" fill="none" stroke="#f0c46a" stroke-width="5" stroke-linecap="round"/>
+      <path d="M96 89 C77 61 58 43 33 31" fill="none" stroke="#9da59e" stroke-width="5" stroke-linecap="round"/>
+      <path d="M105 78 C125 68 146 62 171 56" fill="none" stroke="#d9a84f" stroke-width="4" stroke-linecap="round"/>
+      <path d="M87 78 C66 70 46 64 22 61" fill="none" stroke="#6d7870" stroke-width="4" stroke-linecap="round"/>
+      <path d="M105 58 C122 42 139 30 159 18" fill="none" stroke="#f4d88c" stroke-width="4" stroke-linecap="round"/>
+      <path d="M88 58 C68 40 52 27 34 17" fill="none" stroke="#cad0c7" stroke-width="4" stroke-linecap="round"/>
+      <g fill="url(#gold)" stroke="#5d3a14" stroke-width="1.1">
+        <ellipse cx="166" cy="53" rx="15" ry="7" transform="rotate(-22 166 53)"/>
+        <ellipse cx="143" cy="31" rx="14" ry="7" transform="rotate(-45 143 31)"/>
+        <ellipse cx="124" cy="64" rx="13" ry="6" transform="rotate(-12 124 64)"/>
+        <ellipse cx="70" cy="37" rx="14" ry="7" transform="rotate(35 70 37)"/>
+        <ellipse cx="43" cy="57" rx="15" ry="7" transform="rotate(18 43 57)"/>
+        <ellipse cx="29" cy="29" rx="13" ry="6" transform="rotate(25 29 29)"/>
+      </g>
+      <g fill="url(#steel)" stroke="#d8d4bf" stroke-width="1.1" opacity=".95">
+        <ellipse cx="103" cy="35" rx="11" ry="23" transform="rotate(10 103 35)"/>
+        <ellipse cx="58" cy="75" rx="14" ry="6" transform="rotate(20 58 75)"/>
+      </g>
+    </g>
+    <text x="232" y="100" font-family="Georgia, 'Times New Roman', serif" font-size="78" font-weight="500" letter-spacing="6" fill="url(#gold)" stroke="#5b3511" stroke-width="1.4">ТЕКСТУРА</text>
+    <text x="244" y="156" font-family="Georgia, 'Times New Roman', serif" font-size="34" font-weight="500" letter-spacing="5" fill="url(#gold)" stroke="#5b3511" stroke-width=".8">ПРЕМИАЛЬНЫЕ ЛЕСТНИЦЫ</text>
+  </g>
+</svg>
