@@ -18,7 +18,7 @@
   <style>
     :root{--bg:#0f0c0a;--panel:#19130f;--line:#3d332b;--text:#f4e7d4;--muted:#baa894;--accent:#e8c8a2;--ok:#9ddcb0;--err:#ff9e9e}
     *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 Inter,sans-serif}
-    .wrap{max-width:800px;margin:auto;padding:16px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
+    .wrap{max-width:880px;margin:auto;padding:16px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
     h1{margin:0 0 8px;font-size:clamp(28px,4vw,38px)} .muted{color:var(--muted)} .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .full{grid-column:1/-1} input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:#120f0d;color:var(--text)} textarea{min-height:96px}
     .btn{width:100%;padding:12px;border-radius:10px;border:0;background:var(--accent);color:#1a120e;font-weight:700;cursor:pointer;margin-top:10px}
@@ -30,14 +30,23 @@
     .success-card{border:1px solid rgba(157,220,176,.35);background:rgba(82,122,92,.18);border-radius:12px;padding:12px;margin-top:8px;line-height:1.6}
     .success-card--warning{border-color:rgba(255,207,122,.35);background:rgba(130,100,45,.18)}
     @media(max-width:700px){.grid{grid-template-columns:1fr}.trust-grid{grid-template-columns:1fr}}
-    .top-nav{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 12px;padding:10px;border:1px solid var(--line);border-radius:12px;background:#1b1512}.top-nav a{color:#e8c8a2;text-decoration:none;font-size:14px}
   </style>
+  <link rel="stylesheet" href="/site-unify.css">
 </head>
-<body>
-  <div class="wrap">
-    <nav class="top-nav"><a href="/">Главная</a><a href="/projects.html">Проекты</a><a href="/services.html">Услуги</a><a href="/articles.html">Статьи</a><a href="/norms.html">Нормы и уход</a><a href="/calculator.html">Калькулятор</a><a href="/request.html">Заявка</a></nav>
-    <h1>Заявка на лестницу</h1>
-    <p class="muted">Заполните контакты — с вами свяжется инженер Tekstura для уточнения размеров и подбора оптимальной конфигурации под ваш объект.</p>
+<body class="request-page">
+  <header class="site-header">
+    <div class="container site-header__inner">
+      <a href="/" class="brand" aria-label="ТЕКСТУРА — премиальные лестницы">TEKSTURA</a>
+      <nav class="site-nav" aria-label="Основная навигация"><a href="/">Главная</a><a href="/projects.html">Проекты</a><a href="/services.html">Услуги</a><a href="/articles.html">Статьи</a><a href="/norms.html">Нормы и уход</a><a href="/calculator.html">Калькулятор</a><a href="/request.html" aria-current="page">Заявка</a></nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="page-hero request-hero">
+      <span class="section-eyebrow">Заявка Tekstura</span>
+      <h1>Заявка на лестницу</h1>
+      <p class="muted">Заполните контакты — с вами свяжется инженер Tekstura для уточнения размеров и подбора оптимальной конфигурации под ваш объект.</p>
+    </section>
 
     <div class="panel">
       <b>Сводка расчёта</b>
@@ -70,7 +79,7 @@
       <div id="status" style="margin-top:10px"></div>
       <div id="successState" hidden class="success-card">Спасибо за обращение в Tekstura. Заявка сохранена, инженер уже получил уведомление.</div>
     </div>
-  </div>
+  </main>
 <footer class="site-footer"><div class="container site-footer__inner"><div class="site-footer__brand">TEKSTURA</div><div class="site-footer__links"><a href="/">Главная</a><a href="/projects.html">Проекты</a><a href="/services.html">Услуги</a><a href="/articles.html">Статьи</a><a href="/norms.html">Нормы и уход</a><a href="/about.html">О компании</a><a href="/faq.html">FAQ</a><a href="/calculator.html">Калькулятор</a><a href="/request.html">Заявка</a></div></div></footer>
 <script>
 const cfg = window.SUPABASE_CONFIG;
