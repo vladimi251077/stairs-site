@@ -15,6 +15,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/supabase-config.js"></script>
 <link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="/calculator-ui-preview.css">
 <style>.calc-nav{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px;padding:10px;border:1px solid rgba(255,255,255,.14);border-radius:12px;background:rgba(28,22,18,.72)}.calc-nav a{text-decoration:none;color:#e8c8a2;font-size:14px}</style>
 </head>
 <body>
@@ -36,30 +37,36 @@
     <div id="stepProgress" class="muted">Шаг 1 из 3 · Конфигурация</div>
 
     <section class="step active" id="step1">
-      <h2>Шаг 1. Конфигурация</h2>
-      <p class="step1-intro">Выберите сценарий, конфигурацию и способ ввода. Ручной ввод — полноценный режим с теми же расчётами.</p>
+      <h2>Шаг 1. Что есть на объекте и какие размеры известны</h2>
+      <p class="step1-intro">Сначала выберите реальный сценарий, затем тип лестницы и размеры. Технические детали спрятаны в понятные блоки, чтобы клиент не терялся в форме.</p>
 
+      <details class="scheme-reference">
+        <summary>Показать подсказки по схемам и размерам</summary>
+        <section class="calc-quick-schemes" aria-label="Подсказки по типам лестниц и размерам">
+          <article class="calc-scheme-card"><h3>Прямая</h3><img src="/assets/schemes/stair-straight.svg" alt="Схема прямой лестницы"></article>
+          <article class="calc-scheme-card"><h3>Г-образная</h3><img src="/assets/schemes/stair-l-shaped.svg" alt="Схема Г-образной лестницы"></article>
+          <article class="calc-scheme-card"><h3>П-образная</h3><img src="/assets/schemes/stair-u-shaped.svg" alt="Схема П-образной лестницы"></article>
+          <article class="calc-scheme-card"><h3>Поворот влево</h3><img src="/assets/schemes/turn-left.svg" alt="Схема поворота лестницы влево"></article>
+          <article class="calc-scheme-card"><h3>Поворот вправо</h3><img src="/assets/schemes/turn-right.svg" alt="Схема поворота лестницы вправо"></article>
+          <article class="calc-scheme-card"><h3>Размеры проёма</h3><img src="/assets/schemes/opening-dimensions.svg" alt="Схема размеров проёма"></article>
+          <article class="calc-scheme-card"><h3>Вид сверху</h3><img src="/assets/schemes/plan-view.svg" alt="Схема лестницы сверху"></article>
+          <article class="calc-scheme-card"><h3>Вид сбоку</h3><img src="/assets/schemes/side-view.svg" alt="Схема лестницы сбоку"></article>
+        </section>
+      </details>
 
-      <section class="calc-quick-schemes" aria-label="Подсказки по типам лестниц и размерам">
-        <article class="calc-scheme-card"><h3>Прямая</h3><img src="/assets/schemes/stair-straight.svg" alt="Схема прямой лестницы"></article>
-        <article class="calc-scheme-card"><h3>Г-образная</h3><img src="/assets/schemes/stair-l-shaped.svg" alt="Схема Г-образной лестницы"></article>
-        <article class="calc-scheme-card"><h3>П-образная</h3><img src="/assets/schemes/stair-u-shaped.svg" alt="Схема П-образной лестницы"></article>
-        <article class="calc-scheme-card"><h3>Поворот влево</h3><img src="/assets/schemes/turn-left.svg" alt="Схема поворота лестницы влево"></article>
-        <article class="calc-scheme-card"><h3>Поворот вправо</h3><img src="/assets/schemes/turn-right.svg" alt="Схема поворота лестницы вправо"></article>
-        <article class="calc-scheme-card"><h3>Размеры проёма</h3><img src="/assets/schemes/opening-dimensions.svg" alt="Схема размеров проёма"></article>
-        <article class="calc-scheme-card"><h3>Вид сверху</h3><img src="/assets/schemes/plan-view.svg" alt="Схема лестницы сверху"></article>
-        <article class="calc-scheme-card"><h3>Вид сбоку</h3><img src="/assets/schemes/side-view.svg" alt="Схема лестницы сбоку"></article>
-      </section>
+      <div class="calculator-flow-note">
+        <strong>Новый порядок:</strong> 1) что есть на объекте; 2) тип лестницы; 3) размеры; 4) материалы; 5) расчёт и заявка.
+      </div>
 
-
-      <div class="step1-controls">
-        <div class="field">
-          <label>Сценарий проекта</label>
-          <div class="segmented" data-step1-group="scenario" role="radiogroup" aria-label="Сценарий проекта">
-            <button type="button" class="segmented__item is-active" data-value="empty_opening">Пустой проём</button>
-            <button type="button" class="segmented__item" data-value="ready_frame">Готовый каркас</button>
+      <div class="step1-controls step1-controls--clean">
+        <div class="field scenario-field">
+          <label>Что у меня есть?</label>
+          <div class="segmented segmented--scenario" data-step1-group="scenario" role="radiogroup" aria-label="Сценарий проекта">
+            <button type="button" class="segmented__item is-active" data-value="empty_opening"><span>Пустой проём</span><small>Нужно подобрать лестницу с нуля</small></button>
+            <button type="button" class="segmented__item" data-value="ready_frame"><span>Готовое основание</span><small>Металл или бетон уже есть</small></button>
           </div>
           <input type="hidden" id="baseCondition" value="empty_opening">
+          <a class="consultation-link" href="/request.html">Не знаю / нужна помощь инженера</a>
         </div>
 
         <div class="field hidden" id="baseSubtypeField">
@@ -68,19 +75,19 @@
             <option value="existing_metal_frame">Готовый металлокаркас</option>
             <option value="existing_concrete_base">Готовое бетонное основание</option>
           </select>
+          <span class="field-help">Этот выбор влияет на состав работ и смету: ступени, подступенки, обшивка, ограждение, монтаж.</span>
         </div>
 
-        <div class="field">
-          <label>Тип лестницы</label>
-          <div class="segmented" data-step1-group="stairFamily" role="radiogroup" aria-label="Тип лестницы">
-            <button type="button" class="segmented__item is-active" data-value="straight">Прямая</button>
-            <button type="button" class="segmented__item" data-value="l-shaped">Г-образная</button>
-            <button type="button" class="segmented__item" data-value="u-shaped">П-образная</button>
+        <div class="field stair-family-field">
+          <label>Какая лестница нужна?</label>
+          <div class="segmented segmented--cards" data-step1-group="stairFamily" role="radiogroup" aria-label="Тип лестницы">
+            <button type="button" class="segmented__item is-active" data-value="straight"><span>Прямая</span><small>Без поворота</small></button>
+            <button type="button" class="segmented__item" data-value="l-shaped"><span>Г-образная</span><small>Поворот 90°</small></button>
+            <button type="button" class="segmented__item" data-value="u-shaped"><span>П-образная</span><small>Разворот 180°</small></button>
           </div>
         </div>
 
-
-        <div class="field">
+        <div class="field hidden">
           <label>Способ ввода</label>
           <div class="segmented" data-step1-group="inputMode" role="radiogroup" aria-label="Способ ввода">
             <button type="button" class="segmented__item is-active" data-value="scheme">Ввод по схеме</button>
@@ -90,9 +97,9 @@
 
         <div class="field" id="turnModeSwitchField">
           <label>Тип поворота</label>
-          <div class="segmented" data-step1-group="turnMode" role="radiogroup" aria-label="Тип поворота">
-            <button type="button" class="segmented__item is-active" data-value="landing">Площадка</button>
-            <button type="button" class="segmented__item" data-value="winders">Забежные</button>
+          <div class="segmented segmented--turn" data-step1-group="turnMode" role="radiogroup" aria-label="Тип поворота">
+            <button type="button" class="segmented__item is-active" data-value="landing"><span>С площадкой</span><small>Комфортнее и спокойнее</small></button>
+            <button type="button" class="segmented__item" data-value="winders"><span>С забежными</span><small>Компактнее в проёме</small></button>
           </div>
         </div>
       </div>
@@ -101,15 +108,15 @@
         <div class="visual-stage" id="visualStage">
           <div class="visual-stage__header">
             <h3 id="visualTitle">Прямая лестница · Пустой проём</h3>
-            <p id="visualSubtitle">Заполните ключевые размеры прямо на схеме.</p>
+            <p id="visualSubtitle">Заполните ключевые размеры. Поля, которые не относятся к выбранному сценарию, отключаются автоматически.</p>
           </div>
 
           <div class="visual-overlay grid" id="emptyOpeningGrid">
             <div class="field" id="turnDirectionField"><label for="turnDirection">Направление поворота</label><select id="turnDirection"><option value="left">Левый</option><option value="right">Правый</option></select></div>
-            <div class="field"><label for="floorHeight">Высота этаж-этаж (мм)</label><input id="floorHeight" type="number" placeholder="3000"></div>
-            <div class="field"><label for="openingLength">Длина проёма (мм)</label><input id="openingLength" type="number" placeholder="4200"></div>
-            <div class="field"><label for="openingWidth">Ширина проёма (мм)</label><input id="openingWidth" type="number" placeholder="2100"></div>
-            <div class="field"><label for="marchWidth">Ширина марша (мм)</label><input id="marchWidth" type="number" placeholder="1000"></div>
+            <div class="field"><label for="floorHeight">Высота этаж-этаж (мм)</label><input id="floorHeight" type="number" placeholder="Например, 3000"></div>
+            <div class="field"><label for="openingLength">Длина проёма (мм)</label><input id="openingLength" type="number" placeholder="Например, 4200"></div>
+            <div class="field"><label for="openingWidth">Ширина проёма (мм)</label><input id="openingWidth" type="number" placeholder="Например, 2100"></div>
+            <div class="field"><label for="marchWidth">Ширина марша (мм)</label><input id="marchWidth" type="number" placeholder="Например, 1000"></div>
             <div class="field"><label for="slabThickness">Толщина плиты (мм)</label><input id="slabThickness" type="number" placeholder="220"></div>
             <div class="field"><label for="topFinishThickness">Финиш сверху (мм)</label><input id="topFinishThickness" type="number" placeholder="20"></div>
             <div class="field"><label for="bottomFinishThickness">Финиш снизу (мм)</label><input id="bottomFinishThickness" type="number" placeholder="20"></div>
@@ -119,24 +126,38 @@
             <div class="field"><label for="configurationType">Конфигурация</label><select id="configurationType"><option value="straight">Прямая</option><option value="l_shaped">Г-образная</option><option value="u_shaped">П-образная</option></select></div>
             <div class="field hidden" id="turnTypeField"><label for="turnType">Тип поворота</label><select id="turnType"><option value="landing">Площадка</option><option value="winders">Забежные</option></select></div>
             <div class="field hidden" id="readyTurnDirectionField"><label for="readyTurnDirection">Направление поворота</label><select id="readyTurnDirection"><option value="left">Левый</option><option value="right">Правый</option></select></div>
-            <div class="field"><label for="stepCount">Количество ступеней</label><input id="stepCount" type="number" placeholder="15"></div>
-            <div class="field"><label for="readyMarchWidth">Ширина марша (мм)</label><input id="readyMarchWidth" type="number" placeholder="1000"></div>
-            <div class="field"><label for="riserHeight">Высота подступенка (мм)</label><input id="riserHeight" type="number" placeholder="170"></div>
-            <div class="field"><label for="treadDepth">Глубина проступи (мм)</label><input id="treadDepth" type="number" placeholder="280"></div>
-            <div class="field hidden" id="landingLengthField"><label for="landingLength">Длина площадки (мм)</label><input id="landingLength" type="number" placeholder="1000"></div>
-            <div class="field hidden" id="landingWidthField"><label for="landingWidth">Ширина площадки (мм)</label><input id="landingWidth" type="number" placeholder="1000"></div>
-            <div class="field hidden" id="winderCountField"><label for="winderCount">Количество забежных ступеней</label><input id="winderCount" type="number" placeholder="3"></div>
+            <div class="field"><label for="stepCount">Количество ступеней / подъёмов</label><input id="stepCount" type="number" value="15" placeholder="15"></div>
+            <div class="field"><label for="readyMarchWidth">Ширина марша (мм)</label><input id="readyMarchWidth" type="number" value="1000" placeholder="1000"></div>
+            <div class="field"><label for="riserHeight">Высота подступенка (мм)</label><input id="riserHeight" type="number" value="170" placeholder="170"></div>
+            <div class="field"><label for="treadDepth">Глубина проступи (мм)</label><input id="treadDepth" type="number" value="280" placeholder="280"></div>
             <div class="field"><label for="readyMaterial">Материал ступеней</label><select id="readyMaterial"><option value="ash">Ясень</option><option value="oak">Дуб</option><option value="pine">Сосна</option><option value="mdf">MDF</option></select></div>
             <div class="field"><label for="readyRailingType">Ограждение</label><select id="readyRailingType"><option value="none">Без ограждения</option><option value="round_tube_16mm">Труба круглая 16 мм</option><option value="mdf">MDF</option><option value="glass">Стекло</option><option value="pattern_2d">Узор 2D</option><option value="custom">Индивидуальное</option></select></div>
             <div class="field"><label for="topFloorRailingLength">Длина ограждения верхнего этажа (мм)</label><input id="topFloorRailingLength" type="number" placeholder="1200"></div>
             <div class="field"><label for="pricingProfile">Профиль расчёта</label><select id="pricingProfile"><option value="balanced">Сбалансированный</option><option value="value">Рациональный</option><option value="premium">Премиум</option></select></div>
-            <div class="field"><label for="existingConditionNotes">Состояние существующего основания</label><input id="existingConditionNotes" type="text" placeholder="Например: требуется усиление узлов"></div>
+            <div class="field field--wide"><label for="existingConditionNotes">Состояние существующего основания</label><input id="existingConditionNotes" type="text" placeholder="Например: требуется усиление узлов или есть перепады"></div>
+            <div class="field field--wide">
+              <label>Что нужно сделать по готовому основанию?</label>
+              <div class="scope-options">
+                <label><input type="checkbox" name="scopeWork" value="steps_only" checked> Только ступени</label>
+                <label><input type="checkbox" name="scopeWork" value="steps_risers"> Ступени + подступенки</label>
+                <label><input type="checkbox" name="scopeWork" value="railing"> Ограждение</label>
+                <label><input type="checkbox" name="scopeWork" value="frame_cladding"> Обшивка основания</label>
+                <label><input type="checkbox" name="scopeWork" value="lighting"> Подсветка</label>
+                <label><input type="checkbox" name="scopeWork" value="installation" checked> Монтаж</label>
+              </div>
+            </div>
+          </div>
+
+          <div id="turnDimensionFields" class="visual-overlay grid turn-dimension-fields">
+            <div class="field hidden" id="landingLengthField"><label for="landingLength">Длина площадки (мм)</label><input id="landingLength" type="number" value="1000" placeholder="1000"><span class="field-help">Нужна для площадочных Г/П-образных схем.</span></div>
+            <div class="field hidden" id="landingWidthField"><label for="landingWidth">Ширина площадки (мм)</label><input id="landingWidth" type="number" value="1000" placeholder="1000"><span class="field-help">Обычно не меньше ширины марша.</span></div>
+            <div class="field hidden" id="winderCountField"><label for="winderCount">Количество забежных ступеней</label><input id="winderCount" type="number" value="3" placeholder="3"><span class="field-help">Не жёстко 3: для существующего основания можно указать фактическое количество.</span></div>
           </div>
         </div>
       </section>
 
       <section class="manual-panel" id="manualPanel">
-        <h3 id="manualPanelTitle">Параметры комплектации</h3>
+        <h3 id="manualPanelTitle">Материалы и комплектация</h3>
         <p class="manual-panel__lead" id="manualPanelLead">Эти параметры помогают уточнить материалы и стоимость на следующих шагах.</p>
         <div class="grid manual-panel__grid">
           <div class="field" id="frameMaterialField">
@@ -151,12 +172,22 @@
           <div class="field"><label for="claddingType">Облицовка</label><select id="claddingType" class="inline-select"><option value="none">Без облицовки</option><option value="standard" selected>Стандартная</option><option value="premium">Премиальная</option></select></div>
           <div class="field"><label for="railingType">Ограждение</label><select id="railingType" class="inline-select"><option value="none">Без ограждения</option><option value="metal" selected>Металлическое</option><option value="glass">Стеклянное</option><option value="wood">Деревянное</option></select></div>
           <div class="field"><label for="finishLevel">Уровень финиша</label><select id="finishLevel" class="inline-select"><option value="basic">Базовый</option><option value="standard">Стандарт</option><option value="premium">Премиум</option></select></div>
+          <div class="field field--wide" id="extrasField">
+            <label>Дополнительные опции</label>
+            <div class="scope-options">
+              <label><input type="checkbox" name="extras" value="lighting"> Подсветка ступеней</label>
+              <label><input type="checkbox" name="extras" value="painted_metal"> Окраска металла</label>
+              <label><input type="checkbox" name="extras" value="premium_coating"> Премиум-покрытие</label>
+              <label><input type="checkbox" name="extras" value="hidden_fasteners"> Скрытый крепёж</label>
+            </div>
+          </div>
         </div>
       </section>
 
       <input type="hidden" id="stairType" value="straight">
-<div class="actions">
+      <div class="actions actions--primary">
         <button class="btn-primary" id="toResultsBtn" type="button">Рассчитать геометрию</button>
+        <a class="btn-secondary" href="/request.html">Не знаю размеры — отправить заявку</a>
       </div>
     </section>
 
@@ -178,7 +209,7 @@
       </div>
       <div id="geometryFallbackCta" class="geometry-fallback-cta" hidden>
         <p>Если онлайн-геометрия не проходит, это нормально для сложных проёмов. Передайте размеры — инженер Tekstura вручную подберёт рабочее решение.</p>
-        <a class="btn-secondary" href="/request.html">Отправить размеры на инженерную проверку</a>
+        <a class="btn-primary" href="/request.html">Отправить размеры на инженерную проверку</a>
       </div>
       <div class="actions">
         <button class="btn-secondary" type="button" onclick="prevStep()">Назад</button>
@@ -199,5 +230,8 @@
 </main>
 <footer class="site-footer"><div class="container site-footer__inner"><div class="site-footer__brand">TEKSTURA</div><div class="site-footer__links"><a href="/">Главная</a><a href="/projects.html">Проекты</a><a href="/services.html">Услуги</a><a href="/articles.html">Статьи</a><a href="/norms.html">Нормы и уход</a><a href="/about.html">О компании</a><a href="/faq.html">FAQ</a><a href="/calculator.html">Калькулятор</a><a href="/request.html">Заявка</a></div></div></footer>
 <script type="module" src="/stair-configurator.js"></script>
+<script src="/calculator-ui-preview.js" defer></script>
+<script src="/calculator-price-options-preview.js" defer></script>
+<script src="/calculator-critical-fixes.js" defer></script>
 </body>
 </html>

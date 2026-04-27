@@ -1,0 +1,310 @@
+/* Preview-only calculator UI cleanup. Loaded after the base calculator CSS. */
+
+.step1-intro {
+  max-width: 840px;
+}
+
+.scheme-reference {
+  margin: 0 0 18px;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 16px;
+  background: rgba(255,255,255,.025);
+  overflow: hidden;
+}
+
+.scheme-reference summary {
+  cursor: pointer;
+  padding: 13px 16px;
+  color: var(--gold-1);
+  font-weight: 700;
+}
+
+.scheme-reference .calc-quick-schemes {
+  padding: 0 16px 16px;
+  margin-bottom: 0;
+}
+
+.calculator-flow-note {
+  border: 1px solid rgba(238,196,143,.22);
+  border-radius: 16px;
+  background: rgba(238,196,143,.07);
+  color: var(--text-soft);
+  padding: 12px 14px;
+  margin: 0 0 18px;
+}
+
+.step1-controls--clean {
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.step1-controls--clean .field {
+  margin-bottom: 0;
+}
+
+.scenario-field,
+.stair-family-field,
+#turnModeSwitchField {
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 18px;
+  padding: 14px;
+  background: rgba(255,255,255,.025);
+}
+
+.segmented--scenario,
+.segmented--cards,
+.segmented--turn {
+  display: grid;
+  gap: 12px;
+}
+
+.segmented--scenario {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.segmented--cards {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
+.segmented--turn {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.segmented__item {
+  min-height: 72px;
+  padding: 12px 14px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 5px;
+  white-space: normal;
+}
+
+.segmented__item span {
+  color: inherit;
+  font-size: 15px;
+  line-height: 1.15;
+}
+
+.segmented__item small {
+  display: block;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.25;
+  font-weight: 500;
+}
+
+.segmented__item.is-active small {
+  color: #e9d1b1;
+}
+
+.consultation-link {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  margin-top: 10px;
+  color: var(--gold-1);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(238,196,143,.45);
+}
+
+.visual-stage {
+  margin-top: 6px;
+}
+
+.visual-stage__header {
+  margin-bottom: 12px;
+}
+
+.field--wide {
+  grid-column: 1 / -1;
+}
+
+.scope-options,
+.closure-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.scope-options label,
+.closure-option {
+  min-height: 46px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 12px;
+  background: rgba(255,255,255,.035);
+  padding: 10px 12px;
+  color: var(--text-soft);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.closure-option {
+  flex-direction: column;
+  align-items: flex-start;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.closure-option span {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.closure-option small {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.closure-option.is-active {
+  border-color: rgba(238,196,143,.95);
+  background: linear-gradient(180deg, rgba(238,196,143,.22), rgba(238,196,143,.05)), rgba(53,37,25,.86);
+}
+
+.scope-options label.is-hidden-by-scope,
+.preview-choice-hidden {
+  display: none !important;
+}
+
+.scope-options input {
+  width: auto;
+  accent-color: #ddb786;
+}
+
+.preview-price-mini,
+.preview-price-box {
+  border: 1px solid rgba(238,196,143,.22);
+  border-radius: 16px;
+  background: rgba(238,196,143,.07);
+  padding: 14px;
+}
+
+.preview-price-mini {
+  margin-top: 14px;
+  display: grid;
+  gap: 4px;
+}
+
+.preview-price-mini span,
+.preview-price-mini small {
+  color: var(--text-muted);
+}
+
+.preview-price-mini b,
+.preview-price-main {
+  color: var(--gold-1);
+  font-weight: 800;
+}
+
+.preview-price-main {
+  font-size: clamp(26px, 4vw, 38px);
+  margin-bottom: 8px;
+}
+
+.preview-price-breakdown {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 14px;
+  margin-top: 12px;
+}
+
+.preview-price-breakdown div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  padding-bottom: 6px;
+}
+
+.preview-price-breakdown span,
+.preview-price-note {
+  color: var(--text-muted);
+}
+
+.preview-price-breakdown b {
+  color: var(--text);
+}
+
+.turn-dimension-fields {
+  margin-top: 4px;
+}
+
+.actions--primary {
+  align-items: center;
+}
+
+.actions a.btn-secondary,
+.geometry-fallback-cta a.btn-primary,
+.preview-engineer-request {
+  text-decoration: none;
+}
+
+.field input:disabled,
+.field select:disabled {
+  opacity: .48;
+  cursor: not-allowed;
+}
+
+.btn-primary[aria-disabled="true"],
+button:disabled {
+  position: relative;
+}
+
+/* The existing JS still keeps internal select controls for synchronization.
+   In preview we hide those duplicated controls and leave only the card buttons. */
+#readyFlowFields > .field:has(#configurationType),
+#readyFlowFields > .field:has(#turnType) {
+  display: none !important;
+}
+
+#readyFlowFields > .field.hidden:has(#readyTurnDirection) {
+  display: flex !important;
+}
+
+/* A failed geometry should still show a useful sketch and a working CTA. */
+.preview-hidden-disabled {
+  display: none !important;
+}
+
+.preview-engineer-request[hidden] {
+  display: none !important;
+}
+
+.preview-engineer-request {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.geo-svg--preview {
+  min-height: 220px;
+}
+
+#geometryPlanSvg:has(.geo-svg--preview) .muted,
+#geometryElevationSvg:has(.geo-svg--preview) .muted {
+  display: none;
+}
+
+@media (max-width: 860px) {
+  .segmented--scenario,
+  .segmented--cards,
+  .segmented--turn,
+  .scope-options,
+  .closure-options,
+  .preview-price-breakdown {
+    grid-template-columns: 1fr !important;
+  }
+
+  .segmented__item {
+    min-height: 64px;
+  }
+
+  .scheme-reference .calc-quick-schemes {
+    grid-template-columns: 1fr;
+  }
+}
