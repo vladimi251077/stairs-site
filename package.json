@@ -1,0 +1,10 @@
+{
+  "name": "tekstura-stairs-site",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Static Tekstura stairs website QA helpers.",
+  "scripts": {
+    "check": "npm run check:js",
+    "check:js": "node --input-type=module --check < stair-configurator.js && node --input-type=module --check < stair-geometry-engine.js && node --input-type=module --check < stair-materials.js && node --input-type=module --check < stair-formulas.js && node --check api/notify-lead.js && node --check calculator-critical-fixes.js"
+  }
+}
