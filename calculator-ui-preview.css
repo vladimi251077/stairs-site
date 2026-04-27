@@ -123,13 +123,15 @@
   grid-column: 1 / -1;
 }
 
-.scope-options {
+.scope-options,
+.closure-options {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 
-.scope-options label {
+.scope-options label,
+.closure-option {
   min-height: 46px;
   border: 1px solid rgba(255,255,255,.12);
   border-radius: 12px;
@@ -141,6 +143,29 @@
   gap: 9px;
 }
 
+.closure-option {
+  flex-direction: column;
+  align-items: flex-start;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.closure-option span {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.closure-option small {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.closure-option.is-active {
+  border-color: rgba(238,196,143,.95);
+  background: linear-gradient(180deg, rgba(238,196,143,.22), rgba(238,196,143,.05)), rgba(53,37,25,.86);
+}
+
 .scope-options label.is-hidden-by-scope {
   display: none !important;
 }
@@ -148,6 +173,60 @@
 .scope-options input {
   width: auto;
   accent-color: #ddb786;
+}
+
+.preview-price-mini,
+.preview-price-box {
+  border: 1px solid rgba(238,196,143,.22);
+  border-radius: 16px;
+  background: rgba(238,196,143,.07);
+  padding: 14px;
+}
+
+.preview-price-mini {
+  margin-top: 14px;
+  display: grid;
+  gap: 4px;
+}
+
+.preview-price-mini span,
+.preview-price-mini small {
+  color: var(--text-muted);
+}
+
+.preview-price-mini b,
+.preview-price-main {
+  color: var(--gold-1);
+  font-weight: 800;
+}
+
+.preview-price-main {
+  font-size: clamp(26px, 4vw, 38px);
+  margin-bottom: 8px;
+}
+
+.preview-price-breakdown {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 14px;
+  margin-top: 12px;
+}
+
+.preview-price-breakdown div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  padding-bottom: 6px;
+}
+
+.preview-price-breakdown span,
+.preview-price-note {
+  color: var(--text-muted);
+}
+
+.preview-price-breakdown b {
+  color: var(--text);
 }
 
 .turn-dimension-fields {
@@ -214,7 +293,9 @@ button:disabled {
   .segmented--scenario,
   .segmented--cards,
   .segmented--turn,
-  .scope-options {
+  .scope-options,
+  .closure-options,
+  .preview-price-breakdown {
     grid-template-columns: 1fr !important;
   }
 
