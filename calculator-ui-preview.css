@@ -141,6 +141,10 @@
   gap: 9px;
 }
 
+.scope-options label.is-hidden-by-scope {
+  display: none !important;
+}
+
 .scope-options input {
   width: auto;
   accent-color: #ddb786;
