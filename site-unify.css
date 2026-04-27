@@ -13,12 +13,48 @@ body.calculator-page {
   background-attachment: scroll;
 }
 
+body.request-page {
+  position: relative;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background: #120d09;
+}
+
+body.request-page::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(9, 6, 4, 0.96) 0%, rgba(14, 9, 6, 0.82) 42%, rgba(33, 20, 12, 0.52) 100%),
+    linear-gradient(180deg, rgba(10, 7, 5, 0.46) 0%, rgba(18, 13, 9, 0.86) 58%, #120d09 100%),
+    url('/assets/design/home-hero.jpg') center center / cover no-repeat;
+  opacity: 0.82;
+}
+
+body.request-page::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 28% 18%, rgba(239, 210, 172, 0.1), transparent 24rem),
+    radial-gradient(circle at 88% 8%, rgba(185, 140, 92, 0.08), transparent 28rem);
+}
+
 body.page-shell::after,
 body.site-page::after,
-body.request-page::after,
 body.project-detail-page::after,
 body.calculator-page::after {
   display: none;
+}
+
+.site-header,
+.site-footer {
+  position: relative;
+  z-index: 2;
 }
 
 .site-header {
@@ -293,6 +329,14 @@ body.calculator-page::after {
 }
 
 @media (max-width: 760px) {
+  body.request-page::before {
+    background:
+      linear-gradient(180deg, rgba(10, 7, 5, 0.64) 0%, rgba(18, 13, 9, 0.92) 58%, #120d09 100%),
+      linear-gradient(90deg, rgba(8, 5, 4, 0.9) 0%, rgba(17, 11, 7, 0.7) 60%, rgba(36, 22, 12, 0.28) 100%),
+      url('/assets/design/home-hero.jpg') 62% center / cover no-repeat;
+    opacity: 0.72;
+  }
+
   .site-header__inner {
     align-items: flex-start;
     gap: 10px;
