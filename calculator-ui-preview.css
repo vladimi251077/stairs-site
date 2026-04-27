@@ -155,7 +155,8 @@
 }
 
 .actions a.btn-secondary,
-.geometry-fallback-cta a.btn-primary {
+.geometry-fallback-cta a.btn-primary,
+.preview-engineer-request {
   text-decoration: none;
 }
 
@@ -168,6 +169,41 @@
 .btn-primary[aria-disabled="true"],
 button:disabled {
   position: relative;
+}
+
+/* The existing JS still keeps internal select controls for synchronization.
+   In preview we hide those duplicated controls and leave only the card buttons. */
+#readyFlowFields > .field:has(#configurationType),
+#readyFlowFields > .field:has(#turnType) {
+  display: none !important;
+}
+
+#readyFlowFields > .field.hidden:has(#readyTurnDirection) {
+  display: flex !important;
+}
+
+/* A failed geometry should still show a useful sketch and a working CTA. */
+.preview-hidden-disabled {
+  display: none !important;
+}
+
+.preview-engineer-request[hidden] {
+  display: none !important;
+}
+
+.preview-engineer-request {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.geo-svg--preview {
+  min-height: 220px;
+}
+
+#geometryPlanSvg:has(.geo-svg--preview) .muted,
+#geometryElevationSvg:has(.geo-svg--preview) .muted {
+  display: none;
 }
 
 @media (max-width: 860px) {
