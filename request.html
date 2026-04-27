@@ -125,6 +125,8 @@ function renderCalcSummary(payload) {
 
   const dimensions = payload.input_dimensions || payload.dimensions || {};
   const geometry = payload.chosen_geometry_result || payload.geometryResult || {};
+  const pricingRegion = payload.pricing_region || null;
+  const pricingBreakdown = payload.pricing_breakdown || null;
   const summaryRows = Array.isArray(geometry.summary_rows)
     ? geometry.summary_rows.map((row) => `${row[0]}: ${row[1]}`).join('\n')
     : '';
@@ -132,11 +134,15 @@ function renderCalcSummary(payload) {
     payload.request_mode === 'engineer_review'
       ? 'Инженерная проверка'
       : 'Заявка по расчёту';
+  const baseCondition = payload.base_condition || payload.baseCondition || '';
+  const usesOpeningDimensions = baseCondition === 'empty_opening';
   const hasOpeningDimensions =
-    dimensions.floor_to_floor_height ||
-    dimensions.floorHeight ||
-    dimensions.opening_length ||
-    dimensions.openingLength;
+    usesOpeningDimensions && (
+      dimensions.floor_to_floor_height ||
+      dimensions.floorHeight ||
+      dimensions.opening_length ||
+      dimensions.openingLength
+    );
   const geometryLines = geometry.riser_height
     ? `Подступенок: ${mm(geometry.riser_height)}
 Проступь: ${mm(geometry.tread_depth)}
@@ -147,6 +153,8 @@ function renderCalcSummary(payload) {
 Сценарий: ${payload.baseCondition || payload.base_condition || 'не указан'}
 Тип: ${payload.staircaseType || payload.selected_staircase_type || 'не указан'}
 Статус: ${statusLabel(payload.status)}
+${pricingRegion ? `Регион цены: ${pricingRegion.name} · ×${Number(pricingRegion.price_coef || 1).toFixed(2)}` : ''}
+${pricingBreakdown ? `База до региона: ${money(pricingBreakdown.subtotal_before_region || 0)}` : ''}
 ${hasOpeningDimensions ? `Высота: ${mm(dimensions.floor_to_floor_height || dimensions.floorHeight)}
 Проём: ${mm(dimensions.opening_length || dimensions.openingLength)} × ${mm(dimensions.opening_width || dimensions.openingWidth)}
 Марш: ${mm(dimensions.march_width || dimensions.marchWidth)}` : summaryRows}
@@ -192,10 +200,16 @@ async function sendRequest() {
         base_condition: calcPayload?.base_condition || null,
         warnings: calcPayload?.warnings || [],
         chosen_geometry_result: calcPayload?.chosen_geometry_result || calcPayload?.geometryResult || null,
-        scenario_details: calcPayload?.scenario_details || {}
+        scenario_details: calcPayload?.scenario_details || {},
+        pricing_region: calcPayload?.pricing_region || null,
+        pricing_breakdown: calcPayload?.pricing_breakdown || null,
+        pricing_snapshot: calcPayload?.pricing_snapshot || null
       },
       materials_json: calcPayload?.materials || {},
-      options_json: calcPayload?.price_relevant_selections || calcPayload?.options || [],
+      options_json: {
+        ...(calcPayload?.price_relevant_selections || calcPayload?.options || {}),
+        pricing_region: calcPayload?.pricing_region || null
+      },
       calculated_price: calcPayload?.total || 0
     }
   ]);

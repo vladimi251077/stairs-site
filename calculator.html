@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Конфигуратор лестницы — Tekstura</title>
-  <link rel="stylesheet" href="/stair-configurator.css">
+  <link rel="stylesheet" href="/stair-configurator.css?v=20260427-7">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/supabase-config.js"></script>
 </head>
@@ -24,9 +24,9 @@
         <div class="grid">
           <div class="field field-wide">
             <label for="baseCondition">Что у вас уже есть?</label>
-            <select id="baseCondition">
+            <select id="baseCondition" onchange="window.syncClientScenarioFields && window.syncClientScenarioFields()">
               <option value="empty_opening">Пустой проём</option>
-              <option value="existing_metal_frame">Готовый металлокаркас</option>
+              <option value="existing_metal_frame">Готовый каркас / металлокаркас</option>
               <option value="existing_concrete_base">Готовое бетонное основание</option>
               <option value="finish_only">Нужна только отделка / облицовка</option>
               <option value="consultation">Нужна консультация</option>
@@ -36,14 +36,16 @@
           <div class="field structural-field" id="openingTypeField">
             <label for="openingType">Тип проёма</label>
             <select id="openingType">
-              <option value="straight">Прямой</option>
+              <option value="straight" selected>Прямой</option>
               <option value="l_turn">Г-образный</option>
               <option value="u_turn">П-образный</option>
+              <option value="none">Не выбран / не нужен</option>
             </select>
+            <p class="field-help">Показываем только там, где проём реально участвует в подборе новой лестницы.</p>
           </div>
           <div class="field structural-field" id="stairTypeField">
             <label for="stairType">Тип лестницы</label>
-            <select id="stairType">
+            <select id="stairType" onchange="window.syncClientScenarioFields && window.syncClientScenarioFields()">
               <option value="straight">Прямая</option>
               <option value="l_turn">Г-образная</option>
               <option value="u_turn">П-образная</option>
@@ -65,12 +67,12 @@
           </div>
         </div>
         <div class="actions">
-          <button class="btn-primary" type="button" onclick="nextStep(2)">Дальше</button>
+          <button class="btn-primary" type="button" data-next-step="2" onclick="document.querySelectorAll('.step').forEach(function(node){node.classList.remove('active');});document.getElementById('step2').classList.add('active');">Дальше</button>
         </div>
       </section>
 
       <section class="step" id="step2">
-        <h2>Шаг 2. Параметры проёма</h2>
+        <h2>Шаг 2. Основные параметры</h2>
         <div class="grid" id="geometryInputGroup">
           <div class="field">
             <label for="floorHeight">Высота от пола до пола, мм</label>
@@ -94,6 +96,30 @@
           </div>
         </div>
 
+        <div class="grid hidden" id="readyFrameGroup">
+          <div class="field">
+            <label for="readyFrameStepCount">Количество ступеней</label>
+            <input id="readyFrameStepCount" type="number" value="15" min="1" max="40">
+          </div>
+          <div class="field">
+            <label for="readyFrameMarchWidth">Ширина марша, мм</label>
+            <input id="readyFrameMarchWidth" type="number" value="1000" min="700" max="1800">
+          </div>
+          <div class="field">
+            <label for="readyFrameTreadDepth">Глубина ступени, мм</label>
+            <input id="readyFrameTreadDepth" type="number" value="280" min="180" max="500">
+          </div>
+          <div class="field">
+            <label for="readyFrameRiserHeight">Высота подступенка, мм</label>
+            <input id="readyFrameRiserHeight" type="number" value="175" min="120" max="230">
+          </div>
+          <div class="field field-wide">
+            <label for="readyFrameStraightRailingLength">Длина прямого ограждения, м</label>
+            <input id="readyFrameStraightRailingLength" type="number" value="" min="0" step="0.1" placeholder="Например 3.6">
+            <p class="field-help">Если знаете точную длину прямого ограждения, введите её вручную. Если поле пустое, калькулятор использует авторасчёт.</p>
+          </div>
+        </div>
+
         <div class="grid hidden" id="existingMetalGroup">
           <div class="field">
             <label for="metalFrameCondition">Состояние металлокаркаса</label>
@@ -107,6 +133,9 @@
           <div class="field">
             <label for="existingFrameNotes">Комментарий по каркасу</label>
             <textarea id="existingFrameNotes" rows="4" placeholder="Например: есть фото, требуется покраска, нужна подсветка"></textarea>
+          </div>
+          <div class="field field-wide">
+            <p class="field-help">Для готового каркаса клиент заполняет только рабочие параметры: ступени, марш, глубину, подступенок, тип поворота и ограждение.</p>
           </div>
         </div>
 
@@ -164,9 +193,9 @@
           <div class="field" id="frameMaterialField">
             <label for="frameMaterial">Тип каркаса</label>
             <select id="frameMaterial">
-              <option value="metal">metal</option>
-              <option value="wood">wood</option>
-              <option value="concrete">concrete</option>
+              <option value="metal">Металл</option>
+              <option value="wood">Дерево</option>
+              <option value="concrete">Бетон</option>
             </select>
           </div>
           <div class="field">
@@ -176,6 +205,14 @@
               <option value="standard">Стандарт</option>
               <option value="premium">Премиум</option>
             </select>
+          </div>
+          <div class="field">
+            <label for="pricingRegion">Регион цены</label>
+            <select id="pricingRegion">
+              <option value="primary_region">Основной регион · ×1.00</option>
+              <option value="secondary_region">Второй регион · ×1.00</option>
+            </select>
+            <p class="field-help">Итоговый ориентир умножается на коэффициент региона из админки.</p>
           </div>
         </div>
 
@@ -218,8 +255,8 @@
         </div>
 
         <div class="actions">
-          <button class="btn-secondary" type="button" onclick="prevStep(1)">Назад</button>
-          <button class="btn-primary" id="toResultsBtn" type="button">Рассчитать геометрию</button>
+          <button class="btn-secondary" type="button" data-prev-step="1" onclick="document.querySelectorAll('.step').forEach(function(node){node.classList.remove('active');});document.getElementById('step1').classList.add('active');">Назад</button>
+          <button class="btn-primary" id="toResultsBtn" type="button" onclick="window.runGeometryCalculation && window.runGeometryCalculation()">Рассчитать геометрию</button>
         </div>
       </section>
 
@@ -229,8 +266,8 @@
         <div id="geometryDiagram" class="diagram-shell"></div>
         <div id="geometryWarnings" class="result-box"></div>
         <div class="actions">
-          <button class="btn-secondary" type="button" onclick="prevStep(2)">Назад</button>
-          <button class="btn-primary" id="calculateBtn" type="button">Перейти к материалам и цене</button>
+          <button class="btn-secondary" type="button" data-prev-step="2" onclick="document.querySelectorAll('.step').forEach(function(node){node.classList.remove('active');});document.getElementById('step2').classList.add('active');">Назад</button>
+          <button class="btn-primary" id="calculateBtn" type="button" onclick="window.runConfigurator && window.runConfigurator()">Перейти к материалам и цене</button>
           <a class="btn-review hidden" id="engineerReviewLink" href="/request.html">Отправить размеры на инженерную проверку</a>
         </div>
       </section>
@@ -247,7 +284,7 @@
         </div>
 
         <div class="actions">
-          <button class="btn-secondary" type="button" onclick="prevStep(3)">Назад</button>
+          <button class="btn-secondary" type="button" data-prev-step="3" onclick="document.querySelectorAll('.step').forEach(function(node){node.classList.remove('active');});document.getElementById('step3').classList.add('active');">Назад</button>
           <a class="back-link" id="requestLink" href="/request.html">Оставить заявку</a>
         </div>
       </section>
@@ -256,6 +293,74 @@
     <div id="pageStatus" class="muted"></div>
   </main>
 
-  <script type="module" src="/stair-configurator.js"></script>
+  <script>
+    (function () {
+      const normalizeBaseCondition = (value) => {
+        const normalized = String(value || '').trim().toLowerCase();
+        if (normalized === 'ready_frame') return 'existing_metal_frame';
+        return normalized || 'empty_opening';
+      };
+
+      const setHidden = (id, hidden) => {
+        const node = document.getElementById(id);
+        if (node) node.classList.toggle('hidden', hidden);
+      };
+
+      const ensureRegionOptions = () => {
+        const select = document.getElementById('pricingRegion');
+        if (!select || select.options.length) return;
+
+        select.innerHTML = [
+          '<option value="primary_region">Основной регион · ×1.00</option>',
+          '<option value="secondary_region">Второй регион · ×1.00</option>'
+        ].join('');
+      };
+
+      const syncScenarioFields = () => {
+        const baseCondition = normalizeBaseCondition(document.getElementById('baseCondition')?.value);
+        const stairType = document.getElementById('stairType')?.value || 'straight';
+        const isEmptyOpening = baseCondition === 'empty_opening';
+        const isReadyFrame = baseCondition === 'existing_metal_frame';
+        const isExistingConcrete = baseCondition === 'existing_concrete_base';
+        const isFinishOnly = baseCondition === 'finish_only';
+        const isConsultation = baseCondition === 'consultation';
+        const usesStructuralShape = isEmptyOpening || isReadyFrame;
+        const usesServiceOptions = isReadyFrame || isExistingConcrete || isFinishOnly;
+        const showTurnFields = usesStructuralShape && stairType !== 'straight';
+        const toResultsBtn = document.getElementById('toResultsBtn');
+        const frameMaterial = document.getElementById('frameMaterial');
+
+        setHidden('openingTypeField', !isEmptyOpening);
+        setHidden('stairTypeField', !usesStructuralShape);
+        setHidden('turnDirectionField', !showTurnFields);
+        setHidden('turnTypeField', !showTurnFields);
+        setHidden('geometryInputGroup', !isEmptyOpening);
+        setHidden('readyFrameGroup', !isReadyFrame);
+        setHidden('existingMetalGroup', !isReadyFrame);
+        setHidden('existingConcreteGroup', !isExistingConcrete);
+        setHidden('finishOnlyGroup', !isFinishOnly);
+        setHidden('consultationGroup', !isConsultation);
+        setHidden('pricingInputGroup', isConsultation);
+        setHidden('frameMaterialField', !isEmptyOpening);
+        setHidden('serviceOptionsGroup', !usesServiceOptions);
+
+        if (frameMaterial && isReadyFrame) frameMaterial.value = 'metal';
+
+        if (toResultsBtn) {
+          if (isEmptyOpening) toResultsBtn.textContent = 'Рассчитать геометрию';
+          if (isReadyFrame) toResultsBtn.textContent = 'Проверить посадку и отделку';
+          if (isExistingConcrete) toResultsBtn.textContent = 'Рассчитать облицовку основания';
+          if (isFinishOnly) toResultsBtn.textContent = 'Рассчитать отделку';
+          if (isConsultation) toResultsBtn.textContent = 'Подготовить заявку на консультацию';
+        }
+
+        ensureRegionOptions();
+      };
+
+      window.syncClientScenarioFields = syncScenarioFields;
+      document.addEventListener('DOMContentLoaded', syncScenarioFields);
+    })();
+  </script>
+  <script type="module" src="/stair-configurator.js?v=20260427-7"></script>
 </body>
 </html>

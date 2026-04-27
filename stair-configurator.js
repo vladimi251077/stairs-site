@@ -1,4 +1,4 @@
-import { calculateStairGeometry } from './stair-geometry-engine.js';
+import { calculateReadyFrameGeometry, calculateStairGeometry } from './stair-geometry-engine.js';
 import {
   calculateMetalMaterials,
   calculateWoodMaterials,
@@ -7,6 +7,61 @@ import {
 
 const STORAGE_KEY = 'tekstura_stair_calc_payload';
 
+function createDefaultPricingDefaults() {
+  return {
+    labor_rate_per_step: 2500,
+    metal_rate_per_meter: 1800,
+    wood_rate_per_m2: 16000,
+    concrete_rate_per_m3: 14000,
+    install_coef: 1.12,
+    markup_coef: 1.08
+  };
+}
+
+function createDefaultPricingRegions() {
+  return [
+    {
+      code: 'primary_region',
+      name: 'Основной регион',
+      price_coef: 1,
+      sort_order: 1,
+      notes: 'Базовый коэффициент без надбавки.',
+      active: true
+    },
+    {
+      code: 'secondary_region',
+      name: 'Второй регион',
+      price_coef: 1,
+      sort_order: 2,
+      notes: 'Скорректируйте коэффициент под второй регион.',
+      active: true
+    }
+  ];
+}
+
+function createDefaultScenarioRateRows() {
+  return [
+    { rate_group: 'finishMaterialPerM2', rate_key: 'oak', label: 'Дуб / шпон', rate: 22000, sort_order: 1, active: true },
+    { rate_group: 'finishMaterialPerM2', rate_key: 'ash', label: 'Ясень', rate: 19000, sort_order: 2, active: true },
+    { rate_group: 'finishMaterialPerM2', rate_key: 'stone', label: 'Камень', rate: 34000, sort_order: 3, active: true },
+    { rate_group: 'finishMaterialPerM2', rate_key: 'porcelain', label: 'Керамогранит', rate: 17500, sort_order: 4, active: true },
+    { rate_group: 'finishMaterialPerM2', rate_key: 'microcement', label: 'Микроцемент', rate: 15500, sort_order: 5, active: true },
+    { rate_group: 'railingPerM', rate_key: 'metal', label: 'Ограждение: металл', rate: 9500, sort_order: 10, active: true },
+    { rate_group: 'railingPerM', rate_key: 'glass', label: 'Ограждение: стекло', rate: 18000, sort_order: 11, active: true },
+    { rate_group: 'railingPerM', rate_key: 'wood', label: 'Ограждение: дерево', rate: 12500, sort_order: 12, active: true },
+    { rate_group: 'railingPerM', rate_key: 'none', label: 'Ограждение: не нужно', rate: 0, sort_order: 13, active: true },
+    { rate_group: 'lightingPerStep', rate_key: 'none', label: 'Подсветка: нет', rate: 0, sort_order: 20, active: true },
+    { rate_group: 'lightingPerStep', rate_key: 'step', label: 'Подсветка: точечная', rate: 1400, sort_order: 21, active: true },
+    { rate_group: 'lightingPerStep', rate_key: 'linear', label: 'Подсветка: линейная', rate: 2100, sort_order: 22, active: true },
+    { rate_group: 'coatingPerM2', rate_key: 'none', label: 'Покрытие: нет', rate: 0, sort_order: 30, active: true },
+    { rate_group: 'coatingPerM2', rate_key: 'standard', label: 'Покрытие: стандарт', rate: 2200, sort_order: 31, active: true },
+    { rate_group: 'coatingPerM2', rate_key: 'premium', label: 'Покрытие: премиум', rate: 3600, sort_order: 32, active: true },
+    { rate_group: 'service', rate_key: 'fitCheck', label: 'Проверка посадки каркаса', rate: 15000, sort_order: 40, active: true },
+    { rate_group: 'service', rate_key: 'prepPerM2', label: 'Подготовка основания за м²', rate: 4200, sort_order: 41, active: true },
+    { rate_group: 'service', rate_key: 'installPerM2', label: 'Монтаж отделки за м²', rate: 5200, sort_order: 42, active: true }
+  ];
+}
+
 const state = {
   config: null,
   geometry: null,
@@ -14,15 +69,10 @@ const state = {
   price: null,
   payload: null,
   dictionaries: {
-    defaults: {
-      labor_rate_per_step: 2500,
-      metal_rate_per_meter: 1800,
-      wood_rate_per_m2: 16000,
-      concrete_rate_per_m3: 14000,
-      install_coef: 1.12,
-      markup_coef: 1.08
-    },
-    materialRules: []
+    defaults: createDefaultPricingDefaults(),
+    materialRules: [],
+    regions: createDefaultPricingRegions(),
+    scenarioRateRows: createDefaultScenarioRateRows()
   }
 };
 
@@ -60,7 +110,8 @@ const TURN_LABELS = {
 
 const BASE_CONDITION_LABELS = {
   empty_opening: 'Пустой проём',
-  existing_metal_frame: 'Готовый металлокаркас',
+  existing_metal_frame: 'Готовый каркас',
+  ready_frame: 'Готовый каркас',
   existing_concrete_base: 'Готовое бетонное основание',
   finish_only: 'Только отделка / облицовка',
   consultation: 'Консультация'
@@ -92,38 +143,66 @@ const OPTION_LABELS = {
   }
 };
 
-const SCENARIO_RATES = {
-  finishMaterialPerM2: {
-    oak: 22000,
-    ash: 19000,
-    stone: 34000,
-    porcelain: 17500,
-    microcement: 15500
-  },
-  railingPerM: {
-    metal: 9500,
-    glass: 18000,
-    wood: 12500,
-    none: 0
-  },
-  lightingPerStep: {
-    none: 0,
-    step: 1400,
-    linear: 2100
-  },
-  coatingPerM2: {
-    none: 0,
-    standard: 2200,
-    premium: 3600
-  },
-  fitCheck: 15000,
-  prepPerM2: 4200,
-  installPerM2: 5200
-};
-
 const $ = (id) => document.getElementById(id);
 const formatMm = (value) => `${new Intl.NumberFormat('ru-RU').format(Math.round(value || 0))} мм`;
 const round = (value, digits = 2) => Number((value || 0).toFixed(digits));
+
+function normalizeBaseConditionValue(value, fallback = 'empty_opening') {
+  const normalized = String(value || '').trim().toLowerCase();
+  if (normalized === 'ready_frame') return 'existing_metal_frame';
+  return normalized || fallback;
+}
+
+function isReadyFrameCondition(value) {
+  return normalizeBaseConditionValue(value, 'existing_metal_frame') === 'existing_metal_frame';
+}
+
+function normalizeOpeningTypeValue(value, fallback = 'straight') {
+  const normalized = String(value || '').trim().toLowerCase();
+
+  if (['straight', 'l_turn', 'u_turn'].includes(normalized)) return normalized;
+  if (['none', 'empty', 'no_opening', 'without_opening', 'not_selected'].includes(normalized)) return 'none';
+  return fallback;
+}
+
+function normalizePricingDefaults(row = {}) {
+  const fallback = createDefaultPricingDefaults();
+  return {
+    id: row.id || null,
+    labor_rate_per_step: Number(row.labor_rate_per_step ?? fallback.labor_rate_per_step),
+    metal_rate_per_meter: Number(row.metal_rate_per_meter ?? fallback.metal_rate_per_meter),
+    wood_rate_per_m2: Number(row.wood_rate_per_m2 ?? fallback.wood_rate_per_m2),
+    concrete_rate_per_m3: Number(row.concrete_rate_per_m3 ?? fallback.concrete_rate_per_m3),
+    install_coef: Number(row.install_coef ?? fallback.install_coef),
+    markup_coef: Number(row.markup_coef ?? fallback.markup_coef)
+  };
+}
+
+function normalizePricingRegion(row = {}, index = 0) {
+  const fallback = createDefaultPricingRegions()[index] || createDefaultPricingRegions()[0];
+  return {
+    id: row.id || null,
+    code: row.code || fallback.code || `region_${index + 1}`,
+    name: row.name || fallback.name || `Регион ${index + 1}`,
+    price_coef: Number(row.price_coef ?? fallback.price_coef ?? 1),
+    sort_order: Number(row.sort_order ?? fallback.sort_order ?? index + 1),
+    notes: row.notes || fallback.notes || '',
+    active: row.active !== false
+  };
+}
+
+function normalizeScenarioRateRow(row = {}, index = 0) {
+  const fallback = createDefaultScenarioRateRows()[index] || createDefaultScenarioRateRows()[0];
+  return {
+    id: row.id || null,
+    rate_group: row.rate_group || fallback.rate_group,
+    rate_key: row.rate_key || fallback.rate_key,
+    label: row.label || fallback.label,
+    rate: Number(row.rate ?? fallback.rate ?? 0),
+    sort_order: Number(row.sort_order ?? fallback.sort_order ?? index + 1),
+    active: row.active !== false
+  };
+}
 
 function escapeHtml(value) {
   return String(value ?? '')
@@ -134,6 +213,71 @@ function escapeHtml(value) {
     .replaceAll("'", '&#039;');
 }
 
+function getActivePricingRegions() {
+  const regions = (state.dictionaries.regions || [])
+    .map((region, index) => normalizePricingRegion(region, index))
+    .filter((region) => region.active !== false)
+    .sort((a, b) => a.sort_order - b.sort_order);
+
+  return regions.length ? regions : createDefaultPricingRegions().map(normalizePricingRegion);
+}
+
+function getPricingRegion(regionCode) {
+  const regions = getActivePricingRegions();
+  return regions.find((region) => region.code === regionCode) || regions[0];
+}
+
+function renderPricingRegionOptions(preferredCode = null) {
+  const select = $('pricingRegion');
+  if (!select) return;
+
+  const regions = getActivePricingRegions();
+  const safePreferred = preferredCode || select.value;
+
+  select.innerHTML = regions
+    .map(
+      (region) =>
+        `<option value="${escapeHtml(region.code)}">${escapeHtml(region.name)} · ×${Number(region.price_coef || 1).toFixed(2)}</option>`
+    )
+    .join('');
+
+  const nextCode = regions.some((region) => region.code === safePreferred)
+    ? safePreferred
+    : regions[0]?.code;
+
+  if (nextCode) select.value = nextCode;
+}
+
+function getActiveScenarioRateRows() {
+  const rows = (state.dictionaries.scenarioRateRows || [])
+    .map((row, index) => normalizeScenarioRateRow(row, index))
+    .filter((row) => row.active !== false)
+    .sort((a, b) => a.sort_order - b.sort_order);
+
+  return rows.length ? rows : createDefaultScenarioRateRows().map(normalizeScenarioRateRow);
+}
+
+function buildScenarioRatesMap(rows = getActiveScenarioRateRows()) {
+  const map = {
+    finishMaterialPerM2: {},
+    railingPerM: {},
+    lightingPerStep: {},
+    coatingPerM2: {},
+    service: {}
+  };
+
+  rows.forEach((row) => {
+    if (!map[row.rate_group]) map[row.rate_group] = {};
+    map[row.rate_group][row.rate_key] = Number(row.rate || 0);
+  });
+
+  return map;
+}
+
+function getScenarioRates() {
+  return buildScenarioRatesMap(getActiveScenarioRateRows());
+}
+
 function showStep(step) {
   document.querySelectorAll('.step').forEach((node) => node.classList.remove('active'));
   $(`step${step}`)?.classList.add('active');
@@ -141,6 +285,8 @@ function showStep(step) {
 
 window.nextStep = showStep;
 window.prevStep = showStep;
+globalThis.nextStep = showStep;
+globalThis.prevStep = showStep;
 
 function setStatus(message = '') {
   const statusNode = $('pageStatus');
@@ -158,11 +304,11 @@ function toggleTurnFields() {
   const stairTypeNode = $('stairType');
   const turnDirection = $('turnDirectionField');
   const turnType = $('turnTypeField');
-  const baseCondition = $('baseCondition')?.value || 'empty_opening';
+  const baseCondition = normalizeBaseConditionValue($('baseCondition')?.value || 'empty_opening');
 
   if (!stairTypeNode || !turnDirection || !turnType) return;
 
-  const usesStructuralShape = ['empty_opening', 'existing_metal_frame'].includes(baseCondition);
+  const usesStructuralShape = baseCondition === 'empty_opening' || isReadyFrameCondition(baseCondition);
   const isStraight = stairTypeNode.value === 'straight' || !usesStructuralShape;
   turnDirection.classList.toggle('hidden', isStraight);
   turnType.classList.toggle('hidden', isStraight);
@@ -172,22 +318,86 @@ function setHidden(id, hidden) {
   $(id)?.classList.toggle('hidden', hidden);
 }
 
+function sanitizeConfigByScenario(config) {
+  const baseCondition = normalizeBaseConditionValue(config.base_condition || 'empty_opening');
+  const sanitized = {
+    ...config,
+    base_condition: baseCondition,
+    opening_type: normalizeOpeningTypeValue(config.opening_type || 'straight', 'straight')
+  };
+
+  if (baseCondition !== 'empty_opening') {
+    sanitized.floor_to_floor_height = 0;
+    sanitized.slab_thickness = 0;
+    sanitized.finish_thickness_top = 0;
+    sanitized.finish_thickness_bottom = 0;
+    sanitized.opening_length = 0;
+    sanitized.opening_width = 0;
+    sanitized.march_width = 0;
+    sanitized.opening_type = 'none';
+  }
+
+  if (!isReadyFrameCondition(baseCondition)) {
+    sanitized.ready_frame_step_count = 0;
+    sanitized.ready_frame_march_width = 0;
+    sanitized.ready_frame_tread_depth = 0;
+    sanitized.ready_frame_riser_height = 0;
+    sanitized.ready_frame_straight_railing_length = 0;
+    sanitized.metal_frame_condition = 'good';
+    sanitized.existing_frame_notes = '';
+  } else {
+    sanitized.frame_material = 'metal';
+  }
+
+  if (baseCondition !== 'existing_concrete_base') {
+    sanitized.concrete_step_count = 0;
+    sanitized.concrete_stair_width = 0;
+    sanitized.concrete_tread_depth = 0;
+    sanitized.concrete_base_condition = 'ready';
+  } else {
+    sanitized.frame_material = 'concrete';
+  }
+
+  if (baseCondition !== 'finish_only') {
+    sanitized.finish_step_count = 0;
+    sanitized.finish_stair_width = 0;
+    sanitized.finish_tread_depth = 0;
+    sanitized.finish_only_notes = '';
+  }
+
+  if (baseCondition !== 'consultation') {
+    sanitized.consultation_notes = '';
+  }
+
+  if (baseCondition !== 'empty_opening' && !isReadyFrameCondition(baseCondition)) {
+    sanitized.stair_type = 'straight';
+    sanitized.turn_direction = 'right';
+    sanitized.turn_type = 'landing';
+  }
+
+  if (sanitized.stair_type === 'straight') {
+    sanitized.turn_direction = 'right';
+    sanitized.turn_type = 'landing';
+  }
+
+  return sanitized;
+}
+
 function updateScenarioFields() {
-  const baseCondition = $('baseCondition')?.value || 'empty_opening';
+  const baseCondition = normalizeBaseConditionValue($('baseCondition')?.value || 'empty_opening');
   const isEmptyOpening = baseCondition === 'empty_opening';
-  const isExistingMetal = baseCondition === 'existing_metal_frame';
+  const isExistingMetal = isReadyFrameCondition(baseCondition);
   const isExistingConcrete = baseCondition === 'existing_concrete_base';
   const isFinishOnly = baseCondition === 'finish_only';
   const isConsultation = baseCondition === 'consultation';
-  const usesGeometryInputs = isEmptyOpening || isExistingMetal;
+  const usesGeometryInputs = isEmptyOpening;
   const usesStructuralShape = isEmptyOpening || isExistingMetal;
   const usesServiceOptions = isExistingMetal || isExistingConcrete || isFinishOnly;
 
-  document.querySelectorAll('.structural-field').forEach((node) => {
-    node.classList.toggle('hidden', !usesStructuralShape);
-  });
-
+  setHidden('openingTypeField', !isEmptyOpening);
+  setHidden('stairTypeField', !usesStructuralShape);
   setHidden('geometryInputGroup', !usesGeometryInputs);
+  setHidden('readyFrameGroup', !isExistingMetal);
   setHidden('existingMetalGroup', !isExistingMetal);
   setHidden('existingConcreteGroup', !isExistingConcrete);
   setHidden('finishOnlyGroup', !isFinishOnly);
@@ -209,9 +419,9 @@ function updateScenarioFields() {
 }
 
 function getConfigFromForm() {
-  return {
-    base_condition: $('baseCondition')?.value || 'empty_opening',
-    opening_type: $('openingType')?.value || 'straight',
+  return sanitizeConfigByScenario({
+    base_condition: normalizeBaseConditionValue($('baseCondition')?.value || 'empty_opening'),
+    opening_type: normalizeOpeningTypeValue($('openingType')?.value || 'straight', 'straight'),
     stair_type: $('stairType')?.value || 'straight',
     turn_direction: $('turnDirection')?.value || 'right',
     turn_type: $('turnType')?.value || 'landing',
@@ -224,12 +434,18 @@ function getConfigFromForm() {
     march_width: Number($('marchWidth')?.value || 0),
     frame_material: $('frameMaterial')?.value || 'metal',
     finish_level: $('finishLevel')?.value || 'basic',
+    pricing_region_code: $('pricingRegion')?.value || getActivePricingRegions()[0]?.code || 'primary_region',
     finish_material: $('finishMaterial')?.value || 'oak',
     railing_option: $('railingOption')?.value || 'metal',
     coating_option: $('coatingOption')?.value || 'standard',
     lighting_option: $('lightingOption')?.value || 'none',
     metal_frame_condition: $('metalFrameCondition')?.value || 'good',
     existing_frame_notes: $('existingFrameNotes')?.value || '',
+    ready_frame_step_count: Number($('readyFrameStepCount')?.value || 0),
+    ready_frame_march_width: Number($('readyFrameMarchWidth')?.value || 0),
+    ready_frame_tread_depth: Number($('readyFrameTreadDepth')?.value || 0),
+    ready_frame_riser_height: Number($('readyFrameRiserHeight')?.value || 0),
+    ready_frame_straight_railing_length: Number($('readyFrameStraightRailingLength')?.value || 0),
     concrete_step_count: Number($('concreteStepCount')?.value || 0),
     concrete_stair_width: Number($('concreteStairWidth')?.value || 0),
     concrete_tread_depth: Number($('concreteTreadDepth')?.value || 0),
@@ -239,38 +455,106 @@ function getConfigFromForm() {
     finish_tread_depth: Number($('finishTreadDepth')?.value || 0),
     finish_only_notes: $('finishOnlyNotes')?.value || '',
     consultation_notes: $('consultationNotes')?.value || ''
-  };
+  });
 }
 
 function svgPolyline(points, getX = (point) => point.x, getY = (point) => point.y) {
   return points.map((point) => `${getX(point)},${getY(point)}`).join(' ');
 }
 
+function getOpeningOutlinePoints(geometry) {
+  const viz = geometry.visualization;
+  const input = geometry.input || {};
+  const baseCondition = normalizeBaseConditionValue(input.base_condition || geometry.base_condition || 'empty_opening');
+  const length = Number(viz?.opening?.length || input.opening_length || 0);
+  const width = Number(viz?.opening?.width || input.opening_width || 0);
+  const openingType = normalizeOpeningTypeValue(input.opening_type || 'straight', 'straight');
+  const turnDirection = input.turn_direction || 'right';
+  const leg = Math.max(1, Math.min(Number(input.march_width || 0) || width, width, length));
+
+  if (isReadyFrameCondition(baseCondition)) return [];
+  if (openingType === 'none' || !length || !width) return [];
+
+  if (openingType === 'l_turn') {
+    if (turnDirection === 'right') {
+      return [
+        { x: 0, y: 0 },
+        { x: length, y: 0 },
+        { x: length, y: width },
+        { x: length - leg, y: width },
+        { x: length - leg, y: leg },
+        { x: 0, y: leg }
+      ];
+    }
+
+    return [
+      { x: 0, y: width - leg },
+      { x: length - leg, y: width - leg },
+      { x: length - leg, y: 0 },
+      { x: length, y: 0 },
+      { x: length, y: width },
+      { x: 0, y: width }
+    ];
+  }
+
+  if (openingType === 'u_turn') {
+    return [
+      { x: 0, y: 0 },
+      { x: length, y: 0 },
+      { x: length, y: width },
+      { x: 0, y: width },
+      { x: 0, y: width - leg },
+      { x: length - leg, y: width - leg },
+      { x: length - leg, y: leg },
+      { x: 0, y: leg }
+    ];
+  }
+
+  return [
+    { x: 0, y: 0 },
+    { x: length, y: 0 },
+    { x: length, y: width },
+    { x: 0, y: width }
+  ];
+}
+
 function renderTopView(geometry) {
   const viz = geometry.visualization;
   if (!viz?.walking_line?.length) return '';
 
+  const input = geometry.input || {};
+  const baseCondition = normalizeBaseConditionValue(input.base_condition || geometry.base_condition || 'empty_opening');
   const bounds = viz.bounds;
   const viewWidth = Math.max(bounds.max_x - bounds.min_x, 1000);
   const viewHeight = Math.max(bounds.max_y - bounds.min_y, 900);
   const warningPoints = (viz.warning_points || []).slice(0, 28);
   const path = svgPolyline(viz.walking_line);
+  const openingPoints = getOpeningOutlinePoints(geometry);
+  const openingOutline = openingPoints.length ? svgPolyline(openingPoints) : '';
+  const openingMarkup = openingOutline
+    ? `<polyline class="svg-opening-outline" points="${openingOutline}" fill="none"></polyline>`
+    : '';
+  const openingLabels = !isReadyFrameCondition(baseCondition) && viz.opening?.length && viz.opening?.width
+    ? `
+        <text class="svg-label" x="${viz.opening.length / 2}" y="-80" text-anchor="middle">проём ${formatMm(viz.opening.length)}</text>
+        <text class="svg-label" x="${viz.opening.length + 80}" y="${viz.opening.width / 2}" transform="rotate(90 ${viz.opening.length + 80} ${viz.opening.width / 2})" text-anchor="middle">ширина ${formatMm(viz.opening.width)}</text>
+      `
+    : '';
 
   return `
     <article class="diagram-card">
       <div class="diagram-title">План</div>
       <svg class="stair-svg" viewBox="${bounds.min_x} ${bounds.min_y} ${viewWidth} ${viewHeight}" role="img" aria-label="План лестницы и проёма">
-        <rect class="svg-opening" x="0" y="0" width="${viz.opening.length}" height="${viz.opening.width}" rx="18"></rect>
         <polyline class="svg-stair-line" points="${path}"></polyline>
         <polyline class="svg-walk-line" points="${path}"></polyline>
+        ${openingMarkup}
         ${(viz.walking_line || [])
           .map((point, index) => `<circle class="svg-node" cx="${point.x}" cy="${point.y}" r="${index === 0 ? 28 : 18}"></circle>`)
           .join('')}
         ${warningPoints
           .map((point) => `<circle class="svg-warning-zone" cx="${point.x}" cy="${point.y}" r="42"></circle>`)
           .join('')}
-        <text class="svg-label" x="${viz.opening.length / 2}" y="-80" text-anchor="middle">проём ${formatMm(viz.opening.length)}</text>
-        <text class="svg-label" x="${viz.opening.length + 80}" y="${viz.opening.width / 2}" transform="rotate(90 ${viz.opening.length + 80} ${viz.opening.width / 2})" text-anchor="middle">ширина ${formatMm(viz.opening.width)}</text>
+        ${openingLabels}
         <text class="svg-label svg-label-strong" x="${viz.walking_line[0].x}" y="${viz.walking_line[0].y - 90}" text-anchor="middle">старт</text>
         <text class="svg-label svg-label-strong" x="${viz.walking_line.at(-1).x}" y="${viz.walking_line.at(-1).y - 90}" text-anchor="middle">верх</text>
       </svg>
@@ -374,6 +658,41 @@ function getFinishMetricsFromManualInputs(config, source) {
   };
 }
 
+function getReadyFrameServiceMetrics(config, geometry) {
+  const stepCount = Math.max(Number(config.ready_frame_step_count || geometry.tread_count || 0), 0);
+  const widthM = Math.max(Number(config.ready_frame_march_width || config.march_width || 0), 0) / 1000;
+  const treadDepthM = Math.max(Number(config.ready_frame_tread_depth || geometry.tread_depth || 0), 0) / 1000;
+  const finishAreaM2 = round(stepCount * widthM * treadDepthM, 2);
+  const manualStraightRailingLengthM = Math.max(Number(config.ready_frame_straight_railing_length || 0), 0);
+  const autoStraightRailingLengthM = round(
+    (((geometry.lower_march?.run_length || 0) + (geometry.upper_march?.run_length || 0)) || geometry.run_length || 0) / 1000,
+    2
+  );
+  const directRailingLengthM =
+    config.railing_option === 'none'
+      ? 0
+      : round(manualStraightRailingLengthM > 0 ? manualStraightRailingLengthM : autoStraightRailingLengthM, 2);
+  const turnRailingLengthM =
+    config.railing_option === 'none' || config.stair_type === 'straight'
+      ? 0
+      : round((geometry.turn_node?.element_length || 0) / 1000, 2);
+  const railingLengthM =
+    config.railing_option === 'none'
+      ? 0
+      : round(directRailingLengthM + turnRailingLengthM, 2);
+
+  return {
+    stepCount,
+    finishAreaM2,
+    coatingAreaM2: finishAreaM2,
+    directRailingLengthM,
+    manualStraightRailingLengthM,
+    autoStraightRailingLengthM,
+    turnRailingLengthM,
+    railingLengthM
+  };
+}
+
 function makeScenarioResult(config, overrides) {
   const status = overrides.status || 'recommended';
   return {
@@ -384,7 +703,7 @@ function makeScenarioResult(config, overrides) {
     blockers: overrides.blockers || [],
     adjustment_hints: overrides.adjustment_hints || [],
     result_kind: overrides.result_kind,
-    base_condition: config.base_condition,
+    base_condition: overrides.base_condition || config.base_condition,
     alert_title: overrides.alert_title,
     alert_text: overrides.alert_text,
     summary_rows: overrides.summary_rows || [],
@@ -402,22 +721,31 @@ function makeScenarioResult(config, overrides) {
     headroom_min: overrides.headroom_min || 0,
     lower_march: overrides.lower_march || null,
     upper_march: overrides.upper_march || null,
-    turn_node: overrides.turn_node || null
+    turn_node: overrides.turn_node || null,
+    input: overrides.input || null,
+    reason: overrides.reason || null,
+    geometry_summary: overrides.geometry_summary || null,
+    score: overrides.score || null,
+    best_candidate: overrides.best_candidate || null,
+    alternatives: overrides.alternatives || [],
+    candidates_evaluated: overrides.candidates_evaluated || 0
   };
 }
 
 function calculateScenarioResult(config) {
-  if (config.base_condition === 'empty_opening') {
+  const baseCondition = normalizeBaseConditionValue(config.base_condition || 'empty_opening');
+
+  if (baseCondition === 'empty_opening') {
     return {
       ...calculateStairGeometry(config),
       result_kind: 'full_staircase',
-      base_condition: config.base_condition,
+      base_condition: baseCondition,
       allow_continue: undefined
     };
   }
 
-  if (config.base_condition === 'existing_metal_frame') {
-    const fit = calculateStairGeometry(config);
+  if (isReadyFrameCondition(baseCondition)) {
+    const fit = calculateReadyFrameGeometry(config);
     const warnings = [...(fit.warnings || [])];
     const blockers = [...(fit.blockers || [])];
 
@@ -428,7 +756,11 @@ function calculateScenarioResult(config) {
     }
 
     const status = blockers.length ? 'invalid' : warnings.length || fit.status === 'warning' ? 'warning' : 'recommended';
-    const metrics = getFinishMetricsFromGeometry(config, fit);
+    const metrics = getReadyFrameServiceMetrics(config, fit);
+    const directRailingText =
+      metrics.manualStraightRailingLengthM > 0
+        ? `${metrics.manualStraightRailingLengthM} м`
+        : `${metrics.autoStraightRailingLengthM} м (авто)`;
 
     return makeScenarioResult(config, {
       ...fit,
@@ -437,16 +769,24 @@ function calculateScenarioResult(config) {
       status,
       warnings,
       blockers,
-      result_kind: 'existing_metal_frame',
+      result_kind: 'ready_frame',
+      base_condition: baseCondition,
       service_metrics: metrics,
-      alert_title: status === 'recommended' ? 'Каркас проверен для отделки' : undefined,
+      alert_title: status === 'recommended' ? 'Готовый каркас проверен для отделки' : undefined,
       alert_text:
-        'Новый металлокаркас не рассчитываем: учитываем посадку существующей конструкции, отделку, ограждение, покрытие, подсветку и монтаж.',
+        'Расчёт готового каркаса идёт только по рабочим параметрам: ступени, марш, подступенок, конфигурация поворота и ограждение.',
       summary_rows: [
-        ['Сценарий', BASE_CONDITION_LABELS.existing_metal_frame],
-        ['Проверка посадки', fit.status === 'invalid' ? 'нужна инженерная проверка' : 'выполнена по линии движения'],
+        ['Сценарий', BASE_CONDITION_LABELS.ready_frame],
+        ['Конфигурация', getStairLabel(config, fit)],
         ['Состояние каркаса', $('metalFrameCondition')?.selectedOptions?.[0]?.textContent || 'уточняется'],
+        ['Ступеней', `${fit.tread_count}`],
+        ['Ширина марша', formatMm(config.ready_frame_march_width || fit.geometry_summary?.march_width || 0)],
+        ['Глубина ступени', formatMm(config.ready_frame_tread_depth || fit.tread_depth || 0)],
+        ['Высота подступенка', formatMm(config.ready_frame_riser_height || fit.riser_height || 0)],
+        ['Проверка посадки', fit.status === 'invalid' ? 'нужна инженерная проверка' : 'выполнена без зависимости от проёма'],
         ['Отделка ступеней', `${metrics.finishAreaM2} м²`],
+        ['Длина прямого ограждения', config.railing_option === 'none' ? 'Не требуется' : directRailingText],
+        ['Общая длина ограждения', config.railing_option === 'none' ? 'Не требуется' : `${metrics.railingLengthM} м`],
         ['Ограждение', OPTION_LABELS.railing[config.railing_option]],
         ['Подсветка', OPTION_LABELS.lighting[config.lighting_option]]
       ],
@@ -454,7 +794,7 @@ function calculateScenarioResult(config) {
     });
   }
 
-  if (config.base_condition === 'existing_concrete_base') {
+  if (baseCondition === 'existing_concrete_base') {
     const metrics = getFinishMetricsFromManualInputs(config, 'concrete');
     const warnings = [];
     const blockers = [];
@@ -486,7 +826,7 @@ function calculateScenarioResult(config) {
     });
   }
 
-  if (config.base_condition === 'finish_only') {
+  if (baseCondition === 'finish_only') {
     const metrics = getFinishMetricsFromManualInputs(config, 'finish');
     const blockers = [];
     if (!metrics.stepCount || !metrics.finishAreaM2) blockers.push('Укажите количество ступеней и размеры отделки.');
@@ -647,8 +987,30 @@ function calculateMaterials(config, geometry) {
       { label: 'Монтаж', value: 'Подготовка и установка отделки' }
     ];
 
-    if (config.base_condition === 'existing_metal_frame') {
-      items.splice(2, 0, { label: 'Проверка металлокаркаса', value: 'Посадка, покрытие, узлы крепления' });
+    if (isReadyFrameCondition(config.base_condition)) {
+      items.splice(
+        1,
+        0,
+        { label: 'Проверка каркаса', value: 'Посадка, покрытие, узлы крепления' },
+        { label: 'Ступеней', value: `${geometry.tread_count || metrics.stepCount || 0} шт` },
+        { label: 'Ширина марша', value: formatMm(config.ready_frame_march_width || 0) },
+        { label: 'Глубина ступени', value: formatMm(config.ready_frame_tread_depth || 0) },
+        { label: 'Высота подступенка', value: formatMm(config.ready_frame_riser_height || 0) }
+      );
+
+      if (config.railing_option !== 'none') {
+        items.splice(
+          6,
+          0,
+          {
+            label: 'Длина прямого ограждения',
+            value:
+              metrics.manualStraightRailingLengthM > 0
+                ? `${metrics.manualStraightRailingLengthM} м`
+                : `${metrics.autoStraightRailingLengthM || 0} м (авто)`
+          }
+        );
+      }
     }
 
     if (config.base_condition === 'existing_concrete_base') {
@@ -691,51 +1053,63 @@ function renderMaterials(materials) {
 function calculatePrice(config, geometry, materials) {
   if (!geometry.valid || !materials.valid) return null;
 
+  const region = getPricingRegion(config.pricing_region_code);
+  const regionCoef = Number(region?.price_coef || 1);
+  const scenarioRates = getScenarioRates();
+  let subtotal = 0;
+  let baseLabor = 0;
+  let materialCost = 0;
+
   if (config.base_condition !== 'empty_opening') {
     const metrics = materials.metrics || {};
-    const finishRate = SCENARIO_RATES.finishMaterialPerM2[config.finish_material] || SCENARIO_RATES.finishMaterialPerM2.oak;
+    const finishRate = scenarioRates.finishMaterialPerM2[config.finish_material] ?? scenarioRates.finishMaterialPerM2.oak ?? 0;
     const finishCoef = getFinishLevelCoef(config.finish_level);
     const finishCost = (metrics.finishAreaM2 || 0) * finishRate * finishCoef;
-    const railingCost = (metrics.railingLengthM || 0) * (SCENARIO_RATES.railingPerM[config.railing_option] || 0);
-    const lightingCost = (metrics.stepCount || 0) * (SCENARIO_RATES.lightingPerStep[config.lighting_option] || 0);
-    const coatingCost = (metrics.coatingAreaM2 || 0) * (SCENARIO_RATES.coatingPerM2[config.coating_option] || 0);
+    const railingCost = (metrics.railingLengthM || 0) * (scenarioRates.railingPerM[config.railing_option] ?? 0);
+    const lightingCost = (metrics.stepCount || 0) * (scenarioRates.lightingPerStep[config.lighting_option] ?? 0);
+    const coatingCost = (metrics.coatingAreaM2 || 0) * (scenarioRates.coatingPerM2[config.coating_option] ?? 0);
     const prepCost =
       config.base_condition === 'existing_concrete_base' && config.concrete_base_condition !== 'ready'
-        ? (metrics.finishAreaM2 || 0) * SCENARIO_RATES.prepPerM2
+        ? (metrics.finishAreaM2 || 0) * (scenarioRates.service.prepPerM2 ?? 0)
         : 0;
-    const fitCheckCost = config.base_condition === 'existing_metal_frame' ? SCENARIO_RATES.fitCheck : 0;
-    const installCost = (metrics.finishAreaM2 || 0) * SCENARIO_RATES.installPerM2;
-    const total = finishCost + railingCost + lightingCost + coatingCost + prepCost + fitCheckCost + installCost;
-
-    return {
-      total,
-      min: total * 0.9,
-      max: total * 1.18,
-      baseLabor: installCost + fitCheckCost + prepCost,
-      materialCost: finishCost + railingCost + lightingCost + coatingCost
-    };
-  }
-
-  const defaults = state.dictionaries.defaults;
-  const baseLabor = geometry.tread_count * defaults.labor_rate_per_step;
-
-  let materialCost = 0;
-  if (materials.type === 'metal') {
-    materialCost = (materials.metrics.profileTubeLengthM || 0) * defaults.metal_rate_per_meter;
-  } else if (materials.type === 'wood') {
-    materialCost = (materials.metrics.treadAreaM2 || 0) * defaults.wood_rate_per_m2;
+    const fitCheckCost = isReadyFrameCondition(config.base_condition) ? (scenarioRates.service.fitCheck ?? 0) : 0;
+    const installCost = (metrics.finishAreaM2 || 0) * (scenarioRates.service.installPerM2 ?? 0);
+    baseLabor = installCost + fitCheckCost + prepCost;
+    materialCost = finishCost + railingCost + lightingCost + coatingCost;
+    subtotal = baseLabor + materialCost;
   } else {
-    materialCost = (materials.metrics.concreteVolumeM3 || 0) * defaults.concrete_rate_per_m3;
+    const defaults = state.dictionaries.defaults;
+    baseLabor = geometry.tread_count * defaults.labor_rate_per_step;
+
+    if (materials.type === 'metal') {
+      materialCost = (materials.metrics.profileTubeLengthM || 0) * defaults.metal_rate_per_meter;
+    } else if (materials.type === 'wood') {
+      materialCost = (materials.metrics.treadAreaM2 || 0) * defaults.wood_rate_per_m2;
+    } else {
+      materialCost = (materials.metrics.concreteVolumeM3 || 0) * defaults.concrete_rate_per_m3;
+    }
+
+    const finishCoef = getFinishLevelCoef(config.finish_level);
+    subtotal = (baseLabor + materialCost) * defaults.install_coef * defaults.markup_coef * finishCoef;
   }
 
-  const finishCoef = getFinishLevelCoef(config.finish_level);
-
-  const total = (baseLabor + materialCost) * defaults.install_coef * defaults.markup_coef * finishCoef;
+  const total = subtotal * regionCoef;
+  const regionalAdjustment = total - subtotal;
+  const rangeMin = config.base_condition !== 'empty_opening' ? total * 0.9 : total * 0.92;
+  const rangeMax = config.base_condition !== 'empty_opening' ? total * 1.18 : total * 1.12;
 
   return {
     total,
-    min: total * 0.92,
-    max: total * 1.12,
+    min: rangeMin,
+    max: rangeMax,
+    subtotalBeforeRegion: subtotal,
+    regionalAdjustment,
+    regionalCoef: regionCoef,
+    pricingRegion: {
+      code: region.code,
+      name: region.name
+    },
+    scenarioRatesUsed: scenarioRates,
     baseLabor,
     materialCost
   };
@@ -757,6 +1131,9 @@ function renderPrice(price) {
   root.innerHTML = `
     <div class="price-main">${money(price.total)}</div>
     <div class="muted">Диапазон: ${money(price.min)} — ${money(price.max)}</div>
+    <div class="muted">База до региона: ${money(price.subtotalBeforeRegion)}</div>
+    <div class="muted">Регион: ${escapeHtml(price.pricingRegion?.name || 'не выбран')} · коэффициент ×${Number(price.regionalCoef || 1).toFixed(2)}</div>
+    <div class="muted">Региональная корректировка: ${money(price.regionalAdjustment)}</div>
     <div class="muted">Работы: ${money(price.baseLabor)} · Материалы: ${money(price.materialCost)}</div>
   `;
 }
@@ -793,6 +1170,7 @@ function compactGeometryForPayload(geometry) {
 function buildCalculationPayload(config, geometry, materials = state.materials, price = state.price, requestMode = 'calculation') {
   const compactGeometry = compactGeometryForPayload(geometry);
   const warnings = geometry.status === 'invalid' ? geometry.blockers || [] : geometry.warnings || [];
+  const region = getPricingRegion(config.pricing_region_code);
 
   return {
     schema: 'tekstura.stair.phase1',
@@ -801,7 +1179,7 @@ function buildCalculationPayload(config, geometry, materials = state.materials, 
     baseCondition: BASE_CONDITION_LABELS[config.base_condition] || config.base_condition,
     selected_staircase_type: config.stair_type,
     staircaseType:
-      config.base_condition === 'empty_opening' || config.base_condition === 'existing_metal_frame'
+      config.base_condition === 'empty_opening' || isReadyFrameCondition(config.base_condition)
         ? getStairLabel(config, geometry)
         : BASE_CONDITION_LABELS[config.base_condition] || getStairLabel(config, geometry),
     status: geometry.status,
@@ -813,7 +1191,12 @@ function buildCalculationPayload(config, geometry, materials = state.materials, 
       finish_thickness_bottom: config.finish_thickness_bottom,
       opening_length: config.opening_length,
       opening_width: config.opening_width,
-      march_width: config.march_width
+      march_width: config.march_width,
+      ready_frame_step_count: config.ready_frame_step_count,
+      ready_frame_march_width: config.ready_frame_march_width,
+      ready_frame_tread_depth: config.ready_frame_tread_depth,
+      ready_frame_riser_height: config.ready_frame_riser_height,
+      ready_frame_straight_railing_length: config.ready_frame_straight_railing_length
     },
     dimensions: {
       floorHeight: config.floor_to_floor_height,
@@ -826,6 +1209,7 @@ function buildCalculationPayload(config, geometry, materials = state.materials, 
     price_relevant_selections: {
       frame_material: config.frame_material,
       finish_level: config.finish_level,
+      pricing_region_code: config.pricing_region_code,
       finish_material: config.finish_material,
       railing_option: config.railing_option,
       coating_option: config.coating_option,
@@ -833,9 +1217,38 @@ function buildCalculationPayload(config, geometry, materials = state.materials, 
       turn_direction: config.turn_direction,
       turn_type: config.turn_type
     },
+    pricing_region: {
+      code: region.code,
+      name: region.name,
+      price_coef: Number(region.price_coef || 1)
+    },
+    pricing_breakdown: price
+      ? {
+          subtotal_before_region: Math.round(price.subtotalBeforeRegion || 0),
+          regional_adjustment: Math.round(price.regionalAdjustment || 0),
+          regional_coef: Number(price.regionalCoef || 1),
+          total: Math.round(price.total || 0)
+        }
+      : null,
+    pricing_snapshot: price
+      ? {
+          defaults: state.dictionaries.defaults,
+          scenario_rates: price.scenarioRatesUsed || getScenarioRates(),
+          region: {
+            code: region.code,
+            name: region.name,
+            price_coef: Number(region.price_coef || 1)
+          }
+        }
+      : null,
     scenario_details: {
       metal_frame_condition: config.metal_frame_condition,
       existing_frame_notes: config.existing_frame_notes,
+      ready_frame_step_count: config.ready_frame_step_count,
+      ready_frame_march_width: config.ready_frame_march_width,
+      ready_frame_tread_depth: config.ready_frame_tread_depth,
+      ready_frame_riser_height: config.ready_frame_riser_height,
+      ready_frame_straight_railing_length: config.ready_frame_straight_railing_length,
       concrete_step_count: config.concrete_step_count,
       concrete_stair_width: config.concrete_stair_width,
       concrete_tread_depth: config.concrete_tread_depth,
@@ -944,6 +1357,11 @@ function runConfigurator() {
   showStep(4);
 }
 
+window.runGeometryCalculation = runGeometryCalculation;
+window.runConfigurator = runConfigurator;
+globalThis.runGeometryCalculation = runGeometryCalculation;
+globalThis.runConfigurator = runConfigurator;
+
 async function loadSupabaseDictionaries() {
   if (!window.supabase || !window.SUPABASE_CONFIG) return;
 
@@ -954,7 +1372,7 @@ async function loadSupabaseDictionaries() {
       window.SUPABASE_CONFIG.anonKey
     );
 
-    const [defaultsRes, rulesRes] = await Promise.all([
+    const [defaultsRes, rulesRes, regionsRes, scenarioRatesRes] = await Promise.all([
       client
         .from('stair_defaults')
         .select('*')
@@ -965,18 +1383,34 @@ async function loadSupabaseDictionaries() {
       client
         .from('stair_material_rules')
         .select('*')
+        .eq('active', true),
+      client
+        .from('stair_pricing_regions')
+        .select('*')
         .eq('active', true)
+        .order('sort_order', { ascending: true }),
+      client
+        .from('stair_scenario_rates')
+        .select('*')
+        .eq('active', true)
+        .order('sort_order', { ascending: true })
     ]);
 
     if (!defaultsRes.error && defaultsRes.data) {
-      state.dictionaries.defaults = {
-        ...state.dictionaries.defaults,
-        ...defaultsRes.data
-      };
+      state.dictionaries.defaults = normalizePricingDefaults(defaultsRes.data);
     }
 
     if (!rulesRes.error && rulesRes.data) {
       state.dictionaries.materialRules = rulesRes.data;
+    }
+
+    if (!regionsRes.error && Array.isArray(regionsRes.data) && regionsRes.data.length) {
+      state.dictionaries.regions = regionsRes.data.map((region, index) => normalizePricingRegion(region, index));
+      renderPricingRegionOptions(state.config?.pricing_region_code);
+    }
+
+    if (!scenarioRatesRes.error && Array.isArray(scenarioRatesRes.data) && scenarioRatesRes.data.length) {
+      state.dictionaries.scenarioRateRows = scenarioRatesRes.data.map((row, index) => normalizeScenarioRateRow(row, index));
     }
 
     setStatus('');
@@ -998,7 +1432,14 @@ function init() {
   stairTypeNode.addEventListener('change', toggleTurnFields);
   calculateBtn.addEventListener('click', runConfigurator);
   toResultsBtn.addEventListener('click', runGeometryCalculation);
+  document.querySelectorAll('[data-next-step]').forEach((node) => {
+    node.addEventListener('click', () => showStep(Number(node.getAttribute('data-next-step') || 1)));
+  });
+  document.querySelectorAll('[data-prev-step]').forEach((node) => {
+    node.addEventListener('click', () => showStep(Number(node.getAttribute('data-prev-step') || 1)));
+  });
 
+  renderPricingRegionOptions();
   updateScenarioFields();
   loadSupabaseDictionaries();
 }

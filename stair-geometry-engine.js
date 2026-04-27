@@ -59,6 +59,20 @@ function numberValue(value, fallback = 0) {
   return Number.isFinite(number) ? number : fallback;
 }
 
+function normalizeBaseConditionValue(value, fallback = 'empty_opening') {
+  const normalized = String(value || '').trim().toLowerCase();
+  if (normalized === 'ready_frame') return 'existing_metal_frame';
+  return normalized || fallback;
+}
+
+function normalizeOpeningTypeValue(value, fallback = 'straight') {
+  const normalized = String(value || '').trim().toLowerCase();
+
+  if (['straight', 'l_turn', 'u_turn'].includes(normalized)) return normalized;
+  if (['none', 'empty', 'no_opening', 'without_opening', 'not_selected'].includes(normalized)) return 'none';
+  return fallback;
+}
+
 function uniqueSorted(values) {
   return [...new Set(values.map((value) => Math.round(value)))].sort((a, b) => a - b);
 }
@@ -81,8 +95,9 @@ function normalizeInput(rawInput = {}) {
   if (!['landing', 'winders'].includes(turnType)) turnType = 'landing';
 
   return {
+    base_condition: normalizeBaseConditionValue(rawInput.base_condition || rawInput.baseCondition, 'empty_opening'),
     stair_type: stairType,
-    opening_type: rawInput.opening_type || rawInput.openingType || stairType,
+    opening_type: normalizeOpeningTypeValue(rawInput.opening_type || rawInput.openingType, stairType),
     turn_direction: rawInput.turn_direction || rawInput.turnDirection || 'right',
     turn_type: stairType === 'straight' ? 'landing' : turnType,
     floor_to_floor_height: numberValue(rawInput.floor_to_floor_height ?? rawInput.floorHeight),
@@ -274,6 +289,20 @@ function buildSegments(points, floorHeight) {
   return { segments, totalLength };
 }
 
+function translatePointsToPositive(points = []) {
+  if (!points.length) return [];
+
+  const minX = Math.min(...points.map((point) => point.x));
+  const minY = Math.min(...points.map((point) => point.y));
+  const shiftX = minX < 0 ? Math.abs(minX) : 0;
+  const shiftY = minY < 0 ? Math.abs(minY) : 0;
+
+  return points.map((point) => ({
+    x: round(point.x + shiftX),
+    y: round(point.y + shiftY)
+  }));
+}
+
 function interpolateSegment(segment, ratio) {
   return {
     x: segment.start.x + (segment.end.x - segment.start.x) * ratio,
@@ -357,9 +386,20 @@ function evaluateHeadroom(input, segments) {
   };
 }
 
-function getBounds(points, input) {
-  const allX = [0, input.opening_length, ...points.map((point) => point.x)];
-  const allY = [0, input.opening_width, ...points.map((point) => point.y)];
+function getBounds(points, input, opening = null) {
+  const openingLength = numberValue(opening?.length ?? input.opening_length, 0);
+  const openingWidth = numberValue(opening?.width ?? input.opening_width, 0);
+  const allX = [...points.map((point) => point.x)];
+  const allY = [...points.map((point) => point.y)];
+
+  if (openingLength > 0) {
+    allX.push(0, openingLength);
+  }
+
+  if (openingWidth > 0) {
+    allY.push(0, openingWidth);
+  }
+
   const minX = Math.min(...allX);
   const maxX = Math.max(...allX);
   const minY = Math.min(...allY);
@@ -376,7 +416,7 @@ function getBounds(points, input) {
   };
 }
 
-function buildVisualization(input, points, segments, headroom) {
+function buildVisualization(input, points, segments, headroom, openingOverride) {
   const sideProfile = segments.flatMap((segment, index) => {
     const start = {
       distance: round(segment.start_distance),
@@ -391,18 +431,300 @@ function buildVisualization(input, points, segments, headroom) {
     return index === 0 ? [start, end] : [end];
   });
 
+  const opening =
+    openingOverride === undefined
+      ? {
+          x: 0,
+          y: 0,
+          length: round(input.opening_length),
+          width: round(input.opening_width)
+        }
+      : openingOverride;
+
   return {
-    opening: {
-      x: 0,
-      y: 0,
-      length: round(input.opening_length),
-      width: round(input.opening_width)
-    },
+    opening,
     slab_underside_height: headroom.slab_underside_height,
     walking_line: points.map((point) => ({ x: round(point.x), y: round(point.y) })),
     side_profile: sideProfile,
     warning_points: headroom.warning_points,
-    bounds: getBounds(points, input)
+    bounds: getBounds(points, input, opening)
+  };
+}
+
+function normalizeReadyFrameInput(rawInput = {}) {
+  const base = normalizeInput(rawInput);
+  const stepCount = Math.max(0, Math.round(numberValue(
+    rawInput.ready_frame_step_count ??
+    rawInput.readyFrameStepCount ??
+    rawInput.step_count ??
+    rawInput.stepCount
+  )));
+  const marchWidth = numberValue(
+    rawInput.ready_frame_march_width ??
+    rawInput.readyFrameMarchWidth ??
+    rawInput.march_width ??
+    rawInput.marchWidth
+  );
+  const treadDepth = numberValue(
+    rawInput.ready_frame_tread_depth ??
+    rawInput.readyFrameTreadDepth ??
+    rawInput.tread_depth ??
+    rawInput.treadDepth
+  );
+  const riserHeight = numberValue(
+    rawInput.ready_frame_riser_height ??
+    rawInput.readyFrameRiserHeight ??
+    rawInput.riser_height ??
+    rawInput.riserHeight
+  );
+
+  return {
+    ...base,
+    base_condition: normalizeBaseConditionValue(rawInput.base_condition || rawInput.baseCondition, 'existing_metal_frame'),
+    opening_type: normalizeOpeningTypeValue(rawInput.opening_type || rawInput.openingType, 'none'),
+    step_count: stepCount,
+    tread_count: stepCount,
+    riser_count: stepCount,
+    floor_to_floor_height: numberValue(
+      rawInput.floor_to_floor_height ?? rawInput.floorHeight,
+      stepCount * riserHeight
+    ),
+    march_width: marchWidth,
+    tread_depth: treadDepth,
+    riser_height: riserHeight,
+    straight_railing_length: numberValue(
+      rawInput.ready_frame_straight_railing_length ??
+      rawInput.readyFrameStraightRailingLength ??
+      rawInput.straight_railing_length ??
+      rawInput.straightRailingLength
+    )
+  };
+}
+
+function getReadyFrameInputMessages(input) {
+  const warnings = [];
+  const blockers = [];
+  const comfortValue = 2 * input.riser_height + input.tread_depth;
+  const stairAngle = input.tread_depth > 0 ? (Math.atan(input.riser_height / input.tread_depth) * 180) / Math.PI : 0;
+
+  if (!input.tread_count) blockers.push('Укажите количество ступеней готового каркаса.');
+  if (!input.march_width || input.march_width < LIMITS.minMarchWidth) {
+    blockers.push('Укажите корректную ширину марша готового каркаса.');
+  } else if (input.march_width < LIMITS.recommendedMarchWidth) {
+    warnings.push('Ширина марша готового каркаса близка к минимально комфортной.');
+  }
+
+  if (!input.tread_depth) blockers.push('Укажите глубину ступени готового каркаса.');
+  if (!input.riser_height) blockers.push('Укажите высоту подступенка готового каркаса.');
+
+  if (input.riser_height && (input.riser_height < LIMITS.riser.recommendedMin || input.riser_height > LIMITS.riser.recommendedMax)) {
+    warnings.push('Высота подступенка выходит из комфортного диапазона.');
+  }
+
+  if (input.tread_depth && (input.tread_depth < LIMITS.tread.recommendedMin || input.tread_depth > LIMITS.tread.recommendedMax)) {
+    warnings.push('Глубина ступени находится на границе комфортного диапазона.');
+  }
+
+  if (comfortValue) {
+    if (comfortValue < LIMITS.comfort.warningMin || comfortValue > LIMITS.comfort.warningMax) {
+      blockers.push('Формула шага 2h + b сильно выходит за допустимый диапазон.');
+    } else if (comfortValue < LIMITS.comfort.min || comfortValue > LIMITS.comfort.max) {
+      warnings.push('Формула шага 2h + b выходит за рекомендуемые 600-640 мм.');
+    }
+  }
+
+  if (stairAngle) {
+    if (stairAngle > LIMITS.angle.warningMax) {
+      blockers.push('Угол наклона готового каркаса получается слишком крутым.');
+    } else if (stairAngle > LIMITS.angle.recommendedMax) {
+      warnings.push('Угол наклона близок к верхней границе комфорта.');
+    }
+  }
+
+  return { warnings, blockers };
+}
+
+function splitReadyFrameTreads(input) {
+  if (input.stair_type === 'straight') {
+    return { lower: input.tread_count, turn: 0, upper: 0 };
+  }
+
+  const turn = getTurnTreadCount(input.stair_type, input.turn_type);
+  const straightTreads = input.tread_count - turn;
+  if (straightTreads < 2) return null;
+
+  const lower = Math.max(1, Math.floor(straightTreads / 2));
+  const upper = Math.max(1, straightTreads - lower);
+  return { lower, turn, upper };
+}
+
+function getReadyFrameTurnLine(input, split) {
+  if (!split?.turn) return 0;
+  if (input.turn_type === 'landing') return input.march_width;
+  return Math.max(input.march_width * 0.8, split.turn * input.tread_depth * 0.35);
+}
+
+function buildReadyFramePath(input, split) {
+  const lowerRun = split.lower * input.tread_depth;
+  const upperRun = split.upper * input.tread_depth;
+  const turnLine = getReadyFrameTurnLine(input, split);
+  const sign = input.turn_direction === 'left' ? -1 : 1;
+
+  if (input.stair_type === 'straight') {
+    return [
+      { x: 0, y: input.march_width / 2 },
+      { x: lowerRun, y: input.march_width / 2 }
+    ];
+  }
+
+  if (input.stair_type === 'l_turn') {
+    return translatePointsToPositive([
+      { x: 0, y: 0 },
+      { x: lowerRun, y: 0 },
+      { x: lowerRun, y: sign * turnLine },
+      { x: lowerRun, y: sign * (turnLine + upperRun) }
+    ]);
+  }
+
+  return translatePointsToPositive([
+    { x: 0, y: 0 },
+    { x: lowerRun, y: 0 },
+    { x: lowerRun, y: sign * turnLine },
+    { x: lowerRun - upperRun, y: sign * turnLine }
+  ]);
+}
+
+function getReadyFrameOpening(input, points) {
+  if (input.opening_type === 'none') return null;
+
+  const xs = points.map((point) => point.x);
+  const ys = points.map((point) => point.y);
+  const spanX = Math.max(...xs) - Math.min(...xs);
+  const spanY = Math.max(...ys) - Math.min(...ys);
+
+  return {
+    x: 0,
+    y: 0,
+    length: round(
+      input.opening_length > 0
+        ? input.opening_length
+        : Math.max(spanX + input.march_width * 0.8, input.march_width * 1.5)
+    ),
+    width: round(
+      input.opening_width > 0
+        ? input.opening_width
+        : Math.max(spanY + input.march_width * 0.8, input.march_width)
+    )
+  };
+}
+
+export function calculateReadyFrameGeometry(rawInput = {}) {
+  const input = normalizeReadyFrameInput(rawInput);
+  const inputMessages = getReadyFrameInputMessages(input);
+  const split = splitReadyFrameTreads(input);
+
+  if (!split) {
+    return {
+      valid: false,
+      status: 'invalid',
+      status_label: STATUS_LABELS.invalid,
+      warnings: inputMessages.warnings,
+      blockers: [...inputMessages.blockers, 'Для выбранной конфигурации не хватает ступеней на прямые марши и поворотный узел.'],
+      tread_count: input.tread_count,
+      riser_count: input.riser_count,
+      riser_height: round(input.riser_height),
+      tread_depth: round(input.tread_depth),
+      comfort_value: round(2 * input.riser_height + input.tread_depth),
+      stair_angle_deg: input.tread_depth > 0 ? round((Math.atan(input.riser_height / input.tread_depth) * 180) / Math.PI, 2) : 0,
+      run_length: 0,
+      walking_line_length: 0,
+      stringer_length: 0,
+      headroom_min: 0,
+      lower_march: null,
+      upper_march: null,
+      turn_node: null,
+      visualization: null,
+      input
+    };
+  }
+
+  const points = buildReadyFramePath(input, split);
+  const floorHeight = input.riser_count * input.riser_height;
+  const { segments, totalLength } = buildSegments(points, floorHeight);
+  const stringerLength = segments.reduce(
+    (sum, segment) => sum + Math.hypot(segment.length, segment.end_height - segment.start_height),
+    0
+  );
+  const status = inputMessages.blockers.length ? 'invalid' : inputMessages.warnings.length ? 'warning' : 'recommended';
+  const opening = getReadyFrameOpening(input, points);
+  const visualization = buildVisualization(
+    input,
+    points,
+    segments,
+    {
+      min_clearance: 0,
+      target_clearance: LIMITS.headroom.target,
+      warning_clearance: LIMITS.headroom.warningMin,
+      slab_underside_height: 0,
+      critical_point: null,
+      warning_points: [],
+      samples: []
+    },
+    opening
+  );
+  const comfortValue = 2 * input.riser_height + input.tread_depth;
+  const stairAngle = input.tread_depth > 0 ? (Math.atan(input.riser_height / input.tread_depth) * 180) / Math.PI : 0;
+  const turnElementLength = getReadyFrameTurnLine(input, split);
+
+  return {
+    valid: status !== 'invalid',
+    status,
+    status_label: STATUS_LABELS[status],
+    warnings: [...new Set(inputMessages.warnings)],
+    blockers: [...new Set(inputMessages.blockers)],
+    riser_count: input.riser_count,
+    tread_count: input.tread_count,
+    riser_height: round(input.riser_height),
+    tread_depth: round(input.tread_depth),
+    comfort_value: round(comfortValue),
+    stair_angle_deg: round(stairAngle, 2),
+    run_length: round(totalLength),
+    stringer_length: round(stringerLength),
+    headroom_min: 0,
+    walking_line_length: round(totalLength),
+    lower_march: split.lower
+      ? {
+          tread_count: split.lower,
+          run_length: round(split.lower * input.tread_depth)
+        }
+      : null,
+    upper_march: split.upper
+      ? {
+          tread_count: split.upper,
+          run_length: round(split.upper * input.tread_depth)
+        }
+      : null,
+    turn_node:
+      input.stair_type === 'straight'
+        ? null
+        : {
+            type: input.turn_type,
+            label: TURN_LABELS[input.turn_type],
+            direction: input.turn_direction,
+            tread_count: split.turn,
+            element_length: round(turnElementLength)
+          },
+    geometry_summary: {
+      type: input.stair_type,
+      type_label: TYPE_LABELS[input.stair_type],
+      turn_type: input.stair_type === 'straight' ? null : input.turn_type,
+      turn_label: input.stair_type === 'straight' ? null : TURN_LABELS[input.turn_type],
+      march_width: round(input.march_width),
+      ready_frame_step_count: input.step_count,
+      ready_frame_straight_railing_length: round(input.straight_railing_length, 2)
+    },
+    visualization,
+    input
   };
 }
 

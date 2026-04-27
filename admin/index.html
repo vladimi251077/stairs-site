@@ -197,7 +197,7 @@
             <input id="badge" />
           </div>
           <div>
-            <label for="baseRate">Базовая цена</label>
+            <label for="baseRate">Маркетинговая базовая цена</label>
             <input id="baseRate" type="number" min="1" />
           </div>
 
@@ -217,6 +217,60 @@
         </div>
         <div class="row" style="margin-top:12px">
           <button id="saveHero" class="btn">Сохранить главный экран</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Калькулятор: базовые ставки</h2>
+        <p class="small">Это базовая инженерная цена до регионального коэффициента. Региональная регулировка применяется поверх итоговой базы.</p>
+        <div class="grid">
+          <div>
+            <label for="laborRate">Работы за ступень</label>
+            <input id="laborRate" type="number" min="0" step="1" />
+          </div>
+          <div>
+            <label for="metalRate">Металл за метр</label>
+            <input id="metalRate" type="number" min="0" step="1" />
+          </div>
+          <div>
+            <label for="woodRate">Дерево за м²</label>
+            <input id="woodRate" type="number" min="0" step="1" />
+          </div>
+          <div>
+            <label for="concreteRate">Бетон за м³</label>
+            <input id="concreteRate" type="number" min="0" step="1" />
+          </div>
+          <div>
+            <label for="installCoef">Коэффициент монтажа</label>
+            <input id="installCoef" type="number" min="0" step="0.01" />
+          </div>
+          <div>
+            <label for="markupCoef">Коэффициент маржи</label>
+            <input id="markupCoef" type="number" min="0" step="0.01" />
+          </div>
+        </div>
+        <div class="row" style="margin-top:12px">
+          <button id="savePricingDefaults" class="btn">Сохранить базовые ставки</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Калькулятор: регионы</h2>
+        <p class="small">План регулировки цены: итоговая база калькулятора умножается на коэффициент региона. Держите здесь два рабочих региона и правьте коэффициенты без изменения кода.</p>
+        <div id="pricingRegionsList"></div>
+        <div class="row">
+          <button id="addPricingRegion" class="btn btn-secondary">Добавить регион</button>
+          <button id="savePricingRegions" class="btn">Сохранить регионы</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Калькулятор: коммерческие ставки</h2>
+        <p class="small">Здесь регулируются ставки отделки, ограждений, подсветки, покрытия и сервисных работ. Эти значения используются в сценариях, где калькулятор считает отделку и коммерческую часть.</p>
+        <div id="pricingRulesList"></div>
+        <div class="row">
+          <button id="addPricingRule" class="btn btn-secondary">Добавить ставку</button>
+          <button id="savePricingRules" class="btn">Сохранить ставки</button>
         </div>
       </section>
 
@@ -268,6 +322,12 @@
     const heroSubtitleInput = document.getElementById('heroSubtitle');
     const badgeInput = document.getElementById('badge');
     const baseRateInput = document.getElementById('baseRate');
+    const laborRateInput = document.getElementById('laborRate');
+    const metalRateInput = document.getElementById('metalRate');
+    const woodRateInput = document.getElementById('woodRate');
+    const concreteRateInput = document.getElementById('concreteRate');
+    const installCoefInput = document.getElementById('installCoef');
+    const markupCoefInput = document.getElementById('markupCoef');
 
     const heroImageFileInput = document.getElementById('heroImageFile');
     const heroImageInput = document.getElementById('heroImage');
@@ -279,9 +339,14 @@
 
     const servicesList = document.getElementById('servicesList');
     const projectsList = document.getElementById('projectsList');
+    const pricingRegionsList = document.getElementById('pricingRegionsList');
+    const pricingRulesList = document.getElementById('pricingRulesList');
 
     const state = {
       settings: null,
+      pricingDefaults: null,
+      pricingRegions: [],
+      scenarioRateRows: [],
       services: [],
       projects: [],
     };
@@ -300,6 +365,141 @@
 
     function uid() {
       return crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random());
+    }
+
+    function createDefaultPricingDefaults() {
+      return {
+        labor_rate_per_step: 2500,
+        metal_rate_per_meter: 1800,
+        wood_rate_per_m2: 16000,
+        concrete_rate_per_m3: 14000,
+        install_coef: 1.12,
+        markup_coef: 1.08
+      };
+    }
+
+    function createDefaultPricingRegions() {
+      return [
+        {
+          id: uid(),
+          code: 'primary_region',
+          name: 'Основной регион',
+          price_coef: 1,
+          sort_order: 1,
+          notes: 'Базовый коэффициент без надбавки.',
+          active: true
+        },
+        {
+          id: uid(),
+          code: 'secondary_region',
+          name: 'Второй регион',
+          price_coef: 1,
+          sort_order: 2,
+          notes: 'Скорректируйте коэффициент под второй регион.',
+          active: true
+        }
+      ];
+    }
+
+    function createDefaultScenarioRateRows() {
+      return [
+        { id: uid(), rate_group: 'finishMaterialPerM2', rate_key: 'oak', label: 'Дуб / шпон', rate: 22000, sort_order: 1, active: true },
+        { id: uid(), rate_group: 'finishMaterialPerM2', rate_key: 'ash', label: 'Ясень', rate: 19000, sort_order: 2, active: true },
+        { id: uid(), rate_group: 'finishMaterialPerM2', rate_key: 'stone', label: 'Камень', rate: 34000, sort_order: 3, active: true },
+        { id: uid(), rate_group: 'finishMaterialPerM2', rate_key: 'porcelain', label: 'Керамогранит', rate: 17500, sort_order: 4, active: true },
+        { id: uid(), rate_group: 'finishMaterialPerM2', rate_key: 'microcement', label: 'Микроцемент', rate: 15500, sort_order: 5, active: true },
+        { id: uid(), rate_group: 'railingPerM', rate_key: 'metal', label: 'Ограждение: металл', rate: 9500, sort_order: 10, active: true },
+        { id: uid(), rate_group: 'railingPerM', rate_key: 'glass', label: 'Ограждение: стекло', rate: 18000, sort_order: 11, active: true },
+        { id: uid(), rate_group: 'railingPerM', rate_key: 'wood', label: 'Ограждение: дерево', rate: 12500, sort_order: 12, active: true },
+        { id: uid(), rate_group: 'railingPerM', rate_key: 'none', label: 'Ограждение: не нужно', rate: 0, sort_order: 13, active: true },
+        { id: uid(), rate_group: 'lightingPerStep', rate_key: 'none', label: 'Подсветка: нет', rate: 0, sort_order: 20, active: true },
+        { id: uid(), rate_group: 'lightingPerStep', rate_key: 'step', label: 'Подсветка: точечная', rate: 1400, sort_order: 21, active: true },
+        { id: uid(), rate_group: 'lightingPerStep', rate_key: 'linear', label: 'Подсветка: линейная', rate: 2100, sort_order: 22, active: true },
+        { id: uid(), rate_group: 'coatingPerM2', rate_key: 'none', label: 'Покрытие: нет', rate: 0, sort_order: 30, active: true },
+        { id: uid(), rate_group: 'coatingPerM2', rate_key: 'standard', label: 'Покрытие: стандарт', rate: 2200, sort_order: 31, active: true },
+        { id: uid(), rate_group: 'coatingPerM2', rate_key: 'premium', label: 'Покрытие: премиум', rate: 3600, sort_order: 32, active: true },
+        { id: uid(), rate_group: 'service', rate_key: 'fitCheck', label: 'Проверка посадки каркаса', rate: 15000, sort_order: 40, active: true },
+        { id: uid(), rate_group: 'service', rate_key: 'prepPerM2', label: 'Подготовка основания за м²', rate: 4200, sort_order: 41, active: true },
+        { id: uid(), rate_group: 'service', rate_key: 'installPerM2', label: 'Монтаж отделки за м²', rate: 5200, sort_order: 42, active: true }
+      ];
+    }
+
+    function normalizePricingDefaults(row) {
+      const fallback = createDefaultPricingDefaults();
+      return {
+        id: row?.id || null,
+        labor_rate_per_step: Number(row?.labor_rate_per_step ?? fallback.labor_rate_per_step),
+        metal_rate_per_meter: Number(row?.metal_rate_per_meter ?? fallback.metal_rate_per_meter),
+        wood_rate_per_m2: Number(row?.wood_rate_per_m2 ?? fallback.wood_rate_per_m2),
+        concrete_rate_per_m3: Number(row?.concrete_rate_per_m3 ?? fallback.concrete_rate_per_m3),
+        install_coef: Number(row?.install_coef ?? fallback.install_coef),
+        markup_coef: Number(row?.markup_coef ?? fallback.markup_coef)
+      };
+    }
+
+    function makeRegionCode(value, index) {
+      const safe = String(value || '')
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9_-]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      return safe || `region_${index + 1}`;
+    }
+
+    function normalizePricingRegion(row, index) {
+      const fallback = createDefaultPricingRegions()[index] || createDefaultPricingRegions()[0];
+      return {
+        id: row?.id || uid(),
+        code: row?.code || fallback.code || `region_${index + 1}`,
+        name: row?.name || fallback.name || `Регион ${index + 1}`,
+        price_coef: Number(row?.price_coef ?? fallback.price_coef ?? 1),
+        sort_order: Number(row?.sort_order ?? fallback.sort_order ?? index + 1),
+        notes: row?.notes || fallback.notes || '',
+        active: row?.active !== false
+      };
+    }
+
+    function normalizeScenarioRateRow(row, index) {
+      const fallback = createDefaultScenarioRateRows()[index] || createDefaultScenarioRateRows()[0];
+      return {
+        id: row?.id || uid(),
+        rate_group: row?.rate_group || fallback.rate_group,
+        rate_key: row?.rate_key || fallback.rate_key,
+        label: row?.label || fallback.label,
+        rate: Number(row?.rate ?? fallback.rate ?? 0),
+        sort_order: Number(row?.sort_order ?? fallback.sort_order ?? index + 1),
+        active: row?.active !== false
+      };
+    }
+
+    function validatePricingRegions(rows) {
+      const codes = new Set();
+      for (const row of rows) {
+        if (!row.name) {
+          throw new Error('У каждого региона должно быть название.');
+        }
+        if (codes.has(row.code)) {
+          throw new Error(`Код региона "${row.code}" повторяется. Сделайте коды уникальными.`);
+        }
+        codes.add(row.code);
+      }
+    }
+
+    function validatePricingRules(rows) {
+      const keys = new Set();
+      for (const row of rows) {
+        if (!row.rate_key) {
+          throw new Error('У каждой коммерческой ставки должен быть ключ.');
+        }
+        if (!row.label) {
+          throw new Error(`Для ставки "${row.rate_group} / ${row.rate_key}" заполните подпись.`);
+        }
+        const compositeKey = `${row.rate_group}::${row.rate_key}`;
+        if (keys.has(compositeKey)) {
+          throw new Error(`Ставка "${row.rate_group} / ${row.rate_key}" повторяется. Оставьте только одну строку на пару группа + ключ.`);
+        }
+        keys.add(compositeKey);
+      }
     }
 
     function showPreview(imgEl, url) {
@@ -349,6 +549,99 @@
       baseRateInput.value = settings.baseRate || 5000;
       showPreview(heroImagePreview, settings.heroImage || '');
       showPreview(logoPreview, settings.logo || '');
+    }
+
+    function fillPricingDefaultsForm(defaults) {
+      laborRateInput.value = defaults.labor_rate_per_step || 0;
+      metalRateInput.value = defaults.metal_rate_per_meter || 0;
+      woodRateInput.value = defaults.wood_rate_per_m2 || 0;
+      concreteRateInput.value = defaults.concrete_rate_per_m3 || 0;
+      installCoefInput.value = defaults.install_coef || 0;
+      markupCoefInput.value = defaults.markup_coef || 0;
+    }
+
+    function pricingRegionItem(item = {}, index = 0) {
+      const region = normalizePricingRegion(item, index);
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.dataset.id = region.id;
+      div.innerHTML = `
+        <div class="grid">
+          <div>
+            <label>Название региона</label>
+            <input data-k="name" value="${escapeHtml(region.name)}" />
+          </div>
+          <div>
+            <label>Коэффициент</label>
+            <input data-k="price_coef" type="number" min="0" step="0.01" value="${region.price_coef}" />
+          </div>
+          <div>
+            <label>Код</label>
+            <input data-k="code" value="${escapeHtml(region.code)}" />
+          </div>
+          <div>
+            <label>Порядок</label>
+            <input data-k="sort_order" type="number" min="1" step="1" value="${region.sort_order}" />
+          </div>
+          <div class="full">
+            <label>Комментарий</label>
+            <textarea data-k="notes">${escapeHtml(region.notes || '')}</textarea>
+          </div>
+          <div>
+            <label><input data-k="active" type="checkbox" ${region.active ? 'checked' : ''} /> Активен</label>
+          </div>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button type="button" class="btn btn-danger" data-remove>Удалить</button>
+        </div>
+      `;
+      div.querySelector('[data-remove]').onclick = () => div.remove();
+      return div;
+    }
+
+    function pricingRuleItem(item = {}, index = 0) {
+      const rule = normalizeScenarioRateRow(item, index);
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.dataset.id = rule.id;
+      div.innerHTML = `
+        <div class="grid">
+          <div>
+            <label>Группа</label>
+            <select data-k="rate_group">
+              <option value="finishMaterialPerM2" ${rule.rate_group === 'finishMaterialPerM2' ? 'selected' : ''}>Отделка за м²</option>
+              <option value="railingPerM" ${rule.rate_group === 'railingPerM' ? 'selected' : ''}>Ограждение за м</option>
+              <option value="lightingPerStep" ${rule.rate_group === 'lightingPerStep' ? 'selected' : ''}>Подсветка за ступень</option>
+              <option value="coatingPerM2" ${rule.rate_group === 'coatingPerM2' ? 'selected' : ''}>Покрытие за м²</option>
+              <option value="service" ${rule.rate_group === 'service' ? 'selected' : ''}>Сервисная ставка</option>
+            </select>
+          </div>
+          <div>
+            <label>Ключ</label>
+            <input data-k="rate_key" value="${escapeHtml(rule.rate_key)}" />
+          </div>
+          <div>
+            <label>Ставка</label>
+            <input data-k="rate" type="number" min="0" step="1" value="${rule.rate}" />
+          </div>
+          <div>
+            <label>Порядок</label>
+            <input data-k="sort_order" type="number" min="1" step="1" value="${rule.sort_order}" />
+          </div>
+          <div class="full">
+            <label>Подпись</label>
+            <input data-k="label" value="${escapeHtml(rule.label)}" />
+          </div>
+          <div>
+            <label><input data-k="active" type="checkbox" ${rule.active ? 'checked' : ''} /> Активна</label>
+          </div>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button type="button" class="btn btn-danger" data-remove>Удалить</button>
+        </div>
+      `;
+      div.querySelector('[data-remove]').onclick = () => div.remove();
+      return div;
     }
 
     function serviceItem(item = {}) {
@@ -426,6 +719,22 @@
       (items || []).forEach(item => projectsList.appendChild(projectItem(item)));
     }
 
+    function renderPricingRegions(items) {
+      pricingRegionsList.innerHTML = '';
+      (items || []).forEach((item, index) => pricingRegionsList.appendChild(pricingRegionItem(item, index)));
+      if (!pricingRegionsList.children.length) {
+        createDefaultPricingRegions().forEach((item, index) => pricingRegionsList.appendChild(pricingRegionItem(item, index)));
+      }
+    }
+
+    function renderPricingRules(items) {
+      pricingRulesList.innerHTML = '';
+      (items || []).forEach((item, index) => pricingRulesList.appendChild(pricingRuleItem(item, index)));
+      if (!pricingRulesList.children.length) {
+        createDefaultScenarioRateRows().forEach((item, index) => pricingRulesList.appendChild(pricingRuleItem(item, index)));
+      }
+    }
+
     function escapeHtml(str) {
       return String(str)
         .replaceAll('&', '&amp;')
@@ -447,6 +756,62 @@
       const settings = normalizeSettings(data || {});
       state.settings = settings;
       fillSettingsForm(settings);
+    }
+
+    async function loadPricingDefaults() {
+      const { data, error } = await client
+        .from('stair_defaults')
+        .select('*')
+        .eq('active', true)
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) {
+        console.warn('stair_defaults load failed', error);
+        const defaults = normalizePricingDefaults(null);
+        state.pricingDefaults = defaults;
+        fillPricingDefaultsForm(defaults);
+        return;
+      }
+
+      const defaults = normalizePricingDefaults(data || null);
+      state.pricingDefaults = defaults;
+      fillPricingDefaultsForm(defaults);
+    }
+
+    async function loadPricingRegions() {
+      const { data, error } = await client
+        .from('stair_pricing_regions')
+        .select('*')
+        .order('sort_order', { ascending: true });
+
+      if (error) {
+        console.warn('stair_pricing_regions load failed', error);
+        state.pricingRegions = createDefaultPricingRegions();
+        renderPricingRegions(state.pricingRegions);
+        return;
+      }
+
+      state.pricingRegions = (data || []).map((item, index) => normalizePricingRegion(item, index));
+      renderPricingRegions(state.pricingRegions);
+    }
+
+    async function loadPricingRules() {
+      const { data, error } = await client
+        .from('stair_scenario_rates')
+        .select('*')
+        .order('sort_order', { ascending: true });
+
+      if (error) {
+        console.warn('stair_scenario_rates load failed', error);
+        state.scenarioRateRows = createDefaultScenarioRateRows();
+        renderPricingRules(state.scenarioRateRows);
+        return;
+      }
+
+      state.scenarioRateRows = (data || []).map((item, index) => normalizeScenarioRateRow(item, index));
+      renderPricingRules(state.scenarioRateRows);
     }
 
     async function loadServices() {
@@ -475,6 +840,9 @@
       setStatus('Загрузка данных...');
       await Promise.all([
         loadSettings(),
+        loadPricingDefaults(),
+        loadPricingRegions(),
+        loadPricingRules(),
         loadServices(),
         loadProjects()
       ]);
@@ -486,6 +854,27 @@
         .channel('admin-settings')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'settings' }, async () => {
           try { await loadSettings(); } catch (e) { console.error('settings realtime failed', e); }
+        })
+        .subscribe();
+
+      client
+        .channel('admin-stair-defaults')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'stair_defaults' }, async () => {
+          try { await loadPricingDefaults(); } catch (e) { console.error('stair_defaults realtime failed', e); }
+        })
+        .subscribe();
+
+      client
+        .channel('admin-stair-pricing-regions')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'stair_pricing_regions' }, async () => {
+          try { await loadPricingRegions(); } catch (e) { console.error('stair_pricing_regions realtime failed', e); }
+        })
+        .subscribe();
+
+      client
+        .channel('admin-stair-scenario-rates')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'stair_scenario_rates' }, async () => {
+          try { await loadPricingRules(); } catch (e) { console.error('stair_scenario_rates realtime failed', e); }
         })
         .subscribe();
 
@@ -603,6 +992,113 @@
         await loadSettings();
       } catch (err) {
         setStatus('Ошибка сохранения главного экрана: ' + explainError(err), true);
+      }
+    };
+
+    document.getElementById('savePricingDefaults').onclick = async () => {
+      try {
+        setStatus('Сохранение базовых ставок калькулятора...');
+        const payload = {
+          id: state.pricingDefaults?.id || uid(),
+          labor_rate_per_step: Number(laborRateInput.value || 0),
+          metal_rate_per_meter: Number(metalRateInput.value || 0),
+          wood_rate_per_m2: Number(woodRateInput.value || 0),
+          concrete_rate_per_m3: Number(concreteRateInput.value || 0),
+          install_coef: Number(installCoefInput.value || 0),
+          markup_coef: Number(markupCoefInput.value || 0),
+          active: true,
+          updated_at: new Date().toISOString()
+        };
+
+        const { error } = await client.from('stair_defaults').upsert(payload, { onConflict: 'id' });
+        if (error) throw error;
+
+        setStatus('Базовые ставки калькулятора сохранены');
+        await loadPricingDefaults();
+      } catch (err) {
+        setStatus('Ошибка сохранения базовых ставок: ' + explainError(err), true);
+      }
+    };
+
+    document.getElementById('addPricingRegion').onclick = () => {
+      pricingRegionsList.appendChild(pricingRegionItem({}, pricingRegionsList.children.length));
+    };
+
+    document.getElementById('savePricingRegions').onclick = async () => {
+      try {
+        setStatus('Сохранение региональных коэффициентов...');
+
+        const rows = [...pricingRegionsList.querySelectorAll('.item')].map((el, idx) => ({
+          id: el.dataset.id || uid(),
+          code: makeRegionCode(el.querySelector('[data-k="code"]').value, idx),
+          name: el.querySelector('[data-k="name"]').value.trim() || `Регион ${idx + 1}`,
+          price_coef: Number(el.querySelector('[data-k="price_coef"]').value || 1),
+          sort_order: Number(el.querySelector('[data-k="sort_order"]').value || (idx + 1)),
+          notes: el.querySelector('[data-k="notes"]').value.trim(),
+          active: el.querySelector('[data-k="active"]').checked,
+          updated_at: new Date().toISOString()
+        }));
+
+        validatePricingRegions(rows);
+
+        const { error: deleteError } = await client
+          .from('stair_pricing_regions')
+          .delete()
+          .neq('id', '00000000-0000-0000-0000-000000000000');
+
+        if (deleteError) throw deleteError;
+
+        if (rows.length) {
+          const { error: upsertError } = await client.from('stair_pricing_regions').upsert(rows, { onConflict: 'code' });
+          if (upsertError) throw upsertError;
+        }
+
+        setStatus('Региональные коэффициенты сохранены');
+        await loadPricingRegions();
+      } catch (err) {
+        setStatus('Ошибка сохранения регионов: ' + explainError(err), true);
+      }
+    };
+
+    document.getElementById('addPricingRule').onclick = () => {
+      pricingRulesList.appendChild(pricingRuleItem({}, pricingRulesList.children.length));
+    };
+
+    document.getElementById('savePricingRules').onclick = async () => {
+      try {
+        setStatus('Сохранение коммерческих ставок...');
+
+        const rows = [...pricingRulesList.querySelectorAll('.item')].map((el, idx) => ({
+          id: el.dataset.id || uid(),
+          rate_group: el.querySelector('[data-k="rate_group"]').value,
+          rate_key: el.querySelector('[data-k="rate_key"]').value.trim(),
+          label: el.querySelector('[data-k="label"]').value.trim(),
+          rate: Number(el.querySelector('[data-k="rate"]').value || 0),
+          sort_order: Number(el.querySelector('[data-k="sort_order"]').value || (idx + 1)),
+          active: el.querySelector('[data-k="active"]').checked,
+          updated_at: new Date().toISOString()
+        }));
+
+        validatePricingRules(rows);
+
+        const { error: deleteError } = await client
+          .from('stair_scenario_rates')
+          .delete()
+          .neq('id', '00000000-0000-0000-0000-000000000000');
+
+        if (deleteError) throw deleteError;
+
+        if (rows.length) {
+          const { error: upsertError } = await client
+            .from('stair_scenario_rates')
+            .upsert(rows, { onConflict: 'rate_group,rate_key' });
+          if (upsertError) throw upsertError;
+        }
+
+        setStatus('Коммерческие ставки сохранены');
+        await loadPricingRules();
+      } catch (err) {
+        setStatus('Ошибка сохранения коммерческих ставок: ' + explainError(err), true);
       }
     };
 
