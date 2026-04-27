@@ -50,7 +50,8 @@
       return { length: split.lower * tread + blockL, width: split.upper * tread + blockW };
     }
     const blockL = type.includes('landing') ? Math.max(landingL, marchW) : marchW;
-    return { length: Math.max(split.lower, split.upper) * tread + blockL, width: marchW * 2 };
+    const rowLength = Math.max(split.lower, split.upper) * tread;
+    return { length: rowLength + blockL, width: marchW * 2 };
   }
 
   function polar(cx, cy, r, angleDeg) {
@@ -66,6 +67,10 @@
     return `M ${p1.x} ${p1.y} L ${p2.x} ${p2.y} L ${p3.x} ${p3.y} L ${p4.x} ${p4.y} Z`;
   }
 
+  function stepNumber(x, y, number) {
+    return `<text x="${x}" y="${y}" fill="#f2dec6" font-size="8" text-anchor="middle" dominant-baseline="middle">${number}</text>`;
+  }
+
   function drawPlan(geom) {
     const scale = Math.min(450 / Math.max(geom.footprint.length, 1), 230 / Math.max(geom.footprint.width, 1));
     const offX = 48;
@@ -74,6 +79,8 @@
     const ty = (y) => offY + y * scale;
     const stepFill = 'rgba(221,183,134,.22)';
     const stepStroke = '#ddb786';
+    const landingFill = 'rgba(100,160,220,.14)';
+    const landingStroke = '#85caff';
     let svg = `<svg viewBox="0 0 560 330" class="geo-svg geo-svg--preview" aria-label="Preview вид сверху">`;
     svg += `<rect x="18" y="18" width="524" height="282" rx="16" fill="rgba(255,255,255,.025)" stroke="rgba(255,255,255,.13)"/>`;
     svg += `<rect x="${tx(0)}" y="${ty(0)}" width="${geom.footprint.length * scale}" height="${geom.footprint.width * scale}" rx="8" fill="rgba(221,183,134,.05)" stroke="rgba(221,183,134,.42)" stroke-dasharray="6 5"/>`;
@@ -84,57 +91,84 @@
         svg += `<rect x="${tx(x)}" y="${ty(0)}" width="${Math.max(2, geom.tread * scale - 1)}" height="${geom.marchW * scale}" rx="2" fill="${stepFill}" stroke="${stepStroke}" stroke-width="1"/>`;
       }
     } else if (geom.type.startsWith('l_turn')) {
-      const lowerRun = geom.split.lower * geom.tread;
-      const turnDir = $('readyTurnDirection')?.value || $('turnDirection')?.value || 'left';
-      const left = turnDir === 'left';
-      const baseY = left ? geom.footprint.width - geom.marchW : 0;
-      const upperY = left ? 0 : geom.marchW;
-      for (let index = 0; index < geom.split.lower; index += 1) {
-        const x = index * geom.tread;
-        svg += `<rect x="${tx(x)}" y="${ty(baseY)}" width="${Math.max(2, geom.tread * scale - 1)}" height="${geom.marchW * scale}" rx="2" fill="${stepFill}" stroke="${stepStroke}" stroke-width="1"/>`;
-      }
-      if (geom.type.includes('winders')) {
-        const cx = tx(lowerRun);
-        const cy = ty(left ? baseY : geom.marchW);
-        const start = left ? 0 : -90;
-        const end = left ? 90 : 0;
-        for (let index = 0; index < geom.split.winder; index += 1) {
-          const a1 = start + ((end - start) * index) / geom.split.winder;
-          const a2 = start + ((end - start) * (index + 1)) / geom.split.winder;
-          svg += `<path d="${wedgePath(cx, cy, 12, geom.marchW * scale, a1, a2)}" fill="rgba(231,192,139,.25)" stroke="${stepStroke}" stroke-width="1"/>`;
-        }
-      } else {
-        svg += `<rect x="${tx(lowerRun)}" y="${ty(baseY)}" width="${Math.max(geom.landingL, geom.marchW) * scale}" height="${Math.max(geom.landingW, geom.marchW) * scale}" rx="4" fill="rgba(100,160,220,.14)" stroke="#85caff" stroke-width="1.2"/>`;
-      }
-      for (let index = 0; index < geom.split.upper; index += 1) {
-        const y = upperY + index * geom.tread;
-        svg += `<rect x="${tx(lowerRun)}" y="${ty(y)}" width="${geom.marchW * scale}" height="${Math.max(2, geom.tread * scale - 1)}" rx="2" fill="${stepFill}" stroke="${stepStroke}" stroke-width="1"/>`;
-      }
+      svg += drawLTurnPlan(geom, tx, ty, scale, stepFill, stepStroke, landingFill, landingStroke);
     } else {
-      const turnX = Math.max(geom.split.lower, geom.split.upper) * geom.tread;
-      for (let index = 0; index < geom.split.lower; index += 1) {
-        const x = index * geom.tread;
-        svg += `<rect x="${tx(x)}" y="${ty(0)}" width="${Math.max(2, geom.tread * scale - 1)}" height="${geom.marchW * scale}" rx="2" fill="${stepFill}" stroke="${stepStroke}" stroke-width="1"/>`;
-      }
-      for (let index = 0; index < geom.split.upper; index += 1) {
-        const x = index * geom.tread;
-        svg += `<rect x="${tx(x)}" y="${ty(geom.marchW)}" width="${Math.max(2, geom.tread * scale - 1)}" height="${geom.marchW * scale}" rx="2" fill="${stepFill}" stroke="${stepStroke}" stroke-width="1"/>`;
-      }
-      if (geom.type.includes('winders')) {
-        const cx = tx(turnX);
-        const cy = ty(geom.marchW);
-        for (let index = 0; index < geom.split.winder; index += 1) {
-          const a1 = -90 + (180 * index) / geom.split.winder;
-          const a2 = -90 + (180 * (index + 1)) / geom.split.winder;
-          svg += `<path d="${wedgePath(cx, cy, 12, geom.marchW * scale, a1, a2)}" fill="rgba(231,192,139,.25)" stroke="${stepStroke}" stroke-width="1"/>`;
-        }
-      } else {
-        svg += `<rect x="${tx(turnX)}" y="${ty(0)}" width="${Math.max(geom.landingL, geom.marchW) * scale}" height="${geom.marchW * 2 * scale}" rx="4" fill="rgba(100,160,220,.14)" stroke="#85caff" stroke-width="1.2"/>`;
-      }
+      svg += drawUTurnPlan(geom, tx, ty, scale, stepFill, stepStroke, landingFill, landingStroke);
     }
 
     svg += `<text x="30" y="316" fill="#b9a58d" font-size="12">${labelByType[geom.type] || geom.type} · пятно ${round(geom.footprint.length)} × ${round(geom.footprint.width)} мм</text>`;
     svg += `</svg>`;
+    return svg;
+  }
+
+  function drawLTurnPlan(geom, tx, ty, scale, stepFill, stepStroke, landingFill, landingStroke) {
+    let svg = '';
+    const lowerRun = geom.split.lower * geom.tread;
+    const turnDir = $('readyTurnDirection')?.value || $('turnDirection')?.value || 'left';
+    const left = turnDir === 'left';
+    const baseY = left ? geom.footprint.width - geom.marchW : 0;
+    const upperY = left ? 0 : geom.marchW;
+    for (let index = 0; index < geom.split.lower; index += 1) {
+      const x = index * geom.tread;
+      svg += `<rect x="${tx(x)}" y="${ty(baseY)}" width="${Math.max(2, geom.tread * scale - 1)}" height="${geom.marchW * scale}" rx="2" fill="${stepFill}" stroke="${stepStroke}" stroke-width="1"/>`;
+      svg += stepNumber(tx(x + geom.tread / 2), ty(baseY + geom.marchW / 2), index + 1);
+    }
+    if (geom.type.includes('winders')) {
+      const cx = tx(lowerRun);
+      const cy = ty(left ? baseY : geom.marchW);
+      const start = left ? 0 : -90;
+      const end = left ? 90 : 0;
+      for (let index = 0; index < geom.split.winder; index += 1) {
+        const a1 = start + ((end - start) * index) / geom.split.winder;
+        const a2 = start + ((end - start) * (index + 1)) / geom.split.winder;
+        svg += `<path d="${wedgePath(cx, cy, 12, geom.marchW * scale, a1, a2)}" fill="rgba(231,192,139,.25)" stroke="${stepStroke}" stroke-width="1"/>`;
+      }
+    } else {
+      svg += `<rect x="${tx(lowerRun)}" y="${ty(baseY)}" width="${Math.max(geom.landingL, geom.marchW) * scale}" height="${Math.max(geom.landingW, geom.marchW) * scale}" rx="4" fill="${landingFill}" stroke="${landingStroke}" stroke-width="1.2"/>`;
+    }
+    for (let index = 0; index < geom.split.upper; index += 1) {
+      const y = upperY + index * geom.tread;
+      svg += `<rect x="${tx(lowerRun)}" y="${ty(y)}" width="${geom.marchW * scale}" height="${Math.max(2, geom.tread * scale - 1)}" rx="2" fill="${stepFill}" stroke="${stepStroke}" stroke-width="1"/>`;
+      svg += stepNumber(tx(lowerRun + geom.marchW / 2), ty(y + geom.tread / 2), geom.split.lower + geom.split.turn + index + 1);
+    }
+    return svg;
+  }
+
+  function drawUTurnPlan(geom, tx, ty, scale, stepFill, stepStroke, landingFill, landingStroke) {
+    let svg = '';
+    const lowerRun = geom.split.lower * geom.tread;
+    const upperRun = geom.split.upper * geom.tread;
+    const turnX = Math.max(lowerRun, upperRun);
+    const bottomY = geom.marchW;
+    const topY = 0;
+
+    // Первый марш идёт слева направо по нижней линии.
+    for (let index = 0; index < geom.split.lower; index += 1) {
+      const x = index * geom.tread;
+      svg += `<rect x="${tx(x)}" y="${ty(bottomY)}" width="${Math.max(2, geom.tread * scale - 1)}" height="${geom.marchW * scale}" rx="2" fill="${stepFill}" stroke="${stepStroke}" stroke-width="1"/>`;
+      svg += stepNumber(tx(x + geom.tread / 2), ty(bottomY + geom.marchW / 2), index + 1);
+    }
+
+    // Второй марш возвращается справа налево по верхней линии — так П-образная читается как разворот, а не две параллельные прямые.
+    for (let index = 0; index < geom.split.upper; index += 1) {
+      const x = Math.max(0, turnX - (index + 1) * geom.tread);
+      svg += `<rect x="${tx(x)}" y="${ty(topY)}" width="${Math.max(2, geom.tread * scale - 1)}" height="${geom.marchW * scale}" rx="2" fill="${stepFill}" stroke="${stepStroke}" stroke-width="1"/>`;
+      svg += stepNumber(tx(x + geom.tread / 2), ty(topY + geom.marchW / 2), geom.split.lower + geom.split.turn + index + 1);
+    }
+
+    if (geom.type.includes('winders')) {
+      const cx = tx(turnX);
+      const cy = ty(geom.marchW);
+      for (let index = 0; index < geom.split.winder; index += 1) {
+        const a1 = -90 + (180 * index) / geom.split.winder;
+        const a2 = -90 + (180 * (index + 1)) / geom.split.winder;
+        svg += `<path d="${wedgePath(cx, cy, 12, geom.marchW * scale, a1, a2)}" fill="rgba(231,192,139,.25)" stroke="${stepStroke}" stroke-width="1"/>`;
+      }
+    } else {
+      svg += `<rect x="${tx(turnX)}" y="${ty(0)}" width="${Math.max(geom.landingL, geom.marchW) * scale}" height="${geom.marchW * 2 * scale}" rx="4" fill="${landingFill}" stroke="${landingStroke}" stroke-width="1.2"/>`;
+      svg += `<text x="${tx(turnX + Math.max(geom.landingL, geom.marchW) / 2)}" y="${ty(geom.marchW)}" fill="#e8d0b0" font-size="10" text-anchor="middle" dominant-baseline="middle">площадка</text>`;
+    }
+
     return svg;
   }
 
@@ -161,13 +195,12 @@
     return svg;
   }
 
-  function paintFallbackGraphics() {
+  function paintPreviewGraphics() {
     const plan = $('geometryPlanSvg');
     const elevation = $('geometryElevationSvg');
     if (!plan || !elevation) return;
-    const hasRealSvg = plan.querySelector('svg') && !plan.textContent.includes('Визуализация будет показана');
-    if (hasRealSvg) return;
     const geom = getPreviewGeometry();
+    // For preview we deliberately replace the old line-only renderer too, so U-turns and winders are shown consistently.
     plan.innerHTML = drawPlan(geom);
     elevation.innerHTML = drawElevation(geom);
     const cta = $('geometryFallbackCta');
@@ -191,9 +224,43 @@
     fallback.hidden = !disabled;
   }
 
+  function enableReadyPricingControls() {
+    ['deliveryDistance', 'claddingType', 'railingType', 'finishLevel'].forEach((id) => {
+      const control = $(id);
+      if (control) control.disabled = false;
+    });
+    document.querySelectorAll('#extrasField input, #extrasField select, #extrasField button').forEach((control) => {
+      control.disabled = false;
+    });
+  }
+
+  function syncScopeOptions(event = null) {
+    const stepsOnly = document.querySelector('input[name="scopeWork"][value="steps_only"]');
+    if (!stepsOnly) return;
+    const stepsOnlyLabel = stepsOnly.closest('label');
+    const advanced = [...document.querySelectorAll('input[name="scopeWork"]')]
+      .filter((input) => !['steps_only', 'installation'].includes(input.value));
+    const advancedSelected = advanced.some((input) => input.checked);
+
+    if (event?.target === stepsOnly && stepsOnly.checked) {
+      advanced.forEach((input) => { input.checked = false; });
+      stepsOnlyLabel?.classList.remove('is-hidden-by-scope');
+      return;
+    }
+
+    if (advancedSelected) {
+      stepsOnly.checked = false;
+      stepsOnlyLabel?.classList.add('is-hidden-by-scope');
+    } else {
+      stepsOnlyLabel?.classList.remove('is-hidden-by-scope');
+    }
+  }
+
   function refreshAfterCalculation() {
     window.setTimeout(() => {
-      paintFallbackGraphics();
+      enableReadyPricingControls();
+      syncScopeOptions();
+      paintPreviewGraphics();
       replaceDisabledPriceButton();
     }, 80);
   }
@@ -201,8 +268,11 @@
   window.addEventListener('DOMContentLoaded', () => {
     $('toResultsBtn')?.addEventListener('click', refreshAfterCalculation);
     $('calculateBtn')?.addEventListener('click', refreshAfterCalculation);
-    ['scenario', 'type', 'configurationType', 'turnType', 'readyTurnDirection', 'turnDirection', 'stairType'].forEach((id) => {
-      $(id)?.addEventListener('change', refreshAfterCalculation);
+    document.addEventListener('click', refreshAfterCalculation);
+    document.addEventListener('input', refreshAfterCalculation);
+    document.addEventListener('change', (event) => {
+      if (event.target?.matches?.('input[name="scopeWork"]')) syncScopeOptions(event);
+      refreshAfterCalculation();
     });
     refreshAfterCalculation();
   });
