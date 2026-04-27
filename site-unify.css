@@ -110,13 +110,35 @@ body.calculator-page::after {
 }
 
 .page-shell .page-hero,
-.site-page .page-hero {
+.site-page .page-hero,
+.request-page .page-hero {
   background:
     radial-gradient(circle at top right, rgba(239, 210, 172, 0.08), transparent 34%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.018)),
     rgba(44, 31, 22, 0.42);
-  border-color: rgba(255, 236, 204, 0.1);
+  border: 1px solid rgba(255, 236, 204, 0.1);
   box-shadow: 0 18px 44px rgba(0, 0, 0, 0.22);
+}
+
+.request-page .request-hero {
+  padding: clamp(28px, 5vw, 46px);
+  margin-bottom: 18px;
+  border-radius: 28px;
+}
+
+.request-page .request-hero h1 {
+  margin: 8px 0 12px;
+  font-size: clamp(36px, 6vw, 62px);
+  line-height: 0.98;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+
+.request-page .request-hero p {
+  max-width: 720px;
+  color: #ddc9b1;
+  font-size: 17px;
+  line-height: 1.62;
 }
 
 .page-shell .content-card,
@@ -149,6 +171,11 @@ body.calculator-page::after {
   padding-top: 136px;
 }
 
+.request-page .wrap {
+  max-width: 980px;
+  padding-bottom: 72px;
+}
+
 .request-page .panel,
 .project-detail-page .story,
 .project-detail-page .meta,
@@ -162,6 +189,24 @@ body.calculator-page::after {
   box-shadow: 0 14px 34px rgba(0, 0, 0, 0.2);
 }
 
+.request-page .panel {
+  border-radius: 22px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.request-page .panel > b,
+.project-detail-page .story > b,
+.project-detail-page .trust > b {
+  display: block;
+  margin-bottom: 10px;
+  color: #efd2ac;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
 .request-page input,
 .request-page textarea,
 .project-detail-page select,
@@ -170,10 +215,44 @@ body.calculator-page::after {
   background: rgba(18, 13, 9, 0.84);
 }
 
+.request-page input,
+.request-page textarea {
+  min-height: 48px;
+  border-radius: 14px;
+  color: #f4e7d4;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.request-page textarea {
+  min-height: 118px;
+  resize: vertical;
+}
+
+.request-page input:focus,
+.request-page textarea:focus {
+  border-color: rgba(239, 210, 172, 0.48);
+  box-shadow: 0 0 0 3px rgba(239, 210, 172, 0.08);
+  background: rgba(18, 13, 9, 0.96);
+}
+
 .request-page .result,
 .project-detail-page .gallery-main {
   border: 1px solid rgba(255, 236, 204, 0.1);
   box-shadow: 0 18px 44px rgba(0, 0, 0, 0.22);
+}
+
+.request-page .result {
+  color: #d8c4ad;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.028), rgba(255, 255, 255, 0.01)),
+    rgba(18, 13, 9, 0.58);
+}
+
+.request-page .trust-chip {
+  border-color: rgba(255, 236, 204, 0.12);
+  color: #dbc4a6;
+  background: rgba(18, 13, 9, 0.54);
 }
 
 .project-detail-page .gallery-main,
@@ -185,6 +264,19 @@ body.calculator-page::after {
 .request-page .btn {
   background: linear-gradient(135deg, var(--gold-1, #efd2ac), var(--gold-2, #d9b383) 58%, var(--gold-3, #b98c5c));
   box-shadow: 0 12px 28px rgba(185, 140, 92, 0.24);
+}
+
+.request-page .btn {
+  min-height: 52px;
+  border-radius: 16px;
+  font-size: 15px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+}
+
+.request-page .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 34px rgba(185, 140, 92, 0.3);
+  filter: brightness(1.03);
 }
 
 @media (max-width: 1080px) {
@@ -226,5 +318,29 @@ body.calculator-page::after {
   .request-page .wrap,
   .project-detail-page .wrap {
     padding-top: 118px;
+  }
+
+  .request-page .wrap {
+    padding-left: 14px;
+    padding-right: 14px;
+    padding-bottom: 46px;
+  }
+
+  .request-page .request-hero {
+    padding: 24px 18px;
+    border-radius: 24px;
+  }
+
+  .request-page .request-hero h1 {
+    font-size: clamp(34px, 11vw, 48px);
+  }
+
+  .request-page .request-hero p {
+    font-size: 16px;
+  }
+
+  .request-page .panel {
+    padding: 18px;
+    border-radius: 20px;
   }
 }
