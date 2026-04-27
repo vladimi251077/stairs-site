@@ -8,8 +8,8 @@
 <meta property="og:type" content="website"><meta property="og:site_name" content="Tekstura"><meta property="og:title" content="Проект лестницы — Tekstura"><meta property="og:description" content="Проект премиальной лестницы Tekstura: детали решения, материалы, конструкция и особенности реализации."><meta property="og:url" content="https://tekstura.shop/project.html"><link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="/supabase-config.js"></script>
 <link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="/site-unify.css">
 <style>
-.top-nav{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px;padding:10px;border:1px solid rgba(255,255,255,.15);border-radius:12px;background:rgba(25,19,15,.7)}.top-nav a{font-size:14px}
 body{margin:0;background:#0f0c0a;color:#f4e7d4;font-family:Inter,Arial,sans-serif}.wrap{max-width:1040px;margin:0 auto;padding:22px 16px 44px}a{color:#e8c8a2;text-decoration:none}h1{font-size:clamp(30px,4vw,44px);margin:0 0 8px}p{color:#b9aa97;line-height:1.6}
 .story{margin-top:14px;padding:18px;border:1px solid rgba(255,255,255,.11);border-radius:16px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.01))}
 .story b{display:block;color:#e7cfb1;margin-bottom:6px}
@@ -19,13 +19,20 @@ body{margin:0;background:#0f0c0a;color:#f4e7d4;font-family:Inter,Arial,sans-seri
 .meta p{margin:8px 0}.meta p.is-empty{display:none}.meta.is-empty{display:none}
 .btn{display:inline-block;margin-top:18px;padding:14px 20px;border-radius:12px;background:#e8c8a2;color:#1a120e;font-weight:700}
 .config-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.config select,.config input{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:#171310;color:#f4e7d4}
-.muted{font-size:13px;color:#ad9e8d}.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.86);display:none;align-items:center;justify-content:center}.lightbox.open{display:flex}.lightbox img{max-width:92vw;max-height:92vh;border-radius:12px}
-@media(max-width:760px){.config-grid{grid-template-columns:1fr}.wrap{padding:18px 14px 34px}}
-</style></head><body><div class="wrap">
-<nav class="top-nav"><a href="/">Главная</a><a href="/projects.html">Проекты</a><a href="/services.html">Услуги</a><a href="/articles.html">Статьи</a><a href="/norms.html">Нормы и уход</a><a href="/calculator.html">Калькулятор</a><a href="/request.html">Заявка</a></nav>
-<a href="/projects.html">← Назад к проектам</a><h1 id="title">Загрузка...</h1><p id="subtitle"></p>
+.muted{font-size:13px;color:#ad9e8d}.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.86);display:none;align-items:center;justify-content:center;z-index:100}.lightbox.open{display:flex}.lightbox img{max-width:92vw;max-height:92vh;border-radius:12px}
+.project-back-link{display:inline-flex;margin-bottom:14px;color:#e8c8a2}.project-detail-page .site-header .site-nav a[aria-current="page"]{color:var(--gold-1,#efd2ac)}
+@media(max-width:760px){.config-grid{grid-template-columns:1fr}.wrap{padding-left:14px;padding-right:14px;padding-bottom:34px}}
+</style></head><body class="project-detail-page">
+<header class="site-header">
+  <div class="container site-header__inner">
+    <a href="/" class="brand" aria-label="ТЕКСТУРА — премиальные лестницы">TEKSTURA</a>
+    <nav class="site-nav" aria-label="Основная навигация"><a href="/">Главная</a><a href="/projects.html" aria-current="page">Проекты</a><a href="/services.html">Услуги</a><a href="/articles.html">Статьи</a><a href="/norms.html">Нормы и уход</a><a href="/calculator.html">Калькулятор</a><a href="/request.html">Заявка</a></nav>
+  </div>
+</header>
+<main class="wrap">
+<a class="project-back-link" href="/projects.html">← Назад к проектам</a><h1 id="title">Загрузка...</h1><p id="subtitle"></p>
 <div class="story"><b>Идея проекта</b><p id="storyText">Этот кейс показывает подход Tekstura: сначала инженерная логика и эргономика, затем эстетика, материалы и точная подгонка узлов под архитектуру объекта.</p><p class="muted">Производство Tekstura: Казань, Оренбургский тракт, 340. Финальный монтаж выполняет штатная бригада.</p></div>
-<img id="mainImage" class="gallery-main" src="/logo.jpg.png" alt="Проект"><div class="thumbs" id="thumbs"></div>
+<img id="mainImage" class="gallery-main" src="/assets/design/home-showcase.jpg" alt="Проект"><div class="thumbs" id="thumbs"></div>
 <div id="price" class="price"></div><p id="description"></p>
 <div class="meta" id="metaBox"><p id="materials"></p><p id="type"></p><p id="category"></p><p id="leadTime"></p></div>
 <div class="config"><h3>Мини-конфигуратор проекта</h3><p class="muted">Мягкий апселл: можно быстро посмотреть, как изменится ориентировочная стоимость при других материалах и опциях. Финальная смета подтверждается инженером.</p>
@@ -41,10 +48,11 @@ body{margin:0;background:#0f0c0a;color:#f4e7d4;font-family:Inter,Arial,sans-seri
 <a id="cfgRequest" class="btn" href="/request.html">Отправить запрос по изменениям</a>
 </div>
 <div class="trust"><b>Что дальше после заявки:</b><p>Вам ответит инженер Tekstura, уточнит размеры и предложит 1–2 оптимальные конфигурации под ваш проём. Обычно связываемся в течение рабочего дня.</p><p class="muted">Вы общаетесь напрямую с командой производства в Казани, без посредников: Оренбургский тракт, 340.</p></div>
-<a class="btn" href="/request.html">Оставить заявку по проекту</a></div>
+<a class="btn" href="/request.html">Оставить заявку по проекту</a></main>
 <div id="lightbox" class="lightbox"><img id="lightboxImage" src="" alt="Просмотр"></div>
 <script>
 const SITE_URL = 'https://tekstura.shop';
+const PROJECT_FALLBACK_IMAGE = '/assets/design/home-showcase.jpg';
 const params = new URLSearchParams(location.search); const id = params.get('id');
 const cfg = window.SUPABASE_CONFIG;
 const client = (cfg?.url && cfg?.anonKey && window.supabase) ? window.supabase.createClient(cfg.url, cfg.anonKey) : null;
@@ -55,9 +63,10 @@ const defaults = {
   frame:[['metal','Металлокаркас',0],['concrete','Бетонный каркас',42000],['wood','Деревянный каркас',26000]],
   finish:[['basic','Базовый',0],['standard','Стандарт',18000],['premium','Премиум',48000]]
 };
+function safeProjectImage(raw){const value=String(raw||'').trim();return (!value||/logo|tekstura-logo|tekstura-header-logo|tekstura-mark|mark/i.test(value))?PROJECT_FALLBACK_IMAGE:value;}
 function updateSeoMeta(t,d){const base='Проект лестницы — Tekstura';const ft=t?`${t} — проект лестницы | Tekstura`:base;const fd=d||'Проект премиальной лестницы Tekstura';document.title=ft;document.querySelector('meta[name="description"]').setAttribute('content',fd);document.querySelector('meta[property="og:title"]').setAttribute('content',ft);document.querySelector('meta[property="og:description"]').setAttribute('content',fd);const canonical=document.querySelector('link[rel="canonical"]');const og=document.querySelector('meta[property="og:url"]');const url=`${SITE_URL}/project.html?id=${encodeURIComponent(id||'')}`;if(canonical) canonical.setAttribute('href',url);if(og) og.setAttribute('content',url);}
 if(!id) { document.getElementById('title').textContent='Проект не выбран'; document.getElementById('description').textContent='Откройте проект через страницу портфолио.'; } else loadProject();
-function setMainImage(url){const m=document.getElementById('mainImage');m.src=url||'/logo.jpg.png';document.querySelectorAll('#thumbs img').forEach((i)=>i.classList.toggle('active',i.src===m.src));}
+function setMainImage(url){const m=document.getElementById('mainImage');m.src=safeProjectImage(url);document.querySelectorAll('#thumbs img').forEach((i)=>i.classList.toggle('active',i.src===m.src));}
 function fillSelect(id,options){document.getElementById(id).innerHTML=options.map(o=>`<option value="${o[0]}" data-delta="${o[2]}">${o[1]}</option>`).join('');}
 function recalc(){const picks=['cfgRailing','cfgCladding','cfgFrame','cfgFinish'].map((id)=>document.getElementById(id).selectedOptions[0]);const delta=picks.reduce((s,o)=>s+Number(o.dataset.delta||0),0)+Number(document.getElementById('cfgLighting').value)*26000+Number(document.getElementById('cfgCoating').value)*18000;const total=basePrice+delta;document.getElementById('cfgBase').textContent=`Базовая цена проекта: ${new Intl.NumberFormat('ru-RU').format(basePrice)} ₽`;document.getElementById('cfgDelta').textContent=`Изменения: ${delta>=0?'+':''}${new Intl.NumberFormat('ru-RU').format(delta)} ₽`;document.getElementById('cfgTotal').textContent=`Оценка с изменениями: ${new Intl.NumberFormat('ru-RU').format(total)} ₽`;
 const payload={staircaseType:project?.title||'Проект',total,selectedExtras:[...picks.map((o)=>({label:o.textContent})),{label:Number(document.getElementById('cfgLighting').value)?'Подсветка':'Без подсветки'},{label:Number(document.getElementById('cfgCoating').value)?'Премиум покрытие':'Базовое покрытие'}],materialsSummary:{railing:picks[0].textContent,cladding:picks[1].textContent,frame:picks[2].textContent,finish:picks[3].textContent},priceBreakdown:{base:basePrice,delta},dimensions:{project_id:project?.id,project_title:project?.title}};
@@ -77,9 +86,9 @@ function syncMetaVisibility() {
 async function loadProject(){try{if(!client){document.getElementById('title').textContent='Каталог временно недоступен';document.getElementById('description').textContent='Сервис проектов временно недоступен. Оставьте заявку, и мы подберём решение.';return;}
 const {data,error}=await client.from('projects').select('*').eq('id',id).single();if(error||!data){document.getElementById('title').textContent='Проект не найден';document.getElementById('description').textContent='Этот кейс недоступен. Вернитесь к списку проектов.';return;}project=data;basePrice=Number(data.price||data.price_from||0)||0;
 const {data:imgData}=await client.from('project_images').select('*').eq('project_id',id).order('sort_order',{ascending:true});
-images=(imgData&&imgData.length)?imgData.filter((i)=>i.image_url):[{image_url:data.cover_image||data.image||'/logo.jpg.png',alt_text:data.title||'Проект',is_cover:true}];
+images=(imgData&&imgData.length)?imgData.filter((i)=>i.image_url):[{image_url:data.cover_image||data.image||PROJECT_FALLBACK_IMAGE,alt_text:data.title||'Проект',is_cover:true}];
 const cover=images.find(i=>i.is_cover)?.image_url||images[0].image_url; setMainImage(cover);
-document.getElementById('thumbs').innerHTML=images.map((img)=>`<img loading="lazy" src="${img.image_url}" alt="${img.alt_text||'Проект'}">`).join('');document.querySelectorAll('#thumbs img').forEach((img)=>img.onclick=()=>setMainImage(img.src));
+document.getElementById('thumbs').innerHTML=images.map((img)=>`<img loading="lazy" src="${safeProjectImage(img.image_url)}" alt="${img.alt_text||'Проект'}" onerror="this.onerror=null;this.src='${PROJECT_FALLBACK_IMAGE}';">`).join('');document.querySelectorAll('#thumbs img').forEach((img)=>img.onclick=()=>setMainImage(img.src));
 
 const opts=data.custom_options || {}; fillSelect('cfgRailing',opts.railing||defaults.railing); fillSelect('cfgCladding',opts.cladding||defaults.cladding); fillSelect('cfgFrame',opts.frame||defaults.frame); fillSelect('cfgFinish',opts.finish||defaults.finish);
 ['cfgRailing','cfgCladding','cfgFrame','cfgFinish','cfgLighting','cfgCoating'].forEach((id)=>document.getElementById(id).addEventListener('change',recalc)); recalc();

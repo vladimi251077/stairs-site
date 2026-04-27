@@ -142,6 +142,51 @@ body.calculator-page::after {
   background: #211710;
 }
 
+.request-page .wrap,
+.project-detail-page .wrap {
+  position: relative;
+  z-index: 1;
+  padding-top: 136px;
+}
+
+.request-page .panel,
+.project-detail-page .story,
+.project-detail-page .meta,
+.project-detail-page .config,
+.project-detail-page .trust {
+  border-color: rgba(255, 236, 204, 0.12);
+  background:
+    radial-gradient(circle at top right, rgba(239, 210, 172, 0.07), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.014)),
+    rgba(44, 31, 22, 0.48);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.2);
+}
+
+.request-page input,
+.request-page textarea,
+.project-detail-page select,
+.project-detail-page input {
+  border-color: rgba(255, 236, 204, 0.14);
+  background: rgba(18, 13, 9, 0.84);
+}
+
+.request-page .result,
+.project-detail-page .gallery-main {
+  border: 1px solid rgba(255, 236, 204, 0.1);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.22);
+}
+
+.project-detail-page .gallery-main,
+.project-detail-page .thumbs img {
+  object-fit: cover;
+}
+
+.project-detail-page .btn,
+.request-page .btn {
+  background: linear-gradient(135deg, var(--gold-1, #efd2ac), var(--gold-2, #d9b383) 58%, var(--gold-3, #b98c5c));
+  box-shadow: 0 12px 28px rgba(185, 140, 92, 0.24);
+}
+
 @media (max-width: 1080px) {
   .site-header .brand {
     width: 260px;
@@ -176,5 +221,10 @@ body.calculator-page::after {
 
   .site-nav a {
     font-size: 12px;
+  }
+
+  .request-page .wrap,
+  .project-detail-page .wrap {
+    padding-top: 118px;
   }
 }
