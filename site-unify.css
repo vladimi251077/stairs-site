@@ -220,7 +220,26 @@ body.calculator-page::after {
     min-height: 54px;
   }
 
-  .mobile-menu-toggle {
+  .site-header .site-nav {
+    display: flex;
+    flex: 1 1 100%;
+    gap: 8px;
+    max-width: 100%;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+
+  .site-header .site-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .site-header .site-nav a {
+    flex: 0 0 auto;
+    font-size: 12px;
+  }
+
+  .mobile-menu-ready .mobile-menu-toggle {
     position: relative;
     z-index: 52;
     display: inline-grid;
@@ -237,7 +256,7 @@ body.calculator-page::after {
     backdrop-filter: blur(12px);
   }
 
-  .mobile-menu-toggle span {
+  .mobile-menu-ready .mobile-menu-toggle span {
     display: block;
     width: 19px;
     height: 2px;
@@ -247,19 +266,19 @@ body.calculator-page::after {
     transition: transform 0.22s ease, opacity 0.22s ease;
   }
 
-  .mobile-menu-open .mobile-menu-toggle span:nth-child(1) {
+  .mobile-menu-ready.mobile-menu-open .mobile-menu-toggle span:nth-child(1) {
     transform: translateY(6px) rotate(45deg);
   }
 
-  .mobile-menu-open .mobile-menu-toggle span:nth-child(2) {
+  .mobile-menu-ready.mobile-menu-open .mobile-menu-toggle span:nth-child(2) {
     opacity: 0;
   }
 
-  .mobile-menu-open .mobile-menu-toggle span:nth-child(3) {
+  .mobile-menu-ready.mobile-menu-open .mobile-menu-toggle span:nth-child(3) {
     transform: translateY(-6px) rotate(-45deg);
   }
 
-  .site-header .site-nav {
+  .mobile-menu-ready .site-header .site-nav {
     position: fixed;
     top: 76px;
     left: 16px;
@@ -267,6 +286,8 @@ body.calculator-page::after {
     z-index: 51;
     display: grid;
     gap: 2px;
+    max-width: none;
+    overflow: visible;
     padding: 16px;
     border: 1px solid rgba(239, 210, 172, 0.18);
     border-radius: 24px;
@@ -281,13 +302,13 @@ body.calculator-page::after {
     transition: opacity 0.22s ease, transform 0.22s ease;
   }
 
-  .mobile-menu-open .site-header .site-nav {
+  .mobile-menu-ready.mobile-menu-open .site-header .site-nav {
     transform: translateY(0);
     opacity: 1;
     pointer-events: auto;
   }
 
-  .site-header .site-nav a {
+  .mobile-menu-ready .site-header .site-nav a {
     padding: 13px 14px;
     border-radius: 14px;
     color: #f4e7d4;
@@ -295,11 +316,11 @@ body.calculator-page::after {
     line-height: 1.1;
   }
 
-  .site-header .site-nav a[aria-current="page"] {
+  .mobile-menu-ready .site-header .site-nav a[aria-current="page"] {
     background: rgba(239, 210, 172, 0.09);
   }
 
-  .site-header .site-nav a[aria-current="page"]::after {
+  .mobile-menu-ready .site-header .site-nav a[aria-current="page"]::after {
     content: none;
   }
 
