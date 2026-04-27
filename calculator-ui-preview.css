@@ -166,7 +166,8 @@
   background: linear-gradient(180deg, rgba(238,196,143,.22), rgba(238,196,143,.05)), rgba(53,37,25,.86);
 }
 
-.scope-options label.is-hidden-by-scope {
+.scope-options label.is-hidden-by-scope,
+.preview-choice-hidden {
   display: none !important;
 }
 
