@@ -31,6 +31,8 @@
       inner.insertBefore(toggle, nav);
     }
 
+    document.body.classList.add('mobile-menu-ready');
+
     const closeMenu = () => {
       document.body.classList.remove('mobile-menu-open');
       toggle.setAttribute('aria-expanded', 'false');
