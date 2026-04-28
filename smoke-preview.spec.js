@@ -102,6 +102,40 @@ test('calculator smoke: unrealistic railing length blocks pricing', async ({ pag
   expect(issues).toEqual([]);
 });
 
+test('calculator smoke: ready concrete base keeps non-straight shape in payload', async ({ page }) => {
+  const issues = collectRuntimeIssues(page);
+
+  await page.goto(`${baseUrl}/calculator.html`);
+  await page.locator('#baseCondition').selectOption('ready_base');
+  await page.locator('#baseSubtype').selectOption('existing_concrete_base');
+  await page.locator('#readyBaseShape').selectOption('u_turn_winders');
+
+  await page.locator('[data-next-step="2"]').click();
+  await page.locator('#readyFrameStepCount').fill('18');
+  await page.locator('#readyFrameMarchWidth').fill('950');
+  await page.locator('#readyFrameTreadDepth').fill('270');
+  await page.locator('#readyFrameRiserHeight').fill('170');
+  await page.locator('#finishScope').selectOption('treads_and_risers');
+  await page.locator('#readyFrameStraightRailingLength').fill('5.5');
+  await page.locator('#hasWinders').check();
+  await page.locator('#winderCount').fill('6');
+  await page.locator('#toResultsBtn').click();
+
+  await expect(page.locator('#geometryResult')).toContainText(/П-образная|забежные/i);
+
+  await page.locator('#calculateBtn').click();
+  await expect(page.locator('#step4')).toHaveClass(/active/);
+
+  const storedPayloadRaw = await page.evaluate(() => localStorage.getItem('tekstura_stair_calc_payload'));
+  const storedPayload = JSON.parse(storedPayloadRaw);
+  expect(storedPayload.base_subtype).toBe('existing_concrete_base');
+  expect(storedPayload.selected_staircase_type).toBe('u_turn');
+  expect(storedPayload.price_relevant_selections.turn_type).toBe('winders');
+  expect(storedPayload.staircaseType).toContain('П-образная');
+  expect(storedPayload.chosen_geometry_result.summary_rows.some((row) => row[0] === 'Конфигурация')).toBe(true);
+  expect(issues).toEqual([]);
+});
+
 test('request smoke: reads calculator payload and keeps form usable', async ({ page }) => {
   const issues = collectRuntimeIssues(page);
   const payload = {

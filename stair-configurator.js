@@ -457,12 +457,6 @@ function sanitizeConfigByScenario(config) {
     sanitized.clad_risers = sanitized.finish_scope !== 'treads_only';
   }
 
-  if (baseCondition !== 'empty_opening' && !isReadyFrameCondition(baseCondition)) {
-    sanitized.stair_type = 'straight';
-    sanitized.turn_direction = 'right';
-    sanitized.turn_type = 'landing';
-  }
-
   if (sanitized.stair_type === 'straight') {
     sanitized.turn_direction = 'right';
     sanitized.turn_type = 'landing';
@@ -968,6 +962,7 @@ function calculateScenarioResult(config) {
         'Считаем облицовку, ограждение, финишную подготовку и монтажные работы без расчёта нового каркаса.',
       summary_rows: [
         ['Сценарий', BASE_CONDITION_LABELS.existing_concrete_base],
+        ['Конфигурация', getStairLabel(config)],
         ['Что отделываем', metrics.finishScopeLabel],
         ['Ступеней', `${metrics.stepCount}`],
         ['Площадь проступей', `${metrics.treadAreaM2} м²`],
@@ -1316,7 +1311,9 @@ function buildCalculationPayload(config, geometry, materials = state.materials, 
     baseCondition: BASE_CONDITION_LABELS[config.base_condition] || config.base_condition,
     selected_staircase_type: config.stair_type,
     staircaseType:
-      config.base_condition === 'empty_opening' || isReadyFrameCondition(config.base_condition)
+      config.base_condition === 'empty_opening' ||
+      isReadyFrameCondition(config.base_condition) ||
+      config.base_condition === 'existing_concrete_base'
         ? getStairLabel(config, geometry)
         : BASE_CONDITION_LABELS[config.base_condition] || getStairLabel(config, geometry),
     status: geometry.status,
