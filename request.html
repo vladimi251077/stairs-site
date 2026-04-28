@@ -3,227 +3,321 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Заявка — Tekstura</title>
-
+  <title>Оставить заявку на лестницу — Tekstura</title>
+  <meta name="description" content="Оставьте заявку на лестницу Tekstura. Если расчёт выполнен в калькуляторе, мы подтянем его параметры в форму автоматически.">
+  <link rel="canonical" href="https://tekstura.shop/request.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Tekstura">
+  <meta property="og:title" content="Оставить заявку на лестницу — Tekstura">
+  <meta property="og:description" content="Передайте расчёт из калькулятора и отправьте заявку в Tekstura.">
+  <meta property="og:url" content="https://tekstura.shop/request.html">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/supabase-config.js"></script>
-
+  <link rel="stylesheet" href="/styles.css">
   <style>
-    body {
-      margin: 0;
-      background: #0f0c0a;
-      color: #f4e7d4;
-      font-family: Inter, sans-serif;
-    }
-
-    .wrap {
-      max-width: 700px;
-      margin: auto;
-      padding: 20px;
-    }
-
-    h1 {
-      margin-bottom: 10px;
-    }
-
-    .block {
-      background: #1a1410;
-      padding: 15px;
-      border-radius: 12px;
-      margin-bottom: 15px;
-    }
-
-    input, textarea {
-      width: 100%;
-      padding: 12px;
-      margin-top: 8px;
-      border-radius: 10px;
-      border: none;
-      background: #2a211b;
-      color: #fff;
-    }
-
-    button {
-      margin-top: 15px;
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: none;
-      background: #e8c8a2;
-      font-weight: bold;
-    }
-
-    .result {
-      background: #2a211b;
-      padding: 12px;
-      border-radius: 10px;
-      margin-top: 10px;
-    }
+    :root{--bg:#0f0c0a;--panel:#19130f;--line:#3d332b;--text:#f4e7d4;--muted:#baa894;--accent:#e8c8a2;--ok:#9ddcb0;--err:#ff9e9e}
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 Inter,sans-serif}
+    .wrap{max-width:880px;margin:auto;padding:16px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
+    h1{margin:0 0 8px;font-size:clamp(28px,4vw,38px)} .muted{color:var(--muted)} .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .full{grid-column:1/-1} input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:#120f0d;color:var(--text)} textarea{min-height:96px}
+    .btn{width:100%;padding:12px;border-radius:10px;border:0;background:var(--accent);color:#1a120e;font-weight:700;cursor:pointer;margin-top:10px}
+    .result{white-space:pre-line;background:#221a15;border:1px solid var(--line);border-radius:10px;padding:10px}
+    #status.ok{color:var(--ok)} #status.err{color:var(--err)}
+    .trust-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+    .trust-chip{border:1px solid var(--line);border-radius:10px;padding:8px;color:#cfb79a;background:#1b1512;font-size:13px}
+    .expect-list{margin:10px 0 0;padding-left:18px;color:#d5c2ab}
+    .success-card{border:1px solid rgba(157,220,176,.35);background:rgba(82,122,92,.18);border-radius:12px;padding:12px;margin-top:8px;line-height:1.6}
+    .success-card--warning{border-color:rgba(255,207,122,.35);background:rgba(130,100,45,.18)}
+    @media(max-width:700px){.grid{grid-template-columns:1fr}.trust-grid{grid-template-columns:1fr}}
   </style>
+  <link rel="stylesheet" href="/site-unify.css">
 </head>
+<body class="request-page">
+  <header class="site-header">
+    <div class="container site-header__inner">
+      <a href="/" class="brand" aria-label="ТЕКСТУРА — премиальные лестницы">TEKSTURA</a>
+      <nav class="site-nav" aria-label="Основная навигация"><a href="/">Главная</a><a href="/projects.html">Проекты</a><a href="/services.html">Услуги</a><a href="/articles.html">Статьи</a><a href="/norms.html">Нормы и уход</a><a href="/calculator.html">Калькулятор</a><a href="/request.html" aria-current="page">Заявка</a></nav>
+    </div>
+  </header>
 
-<body>
-  <div class="wrap">
+  <main class="wrap">
+    <section class="page-hero request-hero">
+      <span class="section-eyebrow">Заявка Tekstura</span>
+      <h1>Заявка на лестницу</h1>
+      <p class="muted">Заполните контакты — с вами свяжется инженер Tekstura для уточнения размеров и подбора оптимальной конфигурации под ваш объект.</p>
+    </section>
 
-    <h1>Заявка</h1>
-
-    <div class="block">
-      <b>Ваш расчет:</b>
-      <div id="calcData" class="result">Нет данных</div>
+    <div class="panel">
+      <b>Сводка расчёта</b>
+      <div id="calcData" class="result">Расчёт не передан. Вы можете оставить заявку без калькулятора.</div>
     </div>
 
-    <div class="block">
-      <input id="name" placeholder="Имя">
-      <input id="phone" placeholder="Телефон">
-      <input id="messenger" placeholder="WhatsApp / Telegram">
-      <input id="city" placeholder="Город">
-      <textarea id="comment" placeholder="Комментарий"></textarea>
-
-      <button onclick="sendRequest()">Отправить заявку</button>
+    <div class="panel">
+      <b>Как проходит работа после отправки</b>
+      <ul class="expect-list">
+        <li>В рабочее время отвечаем обычно в течение 30–90 минут.</li>
+        <li>Первым выходит на связь инженер-консультант Tekstura.</li>
+        <li>После уточнения размеров подготавливаем ориентир по стоимости и срокам.</li>
+      </ul>
+      <div class="trust-grid">
+        <div class="trust-chip">Собственное производство</div>
+        <div class="trust-chip">Казань, Оренбургский тракт, 340</div>
+        <div class="trust-chip">Монтаж штатной бригадой</div>
+      </div>
     </div>
 
-    <div id="status"></div>
-
-  </div>
-
+    <div class="panel">
+      <div class="grid">
+        <div><input id="name" placeholder="Имя и как к вам обращаться"></div>
+        <div><input id="phone" placeholder="Телефон для связи *"></div>
+        <div><input id="messenger" placeholder="WhatsApp/Telegram (если удобнее)"></div>
+        <div><input id="city" placeholder="Город и район объекта"></div>
+        <div class="full"><textarea id="comment" placeholder="Кратко о задаче: тип дома, этап ремонта, пожелания по стилю и срокам"></textarea></div>
+      </div>
+      <button class="btn" id="sendBtn" onclick="sendRequest()">Отправить заявку</button>
+      <div id="status" style="margin-top:10px"></div>
+      <div id="successState" hidden class="success-card">Спасибо за обращение в Tekstura. Заявка сохранена, инженер уже получил уведомление.</div>
+    </div>
+  </main>
+<footer class="site-footer"><div class="container site-footer__inner"><div class="site-footer__brand">TEKSTURA</div><div class="site-footer__links"><a href="/">Главная</a><a href="/projects.html">Проекты</a><a href="/services.html">Услуги</a><a href="/articles.html">Статьи</a><a href="/norms.html">Нормы и уход</a><a href="/about.html">О компании</a><a href="/faq.html">FAQ</a><a href="/calculator.html">Калькулятор</a><a href="/request.html">Заявка</a></div></div></footer>
 <script>
-const client = window.supabase.createClient(
-  window.SUPABASE_CONFIG.url,
-  window.SUPABASE_CONFIG.anonKey
-);
-
+const cfg = window.SUPABASE_CONFIG;
+const client = (cfg?.url && cfg?.anonKey && window.supabase)
+  ? window.supabase.createClient(cfg.url, cfg.anonKey)
+  : null;
 let calcPayload = null;
 const CALC_STORAGE_KEY = 'tekstura_stair_calc_payload';
+const EXTRA_LABELS = {
+  lighting: 'Подсветка ступеней',
+  painted_metal: 'Окраска металла',
+  premium_coating: 'Премиум-покрытие',
+  hidden_fasteners: 'Скрытый крепёж'
+};
 
-function money(value) {
-  return `${new Intl.NumberFormat('ru-RU').format(Math.round(value || 0))} ₽`;
+function formatWarnings(list = []) {
+  if (!list.length) return 'Нет';
+  return list.join('; ');
 }
 
-function mm(value) {
-  return `${new Intl.NumberFormat('ru-RU').format(Math.round(value || 0))} мм`;
+function buildCalcSummary(payload) {
+  if (payload && (payload.chosen_geometry_result || payload.input_dimensions || payload.pricing_region)) {
+    const dimensions = payload.input_dimensions || payload.dimensions || {};
+    const geometry = payload.chosen_geometry_result || payload.geometryResult || {};
+    const pricingRegion = payload.pricing_region;
+    const pricingBreakdown = payload.pricing_breakdown;
+    const summaryRows = Array.isArray(geometry.summary_rows)
+      ? geometry.summary_rows.map((row) => `${row[0]}: ${row[1]}`)
+      : [];
+    return [
+      `Сценарий: ${payload.baseCondition || payload.base_condition || '-'}`,
+      `Тип лестницы: ${payload.staircaseType || payload.selected_staircase_type || '-'}`,
+      `Статус: ${payload.status || '-'}`,
+      pricingRegion ? `Регион цены: ${pricingRegion.name || pricingRegion.code} · x${Number(pricingRegion.price_coef || 1).toFixed(2)}` : '',
+      pricingBreakdown ? `База до региона: ${Number(pricingBreakdown.subtotal_before_region || 0).toLocaleString('ru-RU')} ₽` : '',
+      dimensions.floor_to_floor_height || dimensions.floorHeight ? `Высота: ${dimensions.floor_to_floor_height || dimensions.floorHeight} мм` : '',
+      dimensions.opening_length || dimensions.openingLength ? `Проём: ${dimensions.opening_length || dimensions.openingLength} x ${dimensions.opening_width || dimensions.openingWidth || '-'} мм` : '',
+      geometry.riser_height ? `Подступенок: ${geometry.riser_height} мм` : '',
+      geometry.tread_depth ? `Проступь: ${geometry.tread_depth} мм` : '',
+      geometry.headroom_min ? `Просвет: ${geometry.headroom_min} мм` : '',
+      ...summaryRows,
+      `Ориентир: ${Number(payload.total || 0).toLocaleString('ru-RU')} ₽`
+    ].filter(Boolean);
+  }
+  if (!payload) return ['Расчёт не передан. Вы можете оставить заявку без калькулятора.'];
+  const isReady = payload.base_condition === 'ready_frame';
+  const extras = (payload?.selectedExtras || []).map((i) => i.label || EXTRA_LABELS[i.code] || i.code).join(', ') || 'Нет';
+  const geometry = payload.geometrySummary || {};
+  if (isReady) {
+    return [
+      `Сценарий: ${payload?.materialsSummary?.base || 'Готовый каркас'}`,
+      `Конфигурация: ${payload.staircaseType || '-'}`,
+      `Тип поворота: ${payload?.materialsSummary?.turn_type || 'Не требуется'}`,
+      `Направление поворота: ${payload.turn_direction === 'left' ? 'Левый' : payload.turn_direction === 'right' ? 'Правый' : '-'}`,
+      `Объём работ: ${(payload?.materialsSummary?.scope_of_work || []).join(', ') || 'Не выбран'}`,
+      `Состояние основания: ${payload.existing_condition_notes || 'Без комментариев'}`,
+      `Геометрия: ${geometry.riser_count || '-'} подъёмов · ${geometry.tread_depth || '-'} мм проступь · ${geometry.riser_height || '-'} мм подступенок`,
+      `Просвет / статус: ${geometry.headroom_min || '-'} мм · ${payload.status || '-'}`,
+      `Предупреждения: ${formatWarnings(payload.warnings)}`,
+      `Итоговая стоимость: ${Number(payload.total || 0).toLocaleString('ru-RU')} ₽`
+    ];
+  }
+  return [
+    `Тип лестницы: ${payload.staircaseType || '-'}`,
+    `Каркас: ${payload?.materialsSummary?.frame || '-'}`,
+    `Облицовка: ${payload?.materialsSummary?.cladding || '-'}`,
+    `Ограждение: ${payload?.materialsSummary?.railing || '-'}`,
+    `Финиш: ${payload?.materialsSummary?.finish || '-'}`,
+    `Направление поворота: ${payload.turn_direction === 'left' ? 'Левый' : payload.turn_direction === 'right' ? 'Правый' : 'Не требуется'}`,
+    `Геометрия: ${geometry.riser_count || '-'} подъёмов · ${geometry.tread_depth || '-'} мм проступь · ${geometry.riser_height || '-'} мм подступенок`,
+    `Просвет / статус: ${geometry.headroom_min || '-'} мм · ${payload.status || '-'}`,
+    `Опции: ${extras}`,
+    `Предупреждения: ${formatWarnings(payload.warnings)}`,
+    `Итоговая стоимость: ${Number(payload.total || 0).toLocaleString('ru-RU')} ₽`
+  ];
 }
 
-function statusLabel(status) {
-  if (status === 'recommended') return 'рекомендуемая';
-  if (status === 'warning') return 'нужна проверка';
-  if (status === 'invalid') return 'инженерная проверка';
-  return 'не указан';
+
+function makeLeadId() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return `lead-${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
 }
 
-function parsePayload(raw, isEncoded = false) {
-  if (!raw) return null;
+function parseCalc(){
+  const queryRaw = new URLSearchParams(location.search).get('calc');
+  const sessionRaw = sessionStorage.getItem('tekstura_calc_payload');
+  const localRaw = localStorage.getItem(CALC_STORAGE_KEY);
+  const raw = queryRaw || sessionRaw || localRaw;
+  if (!raw) return;
   try {
-    return JSON.parse(isEncoded ? decodeURIComponent(raw) : raw);
-  } catch (error) {
-    console.error(error);
-    return null;
+    calcPayload = JSON.parse(decodeURIComponent(raw));
+    if (queryRaw) {
+      sessionStorage.setItem('tekstura_calc_payload', queryRaw);
+      localStorage.setItem(CALC_STORAGE_KEY, JSON.stringify(calcPayload));
+    }
+    document.getElementById('calcData').textContent = buildCalcSummary(calcPayload).join('\n');
+  } catch (err) {
+    console.error('calc parse error', err);
+    document.getElementById('calcData').textContent = 'Не удалось прочитать расчёт. Вы можете отправить заявку вручную.';
   }
 }
 
-function renderCalcSummary(payload) {
-  if (!payload) return 'Нет данных';
-
-  const dimensions = payload.input_dimensions || payload.dimensions || {};
-  const geometry = payload.chosen_geometry_result || payload.geometryResult || {};
-  const pricingRegion = payload.pricing_region || null;
-  const pricingBreakdown = payload.pricing_breakdown || null;
-  const summaryRows = Array.isArray(geometry.summary_rows)
-    ? geometry.summary_rows.map((row) => `${row[0]}: ${row[1]}`).join('\n')
-    : '';
-  const requestMode =
-    payload.request_mode === 'engineer_review'
-      ? 'Инженерная проверка'
-      : 'Заявка по расчёту';
-  const baseCondition = payload.base_condition || payload.baseCondition || '';
-  const usesOpeningDimensions = baseCondition === 'empty_opening';
-  const hasOpeningDimensions =
-    usesOpeningDimensions && (
-      dimensions.floor_to_floor_height ||
-      dimensions.floorHeight ||
-      dimensions.opening_length ||
-      dimensions.openingLength
-    );
-  const geometryLines = geometry.riser_height
-    ? `Подступенок: ${mm(geometry.riser_height)}
-Проступь: ${mm(geometry.tread_depth)}
-Просвет: ${geometry.headroom_min ? mm(geometry.headroom_min) : 'нужно уточнить'}`
-    : '';
-
-  return `${requestMode}
-Сценарий: ${payload.baseCondition || payload.base_condition || 'не указан'}
-Тип: ${payload.staircaseType || payload.selected_staircase_type || 'не указан'}
-Статус: ${statusLabel(payload.status)}
-${pricingRegion ? `Регион цены: ${pricingRegion.name} · ×${Number(pricingRegion.price_coef || 1).toFixed(2)}` : ''}
-${pricingBreakdown ? `База до региона: ${money(pricingBreakdown.subtotal_before_region || 0)}` : ''}
-${hasOpeningDimensions ? `Высота: ${mm(dimensions.floor_to_floor_height || dimensions.floorHeight)}
-Проём: ${mm(dimensions.opening_length || dimensions.openingLength)} × ${mm(dimensions.opening_width || dimensions.openingWidth)}
-Марш: ${mm(dimensions.march_width || dimensions.marchWidth)}` : summaryRows}
-${geometryLines}
-Ориентир: ${payload.total ? money(payload.total) : 'после проверки'}`;
+async function insertLead(payload){
+  if (!client) throw new Error('Supabase не настроен');
+  const tables = ['leads', 'calculator_requests'];
+  let lastError = null;
+  for (const table of tables) {
+    const { error } = await client.from(table).insert([payload]);
+    if (!error) return { data: payload, table };
+    lastError = error;
+  }
+  throw lastError;
 }
 
-// Получаем данные из URL
-function loadCalcData() {
-  const params = new URLSearchParams(window.location.search);
-  const raw = params.get('calc');
-  const stored = window.localStorage?.getItem(CALC_STORAGE_KEY);
+function buildNotifyUiMessage(notifyResult) {
+  const emailResult = notifyResult?.deliveryResults?.email;
+  const notifyRecipient = notifyResult?.notifyRecipient || {};
+  const emailChannelState = notifyResult?.emailChannelState;
+  const senderUsesResendDev = Boolean(notifyResult?.senderUsesResendDev);
 
-  calcPayload = parsePayload(raw, true) || parsePayload(stored);
-  if (calcPayload) {
-    document.getElementById('calcData').innerText = renderCalcSummary(calcPayload);
+  if (emailResult?.ok) {
+    return {
+      warning: false,
+      text: 'Спасибо за обращение в Tekstura. Заявка сохранена, email-уведомление инженеру отправлено. Мы свяжемся с вами в ближайшее рабочее время и уточним финальные параметры.'
+    };
   }
+
+  let hint = '';
+  if (notifyRecipient.source === 'fallback-env') {
+    hint = ' Для уведомлений использован резервный адрес из переменных окружения.';
+  } else if (notifyRecipient.warning === 'settings-notify-email-empty' || notifyRecipient.warning === 'missing-recipient') {
+    hint = ' Email получателя сейчас не настроен.';
+  }
+
+  if (emailChannelState === 'blocked') {
+    hint += ' Канал email временно не готов и требует настройки на стороне сервера.';
+  } else if (senderUsesResendDev) {
+    hint += ' Используется технический адрес resend.dev — для production нужен подтверждённый домен.';
+  }
+
+  return {
+    warning: true,
+    text: `Спасибо за обращение в Tekstura. Заявка сохранена, но отправка email-уведомления не подтверждена.${hint} Это не означает потерю заявки: она уже записана и доступна менеджеру. Мы всё равно свяжемся с вами в ближайшее рабочее время.`
+  };
 }
 
 async function sendRequest() {
-  const name = document.getElementById('name').value;
-  const phone = document.getElementById('phone').value;
-  const messenger = document.getElementById('messenger').value;
-  const city = document.getElementById('city').value;
-  const comment = document.getElementById('comment').value;
-
+  const status = document.getElementById('status');
+  const sendBtn = document.getElementById('sendBtn');
+  const successState = document.getElementById('successState');
+  successState.hidden = true;
+  successState.classList.remove('success-card--warning');
+  status.className = '';
+  status.textContent = 'Отправляем заявку...';
+  sendBtn.disabled = true;
+  const phone = document.getElementById('phone').value.trim();
   if (!phone) {
-    alert('Введите телефон');
+    status.className = 'err';
+    status.textContent = 'Введите телефон для отправки заявки.';
+    sendBtn.disabled = false;
     return;
   }
 
-  const { error } = await client.from('calculator_requests').insert([
-    {
-      name,
-      phone,
-      messenger,
-      city,
-      comment,
-      staircase_type: calcPayload?.selected_staircase_type || calcPayload?.staircaseType || '',
-      dimensions_json: {
-        ...(calcPayload?.input_dimensions || calcPayload?.dimensions || {}),
-        status: calcPayload?.status || null,
-        base_condition: calcPayload?.base_condition || null,
-        warnings: calcPayload?.warnings || [],
-        chosen_geometry_result: calcPayload?.chosen_geometry_result || calcPayload?.geometryResult || null,
-        scenario_details: calcPayload?.scenario_details || {},
-        pricing_region: calcPayload?.pricing_region || null,
-        pricing_breakdown: calcPayload?.pricing_breakdown || null,
-        pricing_snapshot: calcPayload?.pricing_snapshot || null
-      },
-      materials_json: calcPayload?.materials || {},
-      options_json: {
-        ...(calcPayload?.price_relevant_selections || calcPayload?.options || {}),
-        pricing_region: calcPayload?.pricing_region || null
-      },
-      calculated_price: calcPayload?.total || 0
-    }
-  ]);
+  const isCalculatorLead = Boolean(calcPayload && (calcPayload.staircaseType || calcPayload.total || calcPayload.base_condition || calcPayload.chosen_geometry_result));
+  const leadId = makeLeadId();
 
-  if (error) {
+  const payload = {
+    id: leadId,
+    name: document.getElementById('name').value.trim(),
+    phone,
+    messenger: document.getElementById('messenger').value.trim(),
+    city: document.getElementById('city').value.trim(),
+    comment: document.getElementById('comment').value.trim(),
+    staircase_type: calcPayload?.staircaseType || calcPayload?.selected_staircase_type || '',
+    dimensions_json: {
+      ...(calcPayload?.dimensions || {}),
+      ...(calcPayload?.input_dimensions || {}),
+      geometry: calcPayload?.geometrySummary || {},
+      chosen_geometry_result: calcPayload?.chosen_geometry_result || calcPayload?.geometryResult || null,
+      base_condition: calcPayload?.base_condition || '',
+      base_subtype: calcPayload?.base_subtype || '',
+      configuration_type: calcPayload?.configuration_type || '',
+      turn_type: calcPayload?.turn_type || '',
+      turn_direction: calcPayload?.turn_direction || '',
+      pricing_region: calcPayload?.pricing_region || null
+    },
+    materials_json: {
+      ...(calcPayload?.materialsSummary || {}),
+      ...(calcPayload?.materials || {})
+    },
+    options_json: {
+      selected: calcPayload?.selectedExtras || [],
+      labels: (calcPayload?.selectedExtras || []).map((item) => item?.label || item?.code || ''),
+      price_breakdown: calcPayload?.priceBreakdown || calcPayload?.pricing_breakdown || {},
+      pricing_snapshot: calcPayload?.pricing_snapshot || null,
+      meta: {
+        request_source: isCalculatorLead ? 'calculator' : 'manual',
+        has_calc_payload: isCalculatorLead,
+        submitted_at: new Date().toISOString()
+      }
+    },
+    calculated_price: Number(calcPayload?.total || 0)
+  };
+
+  try {
+    const { data } = await insertLead(payload);
+    status.className = 'ok';
+    status.textContent = 'Заявка сохранена ✅';
+    successState.hidden = false;
+    successState.textContent = 'Спасибо за обращение в Tekstura. Заявка сохранена. Проверяем отправку уведомления инженеру...';
+    document.getElementById('sendBtn').disabled = true;
+
+    try {
+      const notifyResponse = await fetch('/api/notify-lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lead: data || payload })
+      });
+      const notifyResult = await notifyResponse.json().catch(() => null);
+      const uiMessage = buildNotifyUiMessage(notifyResponse.ok ? notifyResult : null);
+      successState.classList.toggle('success-card--warning', uiMessage.warning);
+      successState.textContent = uiMessage.text;
+    } catch (err) {
+      console.error('notify failed', err);
+      successState.classList.add('success-card--warning');
+      successState.textContent = 'Спасибо за обращение в Tekstura. Заявка сохранена, но статус email-уведомления проверить не удалось. Мы всё равно свяжемся с вами в ближайшее рабочее время.';
+    }
+  } catch (error) {
     console.error(error);
-    document.getElementById('status').innerText = 'Ошибка отправки';
-  } else {
-    document.getElementById('status').innerText = 'Заявка отправлена ✅';
+    status.className = 'err';
+    status.textContent = `Ошибка отправки: ${error?.message || 'Не удалось записать заявку в Supabase'}`;
+    sendBtn.disabled = false;
   }
 }
 
-loadCalcData();
+parseCalc();
 </script>
-
 </body>
 </html>

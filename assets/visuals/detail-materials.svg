@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" fill="none">
+  <rect width="900" height="520" rx="24" fill="#261a13"/>
+  <rect x="56" y="72" width="360" height="360" rx="18" fill="#4b3425"/>
+  <rect x="484" y="72" width="360" height="360" rx="18" fill="#1f2730"/>
+  <text x="56" y="42" fill="#efcfab" font-size="30" font-family="Inter,Arial">Материалы: дерево + металл</text>
+  <text x="56" y="472" fill="#b59b7f" font-size="20" font-family="Inter,Arial">Подбор фактуры ступеней и цвета металла под интерьер.</text>
+</svg>

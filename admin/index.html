@@ -102,6 +102,8 @@
       color:var(--muted);
       white-space:pre-wrap;
     }
+    .status.success{color:#7bdc9d}
+    .status.warning{color:#ffcf7a}
     .status.error{color:var(--danger)}
     .preview{
       display:block;
@@ -123,9 +125,73 @@
       font-size:13px;
       color:var(--muted);
     }
+    .gallery-tools{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      align-items:center;
+      margin-bottom:10px;
+    }
+    .gallery-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+      gap:10px;
+    }
+    .gallery-card{
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:#171310;
+      padding:10px;
+    }
+    .gallery-card img{
+      width:100%;
+      height:130px;
+      border-radius:8px;
+      border:1px solid var(--line);
+      object-fit:cover;
+      display:block;
+      margin-bottom:8px;
+    }
+    .cover-badge{
+      display:inline-flex;
+      border:1px solid var(--accent);
+      color:var(--accent);
+      border-radius:999px;
+      padding:2px 8px;
+      font-size:12px;
+      margin-bottom:8px;
+    }
+    .gallery-meta{
+      display:grid;
+      grid-template-columns:1fr 92px;
+      gap:8px;
+      margin-bottom:8px;
+    }
+    .gallery-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+    }
+    .gallery-empty{
+      border:1px dashed var(--line);
+      border-radius:10px;
+      padding:12px;
+      color:var(--muted);
+      text-align:center;
+    }
+    details.advanced{
+      margin-top:10px;
+    }
+    details.advanced > summary{
+      cursor:pointer;
+      color:var(--muted);
+      user-select:none;
+      margin-bottom:8px;
+    }
     @media (max-width:760px){
       .grid{grid-template-columns:1fr}
       .topbar{align-items:flex-start;flex-direction:column}
+      .gallery-meta{grid-template-columns:1fr}
     }
   </style>
 </head>
@@ -171,14 +237,24 @@
             <label for="whatsapp">WhatsApp</label>
             <input id="whatsapp" />
           </div>
-          <div class="full">
+          <div>
             <label for="telegram">Telegram</label>
             <input id="telegram" />
+          </div>
+          <div>
+            <label for="notifyEmail">Email для уведомлений</label>
+            <input id="notifyEmail" type="email" placeholder="leads@tekstura.shop" />
+          </div>
+          <div>
+            <label for="max">MAX</label>
+            <input id="max" />
           </div>
         </div>
         <div class="row" style="margin-top:12px">
           <button id="saveContacts" class="btn">Сохранить контакты</button>
         </div>
+        <div id="contactsStatus" class="status small" aria-live="polite"></div>
+        <div id="effectiveNotifyEmail" class="status small" aria-live="polite"></div>
       </section>
 
       <section class="panel">
@@ -312,11 +388,15 @@
     const adminApp = document.getElementById('adminApp');
     const authStatus = document.getElementById('authStatus');
     const statusBox = document.getElementById('status');
+    const contactsStatusBox = document.getElementById('contactsStatus');
+    const effectiveNotifyEmailBox = document.getElementById('effectiveNotifyEmail');
     const logoutBtn = document.getElementById('logoutBtn');
 
     const phoneInput = document.getElementById('phone');
     const whatsappInput = document.getElementById('whatsapp');
     const telegramInput = document.getElementById('telegram');
+    const notifyEmailInput = document.getElementById('notifyEmail');
+    const maxInput = document.getElementById('max');
 
     const heroTitleInput = document.getElementById('heroTitle');
     const heroSubtitleInput = document.getElementById('heroSubtitle');
@@ -355,6 +435,25 @@
       statusBox.textContent = msg || '';
       statusBox.classList.toggle('error', !!isError);
       console[isError ? 'error' : 'log'](msg);
+    }
+
+    function setContactsStatus(msg, type = 'info') {
+      contactsStatusBox.textContent = msg || '';
+      contactsStatusBox.classList.remove('error', 'warning', 'success');
+      if (type === 'error' || type === 'warning' || type === 'success') {
+        contactsStatusBox.classList.add(type);
+      }
+    }
+
+    function renderEffectiveNotifyEmail(settings = {}) {
+      const email = String(settings.notifyEmail || '').trim();
+      if (email) {
+        effectiveNotifyEmailBox.textContent = `Текущий получатель заявок: ${email} (из settings.id = 1).`;
+        effectiveNotifyEmailBox.classList.remove('warning');
+      } else {
+        effectiveNotifyEmailBox.textContent = 'Email в settings.id = 1 пустой — сервер использует fallback NOTIFY_EMAIL_TO.';
+        effectiveNotifyEmailBox.classList.add('warning');
+      }
     }
 
     function setAuthStatus(msg, isError = false) {
@@ -528,6 +627,8 @@
         phone: row?.phone ?? '',
         whatsapp: row?.whatsapp ?? '',
         telegram: row?.telegram ?? '',
+        notifyEmail: row?.notify_email ?? row?.notifyEmail ?? '',
+        max: row?.max ?? '',
         heroTitle: row?.heroTitle ?? row?.herotitle ?? '',
         heroSubtitle: row?.heroSubtitle ?? row?.herosubtitle ?? '',
         heroImage: row?.heroImage ?? row?.heroimage ?? '',
@@ -541,6 +642,8 @@
       phoneInput.value = settings.phone || '';
       whatsappInput.value = settings.whatsapp || '';
       telegramInput.value = settings.telegram || '';
+      notifyEmailInput.value = settings.notifyEmail || '';
+      maxInput.value = settings.max || '';
       heroTitleInput.value = settings.heroTitle || '';
       heroSubtitleInput.value = settings.heroSubtitle || '';
       heroImageInput.value = settings.heroImage || '';
@@ -549,6 +652,7 @@
       baseRateInput.value = settings.baseRate || 5000;
       showPreview(heroImagePreview, settings.heroImage || '');
       showPreview(logoPreview, settings.logo || '');
+      renderEffectiveNotifyEmail(settings);
     }
 
     function fillPricingDefaultsForm(defaults) {
@@ -675,6 +779,7 @@
       const div = document.createElement('div');
       div.className = 'item';
       div.dataset.id = item.id || uid();
+      const initialGallery = normalizeGalleryEntries(item.gallery_images || [], item.cover_image || item.image || '');
       div.innerHTML = `
         <div class="grid">
           <div>
@@ -690,20 +795,181 @@
             <textarea data-k="description">${escapeHtml(item.description || '')}</textarea>
           </div>
           <div>
-            <label>Картинка</label>
+            <label>Картинка (legacy)</label>
             <input data-k="imageFile" type="file" accept="image/*" />
           </div>
           <div>
-            <label>URL картинки</label>
+            <label>URL картинки (legacy)</label>
             <input data-k="image" value="${escapeHtml(item.image || '')}" />
+          </div>
+          <div class="full">
+            <label>Галерея проекта</label>
+            <div class="gallery-tools">
+              <button type="button" class="btn btn-secondary" data-k="galleryAddBtn">Добавить фото</button>
+              <span class="small">Можно выбрать сразу несколько файлов.</span>
+              <input data-k="galleryFiles" type="file" accept="image/*" multiple class="hidden" />
+            </div>
+            <div data-k="gallery_list" class="gallery-grid"></div>
+            <details class="advanced">
+              <summary>Служебный JSON галереи (для совместимости)</summary>
+              <textarea data-k="gallery_json"></textarea>
+            </details>
+          </div>
+          <div class="full">
+            <label>Опции mini-configurator (JSON)</label>
+            <textarea data-k="custom_options">${escapeHtml(JSON.stringify(item.custom_options || {}))}</textarea>
           </div>
         </div>
         <div class="row" style="margin-top:8px">
           <button type="button" class="btn btn-danger" data-remove>Удалить</button>
         </div>
       `;
+      const galleryJsonTextarea = div.querySelector('[data-k="gallery_json"]');
+      div._galleryState = { images: initialGallery };
+      renderProjectGallery(div);
+      galleryJsonTextarea.value = JSON.stringify(initialGallery, null, 2);
+      galleryJsonTextarea.addEventListener('input', () => {
+        try {
+          const parsed = JSON.parse(galleryJsonTextarea.value || '[]');
+          div._galleryState.images = normalizeGalleryEntries(parsed);
+          renderProjectGallery(div);
+        } catch {}
+      });
+      div.querySelector('[data-k="galleryAddBtn"]').onclick = () => div.querySelector('[data-k="galleryFiles"]').click();
+      div.querySelector('[data-k="galleryFiles"]').addEventListener('change', async (event) => {
+        const files = [...(event.target.files || [])];
+        if (!files.length) return;
+        try {
+          setStatus(`Загрузка ${files.length} фото в галерею...`);
+          for (const file of files) {
+            const imageUrl = await uploadFile(file, 'projects');
+            div._galleryState.images.push({
+              id: uid(),
+              image_url: imageUrl,
+              alt_text: '',
+              sort_order: div._galleryState.images.length + 1,
+              is_cover: div._galleryState.images.length === 0
+            });
+          }
+          div._galleryState.images = normalizeGalleryEntries(div._galleryState.images);
+          renderProjectGallery(div);
+          setStatus('Фото загружены в галерею');
+        } catch (err) {
+          setStatus('Ошибка загрузки в галерею: ' + explainError(err), true);
+        } finally {
+          event.target.value = '';
+        }
+      });
       div.querySelector('[data-remove]').onclick = () => div.remove();
       return div;
+    }
+
+    function normalizeGalleryEntries(gallery, fallbackImageUrl = '') {
+      const source = Array.isArray(gallery) ? gallery : [];
+      const normalized = source.map((g, idx) => {
+        if (typeof g === 'string') {
+          return { id: uid(), image_url: g, alt_text: '', sort_order: idx + 1, is_cover: idx === 0 };
+        }
+        return {
+          id: g.id || uid(),
+          image_url: g.image_url || g.url || '',
+          alt_text: g.alt_text || '',
+          sort_order: Number(g.sort_order || (idx + 1)),
+          is_cover: !!g.is_cover
+        };
+      }).filter((g) => g.image_url);
+
+      if (!normalized.length && fallbackImageUrl) {
+        normalized.push({ id: uid(), image_url: fallbackImageUrl, alt_text: '', sort_order: 1, is_cover: true });
+      }
+
+      normalized.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+      normalized.forEach((g, idx) => { g.sort_order = idx + 1; });
+      if (normalized.length && !normalized.some((g) => g.is_cover)) normalized[0].is_cover = true;
+      return normalized;
+    }
+
+    function renderProjectGallery(projectEl) {
+      const list = projectEl.querySelector('[data-k="gallery_list"]');
+      const jsonEl = projectEl.querySelector('[data-k="gallery_json"]');
+      const gallery = projectEl._galleryState?.images || [];
+      list.innerHTML = '';
+
+      if (!gallery.length) {
+        const empty = document.createElement('div');
+        empty.className = 'gallery-empty';
+        empty.textContent = 'Пока нет изображений. Добавьте фото для галереи.';
+        list.appendChild(empty);
+      }
+
+      gallery.forEach((img, idx) => {
+        const card = document.createElement('div');
+        card.className = 'gallery-card';
+        card.innerHTML = `
+          ${img.is_cover ? '<div class="cover-badge">Обложка</div>' : ''}
+          <img src="${escapeHtml(img.image_url)}" alt="preview" />
+          <div class="gallery-meta">
+            <input type="text" data-k="alt" placeholder="Описание (alt)" value="${escapeHtml(img.alt_text || '')}" />
+            <input type="number" data-k="sort" min="1" value="${idx + 1}" />
+          </div>
+          <div class="gallery-actions">
+            <button type="button" class="btn btn-secondary" data-act="cover">Сделать обложкой</button>
+            <button type="button" class="btn btn-secondary" data-act="up">Выше</button>
+            <button type="button" class="btn btn-secondary" data-act="down">Ниже</button>
+            <button type="button" class="btn btn-danger" data-act="remove">Удалить</button>
+          </div>
+        `;
+        card.querySelector('[data-k="alt"]').addEventListener('input', (e) => {
+          projectEl._galleryState.images[idx].alt_text = e.target.value;
+          syncProjectGalleryJson(projectEl);
+        });
+        card.querySelector('[data-k="sort"]').addEventListener('change', (e) => {
+          const to = Math.max(1, Number(e.target.value || idx + 1));
+          moveGalleryItem(projectEl, idx, to - 1);
+        });
+        card.querySelector('[data-act="cover"]').onclick = () => {
+          projectEl._galleryState.images.forEach((x) => (x.is_cover = false));
+          projectEl._galleryState.images[idx].is_cover = true;
+          renderProjectGallery(projectEl);
+        };
+        card.querySelector('[data-act="remove"]').onclick = () => {
+          projectEl._galleryState.images.splice(idx, 1);
+          projectEl._galleryState.images = normalizeGalleryEntries(projectEl._galleryState.images);
+          renderProjectGallery(projectEl);
+        };
+        card.querySelector('[data-act="up"]').onclick = () => moveGalleryItem(projectEl, idx, idx - 1);
+        card.querySelector('[data-act="down"]').onclick = () => moveGalleryItem(projectEl, idx, idx + 1);
+        list.appendChild(card);
+      });
+
+      jsonEl.value = JSON.stringify(gallery.map((g, idx) => ({
+        image_url: g.image_url,
+        alt_text: g.alt_text || '',
+        sort_order: idx + 1,
+        is_cover: !!g.is_cover
+      })), null, 2);
+    }
+
+    function moveGalleryItem(projectEl, from, to) {
+      const gallery = projectEl._galleryState.images;
+      if (!gallery.length) return;
+      const boundedTo = Math.max(0, Math.min(gallery.length - 1, to));
+      if (from === boundedTo || from < 0 || from >= gallery.length) return;
+      const [item] = gallery.splice(from, 1);
+      gallery.splice(boundedTo, 0, item);
+      projectEl._galleryState.images = normalizeGalleryEntries(gallery);
+      renderProjectGallery(projectEl);
+    }
+
+    function syncProjectGalleryJson(projectEl) {
+      const jsonEl = projectEl.querySelector('[data-k="gallery_json"]');
+      if (!jsonEl) return;
+      jsonEl.value = JSON.stringify(projectEl._galleryState.images.map((g, idx) => ({
+        image_url: g.image_url,
+        alt_text: g.alt_text || '',
+        sort_order: idx + 1,
+        is_cover: !!g.is_cover
+      })), null, 2);
     }
 
     function renderServices(items) {
@@ -748,8 +1014,7 @@
       const { data, error } = await client
         .from('settings')
         .select('*')
-        .order('updated_at', { ascending: false })
-        .limit(1)
+        .eq('id', 1)
         .maybeSingle();
 
       if (error) throw error;
@@ -826,13 +1091,16 @@
     }
 
     async function loadProjects() {
-      const { data, error } = await client
-        .from('projects')
-        .select('*')
-        .order('created_at', { ascending: false });
-
+      const { data, error } = await client.from('projects').select('*').order('created_at', { ascending: false });
       if (error) throw error;
-      state.projects = data || [];
+      const rows = data || [];
+      const { data: images } = await client.from('project_images').select('*').in('project_id', rows.map((r)=>r.id));
+      const grouped = new Map();
+      (images || []).forEach((img) => {
+        if (!grouped.has(img.project_id)) grouped.set(img.project_id, []);
+        grouped.get(img.project_id).push(img);
+      });
+      state.projects = rows.map((r) => ({ ...r, gallery_images: grouped.get(r.id) || [] }));
       renderProjects(state.projects);
     }
 
@@ -898,7 +1166,18 @@
       if (/Invalid API key/i.test(msg)) return 'Неверный Supabase ключ.';
       if (/Failed to fetch|Load failed|fetch failed/i.test(msg)) return 'Сеть не может достучаться до Supabase. Проверь URL, ключ, HTTPS и CORS.';
       if (/CORS/i.test(msg)) return 'Браузер блокирует запрос к Supabase из-за CORS.';
-      return msg;
+      const code = err?.code ? ` [${err.code}]` : '';
+      const details = [err?.details, err?.hint].filter(Boolean).join(' | ');
+      return `${msg}${code}${details ? ` — ${details}` : ''}`;
+    }
+
+    function throwIfSupabaseError(result, operationLabel) {
+      if (!result?.error) return;
+      const sourceError = result.error;
+      const details = [sourceError.message, sourceError.details, sourceError.hint].filter(Boolean).join(' | ');
+      const err = new Error(`${operationLabel}: ${details || 'неизвестная ошибка Supabase'}`);
+      err.cause = sourceError;
+      throw err;
     }
 
     async function initAuth() {
@@ -948,17 +1227,26 @@
 
     document.getElementById('saveContacts').onclick = async () => {
       try {
-        await client.from('settings').upsert({
+        const notifyEmail = notifyEmailInput.value.trim();
+        if (!notifyEmail) {
+          setContactsStatus('Предупреждение: email пустой. Уведомления пойдут в fallback NOTIFY_EMAIL_TO (если он настроен на сервере).', 'warning');
+        }
+        const contactsRes = await client.from('settings').upsert({
           id: 1,
           phone: phoneInput.value.trim(),
           whatsapp: whatsappInput.value.trim(),
           telegram: telegramInput.value.trim(),
+          notify_email: notifyEmail,
+          max: maxInput.value.trim(),
           updated_at: new Date().toISOString()
         }, { onConflict: 'id' });
+        throwIfSupabaseError(contactsRes, 'Не удалось сохранить контакты');
 
+        setContactsStatus('Контакты сохранены в settings.id = 1.', 'success');
         setStatus('Контакты сохранены');
         await loadSettings();
       } catch (err) {
+        setContactsStatus('Ошибка сохранения контактов: ' + explainError(err), 'error');
         setStatus('Ошибка сохранения контактов: ' + explainError(err), true);
       }
     };
@@ -977,7 +1265,7 @@
           logo = await uploadFile(logoFileInput.files[0], 'logo');
         }
 
-        await client.from('settings').upsert({
+        const heroRes = await client.from('settings').upsert({
           id: 1,
           heroTitle: heroTitleInput.value.trim(),
           heroSubtitle: heroSubtitleInput.value.trim(),
@@ -987,6 +1275,7 @@
           baseRate: Number(baseRateInput.value || 5000),
           updated_at: new Date().toISOString()
         }, { onConflict: 'id' });
+        throwIfSupabaseError(heroRes, 'Не удалось сохранить главный экран');
 
         setStatus('Главный экран сохранён');
         await loadSettings();
@@ -1116,8 +1405,12 @@
           sort_order: Number(el.querySelector('[data-k="sort_order"]').value || (idx + 1))
         }));
 
-        await client.from('services').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-        if (rows.length) await client.from('services').upsert(rows);
+        const deleteServicesRes = await client.from('services').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        throwIfSupabaseError(deleteServicesRes, 'Не удалось очистить услуги');
+        if (rows.length) {
+          const upsertServicesRes = await client.from('services').upsert(rows);
+          throwIfSupabaseError(upsertServicesRes, 'Не удалось сохранить услуги');
+        }
         setStatus('Услуги сохранены');
         await loadServices();
       } catch (err) {
@@ -1133,6 +1426,7 @@
       try {
         setStatus('Сохранение проектов...');
         const rows = [];
+        const imageRows = [];
         const items = [...projectsList.querySelectorAll('.item')];
 
         for (const el of items) {
@@ -1140,18 +1434,62 @@
           let imageUrl = el.querySelector('[data-k="image"]').value.trim();
           if (file) imageUrl = await uploadFile(file, 'projects');
 
+          let customOptions = {};
+          let gallery = [];
+          try { customOptions = JSON.parse(el.querySelector('[data-k="custom_options"]').value || '{}'); } catch {}
+          try { gallery = JSON.parse(el.querySelector('[data-k="gallery_json"]').value || '[]'); } catch {}
+          if (Array.isArray(el._galleryState?.images) && el._galleryState.images.length) {
+            gallery = el._galleryState.images;
+          }
+
+          const normalizedGallery = normalizeGalleryEntries(gallery, imageUrl);
+          const cover = normalizedGallery.find((g) => g.is_cover) || normalizedGallery[0] || null;
+          if (!imageUrl && cover?.image_url) imageUrl = cover.image_url;
+
           rows.push({
             id: el.dataset.id,
             title: el.querySelector('[data-k="title"]').value.trim(),
             description: el.querySelector('[data-k="description"]').value.trim(),
             image: imageUrl,
+            cover_image: cover?.image_url || imageUrl,
+            custom_options: customOptions,
             price: el.querySelector('[data-k="price"]').value.trim() || null,
             created_at: new Date().toISOString()
           });
+
+          normalizedGallery.forEach((g) => {
+            if (!g.image_url) return;
+            imageRows.push({ project_id: el.dataset.id, image_url: g.image_url, alt_text: g.alt_text, sort_order: g.sort_order, is_cover: g.is_cover });
+          });
+          if (!normalizedGallery.length && imageUrl) {
+            imageRows.push({ project_id: el.dataset.id, image_url: imageUrl, alt_text: '', sort_order: 1, is_cover: true });
+          }
         }
 
-        await client.from('projects').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-        if (rows.length) await client.from('projects').upsert(rows);
+        const currentIds = state.projects.map((p) => p.id);
+        const nextIds = rows.map((r) => r.id);
+        const removedIds = currentIds.filter((id) => !nextIds.includes(id));
+
+        if (rows.length) {
+          const upsertProjectsResult = await client.from('projects').upsert(rows, { onConflict: 'id' });
+          throwIfSupabaseError(upsertProjectsResult, 'Не удалось сохранить проекты');
+        }
+
+        for (const projectId of nextIds) {
+          const clearImagesRes = await client.from('project_images').delete().eq('project_id', projectId);
+          throwIfSupabaseError(clearImagesRes, `Не удалось очистить галерею проекта ${projectId}`);
+          const projectImages = imageRows.filter((row) => row.project_id === projectId);
+          if (projectImages.length) {
+            const insertImagesResult = await client.from('project_images').insert(projectImages);
+            throwIfSupabaseError(insertImagesResult, `Не удалось сохранить изображения проекта ${projectId}`);
+          }
+        }
+
+        if (removedIds.length) {
+          const deleteRemovedProjects = await client.from('projects').delete().in('id', removedIds);
+          throwIfSupabaseError(deleteRemovedProjects, 'Не удалось удалить удалённые проекты');
+        }
+
         setStatus('Проекты сохранены');
         await loadProjects();
       } catch (err) {

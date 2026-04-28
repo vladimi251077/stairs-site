@@ -1,5 +1,16 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        { "type": "host", "value": "www.tekstura.shop" }
+      ],
+      "destination": "https://tekstura.shop/:path*",
+      "permanent": true
+    }
+  ],
   "routes": [
     { "src": "/projects", "dest": "/projects.html" },
     { "src": "/services", "dest": "/services.html" },

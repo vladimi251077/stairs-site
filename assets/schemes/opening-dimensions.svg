@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 140" fill="none">
+  <rect x="1" y="1" width="318" height="138" rx="12" stroke="#5b4a38"/>
+  <rect x="40" y="34" width="170" height="72" stroke="#ddb786" fill="rgba(221,183,134,.08)"/>
+  <line x1="40" y1="118" x2="210" y2="118" stroke="#f2dec6"/>
+  <line x1="222" y1="34" x2="222" y2="106" stroke="#f2dec6"/>
+  <line x1="260" y1="34" x2="260" y2="106" stroke="#f2dec6"/>
+  <text x="122" y="132" fill="#f2dec6" font-size="12" font-family="Inter,Arial">l</text>
+  <text x="228" y="72" fill="#f2dec6" font-size="12" font-family="Inter,Arial">w</text>
+  <text x="266" y="72" fill="#f2dec6" font-size="12" font-family="Inter,Arial">h</text>
+  <text x="16" y="22" fill="#f2dec6" font-size="12" font-family="Inter,Arial">Схема размеров проёма</text>
+</svg>

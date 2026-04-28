@@ -3,200 +3,207 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Проекты — Tekstura</title>
-
+  <title>Проекты лестниц — портфолио Tekstura</title>
+  <meta name="description" content="Реализованные проекты премиальных лестниц Tekstura: современные решения для частных домов, вилл и интерьерных пространств.">
+  <link rel="canonical" href="https://tekstura.shop/projects.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Tekstura">
+  <meta property="og:title" content="Проекты лестниц — портфолио Tekstura">
+  <meta property="og:description" content="Реализованные проекты премиальных лестниц Tekstura: современные решения для частных домов, вилл и интерьерных пространств.">
+  <meta property="og:url" content="https://tekstura.shop/projects.html">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/supabase-config.js"></script>
-
-  <style>
-    :root { color-scheme: dark; }
-
-    body {
-      margin: 0;
-      background: #0f0c0a;
-      color: #f4e7d4;
-      font-family: Inter, Arial, sans-serif;
-    }
-
-    .wrap {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 28px 16px 48px;
-    }
-
-    a {
-      color: inherit;
-    }
-
-    .top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 24px;
-      gap: 16px;
-    }
-
-    .home-link {
-      text-decoration: none;
-      border: 1px solid rgba(255,255,255,.14);
-      border-radius: 12px;
-      padding: 10px 14px;
-      color: #d7c3a8;
-      background: rgba(255,255,255,.03);
-    }
-
-    h1 {
-      margin: 0;
-      font-size: clamp(28px, 4vw, 44px);
-    }
-
-    .subtitle {
-      margin: 0 0 24px;
-      color: #b8aa98;
-    }
-
-    .projects-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 16px;
-    }
-
-    .project-card {
-      display: block;
-      text-decoration: none;
-      border: 1px solid rgba(255,255,255,.09);
-      border-radius: 18px;
-      overflow: hidden;
-      background: rgba(255,255,255,.02);
-      transition: transform .18s ease, border-color .18s ease;
-    }
-
-    .project-card:hover {
-      transform: translateY(-2px);
-      border-color: rgba(255,255,255,.25);
-    }
-
-    .project-card img {
-      width: 100%;
-      height: 180px;
-      object-fit: cover;
-      display: block;
-      background: #201b18;
-    }
-
-    .project-card-body {
-      padding: 14px;
-    }
-
-    .project-card h2 {
-      margin: 0 0 8px;
-      font-size: 19px;
-      line-height: 1.25;
-    }
-
-    .project-card p {
-      margin: 0;
-      color: #b8aa98;
-      font-size: 15px;
-      line-height: 1.45;
-    }
-
-    .price {
-      margin-top: 10px;
-      color: #efd8bb;
-      font-weight: 700;
-      font-size: 14px;
-    }
-
-    .empty {
-      border: 1px dashed rgba(255,255,255,.18);
-      border-radius: 14px;
-      padding: 16px;
-      color: #c8baa8;
-      background: rgba(255,255,255,.02);
-    }
-  </style>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/projects.css">
 </head>
-<body>
-  <main class="wrap">
-    <div class="top">
-      <h1>Проекты</h1>
-      <a class="home-link" href="/">На главную</a>
+<body class="projects-page">
+  <header class="site-header">
+    <div class="container site-header__inner">
+      <a href="/" class="brand" aria-label="ТЕКСТУРА — премиальные лестницы">
+        <span class="brand__fallback">ТЕКСТУРА</span>
+      </a>
+      <button class="mobile-menu-toggle" type="button" aria-controls="projectsNav" aria-expanded="false" aria-label="Открыть меню">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav id="projectsNav" class="site-nav" aria-label="Основная навигация">
+        <a href="/">Главная</a>
+        <a href="/projects.html" aria-current="page">Проекты</a>
+        <a href="/services.html">Услуги</a>
+        <a href="/articles.html">Статьи</a>
+        <a href="/norms.html">Нормы и уход</a>
+        <a href="/calculator.html">Калькулятор</a>
+        <a href="/request.html">Заявка</a>
+      </nav>
     </div>
+  </header>
 
-    <p class="subtitle">Нажмите на карточку, чтобы открыть страницу проекта.</p>
+  <main>
+    <section class="projects-hero" aria-labelledby="projectsHeroTitle">
+      <div class="container projects-hero__inner">
+        <div class="projects-hero__content">
+          <div class="projects-hero__eyebrow">Портфолио Tekstura</div>
+          <h1 id="projectsHeroTitle">Реальные лестницы в частных интерьерах</h1>
+          <p>Собираем здесь реализованные объекты и близкие по стилю решения: конструкция, материалы, сроки и ценовой ориентир. Каждый проект начинается с проверки проёма, инженерной логики и спокойной премиальной эстетики.</p>
+          <div class="projects-hero__actions">
+            <a class="btn btn-primary" href="/request.html">Обсудить похожую лестницу</a>
+            <a class="btn btn-secondary" href="/calculator.html">Рассчитать стоимость</a>
+          </div>
+        </div>
+        <aside class="projects-hero__panel" aria-label="Принципы отбора проектов">
+          <div class="projects-hero__panel-title">Что показываем в проектах</div>
+          <ul>
+            <li>реальные параметры и понятный ценовой ориентир;</li>
+            <li>материалы: дерево, металл, стекло, тёплая бронза;</li>
+            <li>решения, которые можно адаптировать под ваш дом.</li>
+          </ul>
+        </aside>
+      </div>
+    </section>
 
-    <section id="projectsRoot" class="projects-grid" aria-live="polite"></section>
+    <section class="projects-section" aria-labelledby="projectsListTitle">
+      <div class="container">
+        <div class="projects-toolbar">
+          <div class="projects-toolbar__title">
+            <div class="section-eyebrow">Избранные работы</div>
+            <h2 id="projectsListTitle">Кейсы и варианты лестниц</h2>
+            <p>Карточки подгружаются из каталога Tekstura. Если публичная коллекция временно недоступна, оставьте заявку — инженер подберёт релевантные объекты вручную.</p>
+          </div>
+          <div class="projects-count" id="projectsCount" aria-live="polite">Загрузка коллекции...</div>
+        </div>
+
+        <div id="projectsRoot" class="projects-grid" aria-live="polite">
+          <div class="loading-skeleton"></div>
+          <div class="loading-skeleton"></div>
+          <div class="loading-skeleton"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="projects-cta" aria-label="Заявка на похожую лестницу">
+      <div class="container">
+        <div class="cta-box">
+          <div class="cta-box__content">
+            <div class="section-eyebrow">Индивидуальный проект</div>
+            <h2>Хотите похожую лестницу?</h2>
+            <p>Пришлите размеры проёма, фото интерьера или желаемый стиль. Мы предложим конструкцию, материалы и понятный ориентир по бюджету.</p>
+          </div>
+          <div class="cta-box__actions">
+            <a class="btn btn-primary" href="/request.html">Оставить заявку</a>
+            <a class="btn btn-secondary" href="/calculator.html">Рассчитать стоимость</a>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 
-  <script>
-    const cfg = window.SUPABASE_CONFIG;
-    const client = window.supabase.createClient(cfg.url, cfg.anonKey);
-    const projectsRoot = document.getElementById('projectsRoot');
+  <footer class="site-footer">
+    <div class="container site-footer__inner">
+      <div class="site-footer__brand">TEKSTURA</div>
+      <div class="site-footer__links">
+        <a href="/">Главная</a>
+        <a href="/projects.html">Проекты</a>
+        <a href="/services.html">Услуги</a>
+        <a href="/articles.html">Статьи</a>
+        <a href="/norms.html">Нормы и уход</a>
+        <a href="/about.html">О компании</a>
+        <a href="/faq.html">FAQ</a>
+        <a href="/calculator.html">Калькулятор</a>
+        <a href="/request.html">Заявка</a>
+      </div>
+    </div>
+  </footer>
 
-    function escapeHtml(str) {
-      return String(str ?? '')
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#039;');
+<script>
+const menuToggle = document.querySelector('.mobile-menu-toggle');
+const projectsNav = document.getElementById('projectsNav');
+menuToggle?.addEventListener('click', () => {
+  const isOpen = document.body.classList.toggle('mobile-menu-open');
+  menuToggle.setAttribute('aria-expanded', String(isOpen));
+});
+projectsNav?.addEventListener('click', (event) => {
+  if (event.target.closest('a')) {
+    document.body.classList.remove('mobile-menu-open');
+    menuToggle?.setAttribute('aria-expanded', 'false');
+  }
+});
+const cfg = window.SUPABASE_CONFIG;
+const projectsCount = document.getElementById('projectsCount');
+const projectsRoot = document.getElementById('projectsRoot');
+const client = (cfg?.url && cfg?.anonKey && window.supabase)
+  ? window.supabase.createClient(cfg.url, cfg.anonKey)
+  : null;
+const fallbackProjectImage = '/assets/design/home-showcase.jpg';
+const esc = (s='') => String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'", '&#039;');
+const getPrice = (project) => project.price ? `${new Intl.NumberFormat('ru-RU').format(project.price)} ₽` : (project.price_from ? `от ${new Intl.NumberFormat('ru-RU').format(project.price_from)} ₽` : 'по запросу');
+const tagsFor = (project) => {
+  const tags = [];
+  if (project.category) tags.push(project.category);
+  if (project.staircase_type) tags.push(project.staircase_type);
+  if (project.lead_time) tags.push(`Срок: ${project.lead_time}`);
+  return tags.slice(0, 3);
+};
+const resolveProjectImage = (project) => {
+  const raw = String(project.cover_image || project.image || '').trim();
+  if (!raw || /logo|tekstura-logo|tekstura-header-logo|tekstura-mark|mark/i.test(raw)) return fallbackProjectImage;
+  return raw;
+};
+
+const render = (items=[]) => {
+  projectsCount.textContent = items.length ? `Реализованных кейсов: ${items.length}` : 'Коллекция обновляется';
+  projectsRoot.classList.toggle('projects-grid--curated', items.length > 0 && items.length <= 2);
+
+  if (!items.length) {
+    projectsRoot.innerHTML = '<div class="projects-empty">Публичная коллекция сейчас обновляется. Мы показываем только актуальные кейсы, поэтому часть объектов может быть скрыта до подготовки описаний и фото. Оставьте заявку — инженер Tekstura подберёт похожие реализованные лестницы под ваш проём.</div>';
+    return;
+  }
+
+  projectsRoot.innerHTML = items.map((p)=>{
+    const title = p.title || 'Проект Tekstura';
+    const shortDescription = p.short_description || p.description || 'Индивидуальная инженерная проработка, точные узлы и премиальная реализация под интерьер дома.';
+    const image = resolveProjectImage(p);
+    const tags = tagsFor(p);
+    return `<a class="project-card" href="/project.html?id=${encodeURIComponent(p.id)}" aria-label="Смотреть проект ${esc(title)}">
+      <figure class="project-card__media">
+        <img src="${esc(image)}" alt="${esc(title)}" loading="lazy" onerror="this.onerror=null;this.src='${fallbackProjectImage}';">
+      </figure>
+      <div class="project-card__body">
+        <h3>${esc(title)}</h3>
+        <p>${esc(shortDescription)}</p>
+        ${tags.length ? `<div class="project-tags">${tags.map((tag)=>`<span class="project-tag">${esc(tag)}</span>`).join('')}</div>` : ''}
+        <div class="project-card__note">Инженерная реализация и монтаж штатной бригадой Tekstura.</div>
+        <div class="project-card__footer">
+          <div class="project-card__price">${esc(getPrice(p))}</div>
+          <span class="project-card__link">Смотреть проект</span>
+        </div>
+      </div>
+    </a>`;
+  }).join('');
+};
+
+(async function load(){
+  try {
+    if (!client) {
+      projectsCount.textContent = 'Каталог в базовом режиме';
+      projectsRoot.innerHTML = '<div class="projects-state">Каталог временно недоступен. Оставьте заявку — отправим curated-подборку реализованных объектов Tekstura вручную.</div>';
+      return;
     }
-
-    function escapeAttr(str) {
-      return String(str ?? '').replaceAll('"', '&quot;');
-    }
-
-    function getShortDescription(project) {
-      return project.short_description || project.description || '';
-    }
-
-    function getPrice(project) {
-      if (project.price) return project.price + ' ₽';
-      if (project.price_from) return 'от ' + project.price_from + ' ₽';
-      return 'по запросу';
-    }
-
-    function renderProjects(items) {
-      if (!items?.length) {
-        projectsRoot.innerHTML = '<div class="empty">Проекты пока не добавлены.</div>';
-        return;
-      }
-
-      projectsRoot.innerHTML = items.map((project) => {
-        const shortDescription = getShortDescription(project);
-        const image = project.cover_image || project.image || '/logo.jpg.png';
-        const id = encodeURIComponent(project.id);
-
-        return `
-          <a class="project-card" href="/project.html?id=${id}">
-            <img src="${escapeAttr(image)}" alt="${escapeAttr(project.title || 'Проект')}" />
-            <div class="project-card-body">
-              <h2>${escapeHtml(project.title || 'Без названия')}</h2>
-              <p>${escapeHtml(shortDescription || 'Описание появится позже.')}</p>
-              <div class="price">${escapeHtml(getPrice(project))}</div>
-            </div>
-          </a>
-        `;
-      }).join('');
-    }
-
-    async function loadProjects() {
-      try {
-        const { data, error } = await client
-          .from('projects')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        if (error) throw error;
-        renderProjects(data || []);
-      } catch (err) {
-        console.error('Ошибка загрузки проектов', err);
-        projectsRoot.innerHTML = '<div class="empty">Не удалось загрузить проекты. Попробуйте обновить страницу.</div>';
-      }
-    }
-
-    loadProjects();
-  </script>
+    const { data, error } = await client.from('projects').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    const items = data || [];
+    if (!items.length) return render([]);
+    const { data: images } = await client.from('project_images').select('project_id,image_url,is_cover,sort_order').in('project_id', items.map((i)=>i.id)).order('sort_order', { ascending: true });
+    const coverMap = new Map();
+    (images||[]).forEach((img)=>{ if(!coverMap.has(img.project_id) || img.is_cover) coverMap.set(img.project_id, img.image_url); });
+    render(items.map((p)=>({ ...p, cover_image: coverMap.get(p.id) || p.cover_image })));
+  } catch (err) {
+    console.error(err);
+    projectsCount.textContent='Не удалось загрузить коллекцию';
+    projectsRoot.innerHTML='<div class="projects-state">Не удалось загрузить каталог из Supabase. Оставьте заявку, и инженер отправит актуальные кейсы из реализованных объектов Tekstura.</div>';
+  }
+})();
+</script>
 </body>
 </html>
