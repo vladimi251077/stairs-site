@@ -220,10 +220,10 @@
           <div class="field">
             <label for="pricingRegion">Регион цены</label>
             <select id="pricingRegion">
-              <option value="primary_region">Основной регион · ×1.00</option>
-              <option value="secondary_region">Второй регион · ×1.00</option>
+              <option value="primary_region">Основной регион</option>
+              <option value="secondary_region">Второй регион</option>
             </select>
-            <p class="field-help">Итоговый ориентир умножается на коэффициент региона из админки.</p>
+            <p class="field-help">Регион влияет на итоговую стоимость.</p>
           </div>
         </div>
 
@@ -323,8 +323,8 @@
         if (!select || select.options.length) return;
 
         select.innerHTML = [
-          '<option value="primary_region">Основной регион · ×1.00</option>',
-          '<option value="secondary_region">Второй регион · ×1.00</option>'
+          '<option value="primary_region">Основной регион</option>',
+          '<option value="secondary_region">Второй регион</option>'
         ].join('');
       };
 

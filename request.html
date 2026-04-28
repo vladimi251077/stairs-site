@@ -131,7 +131,7 @@ function buildCalcSummary(payload) {
       selections.coating_option ? `Покрытие: ${selections.coating_option}` : '',
       selections.railing_option ? `Ограждение: ${selections.railing_option}` : '',
       selections.lighting_option ? `Подсветка: ${selections.lighting_option}` : '',
-      pricingRegion ? `Регион цены: ${pricingRegion.name || pricingRegion.code} · x${Number(pricingRegion.price_coef || 1).toFixed(2)}` : '',
+      pricingRegion ? `Регион цены: ${pricingRegion.name || pricingRegion.code}` : '',
       pricingBreakdown ? `База до региона: ${Number(pricingBreakdown.subtotal_before_region || 0).toLocaleString('ru-RU')} ₽` : '',
       dimensions.floor_to_floor_height || dimensions.floorHeight ? `Высота: ${dimensions.floor_to_floor_height || dimensions.floorHeight} мм` : '',
       dimensions.opening_length || dimensions.openingLength ? `Проём: ${dimensions.opening_length || dimensions.openingLength} x ${dimensions.opening_width || dimensions.openingWidth || '-'} мм` : '',

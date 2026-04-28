@@ -266,7 +266,7 @@ function renderPricingRegionOptions(preferredCode = null) {
   select.innerHTML = regions
     .map(
       (region) =>
-        `<option value="${escapeHtml(region.code)}">${escapeHtml(region.name)} · ×${Number(region.price_coef || 1).toFixed(2)}</option>`
+        `<option value="${escapeHtml(region.code)}">${escapeHtml(region.name)}</option>`
     )
     .join('');
 
@@ -1267,7 +1267,7 @@ function renderPrice(price) {
     <div class="price-main">${money(price.total)}</div>
     <div class="muted">Диапазон: ${money(price.min)} — ${money(price.max)}</div>
     <div class="muted">База до региона: ${money(price.subtotalBeforeRegion)}</div>
-    <div class="muted">Регион: ${escapeHtml(price.pricingRegion?.name || 'не выбран')} · коэффициент ×${Number(price.regionalCoef || 1).toFixed(2)}</div>
+    <div class="muted">Регион: ${escapeHtml(price.pricingRegion?.name || 'не выбран')}</div>
     <div class="muted">Региональная корректировка: ${money(price.regionalAdjustment)}</div>
     <div class="muted">Работы: ${money(price.baseLabor)} · Материалы: ${money(price.materialCost)}</div>
   `;
