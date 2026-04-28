@@ -143,6 +143,29 @@ const OPTION_LABELS = {
   }
 };
 
+const SCENARIO_RATE_SELECTS = {
+  finishMaterialPerM2: {
+    id: 'finishMaterial',
+    fallback: 'oak',
+    labelTarget: 'finish_material'
+  },
+  railingPerM: {
+    id: 'railingOption',
+    fallback: 'metal',
+    labelTarget: 'railing'
+  },
+  coatingPerM2: {
+    id: 'coatingOption',
+    fallback: 'standard',
+    labelTarget: 'coating'
+  },
+  lightingPerStep: {
+    id: 'lightingOption',
+    fallback: 'none',
+    labelTarget: 'lighting'
+  }
+};
+
 const $ = (id) => document.getElementById(id);
 const formatMm = (value) => `${new Intl.NumberFormat('ru-RU').format(Math.round(value || 0))} мм`;
 const round = (value, digits = 2) => Number((value || 0).toFixed(digits));
@@ -276,6 +299,61 @@ function buildScenarioRatesMap(rows = getActiveScenarioRateRows()) {
 
 function getScenarioRates() {
   return buildScenarioRatesMap(getActiveScenarioRateRows());
+}
+
+function getScenarioRowsByGroup(group) {
+  return getActiveScenarioRateRows().filter((row) => row.rate_group === group);
+}
+
+function getScenarioOptionLabel(group, key) {
+  const row = getScenarioRowsByGroup(group).find((item) => item.rate_key === key);
+  return row?.label || key || 'Уточняется';
+}
+
+function getOptionLabel(kind, key) {
+  if (kind === 'finish_material') return getScenarioOptionLabel('finishMaterialPerM2', key);
+  if (kind === 'railing') return getScenarioOptionLabel('railingPerM', key);
+  if (kind === 'coating') return getScenarioOptionLabel('coatingPerM2', key);
+  if (kind === 'lighting') return getScenarioOptionLabel('lightingPerStep', key);
+  return key || 'Уточняется';
+}
+
+function renderScenarioRateOptions(group, preferredValue = null) {
+  const config = SCENARIO_RATE_SELECTS[group];
+  const select = config ? $(config.id) : null;
+  if (!select) return;
+
+  const rows = getScenarioRowsByGroup(group);
+  const fallbackRows = createDefaultScenarioRateRows()
+    .map((row, index) => normalizeScenarioRateRow(row, index))
+    .filter((row) => row.rate_group === group && row.active !== false)
+    .sort((a, b) => a.sort_order - b.sort_order);
+  const options = rows.length ? rows : fallbackRows;
+  const currentValue = preferredValue || select.value || config.fallback;
+
+  select.innerHTML = options
+    .map((row) => `<option value="${escapeHtml(row.rate_key)}">${escapeHtml(row.label)}</option>`)
+    .join('');
+
+  const nextValue = options.some((row) => row.rate_key === currentValue)
+    ? currentValue
+    : options[0]?.rate_key || config.fallback;
+
+  if (nextValue) select.value = nextValue;
+
+  if (config.labelTarget) {
+    OPTION_LABELS[config.labelTarget] = options.reduce((labels, row) => {
+      labels[row.rate_key] = row.label;
+      return labels;
+    }, {});
+  }
+}
+
+function renderScenarioRateSelects(preferredConfig = null) {
+  renderScenarioRateOptions('finishMaterialPerM2', preferredConfig?.finish_material);
+  renderScenarioRateOptions('railingPerM', preferredConfig?.railing_option);
+  renderScenarioRateOptions('coatingPerM2', preferredConfig?.coating_option);
+  renderScenarioRateOptions('lightingPerStep', preferredConfig?.lighting_option);
 }
 
 function showStep(step) {
@@ -787,8 +865,8 @@ function calculateScenarioResult(config) {
         ['Отделка ступеней', `${metrics.finishAreaM2} м²`],
         ['Длина прямого ограждения', config.railing_option === 'none' ? 'Не требуется' : directRailingText],
         ['Общая длина ограждения', config.railing_option === 'none' ? 'Не требуется' : `${metrics.railingLengthM} м`],
-        ['Ограждение', OPTION_LABELS.railing[config.railing_option]],
-        ['Подсветка', OPTION_LABELS.lighting[config.lighting_option]]
+        ['Ограждение', getOptionLabel('railing', config.railing_option)],
+        ['Подсветка', getOptionLabel('lighting', config.lighting_option)]
       ],
       adjustment_hints: fit.adjustment_hints
     });
@@ -819,8 +897,8 @@ function calculateScenarioResult(config) {
         ['Ступеней', `${metrics.stepCount}`],
         ['Площадь облицовки', `${metrics.finishAreaM2} м²`],
         ['Основание', $('concreteBaseCondition')?.selectedOptions?.[0]?.textContent || 'уточняется'],
-        ['Ограждение', OPTION_LABELS.railing[config.railing_option]],
-        ['Материал отделки', OPTION_LABELS.finish_material[config.finish_material]]
+        ['Ограждение', getOptionLabel('railing', config.railing_option)],
+        ['Материал отделки', getOptionLabel('finish_material', config.finish_material)]
       ],
       adjustment_hints: ['приложить фото бетонного основания', 'уточнить перепады и сколы перед финальной сметой']
     });
@@ -843,9 +921,9 @@ function calculateScenarioResult(config) {
         ['Сценарий', BASE_CONDITION_LABELS.finish_only],
         ['Ступеней', `${metrics.stepCount}`],
         ['Площадь отделки', `${metrics.finishAreaM2} м²`],
-        ['Материал отделки', OPTION_LABELS.finish_material[config.finish_material]],
-        ['Ограждение', OPTION_LABELS.railing[config.railing_option]],
-        ['Подсветка', OPTION_LABELS.lighting[config.lighting_option]]
+        ['Материал отделки', getOptionLabel('finish_material', config.finish_material)],
+        ['Ограждение', getOptionLabel('railing', config.railing_option)],
+        ['Подсветка', getOptionLabel('lighting', config.lighting_option)]
       ],
       adjustment_hints: ['приложить фото текущей лестницы', 'уточнить материал ступеней и подступенков']
     });
@@ -979,11 +1057,11 @@ function calculateMaterials(config, geometry) {
     const metrics = geometry.service_metrics || {};
     const items = [
       { label: 'Сценарий', value: BASE_CONDITION_LABELS[config.base_condition] || 'Уточняется' },
-      { label: 'Материал отделки', value: OPTION_LABELS.finish_material[config.finish_material] || 'Уточняется' },
+      { label: 'Материал отделки', value: getOptionLabel('finish_material', config.finish_material) },
       { label: 'Площадь отделки', value: `${metrics.finishAreaM2 || 0} м²` },
-      { label: 'Ограждение', value: metrics.railingLengthM ? `${OPTION_LABELS.railing[config.railing_option]} · ${metrics.railingLengthM} м` : 'Не требуется' },
-      { label: 'Покрытие / защита', value: OPTION_LABELS.coating[config.coating_option] || 'Уточняется' },
-      { label: 'Подсветка', value: OPTION_LABELS.lighting[config.lighting_option] || 'Не нужна' },
+      { label: 'Ограждение', value: metrics.railingLengthM ? `${getOptionLabel('railing', config.railing_option)} · ${metrics.railingLengthM} м` : 'Не требуется' },
+      { label: 'Покрытие / защита', value: getOptionLabel('coating', config.coating_option) },
+      { label: 'Подсветка', value: getOptionLabel('lighting', config.lighting_option) },
       { label: 'Монтаж', value: 'Подготовка и установка отделки' }
     ];
 
@@ -1409,9 +1487,13 @@ async function loadSupabaseDictionaries() {
       renderPricingRegionOptions(state.config?.pricing_region_code);
     }
 
-    if (!scenarioRatesRes.error && Array.isArray(scenarioRatesRes.data) && scenarioRatesRes.data.length) {
+    if (scenarioRatesRes.error) {
+      console.warn('stair_scenario_rates load failed', scenarioRatesRes.error);
+    } else if (Array.isArray(scenarioRatesRes.data) && scenarioRatesRes.data.length) {
       state.dictionaries.scenarioRateRows = scenarioRatesRes.data.map((row, index) => normalizeScenarioRateRow(row, index));
     }
+
+    renderScenarioRateSelects(state.config || getConfigFromForm());
 
     setStatus('');
   } catch (error) {
@@ -1440,6 +1522,7 @@ function init() {
   });
 
   renderPricingRegionOptions();
+  renderScenarioRateSelects();
   updateScenarioFields();
   loadSupabaseDictionaries();
 }
