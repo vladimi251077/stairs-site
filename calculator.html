@@ -115,18 +115,53 @@
           <div class="field">
             <label for="readyFrameStepCount">Количество ступеней</label>
             <input id="readyFrameStepCount" type="number" value="15" min="1" max="40">
+            <details class="field-help">
+              <summary>Как измерить</summary>
+              <svg viewBox="0 0 220 80" width="100%" height="70" aria-label="Схема подсчета ступеней">
+                <rect x="15" y="50" width="28" height="20" fill="#2d3748"/><rect x="43" y="40" width="28" height="30" fill="#334155"/><rect x="71" y="30" width="28" height="40" fill="#3b4557"/><rect x="99" y="20" width="28" height="50" fill="#475569"/>
+                <text x="150" y="28" fill="#e2e8f0" font-size="11">Считайте только</text><text x="150" y="42" fill="#e2e8f0" font-size="11">отделываемые</text><text x="150" y="56" fill="#e2e8f0" font-size="11">ступени</text>
+              </svg>
+              <span class="badge">1–40 шт</span> <span class="badge">0 нельзя</span> <span class="badge">40+ — проверка инженера</span>
+            </details>
           </div>
           <div class="field">
             <label for="readyFrameMarchWidth">Ширина ступени, мм</label>
             <input id="readyFrameMarchWidth" type="number" value="1000" min="700" max="1800">
+            <details class="field-help">
+              <summary>Как измерить</summary>
+              <svg viewBox="0 0 220 80" width="100%" height="70" aria-label="Схема ширины ступени">
+                <rect x="40" y="20" width="140" height="40" fill="#334155"/>
+                <line x1="45" y1="66" x2="175" y2="66" stroke="#22c55e" stroke-width="2"/><circle cx="45" cy="66" r="4" fill="#22c55e"/><circle cx="175" cy="66" r="4" fill="#eab308"/>
+                <text x="66" y="60" fill="#e2e8f0" font-size="11">ширина от края до края</text>
+              </svg>
+              <span class="badge">700–1800 мм</span> <span class="badge">обычно 900–1000</span> <span class="badge">не ширина проёма</span>
+            </details>
           </div>
           <div class="field">
             <label for="readyFrameTreadDepth">Глубина ступени, мм</label>
             <input id="readyFrameTreadDepth" type="number" value="280" min="180" max="500">
+            <details class="field-help">
+              <summary>Как измерить</summary>
+              <svg viewBox="0 0 220 80" width="100%" height="70" aria-label="Схема глубины ступени">
+                <polyline points="20,58 80,58 80,38 140,38 140,18 200,18" fill="none" stroke="#64748b" stroke-width="4"/>
+                <line x1="80" y1="64" x2="140" y2="64" stroke="#22c55e" stroke-width="2"/><circle cx="80" cy="64" r="4" fill="#22c55e"/><circle cx="140" cy="64" r="4" fill="#eab308"/>
+                <text x="84" y="30" fill="#e2e8f0" font-size="11">горизонталь проступи</text>
+              </svg>
+              <span class="badge">180–500 мм</span> <span class="badge">обычно 250–320</span> <span class="badge">не диагональ</span>
+            </details>
           </div>
           <div class="field">
             <label for="readyFrameRiserHeight">Высота подступенка, мм</label>
             <input id="readyFrameRiserHeight" type="number" value="175" min="120" max="230">
+            <details class="field-help">
+              <summary>Как измерить</summary>
+              <svg viewBox="0 0 220 80" width="100%" height="70" aria-label="Схема высоты подступенка">
+                <polyline points="30,60 100,60 100,35 170,35" fill="none" stroke="#64748b" stroke-width="4"/>
+                <line x1="100" y1="58" x2="100" y2="37" stroke="#22c55e" stroke-width="2"/><circle cx="100" cy="58" r="4" fill="#22c55e"/><circle cx="100" cy="37" r="4" fill="#eab308"/>
+                <text x="110" y="44" fill="#e2e8f0" font-size="11">верх</text><text x="110" y="60" fill="#e2e8f0" font-size="11">низ</text>
+              </svg>
+              <span class="badge">120–230 мм</span> <span class="badge">обычно 150–190</span> <span class="badge">не высота этажа</span>
+            </details>
           </div>
           <div class="field field-wide">
             <label for="finishScope">Что отделываем?</label>
@@ -161,18 +196,44 @@
           <div class="field hidden" id="landingAreaField">
             <label for="landingArea">Площадь площадки, м²</label>
             <input id="landingArea" type="number" value="" min="0" step="0.01" placeholder="Если известна сразу">
+            <details class="field-help">
+              <summary>Как измерить площадку</summary>
+              <svg viewBox="0 0 220 80" width="100%" height="70" aria-label="Схема измерения площадки">
+                <rect x="40" y="18" width="130" height="44" fill="#334155"/>
+                <line x1="40" y1="68" x2="170" y2="68" stroke="#22c55e" stroke-width="2"/><line x1="176" y1="18" x2="176" y2="62" stroke="#22c55e" stroke-width="2"/>
+                <circle cx="40" cy="68" r="4" fill="#22c55e"/><circle cx="170" cy="68" r="4" fill="#eab308"/>
+              </svg>
+              <span class="badge">длина/ширина в мм</span> <span class="badge">или площадь в м²</span> <span class="badge">площадка ≠ ступень</span>
+            </details>
           </div>
-          <div class="field hidden" id="windersToggleField">
+          <div class="field hidden" id="winderToggleField">
             <label><input id="hasWinders" type="checkbox" onchange="window.syncClientScenarioFields && window.syncClientScenarioFields()"> Есть забежные ступени</label>
           </div>
           <div class="field hidden" id="winderCountField">
             <label for="winderCount">Количество забежных ступеней</label>
             <input id="winderCount" type="number" value="3" min="0" max="12">
+            <details class="field-help">
+              <summary>Как считать забежные</summary>
+              <svg viewBox="0 0 220 80" width="100%" height="70" aria-label="Схема забежных ступеней">
+                <path d="M40,64 L100,64 L100,44 Z" fill="#334155"/><path d="M100,64 L160,64 L100,44 Z" fill="#475569"/><path d="M100,44 L160,44 L100,24 Z" fill="#64748b"/>
+                <text x="22" y="18" fill="#e2e8f0" font-size="11">считать только</text><text x="22" y="32" fill="#e2e8f0" font-size="11">поворотные ступени</text>
+              </svg>
+              <span class="badge">0–12 шт</span> <span class="badge">обычно 3–6</span> <span class="badge">не весь марш</span>
+            </details>
           </div>
           <div class="field field-wide">
             <label for="readyFrameStraightRailingLength">Длина прямого ограждения, м</label>
             <input id="readyFrameStraightRailingLength" type="number" value="" min="0" step="0.1" placeholder="Например 3.6">
             <p class="field-help">Если знаете точную длину прямого ограждения, введите её вручную. Если поле пустое, калькулятор использует авторасчёт.</p>
+            <details class="field-help">
+              <summary>Как измерить</summary>
+              <svg viewBox="0 0 220 80" width="100%" height="70" aria-label="Схема длины ограждения">
+                <line x1="24" y1="48" x2="196" y2="48" stroke="#64748b" stroke-width="6"/>
+                <line x1="24" y1="62" x2="196" y2="62" stroke="#22c55e" stroke-width="2"/><circle cx="24" cy="62" r="4" fill="#22c55e"/><circle cx="196" cy="62" r="4" fill="#eab308"/>
+                <text x="40" y="22" fill="#e2e8f0" font-size="11">вводить в метрах: 3.6</text><text x="40" y="36" fill="#e2e8f0" font-size="11">не 3600</text>
+              </svg>
+              <span class="badge">метры (м)</span> <span class="badge">50+ м — ошибка</span>
+            </details>
           </div>
         </div>
 
@@ -356,7 +417,7 @@
         setHidden('existingMetalGroup', !isReadyFrame);
         setHidden('existingConcreteGroup', !isExistingConcrete);
         setHidden('landingToggleField', true);
-        setHidden('windersToggleField', true);
+        setHidden('winderToggleField', true);
         setHidden('landingLengthField', !hasLanding);
         setHidden('landingWidthField', !hasLanding);
         setHidden('landingAreaField', !hasLanding);

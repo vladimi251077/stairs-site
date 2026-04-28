@@ -64,7 +64,7 @@ test('calculator smoke: ready metal base payload includes finish details', async
   await page.locator('#claddingSheetWidth').fill('1035');
   await page.locator('#claddingSheetHeight').fill('2800');
   await expect(page.locator('#landingToggleField')).toHaveClass(/hidden/);
-  await expect(page.locator('#windersToggleField')).toHaveClass(/hidden/);
+  await expect(page.locator('#winderToggleField')).toHaveClass(/hidden/);
   await page.locator('#landingLength').fill('1000');
   await page.locator('#landingWidth').fill('1000');
   await page.locator('#readyFrameStraightRailingLength').fill('4.2');
@@ -113,7 +113,7 @@ test('calculator smoke: ready base l_turn_winders shows only winder fields and p
   await page.locator('[data-next-step="2"]').click();
 
   await expect(page.locator('#landingToggleField')).toHaveClass(/hidden/);
-  await expect(page.locator('#windersToggleField')).toHaveClass(/hidden/);
+  await expect(page.locator('#winderToggleField')).toHaveClass(/hidden/);
   await expect(page.locator('#landingLengthField')).toHaveClass(/hidden/);
   await expect(page.locator('#landingWidthField')).toHaveClass(/hidden/);
   await expect(page.locator('#landingAreaField')).toHaveClass(/hidden/);
@@ -144,7 +144,7 @@ test('calculator smoke: ready base l_turn_landing shows only landing fields and 
   await page.locator('[data-next-step="2"]').click();
 
   await expect(page.locator('#landingToggleField')).toHaveClass(/hidden/);
-  await expect(page.locator('#windersToggleField')).toHaveClass(/hidden/);
+  await expect(page.locator('#winderToggleField')).toHaveClass(/hidden/);
   await expect(page.locator('#landingLengthField')).not.toHaveClass(/hidden/);
   await expect(page.locator('#landingWidthField')).not.toHaveClass(/hidden/);
   await expect(page.locator('#landingAreaField')).not.toHaveClass(/hidden/);

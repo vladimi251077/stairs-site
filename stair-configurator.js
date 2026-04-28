@@ -488,7 +488,7 @@ function updateScenarioFields() {
   setHidden('existingMetalGroup', !isExistingMetal);
   setHidden('existingConcreteGroup', !isExistingConcrete);
   setHidden('landingToggleField', true);
-  setHidden('windersToggleField', true);
+  setHidden('winderToggleField', true);
   setHidden('landingLengthField', !hasLanding);
   setHidden('landingWidthField', !hasLanding);
   setHidden('landingAreaField', !hasLanding);
