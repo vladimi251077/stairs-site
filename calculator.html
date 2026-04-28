@@ -58,7 +58,7 @@
           </div>
           <div class="field hidden" id="readyBaseShapeField">
             <label for="readyBaseShape">Форма лестницы для готового основания</label>
-            <select id="readyBaseShape">
+            <select id="readyBaseShape" onchange="window.syncClientScenarioFields && window.syncClientScenarioFields()">
               <option value="straight">Прямая</option>
               <option value="l_turn_landing">Г-образная с площадкой</option>
               <option value="l_turn_winders">Г-образная с забежными ступенями</option>
@@ -147,7 +147,7 @@
               <input id="claddingSheetHeight" type="number" value="2800" min="1" aria-label="Высота листа, мм">
             </div>
           </div>
-          <div class="field">
+          <div class="field hidden" id="landingToggleField">
             <label><input id="hasLanding" type="checkbox" onchange="window.syncClientScenarioFields && window.syncClientScenarioFields()"> Есть площадка</label>
           </div>
           <div class="field hidden" id="landingLengthField">
@@ -162,7 +162,7 @@
             <label for="landingArea">Площадь площадки, м²</label>
             <input id="landingArea" type="number" value="" min="0" step="0.01" placeholder="Если известна сразу">
           </div>
-          <div class="field">
+          <div class="field hidden" id="windersToggleField">
             <label><input id="hasWinders" type="checkbox" onchange="window.syncClientScenarioFields && window.syncClientScenarioFields()"> Есть забежные ступени</label>
           </div>
           <div class="field hidden" id="winderCountField">
@@ -330,6 +330,7 @@
 
       const syncScenarioFields = () => {
         const baseCondition = normalizeBaseCondition(document.getElementById('baseCondition')?.value);
+        const readyBaseShape = document.getElementById('readyBaseShape')?.value || 'straight';
         const stairType = document.getElementById('stairType')?.value || 'straight';
         const isReadyBaseChoice = document.getElementById('baseCondition')?.value === 'ready_base';
         const isEmptyOpening = baseCondition === 'empty_opening';
@@ -340,8 +341,8 @@
         const showTurnFields = usesStructuralShape && stairType !== 'straight';
         const toResultsBtn = document.getElementById('toResultsBtn');
         const frameMaterial = document.getElementById('frameMaterial');
-        const hasLanding = !!document.getElementById('hasLanding')?.checked;
-        const hasWinders = !!document.getElementById('hasWinders')?.checked;
+        const hasLanding = isReadyBaseChoice && ['l_turn_landing', 'u_turn_landing'].includes(readyBaseShape);
+        const hasWinders = isReadyBaseChoice && ['l_turn_winders', 'u_turn_winders'].includes(readyBaseShape);
         const isFullCladding = document.getElementById('finishScope')?.value === 'full_cladding';
 
         setHidden('baseSubtypeField', !isReadyBaseChoice);
@@ -354,6 +355,8 @@
         setHidden('readyFrameGroup', !(isReadyFrame || isExistingConcrete));
         setHidden('existingMetalGroup', !isReadyFrame);
         setHidden('existingConcreteGroup', !isExistingConcrete);
+        setHidden('landingToggleField', true);
+        setHidden('windersToggleField', true);
         setHidden('landingLengthField', !hasLanding);
         setHidden('landingWidthField', !hasLanding);
         setHidden('landingAreaField', !hasLanding);

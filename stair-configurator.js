@@ -468,6 +468,7 @@ function sanitizeConfigByScenario(config) {
 function updateScenarioFields() {
   const baseConditionRaw = $('baseCondition')?.value || 'empty_opening';
   const baseCondition = normalizeBaseConditionValue(baseConditionRaw);
+  const readyBaseShape = $('readyBaseShape')?.value || 'straight';
   const isEmptyOpening = baseCondition === 'empty_opening';
   const isReadyBaseChoice = baseConditionRaw === 'ready_base';
   const isExistingMetal = isReadyFrameCondition(baseCondition);
@@ -475,8 +476,8 @@ function updateScenarioFields() {
   const usesGeometryInputs = isEmptyOpening;
   const usesStructuralShape = isEmptyOpening;
   const usesServiceOptions = isEmptyOpening || isExistingMetal || isExistingConcrete;
-  const hasLanding = !!$('hasLanding')?.checked;
-  const hasWinders = !!$('hasWinders')?.checked;
+  const hasLanding = isReadyBaseChoice && ['l_turn_landing', 'u_turn_landing'].includes(readyBaseShape);
+  const hasWinders = isReadyBaseChoice && ['l_turn_winders', 'u_turn_winders'].includes(readyBaseShape);
   const isFullCladding = normalizeFinishScope($('finishScope')?.value) === 'full_cladding';
 
   setHidden('baseSubtypeField', !isReadyBaseChoice);
@@ -486,6 +487,8 @@ function updateScenarioFields() {
   setHidden('readyFrameGroup', !(isExistingMetal || isExistingConcrete));
   setHidden('existingMetalGroup', !isExistingMetal);
   setHidden('existingConcreteGroup', !isExistingConcrete);
+  setHidden('landingToggleField', true);
+  setHidden('windersToggleField', true);
   setHidden('landingLengthField', !hasLanding);
   setHidden('landingWidthField', !hasLanding);
   setHidden('landingAreaField', !hasLanding);
@@ -518,6 +521,10 @@ function getConfigFromForm() {
     u_turn_winders: { stair_type: 'u_turn', turn_type: 'winders' }
   };
   const mappedShape = shapeToStair[readyBaseShape] || shapeToStair.straight;
+  const hasLandingFromShape = ['l_turn_landing', 'u_turn_landing'].includes(readyBaseShape);
+  const hasWindersFromShape = ['l_turn_winders', 'u_turn_winders'].includes(readyBaseShape);
+  const hasLanding = baseConditionRaw === 'ready_base' ? hasLandingFromShape : !!$('hasLanding')?.checked;
+  const hasWinders = baseConditionRaw === 'ready_base' ? hasWindersFromShape : !!$('hasWinders')?.checked;
   return sanitizeConfigByScenario({
     base_condition: baseCondition,
     project_scenario: baseConditionRaw === 'ready_base' ? 'ready_base' : 'empty_opening',
@@ -551,11 +558,11 @@ function getConfigFromForm() {
     cladding_sheet_count: Number($('claddingSheetCount')?.value || 5),
     cladding_sheet_width: Number($('claddingSheetWidth')?.value || 1035),
     cladding_sheet_height: Number($('claddingSheetHeight')?.value || 2800),
-    has_landing: !!$('hasLanding')?.checked,
+    has_landing: hasLanding,
     landing_length: Number($('landingLength')?.value || 0),
     landing_width: Number($('landingWidth')?.value || 0),
     landing_area: Number($('landingArea')?.value || 0),
-    has_winders: !!$('hasWinders')?.checked,
+    has_winders: hasWinders,
     winder_count: Number($('winderCount')?.value || 0),
     concrete_step_count: Number($('readyFrameStepCount')?.value || 0),
     concrete_stair_width: Number($('readyFrameMarchWidth')?.value || 0),
@@ -1598,6 +1605,7 @@ function init() {
 
   baseConditionNode?.addEventListener('change', updateScenarioFields);
   baseSubtypeNode?.addEventListener('change', updateScenarioFields);
+  $('readyBaseShape')?.addEventListener('change', updateScenarioFields);
   $('finishScope')?.addEventListener('change', updateScenarioFields);
   $('hasLanding')?.addEventListener('change', updateScenarioFields);
   $('hasWinders')?.addEventListener('change', updateScenarioFields);

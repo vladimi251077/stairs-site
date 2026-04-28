@@ -63,11 +63,10 @@ test('calculator smoke: ready metal base payload includes finish details', async
   await page.locator('#claddingSheetCount').fill('5');
   await page.locator('#claddingSheetWidth').fill('1035');
   await page.locator('#claddingSheetHeight').fill('2800');
-  await page.locator('#hasLanding').check();
+  await expect(page.locator('#landingToggleField')).toHaveClass(/hidden/);
+  await expect(page.locator('#windersToggleField')).toHaveClass(/hidden/);
   await page.locator('#landingLength').fill('1000');
   await page.locator('#landingWidth').fill('1000');
-  await page.locator('#hasWinders').check();
-  await page.locator('#winderCount').fill('3');
   await page.locator('#readyFrameStraightRailingLength').fill('4.2');
 
   await page.locator('#toResultsBtn').click();
@@ -84,6 +83,8 @@ test('calculator smoke: ready metal base payload includes finish details', async
   expect(storedPayload.scenario_details.finish_scope).toBe('full_cladding');
   expect(storedPayload.scenario_details.cladding_sheet_count).toBe(5);
   expect(storedPayload.scenario_details.full_cladding_area_m2).toBe(14.49);
+  expect(storedPayload.scenario_details.has_landing).toBe(true);
+  expect(storedPayload.scenario_details.has_winders).toBe(false);
   expect(storedPayload.price_relevant_selections.railing_option).toBeTruthy();
   expect(issues).toEqual([]);
 });
@@ -102,6 +103,69 @@ test('calculator smoke: unrealistic railing length blocks pricing', async ({ pag
   expect(issues).toEqual([]);
 });
 
+test('calculator smoke: ready base l_turn_winders shows only winder fields and payload flags', async ({ page }) => {
+  const issues = collectRuntimeIssues(page);
+
+  await page.goto(`${baseUrl}/calculator.html`);
+  await page.locator('#baseCondition').selectOption('ready_base');
+  await page.locator('#baseSubtype').selectOption('existing_concrete_base');
+  await page.locator('#readyBaseShape').selectOption('l_turn_winders');
+  await page.locator('[data-next-step="2"]').click();
+
+  await expect(page.locator('#landingToggleField')).toHaveClass(/hidden/);
+  await expect(page.locator('#windersToggleField')).toHaveClass(/hidden/);
+  await expect(page.locator('#landingLengthField')).toHaveClass(/hidden/);
+  await expect(page.locator('#landingWidthField')).toHaveClass(/hidden/);
+  await expect(page.locator('#landingAreaField')).toHaveClass(/hidden/);
+  await expect(page.locator('#winderCountField')).not.toHaveClass(/hidden/);
+
+  await page.locator('#readyFrameStepCount').fill('18');
+  await page.locator('#readyFrameMarchWidth').fill('950');
+  await page.locator('#readyFrameTreadDepth').fill('270');
+  await page.locator('#readyFrameRiserHeight').fill('170');
+  await page.locator('#winderCount').fill('6');
+  await page.locator('#toResultsBtn').click();
+  await page.locator('#calculateBtn').click();
+
+  const storedPayloadRaw = await page.evaluate(() => localStorage.getItem('tekstura_stair_calc_payload'));
+  const storedPayload = JSON.parse(storedPayloadRaw);
+  expect(storedPayload.scenario_details.has_winders).toBe(true);
+  expect(storedPayload.scenario_details.has_landing).toBe(false);
+  expect(issues).toEqual([]);
+});
+
+test('calculator smoke: ready base l_turn_landing shows only landing fields and payload flags', async ({ page }) => {
+  const issues = collectRuntimeIssues(page);
+
+  await page.goto(`${baseUrl}/calculator.html`);
+  await page.locator('#baseCondition').selectOption('ready_base');
+  await page.locator('#baseSubtype').selectOption('existing_concrete_base');
+  await page.locator('#readyBaseShape').selectOption('l_turn_landing');
+  await page.locator('[data-next-step="2"]').click();
+
+  await expect(page.locator('#landingToggleField')).toHaveClass(/hidden/);
+  await expect(page.locator('#windersToggleField')).toHaveClass(/hidden/);
+  await expect(page.locator('#landingLengthField')).not.toHaveClass(/hidden/);
+  await expect(page.locator('#landingWidthField')).not.toHaveClass(/hidden/);
+  await expect(page.locator('#landingAreaField')).not.toHaveClass(/hidden/);
+  await expect(page.locator('#winderCountField')).toHaveClass(/hidden/);
+
+  await page.locator('#readyFrameStepCount').fill('18');
+  await page.locator('#readyFrameMarchWidth').fill('950');
+  await page.locator('#readyFrameTreadDepth').fill('270');
+  await page.locator('#readyFrameRiserHeight').fill('170');
+  await page.locator('#landingLength').fill('1200');
+  await page.locator('#landingWidth').fill('1000');
+  await page.locator('#toResultsBtn').click();
+  await page.locator('#calculateBtn').click();
+
+  const storedPayloadRaw = await page.evaluate(() => localStorage.getItem('tekstura_stair_calc_payload'));
+  const storedPayload = JSON.parse(storedPayloadRaw);
+  expect(storedPayload.scenario_details.has_landing).toBe(true);
+  expect(storedPayload.scenario_details.has_winders).toBe(false);
+  expect(issues).toEqual([]);
+});
+
 test('calculator smoke: ready concrete base keeps non-straight shape in payload', async ({ page }) => {
   const issues = collectRuntimeIssues(page);
 
@@ -111,13 +175,14 @@ test('calculator smoke: ready concrete base keeps non-straight shape in payload'
   await page.locator('#readyBaseShape').selectOption('u_turn_winders');
 
   await page.locator('[data-next-step="2"]').click();
+  await expect(page.locator('#landingLengthField')).toHaveClass(/hidden/);
+  await expect(page.locator('#winderCountField')).not.toHaveClass(/hidden/);
   await page.locator('#readyFrameStepCount').fill('18');
   await page.locator('#readyFrameMarchWidth').fill('950');
   await page.locator('#readyFrameTreadDepth').fill('270');
   await page.locator('#readyFrameRiserHeight').fill('170');
   await page.locator('#finishScope').selectOption('treads_and_risers');
   await page.locator('#readyFrameStraightRailingLength').fill('5.5');
-  await page.locator('#hasWinders').check();
   await page.locator('#winderCount').fill('6');
   await page.locator('#toResultsBtn').click();
 
@@ -133,6 +198,33 @@ test('calculator smoke: ready concrete base keeps non-straight shape in payload'
   expect(storedPayload.price_relevant_selections.turn_type).toBe('winders');
   expect(storedPayload.staircaseType).toContain('П-образная');
   expect(storedPayload.chosen_geometry_result.summary_rows.some((row) => row[0] === 'Конфигурация')).toBe(true);
+  expect(issues).toEqual([]);
+});
+
+test('calculator smoke: ready base straight hides landing and winder fields with payload flags false', async ({ page }) => {
+  const issues = collectRuntimeIssues(page);
+  await page.goto(`${baseUrl}/calculator.html`);
+  await page.locator('#baseCondition').selectOption('ready_base');
+  await page.locator('#baseSubtype').selectOption('existing_metal_frame');
+  await page.locator('#readyBaseShape').selectOption('straight');
+  await page.locator('[data-next-step="2"]').click();
+
+  await expect(page.locator('#landingLengthField')).toHaveClass(/hidden/);
+  await expect(page.locator('#landingWidthField')).toHaveClass(/hidden/);
+  await expect(page.locator('#landingAreaField')).toHaveClass(/hidden/);
+  await expect(page.locator('#winderCountField')).toHaveClass(/hidden/);
+
+  await page.locator('#readyFrameStepCount').fill('14');
+  await page.locator('#readyFrameMarchWidth').fill('950');
+  await page.locator('#readyFrameTreadDepth').fill('270');
+  await page.locator('#readyFrameRiserHeight').fill('170');
+  await page.locator('#toResultsBtn').click();
+  await page.locator('#calculateBtn').click();
+
+  const storedPayloadRaw = await page.evaluate(() => localStorage.getItem('tekstura_stair_calc_payload'));
+  const storedPayload = JSON.parse(storedPayloadRaw);
+  expect(storedPayload.scenario_details.has_landing).toBe(false);
+  expect(storedPayload.scenario_details.has_winders).toBe(false);
   expect(issues).toEqual([]);
 });
 
