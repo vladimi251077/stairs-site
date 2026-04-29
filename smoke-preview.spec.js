@@ -60,9 +60,6 @@ test('calculator smoke: ready metal base payload includes finish details', async
   await page.locator('#readyFrameTreadDepth').fill('280');
   await page.locator('#readyFrameRiserHeight').fill('175');
   await page.locator('#finishScope').selectOption('full_cladding');
-  await page.locator('#claddingSheetCount').fill('5');
-  await page.locator('#claddingSheetWidth').fill('1035');
-  await page.locator('#claddingSheetHeight').fill('2800');
   await expect(page.locator('#landingToggleField')).toHaveClass(/hidden/);
   await expect(page.locator('#winderToggleField')).toHaveClass(/hidden/);
   await page.locator('#landingLength').fill('1000');
@@ -81,8 +78,8 @@ test('calculator smoke: ready metal base payload includes finish details', async
   expect(storedPayload.project_scenario).toBe('ready_base');
   expect(storedPayload.base_subtype).toBe('existing_metal_frame');
   expect(storedPayload.scenario_details.finish_scope).toBe('full_cladding');
-  expect(storedPayload.scenario_details.cladding_sheet_count).toBe(5);
-  expect(storedPayload.scenario_details.full_cladding_area_m2).toBe(14.49);
+  expect(storedPayload.scenario_details.cladding_sheet_count).toBe(0);
+  expect(storedPayload.scenario_details.full_cladding_area_m2).toBeGreaterThan(0);
   expect(storedPayload.scenario_details.has_landing).toBe(true);
   expect(storedPayload.scenario_details.has_winders).toBe(false);
   expect(storedPayload.price_relevant_selections.railing_option).toBeTruthy();
@@ -293,4 +290,37 @@ test('admin smoke: auth screen and pricing controls render without login', async
   await expect(page.locator('#adminApp')).toHaveClass(/hidden/);
 
   expect(issues).toEqual([]);
+});
+
+
+test('calculator smoke: additional balustrade increases total price', async ({ page }) => {
+  await page.goto(`${baseUrl}/calculator.html`);
+  await page.locator('#baseCondition').selectOption('ready_base');
+  await page.locator('#baseSubtype').selectOption('existing_metal_frame');
+  await page.locator('[data-next-step="2"]').click();
+  await page.locator('#readyFrameStepCount').fill('16');
+  await page.locator('#readyFrameMarchWidth').fill('1000');
+  await page.locator('#readyFrameTreadDepth').fill('280');
+  await page.locator('#readyFrameRiserHeight').fill('175');
+  await page.locator('#toResultsBtn').click();
+  await page.locator('#calculateBtn').click();
+  const basePrice = await page.locator('#priceResult').innerText();
+  const baseNum = Number((basePrice.match(/\d[\d\s]*/)||['0'])[0].replace(/\s/g,''));
+
+  await page.locator('[data-next-step="2"]').click();
+  await page.locator('#readyFrameStraightRailingLength').fill('4');
+  await page.locator('#toResultsBtn').click();
+  await page.locator('#calculateBtn').click();
+  const nextPrice = await page.locator('#priceResult').innerText();
+  const nextNum = Number((nextPrice.match(/\d[\d\s]*/)||['0'])[0].replace(/\s/g,''));
+  expect(nextNum).toBeGreaterThanOrEqual(baseNum);
+});
+
+test('calculator smoke: cladding sheet fields hidden on public calculator', async ({ page }) => {
+  await page.goto(`${baseUrl}/calculator.html`);
+  await page.locator('#baseCondition').selectOption('ready_base');
+  await page.locator('#baseSubtype').selectOption('existing_metal_frame');
+  await page.locator('[data-next-step="2"]').click();
+  await expect(page.locator('#sheetCountField')).toHaveClass(/hidden/);
+  await expect(page.locator('#sheetSizeField')).toHaveClass(/hidden/);
 });

@@ -58,7 +58,8 @@ function createDefaultScenarioRateRows() {
     { rate_group: 'coatingPerM2', rate_key: 'premium', label: 'Покрытие: премиум', rate: 3600, sort_order: 32, active: true },
     { rate_group: 'service', rate_key: 'fitCheck', label: 'Проверка посадки каркаса', rate: 15000, sort_order: 40, active: true },
     { rate_group: 'service', rate_key: 'prepPerM2', label: 'Подготовка основания за м²', rate: 4200, sort_order: 41, active: true },
-    { rate_group: 'service', rate_key: 'installPerM2', label: 'Монтаж отделки за м²', rate: 5200, sort_order: 42, active: true }
+    { rate_group: 'service', rate_key: 'installPerM2', label: 'Монтаж отделки за м²', rate: 5200, sort_order: 42, active: true },
+    { rate_group: 'service', rate_key: 'fullCladdingPerM2', label: 'Полная обшивка каркаса за м²', rate: 6500, sort_order: 43, active: true }
   ];
 }
 
@@ -493,8 +494,8 @@ function updateScenarioFields() {
   setHidden('landingWidthField', !hasLanding);
   setHidden('landingAreaField', !hasLanding);
   setHidden('winderCountField', !hasWinders);
-  setHidden('sheetCountField', !isFullCladding);
-  setHidden('sheetSizeField', !isFullCladding);
+  setHidden('sheetCountField', true);
+  setHidden('sheetSizeField', true);
   setHidden('pricingInputGroup', false);
   setHidden('frameMaterialField', !isEmptyOpening);
   setHidden('serviceOptionsGroup', !usesServiceOptions);
@@ -555,9 +556,9 @@ function getConfigFromForm() {
     ready_frame_straight_railing_length: Number($('readyFrameStraightRailingLength')?.value || 0),
     finish_scope: normalizeFinishScope($('finishScope')?.value),
     clad_risers: normalizeFinishScope($('finishScope')?.value) !== 'treads_only',
-    cladding_sheet_count: Number($('claddingSheetCount')?.value || 5),
-    cladding_sheet_width: Number($('claddingSheetWidth')?.value || 1035),
-    cladding_sheet_height: Number($('claddingSheetHeight')?.value || 2800),
+    cladding_sheet_count: 0,
+    cladding_sheet_width: 0,
+    cladding_sheet_height: 0,
     has_landing: hasLanding,
     landing_length: Number($('landingLength')?.value || 0),
     landing_width: Number($('landingWidth')?.value || 0),
@@ -750,7 +751,7 @@ function getFinishMetricsFromGeometry(config, geometry) {
 
   return {
     stepCount,
-    finishAreaM2,
+    finishAreaM2: totalFinishAreaM2,
     railingLengthM,
     coatingAreaM2: round(((geometry.walking_line_length || geometry.run_length || 0) / 1000) * widthM * 0.55, 2)
   };
@@ -765,7 +766,7 @@ function getFinishMetricsFromManualInputs(config, source) {
 
   return {
     stepCount,
-    finishAreaM2,
+    finishAreaM2: totalFinishAreaM2,
     railingLengthM,
     coatingAreaM2: finishAreaM2
   };
@@ -783,11 +784,10 @@ function getReadyFrameServiceMetrics(config, geometry) {
     ? round(Number(config.landing_area || 0) || ((Number(config.landing_length || 0) / 1000) * (Number(config.landing_width || 0) / 1000)), 2)
     : 0;
   const winderCount = config.has_winders ? Math.max(Number(config.winder_count || 0), 0) : 0;
-  const sheetCount = finishScope === 'full_cladding' ? Math.max(Number(config.cladding_sheet_count || 0), 0) : 0;
-  const sheetAreaM2 = round((Number(config.cladding_sheet_width || 1035) / 1000) * (Number(config.cladding_sheet_height || 2800) / 1000), 3);
-  const fullCladdingAreaM2 = finishScope === 'full_cladding' ? round(sheetCount * sheetAreaM2, 2) : 0;
-  const finishAreaM2 = round(treadAreaM2 + riserAreaM2 + landingAreaM2 + fullCladdingAreaM2, 2);
-  const manualStraightRailingLengthM = Math.max(Number(config.ready_frame_straight_railing_length || 0), 0);
+  const fullCladdingAreaM2 = finishScope === 'full_cladding' ? round((treadAreaM2 + riserAreaM2 + landingAreaM2) * 1.35, 2) : 0;
+  const finishSurfaceAreaM2 = round(treadAreaM2 + riserAreaM2 + landingAreaM2, 2);
+  const totalFinishAreaM2 = round(finishSurfaceAreaM2 + fullCladdingAreaM2, 2);
+  const additionalRailingLengthM = Math.max(Number(config.ready_frame_straight_railing_length || config.ready_frame_additional_railing_length_m || 0), 0);
   const autoStraightRailingLengthM = round(
     (((geometry.lower_march?.run_length || 0) + (geometry.upper_march?.run_length || 0)) || geometry.run_length || stepCount * treadDepthM * 1000) / 1000,
     2
@@ -795,7 +795,7 @@ function getReadyFrameServiceMetrics(config, geometry) {
   const directRailingLengthM =
     config.railing_option === 'none'
       ? 0
-      : round(manualStraightRailingLengthM > 0 ? manualStraightRailingLengthM : autoStraightRailingLengthM, 2);
+      : round(autoStraightRailingLengthM + additionalRailingLengthM, 2);
   const turnRailingLengthM =
     config.railing_option === 'none' || config.stair_type === 'straight'
       ? 0
@@ -812,17 +812,19 @@ function getReadyFrameServiceMetrics(config, geometry) {
     treadAreaM2,
     riserAreaM2,
     cladRisers: finishScope !== 'treads_only',
-    sheetCount,
     fullCladdingAreaM2,
-    fullCladdingSummary: finishScope === 'full_cladding' ? `${sheetCount} листов ${config.cladding_sheet_width || 1035}×${config.cladding_sheet_height || 2800} мм = ${fullCladdingAreaM2} м²` : '',
+    finishSurfaceAreaM2,
+    totalFinishAreaM2,
+    fullCladdingSummary: finishScope === 'full_cladding' ? `${fullCladdingAreaM2} м²` : 'Нет',
     hasLanding: !!config.has_landing,
     landingAreaM2,
     hasWinders: !!config.has_winders,
     winderCount,
-    finishAreaM2,
+    finishAreaM2: totalFinishAreaM2,
     coatingAreaM2: finishAreaM2,
     directRailingLengthM,
-    manualStraightRailingLengthM,
+    additionalRailingLengthM,
+    manualStraightRailingLengthM: additionalRailingLengthM,
     autoStraightRailingLengthM,
     turnRailingLengthM,
     railingLengthM
@@ -897,12 +899,7 @@ function calculateScenarioResult(config) {
 
     const status = blockers.length ? 'invalid' : warnings.length || fit.status === 'warning' ? 'warning' : 'recommended';
     const metrics = getReadyFrameServiceMetrics(config, fit);
-    const directRailingText =
-      metrics.manualStraightRailingLengthM > 0
-        ? `${metrics.manualStraightRailingLengthM} м`
-        : `${metrics.autoStraightRailingLengthM} м (авто)`;
-
-    return makeScenarioResult(config, {
+        return makeScenarioResult(config, {
       ...fit,
       valid: status !== 'invalid',
       allow_continue: status !== 'invalid',
@@ -930,9 +927,12 @@ function calculateScenarioResult(config) {
         ['Обшивка каркаса', metrics.fullCladdingSummary || 'Нет'],
         ['Площадка', metrics.hasLanding ? `${metrics.landingAreaM2} м²` : 'Нет'],
         ['Забежные ступени', metrics.hasWinders ? `${metrics.winderCount}` : 'Нет'],
-        ['Отделка всего', `${metrics.finishAreaM2} м²`],
-        ['Длина прямого ограждения', config.railing_option === 'none' ? 'Не требуется' : directRailingText],
-        ['Общая длина ограждения', config.railing_option === 'none' ? 'Не требуется' : `${metrics.railingLengthM} м`],
+        ['Отделка ступеней/подступенков/площадки', `${metrics.finishSurfaceAreaM2} м²`],
+        ['Полная обшивка каркаса', `${metrics.fullCladdingAreaM2} м²`],
+        ['Площадь отделки всего', `${metrics.totalFinishAreaM2} м²`],
+        ['Ограждение по маршам', config.railing_option === 'none' ? 'Не требуется' : `${metrics.autoStraightRailingLengthM} м`],
+        ['Дополнительная балюстрада', config.railing_option === 'none' ? 'Не требуется' : `${metrics.additionalRailingLengthM} м`],
+        ['Итого ограждение', config.railing_option === 'none' ? 'Не требуется' : `${metrics.railingLengthM} м`],
         ['Ограждение', getOptionLabel('railing', config.railing_option)],
         ['Подсветка', getOptionLabel('lighting', config.lighting_option)]
       ],
@@ -977,7 +977,9 @@ function calculateScenarioResult(config) {
         ['Обшивка каркаса', metrics.fullCladdingSummary || 'Нет'],
         ['Площадка', metrics.hasLanding ? `${metrics.landingAreaM2} м²` : 'Нет'],
         ['Забежные ступени', metrics.hasWinders ? `${metrics.winderCount}` : 'Нет'],
-        ['Площадь облицовки всего', `${metrics.finishAreaM2} м²`],
+        ['Отделка ступеней/подступенков/площадки', `${metrics.finishSurfaceAreaM2} м²`],
+        ['Полная обшивка каркаса', `${metrics.fullCladdingAreaM2} м²`],
+        ['Площадь облицовки всего', `${metrics.totalFinishAreaM2} м²`],
         ['Основание', $('concreteBaseCondition')?.selectedOptions?.[0]?.textContent || 'уточняется'],
         ['Ограждение', getOptionLabel('railing', config.railing_option)],
         ['Материал отделки', getOptionLabel('finish_material', config.finish_material)]
@@ -1107,7 +1109,9 @@ function calculateMaterials(config, geometry) {
       { label: 'Обшивка каркаса', value: metrics.fullCladdingSummary || 'Нет' },
       { label: 'Площадка', value: metrics.hasLanding ? `${metrics.landingAreaM2 || 0} м²` : 'Нет' },
       { label: 'Забежные ступени', value: metrics.hasWinders ? `${metrics.winderCount || 0} шт` : 'Нет' },
-      { label: 'Площадь отделки всего', value: `${metrics.finishAreaM2 || 0} м²` },
+      { label: 'Отделка ступеней/подступенков/площадки', value: `${metrics.finishSurfaceAreaM2 || metrics.finishAreaM2 || 0} м²` },
+      { label: 'Полная обшивка каркаса', value: `${metrics.fullCladdingAreaM2 || 0} м²` },
+      { label: 'Площадь отделки всего', value: `${metrics.totalFinishAreaM2 || metrics.finishAreaM2 || 0} м²` },
       { label: 'Ограждение', value: metrics.railingLengthM ? `${getOptionLabel('railing', config.railing_option)} · ${metrics.railingLengthM} м` : 'Не требуется' },
       { label: 'Покрытие / защита', value: getOptionLabel('coating', config.coating_option) },
       { label: 'Подсветка', value: getOptionLabel('lighting', config.lighting_option) },
@@ -1130,11 +1134,9 @@ function calculateMaterials(config, geometry) {
           6,
           0,
           {
-            label: 'Длина прямого ограждения',
+            label: 'Дополнительная балюстрада',
             value:
-              metrics.manualStraightRailingLengthM > 0
-                ? `${metrics.manualStraightRailingLengthM} м`
-                : `${metrics.autoStraightRailingLengthM || 0} м (авто)`
+              `${metrics.additionalRailingLengthM || 0} м`
           }
         );
       }
@@ -1199,7 +1201,8 @@ function calculatePrice(config, geometry, materials) {
   if (config.base_condition !== 'empty_opening') {
     const metrics = materials.metrics || {};
     const finishRate = scenarioRates.finishMaterialPerM2[config.finish_material] ?? scenarioRates.finishMaterialPerM2.oak ?? 0;
-    const finishCost = (metrics.finishAreaM2 || 0) * finishRate;
+    const finishCost = (metrics.finishSurfaceAreaM2 || metrics.finishAreaM2 || 0) * finishRate;
+    const fullCladdingCost = (metrics.fullCladdingAreaM2 || 0) * (scenarioRates.service.fullCladdingPerM2 ?? 0);
     const railingCost = (metrics.railingLengthM || 0) * (scenarioRates.railingPerM[config.railing_option] ?? 0);
     const lightingCost = (metrics.stepCount || 0) * (scenarioRates.lightingPerStep[config.lighting_option] ?? 0);
     const coatingCost = (metrics.coatingAreaM2 || 0) * (scenarioRates.coatingPerM2[config.coating_option] ?? 0);
@@ -1210,7 +1213,7 @@ function calculatePrice(config, geometry, materials) {
     const fitCheckCost = isReadyFrameCondition(config.base_condition) ? (scenarioRates.service.fitCheck ?? 0) : 0;
     const installCost = (metrics.finishAreaM2 || 0) * (scenarioRates.service.installPerM2 ?? 0);
     baseLabor = installCost + fitCheckCost + prepCost;
-    materialCost = finishCost + railingCost + lightingCost + coatingCost;
+    materialCost = finishCost + fullCladdingCost + railingCost + lightingCost + coatingCost;
     subtotal = baseLabor + materialCost;
   } else {
     const defaults = state.dictionaries.defaults;
@@ -1362,7 +1365,8 @@ function buildCalculationPayload(config, geometry, materials = state.materials, 
       cladding_sheet_width: config.cladding_sheet_width,
       cladding_sheet_height: config.cladding_sheet_height,
       full_cladding_area_m2: compactGeometry.service_metrics?.fullCladdingAreaM2 || 0,
-      total_finish_area_m2: compactGeometry.service_metrics?.finishAreaM2 || 0,
+      finish_surface_area_m2: compactGeometry.service_metrics?.finishSurfaceAreaM2 || 0,
+      total_finish_area_m2: compactGeometry.service_metrics?.totalFinishAreaM2 || compactGeometry.service_metrics?.finishAreaM2 || 0,
       has_landing: config.has_landing,
       landing_length: config.landing_length,
       landing_width: config.landing_width,
@@ -1404,6 +1408,8 @@ function buildCalculationPayload(config, geometry, materials = state.materials, 
       ready_frame_tread_depth: config.ready_frame_tread_depth,
       ready_frame_riser_height: config.ready_frame_riser_height,
       ready_frame_straight_railing_length: config.ready_frame_straight_railing_length,
+      ready_frame_additional_railing_length_m: config.ready_frame_straight_railing_length,
+      additional_railing_length_m: config.ready_frame_straight_railing_length,
       finish_scope: config.finish_scope,
       finish_scope_label: FINISH_SCOPE_LABELS[config.finish_scope],
       clad_risers: config.clad_risers,
@@ -1411,7 +1417,8 @@ function buildCalculationPayload(config, geometry, materials = state.materials, 
       cladding_sheet_width: config.cladding_sheet_width,
       cladding_sheet_height: config.cladding_sheet_height,
       full_cladding_area_m2: compactGeometry.service_metrics?.fullCladdingAreaM2 || 0,
-      total_finish_area_m2: compactGeometry.service_metrics?.finishAreaM2 || 0,
+      finish_surface_area_m2: compactGeometry.service_metrics?.finishSurfaceAreaM2 || 0,
+      total_finish_area_m2: compactGeometry.service_metrics?.totalFinishAreaM2 || compactGeometry.service_metrics?.finishAreaM2 || 0,
       railing_length_m: compactGeometry.service_metrics?.railingLengthM || 0,
       has_landing: config.has_landing,
       landing_length: config.landing_length,
