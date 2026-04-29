@@ -821,7 +821,7 @@ function getReadyFrameServiceMetrics(config, geometry) {
     hasWinders: !!config.has_winders,
     winderCount,
     finishAreaM2: totalFinishAreaM2,
-    coatingAreaM2: finishAreaM2,
+    coatingAreaM2: totalFinishAreaM2,
     directRailingLengthM,
     additionalRailingLengthM,
     manualStraightRailingLengthM: additionalRailingLengthM,
