@@ -87,6 +87,11 @@ const client = (cfg?.url && cfg?.anonKey && window.supabase)
   ? window.supabase.createClient(cfg.url, cfg.anonKey)
   : null;
 let calcPayload = null;
+const CALC_STORAGE_KEY = 'tekstura_stair_calc_payload';
+const CALC_SESSION_STORAGE_KEY = 'tekstura_calc_payload';
+const CALC_STORAGE_META_KEY = 'tekstura_calc_payload_meta';
+const CALC_TRANSFER_MARKER_KEY = 'tekstura_calc_payload_from_calculator';
+const CALC_PAYLOAD_MAX_AGE_MS = 30 * 60 * 1000;
 const EXTRA_LABELS = {
   lighting: 'Подсветка ступеней',
   painted_metal: 'Окраска металла',
@@ -100,6 +105,47 @@ function formatWarnings(list = []) {
 }
 
 function buildCalcSummary(payload) {
+  if (payload && (payload.chosen_geometry_result || payload.input_dimensions || payload.pricing_region)) {
+    const dimensions = payload.input_dimensions || payload.dimensions || {};
+    const geometry = payload.chosen_geometry_result || payload.geometryResult || {};
+    const pricingRegion = payload.pricing_region;
+    const pricingBreakdown = payload.pricing_breakdown;
+    const details = payload.scenario_details || {};
+    const selections = payload.price_relevant_selections || {};
+    const metrics = geometry.service_metrics || {};
+    const summaryRows = Array.isArray(geometry.summary_rows)
+      ? geometry.summary_rows.map((row) => `${row[0]}: ${row[1]}`)
+      : [];
+    return [
+      `Сценарий: ${payload.baseCondition || payload.base_condition || '-'}`,
+      details.base_subtype ? `Тип основания: ${details.base_subtype === 'existing_metal_frame' ? 'Металлокаркас' : 'Бетонная лестница'}` : '',
+      `Тип лестницы: ${payload.staircaseType || payload.selected_staircase_type || '-'}`,
+      `Статус: ${payload.status || '-'}`,
+      details.finish_scope_label ? `Что отделываем: ${details.finish_scope_label}` : '',
+      details.ready_frame_step_count ? `Ступеней: ${details.ready_frame_step_count}` : '',
+      details.ready_frame_march_width ? `Ширина ступени: ${details.ready_frame_march_width} мм` : '',
+      details.ready_frame_tread_depth ? `Глубина ступени: ${details.ready_frame_tread_depth} мм` : '',
+      details.ready_frame_riser_height ? `Высота подступенка: ${details.ready_frame_riser_height} мм` : '',
+      details.cladding_sheet_count ? `Листы: ${details.cladding_sheet_count} шт (${details.cladding_sheet_width || '-'}×${details.cladding_sheet_height || '-'} мм)` : '',
+      details.full_cladding_area_m2 ? `Площадь обшивки каркаса: ${details.full_cladding_area_m2} м²` : '',
+      details.total_finish_area_m2 ? `Общая площадь отделки: ${details.total_finish_area_m2} м²` : '',
+      details.has_landing ? `Площадка: ${details.landing_area || metrics.landingAreaM2 || '-'} м²` : '',
+      details.has_winders ? `Забежные ступени: ${details.winder_count || metrics.winderCount || '-'}` : '',
+      selections.finish_material ? `Отделка: ${selections.finish_material}` : '',
+      selections.coating_option ? `Покрытие: ${selections.coating_option}` : '',
+      selections.railing_option ? `Ограждение: ${selections.railing_option}` : '',
+      selections.lighting_option ? `Подсветка: ${selections.lighting_option}` : '',
+      pricingRegion ? `Регион цены: ${pricingRegion.name || pricingRegion.code}` : '',
+      pricingBreakdown ? `База до региона: ${Number(pricingBreakdown.subtotal_before_region || 0).toLocaleString('ru-RU')} ₽` : '',
+      dimensions.floor_to_floor_height || dimensions.floorHeight ? `Высота: ${dimensions.floor_to_floor_height || dimensions.floorHeight} мм` : '',
+      dimensions.opening_length || dimensions.openingLength ? `Проём: ${dimensions.opening_length || dimensions.openingLength} x ${dimensions.opening_width || dimensions.openingWidth || '-'} мм` : '',
+      geometry.riser_height ? `Подступенок: ${geometry.riser_height} мм` : '',
+      geometry.tread_depth ? `Проступь: ${geometry.tread_depth} мм` : '',
+      geometry.headroom_min ? `Просвет: ${geometry.headroom_min} мм` : '',
+      ...summaryRows,
+      `Ориентир: ${Number(payload.total || 0).toLocaleString('ru-RU')} ₽`
+    ].filter(Boolean);
+  }
   if (!payload) return ['Расчёт не передан. Вы можете оставить заявку без калькулятора.'];
   const isReady = payload.base_condition === 'ready_frame';
   const extras = (payload?.selectedExtras || []).map((i) => i.label || EXTRA_LABELS[i.code] || i.code).join(', ') || 'Нет';
@@ -141,20 +187,119 @@ function makeLeadId() {
   return `lead-${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
 }
 
-function parseCalc(){
-  const queryRaw = new URLSearchParams(location.search).get('calc');
-  const sessionRaw = sessionStorage.getItem('tekstura_calc_payload');
-  const raw = queryRaw || sessionRaw;
-  if (!raw) return;
-  try {
-    calcPayload = JSON.parse(decodeURIComponent(raw));
-    if (queryRaw) {
-      sessionStorage.setItem('tekstura_calc_payload', queryRaw);
+function getRawQueryParam(name) {
+  const query = window.location.search.replace(/^\?/, '');
+  if (!query) return null;
+  for (const part of query.split('&')) {
+    const separatorIndex = part.indexOf('=');
+    const rawKey = separatorIndex >= 0 ? part.slice(0, separatorIndex) : part;
+    const key = decodeURIComponent(rawKey.replace(/\+/g, '%20'));
+    if (key === name) {
+      return separatorIndex >= 0 ? part.slice(separatorIndex + 1) : '';
     }
+  }
+  return null;
+}
+
+function parseCalcPayloadFromUrl(raw) {
+  if (!raw) return null;
+  try {
+    return JSON.parse(decodeURIComponent(raw.replace(/\+/g, '%20')));
+  } catch (encodedError) {
+    try {
+      return JSON.parse(raw);
+    } catch (rawError) {
+      console.error('calc url parse error', encodedError, rawError);
+      return null;
+    }
+  }
+}
+
+function parseCalcPayloadFromStorage(raw) {
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    console.error('calc storage parse error', error);
+    return null;
+  }
+}
+
+function storageGet(storage, key) {
+  try {
+    return storage?.getItem(key) || null;
+  } catch (error) {
+    return null;
+  }
+}
+
+function storageSet(storage, key, value) {
+  try {
+    storage?.setItem(key, value);
+  } catch (error) {
+    console.warn('calc storage write failed', error);
+  }
+}
+
+function parseStoredMeta(storage) {
+  const meta = parseCalcPayloadFromStorage(storageGet(storage, CALC_STORAGE_META_KEY));
+  return meta && typeof meta === 'object' ? meta : {};
+}
+
+function getMarkerTimestamp(storage) {
+  const raw = storageGet(storage, CALC_TRANSFER_MARKER_KEY);
+  if (!raw) return 0;
+  const parsed = parseCalcPayloadFromStorage(raw);
+  if (parsed && typeof parsed === 'object') {
+    return Number(parsed.saved_at || parsed.savedAt || 0);
+  }
+  return Number(raw) || 0;
+}
+
+function isFreshTimestamp(value) {
+  const timestamp = Number(value || 0);
+  return Boolean(timestamp && Date.now() - timestamp <= CALC_PAYLOAD_MAX_AGE_MS);
+}
+
+function canUseStoredCalcPayload(storage) {
+  const meta = parseStoredMeta(storage);
+  return isFreshTimestamp(meta.saved_at || meta.savedAt) || isFreshTimestamp(getMarkerTimestamp(storage));
+}
+
+function rememberCalcPayload(payload) {
+  const raw = JSON.stringify(payload);
+  const now = Date.now();
+  const meta = JSON.stringify({ saved_at: now, source: 'calculator' });
+  const marker = JSON.stringify({ saved_at: now, source: 'calculator' });
+  storageSet(window.sessionStorage, CALC_SESSION_STORAGE_KEY, raw);
+  storageSet(window.sessionStorage, CALC_STORAGE_META_KEY, meta);
+  storageSet(window.sessionStorage, CALC_TRANSFER_MARKER_KEY, marker);
+  storageSet(window.localStorage, CALC_STORAGE_KEY, raw);
+  storageSet(window.localStorage, CALC_STORAGE_META_KEY, meta);
+}
+
+function readStoredCalcPayload(storage, key) {
+  if (!canUseStoredCalcPayload(storage)) return null;
+  return parseCalcPayloadFromStorage(storageGet(storage, key));
+}
+
+function parseCalc(){
+  const queryRaw = getRawQueryParam('calc');
+  if (queryRaw) {
+    calcPayload = parseCalcPayloadFromUrl(queryRaw);
+    if (!calcPayload) {
+      document.getElementById('calcData').textContent = 'Не удалось прочитать расчёт. Вы можете отправить заявку вручную.';
+      return;
+    }
+    rememberCalcPayload(calcPayload);
+  } else {
+    calcPayload =
+      readStoredCalcPayload(window.sessionStorage, CALC_SESSION_STORAGE_KEY) ||
+      readStoredCalcPayload(window.localStorage, CALC_STORAGE_KEY);
+  }
+
+  if (calcPayload) {
     document.getElementById('calcData').textContent = buildCalcSummary(calcPayload).join('\n');
-  } catch (err) {
-    console.error('calc parse error', err);
-    document.getElementById('calcData').textContent = 'Не удалось прочитать расчёт. Вы можете отправить заявку вручную.';
   }
 }
 
@@ -219,7 +364,7 @@ async function sendRequest() {
     return;
   }
 
-  const isCalculatorLead = Boolean(calcPayload && (calcPayload.staircaseType || calcPayload.total || calcPayload.base_condition));
+  const isCalculatorLead = Boolean(calcPayload && (calcPayload.staircaseType || calcPayload.total || calcPayload.base_condition || calcPayload.chosen_geometry_result));
   const leadId = makeLeadId();
 
   const payload = {
@@ -229,23 +374,31 @@ async function sendRequest() {
     messenger: document.getElementById('messenger').value.trim(),
     city: document.getElementById('city').value.trim(),
     comment: document.getElementById('comment').value.trim(),
-    staircase_type: calcPayload?.staircaseType || '',
+    staircase_type: calcPayload?.staircaseType || calcPayload?.selected_staircase_type || '',
     dimensions_json: {
       ...(calcPayload?.dimensions || {}),
+      ...(calcPayload?.input_dimensions || {}),
       geometry: calcPayload?.geometrySummary || {},
+      chosen_geometry_result: calcPayload?.chosen_geometry_result || calcPayload?.geometryResult || null,
       base_condition: calcPayload?.base_condition || '',
       base_subtype: calcPayload?.base_subtype || '',
+      project_scenario: calcPayload?.project_scenario || '',
+      scenario_details: calcPayload?.scenario_details || {},
       configuration_type: calcPayload?.configuration_type || '',
       turn_type: calcPayload?.turn_type || '',
-      turn_direction: calcPayload?.turn_direction || ''
+      turn_direction: calcPayload?.turn_direction || '',
+      pricing_region: calcPayload?.pricing_region || null
     },
     materials_json: {
-      ...(calcPayload?.materialsSummary || {})
+      ...(calcPayload?.materialsSummary || {}),
+      ...(calcPayload?.materials || {})
     },
     options_json: {
       selected: calcPayload?.selectedExtras || [],
       labels: (calcPayload?.selectedExtras || []).map((item) => item?.label || item?.code || ''),
-      price_breakdown: calcPayload?.priceBreakdown || {},
+      price_relevant_selections: calcPayload?.price_relevant_selections || {},
+      price_breakdown: calcPayload?.priceBreakdown || calcPayload?.pricing_breakdown || {},
+      pricing_snapshot: calcPayload?.pricing_snapshot || null,
       meta: {
         request_source: isCalculatorLead ? 'calculator' : 'manual',
         has_calc_payload: isCalculatorLead,
