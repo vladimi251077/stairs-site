@@ -88,6 +88,10 @@ const client = (cfg?.url && cfg?.anonKey && window.supabase)
   : null;
 let calcPayload = null;
 const CALC_STORAGE_KEY = 'tekstura_stair_calc_payload';
+const CALC_SESSION_STORAGE_KEY = 'tekstura_calc_payload';
+const CALC_STORAGE_META_KEY = 'tekstura_calc_payload_meta';
+const CALC_TRANSFER_MARKER_KEY = 'tekstura_calc_payload_from_calculator';
+const CALC_PAYLOAD_MAX_AGE_MS = 30 * 60 * 1000;
 const EXTRA_LABELS = {
   lighting: 'Подсветка ступеней',
   painted_metal: 'Окраска металла',
@@ -165,22 +169,119 @@ function makeLeadId() {
   return `lead-${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
 }
 
-function parseCalc(){
-  const queryRaw = new URLSearchParams(location.search).get('calc');
-  const sessionRaw = sessionStorage.getItem('tekstura_calc_payload');
-  const localRaw = localStorage.getItem(CALC_STORAGE_KEY);
-  const raw = queryRaw || sessionRaw || localRaw;
-  if (!raw) return;
-  try {
-    calcPayload = JSON.parse(decodeURIComponent(raw));
-    if (queryRaw) {
-      sessionStorage.setItem('tekstura_calc_payload', queryRaw);
-      localStorage.setItem(CALC_STORAGE_KEY, JSON.stringify(calcPayload));
+function getRawQueryParam(name) {
+  const query = window.location.search.replace(/^\?/, '');
+  if (!query) return null;
+  for (const part of query.split('&')) {
+    const separatorIndex = part.indexOf('=');
+    const rawKey = separatorIndex >= 0 ? part.slice(0, separatorIndex) : part;
+    const key = decodeURIComponent(rawKey.replace(/\+/g, '%20'));
+    if (key === name) {
+      return separatorIndex >= 0 ? part.slice(separatorIndex + 1) : '';
     }
+  }
+  return null;
+}
+
+function parseCalcPayloadFromUrl(raw) {
+  if (!raw) return null;
+  try {
+    return JSON.parse(decodeURIComponent(raw.replace(/\+/g, '%20')));
+  } catch (encodedError) {
+    try {
+      return JSON.parse(raw);
+    } catch (rawError) {
+      console.error('calc url parse error', encodedError, rawError);
+      return null;
+    }
+  }
+}
+
+function parseCalcPayloadFromStorage(raw) {
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    console.error('calc storage parse error', error);
+    return null;
+  }
+}
+
+function storageGet(storage, key) {
+  try {
+    return storage?.getItem(key) || null;
+  } catch (error) {
+    return null;
+  }
+}
+
+function storageSet(storage, key, value) {
+  try {
+    storage?.setItem(key, value);
+  } catch (error) {
+    console.warn('calc storage write failed', error);
+  }
+}
+
+function parseStoredMeta(storage) {
+  const meta = parseCalcPayloadFromStorage(storageGet(storage, CALC_STORAGE_META_KEY));
+  return meta && typeof meta === 'object' ? meta : {};
+}
+
+function getMarkerTimestamp(storage) {
+  const raw = storageGet(storage, CALC_TRANSFER_MARKER_KEY);
+  if (!raw) return 0;
+  const parsed = parseCalcPayloadFromStorage(raw);
+  if (parsed && typeof parsed === 'object') {
+    return Number(parsed.saved_at || parsed.savedAt || 0);
+  }
+  return Number(raw) || 0;
+}
+
+function isFreshTimestamp(value) {
+  const timestamp = Number(value || 0);
+  return Boolean(timestamp && Date.now() - timestamp <= CALC_PAYLOAD_MAX_AGE_MS);
+}
+
+function canUseStoredCalcPayload(storage) {
+  const meta = parseStoredMeta(storage);
+  return isFreshTimestamp(meta.saved_at || meta.savedAt) || isFreshTimestamp(getMarkerTimestamp(storage));
+}
+
+function rememberCalcPayload(payload) {
+  const raw = JSON.stringify(payload);
+  const now = Date.now();
+  const meta = JSON.stringify({ saved_at: now, source: 'calculator' });
+  const marker = JSON.stringify({ saved_at: now, source: 'calculator' });
+  storageSet(window.sessionStorage, CALC_SESSION_STORAGE_KEY, raw);
+  storageSet(window.sessionStorage, CALC_STORAGE_META_KEY, meta);
+  storageSet(window.sessionStorage, CALC_TRANSFER_MARKER_KEY, marker);
+  storageSet(window.localStorage, CALC_STORAGE_KEY, raw);
+  storageSet(window.localStorage, CALC_STORAGE_META_KEY, meta);
+}
+
+function readStoredCalcPayload(storage, key) {
+  if (!canUseStoredCalcPayload(storage)) return null;
+  return parseCalcPayloadFromStorage(storageGet(storage, key));
+}
+
+function parseCalc(){
+  const queryRaw = getRawQueryParam('calc');
+  if (queryRaw) {
+    calcPayload = parseCalcPayloadFromUrl(queryRaw);
+    if (!calcPayload) {
+      document.getElementById('calcData').textContent = 'Не удалось прочитать расчёт. Вы можете отправить заявку вручную.';
+      return;
+    }
+    rememberCalcPayload(calcPayload);
+  } else {
+    calcPayload =
+      readStoredCalcPayload(window.sessionStorage, CALC_SESSION_STORAGE_KEY) ||
+      readStoredCalcPayload(window.localStorage, CALC_STORAGE_KEY);
+  }
+
+  if (calcPayload) {
     document.getElementById('calcData').textContent = buildCalcSummary(calcPayload).join('\n');
-  } catch (err) {
-    console.error('calc parse error', err);
-    document.getElementById('calcData').textContent = 'Не удалось прочитать расчёт. Вы можете отправить заявку вручную.';
   }
 }
 
