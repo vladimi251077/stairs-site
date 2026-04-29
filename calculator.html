@@ -26,12 +26,17 @@
             <label for="baseCondition">Что у вас уже есть?</label>
             <select id="baseCondition" onchange="window.syncClientScenarioFields && window.syncClientScenarioFields()">
               <option value="empty_opening">Пустой проём</option>
-              <option value="existing_metal_frame">Готовый каркас / металлокаркас</option>
-              <option value="existing_concrete_base">Готовое бетонное основание</option>
-              <option value="finish_only">Нужна только отделка / облицовка</option>
-              <option value="consultation">Нужна консультация</option>
+              <option value="ready_base">Готовое основание</option>
             </select>
             <p class="field-help">Выберите ситуацию сейчас — дальше покажем только нужные поля.</p>
+          </div>
+          <div class="field hidden" id="baseSubtypeField">
+            <label for="baseSubtype">Тип готового основания</label>
+            <select id="baseSubtype" onchange="window.syncClientScenarioFields && window.syncClientScenarioFields()">
+              <option value="existing_metal_frame">Металлокаркас</option>
+              <option value="existing_concrete_base">Бетонная лестница</option>
+            </select>
+            <p class="field-help">Основание уже есть, поэтому считаем отделку, ограждение и работы.</p>
           </div>
           <div class="field structural-field" id="openingTypeField">
             <label for="openingType">Тип проёма</label>
@@ -49,6 +54,16 @@
               <option value="straight">Прямая</option>
               <option value="l_turn">Г-образная</option>
               <option value="u_turn">П-образная</option>
+            </select>
+          </div>
+          <div class="field hidden" id="readyBaseShapeField">
+            <label for="readyBaseShape">Форма лестницы для готового основания</label>
+            <select id="readyBaseShape" onchange="window.syncClientScenarioFields && window.syncClientScenarioFields()">
+              <option value="straight">Прямая</option>
+              <option value="l_turn_landing">Г-образная с площадкой</option>
+              <option value="l_turn_winders">Г-образная с забежными ступенями</option>
+              <option value="u_turn_landing">П-образная с площадкой</option>
+              <option value="u_turn_winders">П-образная с забежными ступенями</option>
             </select>
           </div>
           <div class="field" id="turnDirectionField">
@@ -100,23 +115,125 @@
           <div class="field">
             <label for="readyFrameStepCount">Количество ступеней</label>
             <input id="readyFrameStepCount" type="number" value="15" min="1" max="40">
+            <div class="field-help">
+              <p><strong>Как измерить</strong></p>
+              <svg viewBox="0 0 220 80" width="100%" height="70" aria-label="Схема подсчета ступеней">
+                <rect x="15" y="50" width="28" height="20" fill="#2d3748"/><rect x="43" y="40" width="28" height="30" fill="#334155"/><rect x="71" y="30" width="28" height="40" fill="#3b4557"/><rect x="99" y="20" width="28" height="50" fill="#475569"/>
+                <text x="150" y="28" fill="#e2e8f0" font-size="11">Считайте только</text><text x="150" y="42" fill="#e2e8f0" font-size="11">отделываемые</text><text x="150" y="56" fill="#e2e8f0" font-size="11">ступени</text>
+              </svg>
+              <span class="badge">1–40 шт</span> <span class="badge">0 нельзя</span> <span class="badge">40+ — проверка инженера</span>
+            </div>
           </div>
           <div class="field">
-            <label for="readyFrameMarchWidth">Ширина марша, мм</label>
+            <label for="readyFrameMarchWidth">Ширина ступени, мм</label>
             <input id="readyFrameMarchWidth" type="number" value="1000" min="700" max="1800">
+            <div class="field-help">
+              <p><strong>Как измерить</strong></p>
+              <svg viewBox="0 0 220 80" width="100%" height="70" aria-label="Схема ширины ступени">
+                <rect x="40" y="20" width="140" height="40" fill="#334155"/>
+                <line x1="45" y1="66" x2="175" y2="66" stroke="#22c55e" stroke-width="2"/><circle cx="45" cy="66" r="4" fill="#22c55e"/><circle cx="175" cy="66" r="4" fill="#eab308"/>
+                <text x="66" y="60" fill="#e2e8f0" font-size="11">ширина от края до края</text>
+              </svg>
+              <span class="badge">700–1800 мм</span> <span class="badge">обычно 900–1000</span> <span class="badge">не ширина проёма</span>
+            </div>
           </div>
           <div class="field">
             <label for="readyFrameTreadDepth">Глубина ступени, мм</label>
             <input id="readyFrameTreadDepth" type="number" value="280" min="180" max="500">
+            <div class="field-help">
+              <p><strong>Как измерить</strong></p>
+              <svg viewBox="0 0 220 80" width="100%" height="70" aria-label="Схема глубины ступени">
+                <polyline points="20,58 80,58 80,38 140,38 140,18 200,18" fill="none" stroke="#64748b" stroke-width="4"/>
+                <line x1="80" y1="64" x2="140" y2="64" stroke="#22c55e" stroke-width="2"/><circle cx="80" cy="64" r="4" fill="#22c55e"/><circle cx="140" cy="64" r="4" fill="#eab308"/>
+                <text x="84" y="30" fill="#e2e8f0" font-size="11">горизонталь проступи</text>
+              </svg>
+              <span class="badge">180–500 мм</span> <span class="badge">обычно 250–320</span> <span class="badge">не диагональ</span>
+            </div>
           </div>
           <div class="field">
             <label for="readyFrameRiserHeight">Высота подступенка, мм</label>
             <input id="readyFrameRiserHeight" type="number" value="175" min="120" max="230">
+            <div class="field-help">
+              <p><strong>Как измерить</strong></p>
+              <svg viewBox="0 0 220 80" width="100%" height="70" aria-label="Схема высоты подступенка">
+                <polyline points="30,60 100,60 100,35 170,35" fill="none" stroke="#64748b" stroke-width="4"/>
+                <line x1="100" y1="58" x2="100" y2="37" stroke="#22c55e" stroke-width="2"/><circle cx="100" cy="58" r="4" fill="#22c55e"/><circle cx="100" cy="37" r="4" fill="#eab308"/>
+                <text x="110" y="44" fill="#e2e8f0" font-size="11">верх</text><text x="110" y="60" fill="#e2e8f0" font-size="11">низ</text>
+              </svg>
+              <span class="badge">120–230 мм</span> <span class="badge">обычно 150–190</span> <span class="badge">не высота этажа</span>
+            </div>
+          </div>
+          <div class="field field-wide">
+            <label for="finishScope">Что отделываем?</label>
+            <select id="finishScope" onchange="window.syncClientScenarioFields && window.syncClientScenarioFields()">
+              <option value="treads_only">Только ступени</option>
+              <option value="treads_and_risers" selected>Ступени + подступенки</option>
+              <option value="full_cladding">Полная обшивка каркаса</option>
+            </select>
+          </div>
+          <div class="field hidden" id="sheetCountField">
+            <label for="claddingSheetCount">Количество листов материала</label>
+            <input id="claddingSheetCount" type="number" value="5" min="0" step="1">
+          </div>
+          <div class="field hidden" id="sheetSizeField">
+            <label>Размер листа, мм</label>
+            <div class="grid">
+              <input id="claddingSheetWidth" type="number" value="1035" min="1" aria-label="Ширина листа, мм">
+              <input id="claddingSheetHeight" type="number" value="2800" min="1" aria-label="Высота листа, мм">
+            </div>
+          </div>
+          <div class="field hidden" id="landingToggleField">
+            <label><input id="hasLanding" type="checkbox" onchange="window.syncClientScenarioFields && window.syncClientScenarioFields()"> Есть площадка</label>
+          </div>
+          <div class="field hidden" id="landingLengthField">
+            <label for="landingLength">Длина площадки, мм</label>
+            <input id="landingLength" type="number" value="" min="0" placeholder="Например 1000">
+          </div>
+          <div class="field hidden" id="landingWidthField">
+            <label for="landingWidth">Ширина площадки, мм</label>
+            <input id="landingWidth" type="number" value="" min="0" placeholder="Например 1000">
+          </div>
+          <div class="field hidden" id="landingAreaField">
+            <label for="landingArea">Площадь площадки, м²</label>
+            <input id="landingArea" type="number" value="" min="0" step="0.01" placeholder="Если известна сразу">
+            <div class="field-help">
+              <p><strong>Как измерить площадку</strong></p>
+              <svg viewBox="0 0 220 80" width="100%" height="70" aria-label="Схема измерения площадки">
+                <rect x="40" y="18" width="130" height="44" fill="#334155"/>
+                <line x1="40" y1="68" x2="170" y2="68" stroke="#22c55e" stroke-width="2"/><line x1="176" y1="18" x2="176" y2="62" stroke="#22c55e" stroke-width="2"/>
+                <circle cx="40" cy="68" r="4" fill="#22c55e"/><circle cx="170" cy="68" r="4" fill="#eab308"/>
+              </svg>
+              <span class="badge">длина/ширина в мм</span> <span class="badge">или площадь в м²</span> <span class="badge">площадка ≠ ступень</span>
+            </div>
+          </div>
+          <div class="field hidden" id="winderToggleField">
+            <label><input id="hasWinders" type="checkbox" onchange="window.syncClientScenarioFields && window.syncClientScenarioFields()"> Есть забежные ступени</label>
+          </div>
+          <div class="field hidden" id="winderCountField">
+            <label for="winderCount">Количество забежных ступеней</label>
+            <input id="winderCount" type="number" value="3" min="0" max="12">
+            <div class="field-help">
+              <p><strong>Как считать забежные</strong></p>
+              <svg viewBox="0 0 220 80" width="100%" height="70" aria-label="Схема забежных ступеней">
+                <path d="M40,64 L100,64 L100,44 Z" fill="#334155"/><path d="M100,64 L160,64 L100,44 Z" fill="#475569"/><path d="M100,44 L160,44 L100,24 Z" fill="#64748b"/>
+                <text x="22" y="18" fill="#e2e8f0" font-size="11">считать только</text><text x="22" y="32" fill="#e2e8f0" font-size="11">поворотные ступени</text>
+              </svg>
+              <span class="badge">0–12 шт</span> <span class="badge">обычно 3–6</span> <span class="badge">не весь марш</span>
+            </div>
           </div>
           <div class="field field-wide">
             <label for="readyFrameStraightRailingLength">Длина прямого ограждения, м</label>
             <input id="readyFrameStraightRailingLength" type="number" value="" min="0" step="0.1" placeholder="Например 3.6">
             <p class="field-help">Если знаете точную длину прямого ограждения, введите её вручную. Если поле пустое, калькулятор использует авторасчёт.</p>
+            <div class="field-help">
+              <p><strong>Как измерить</strong></p>
+              <svg viewBox="0 0 220 80" width="100%" height="70" aria-label="Схема длины ограждения">
+                <line x1="24" y1="48" x2="196" y2="48" stroke="#64748b" stroke-width="6"/>
+                <line x1="24" y1="62" x2="196" y2="62" stroke="#22c55e" stroke-width="2"/><circle cx="24" cy="62" r="4" fill="#22c55e"/><circle cx="196" cy="62" r="4" fill="#eab308"/>
+                <text x="40" y="22" fill="#e2e8f0" font-size="11">вводить в метрах: 3.6</text><text x="40" y="36" fill="#e2e8f0" font-size="11">не 3600</text>
+              </svg>
+              <span class="badge">метры (м)</span> <span class="badge">50+ м — ошибка</span>
+            </div>
           </div>
         </div>
 
@@ -124,9 +241,10 @@
           <div class="field">
             <label for="metalFrameCondition">Состояние металлокаркаса</label>
             <select id="metalFrameCondition">
-              <option value="good">Ровный, без видимых дефектов</option>
-              <option value="needs_coating">Нужно обновить покрытие</option>
-              <option value="needs_repair">Есть вопросы по сварке / геометрии</option>
+              <option value="good">Ровный</option>
+              <option value="needs_fit">Нужна подгонка</option>
+              <option value="needs_coating">Нужна покраска</option>
+              <option value="defects">Есть дефекты</option>
             </select>
             <p class="field-help">Каркас не пересчитываем как новый, только проверяем посадку и состав отделки.</p>
           </div>
@@ -141,51 +259,13 @@
 
         <div class="grid hidden" id="existingConcreteGroup">
           <div class="field">
-            <label for="concreteStepCount">Количество ступеней</label>
-            <input id="concreteStepCount" type="number" value="15" min="1" max="40">
-          </div>
-          <div class="field">
-            <label for="concreteStairWidth">Ширина бетонного основания, мм</label>
-            <input id="concreteStairWidth" type="number" value="1000" min="600" max="2500">
-          </div>
-          <div class="field">
-            <label for="concreteTreadDepth">Средняя глубина ступени, мм</label>
-            <input id="concreteTreadDepth" type="number" value="300" min="180" max="500">
-          </div>
-          <div class="field">
             <label for="concreteBaseCondition">Состояние основания</label>
             <select id="concreteBaseCondition">
-              <option value="ready">Ровное, готово к облицовке</option>
-              <option value="prep_needed">Нужна подготовка поверхности</option>
-              <option value="repair_needed">Есть сколы / перепады</option>
+              <option value="ready">Ровный</option>
+              <option value="uneven">Перепады</option>
+              <option value="chips">Сколы</option>
+              <option value="prep_needed">Нужна подготовка</option>
             </select>
-          </div>
-        </div>
-
-        <div class="grid hidden" id="finishOnlyGroup">
-          <div class="field">
-            <label for="finishStepCount">Сколько ступеней отделывать</label>
-            <input id="finishStepCount" type="number" value="15" min="1" max="50">
-          </div>
-          <div class="field">
-            <label for="finishStairWidth">Ширина ступени, мм</label>
-            <input id="finishStairWidth" type="number" value="1000" min="600" max="2500">
-          </div>
-          <div class="field">
-            <label for="finishTreadDepth">Средняя глубина ступени, мм</label>
-            <input id="finishTreadDepth" type="number" value="300" min="180" max="500">
-          </div>
-          <div class="field">
-            <label for="finishOnlyNotes">Что нужно сделать</label>
-            <textarea id="finishOnlyNotes" rows="4" placeholder="Например: заменить ступени, закрыть подступенки, обновить поручень"></textarea>
-          </div>
-        </div>
-
-        <div class="grid hidden" id="consultationGroup">
-          <div class="field field-wide">
-            <label for="consultationNotes">Коротко опишите задачу</label>
-            <textarea id="consultationNotes" rows="5" placeholder="Например: есть проём и фото дома, нужна идея лестницы и оценка вариантов"></textarea>
-            <p class="field-help">Для консультации не нужно заполнять инженерные размеры идеально — инженер уточнит главное.</p>
           </div>
         </div>
 
@@ -199,20 +279,12 @@
             </select>
           </div>
           <div class="field">
-            <label for="finishLevel">Уровень отделки</label>
-            <select id="finishLevel">
-              <option value="basic">Базовый</option>
-              <option value="standard">Стандарт</option>
-              <option value="premium">Премиум</option>
-            </select>
-          </div>
-          <div class="field">
             <label for="pricingRegion">Регион цены</label>
             <select id="pricingRegion">
-              <option value="primary_region">Основной регион · ×1.00</option>
-              <option value="secondary_region">Второй регион · ×1.00</option>
+              <option value="primary_region">Основной регион</option>
+              <option value="secondary_region">Второй регион</option>
             </select>
-            <p class="field-help">Итоговый ориентир умножается на коэффициент региона из админки.</p>
+            <p class="field-help">Регион влияет на итоговую стоимость.</p>
           </div>
         </div>
 
@@ -298,6 +370,7 @@
       const normalizeBaseCondition = (value) => {
         const normalized = String(value || '').trim().toLowerCase();
         if (normalized === 'ready_frame') return 'existing_metal_frame';
+        if (normalized === 'ready_base') return document.getElementById('baseSubtype')?.value || 'existing_metal_frame';
         return normalized || 'empty_opening';
       };
 
@@ -311,47 +384,57 @@
         if (!select || select.options.length) return;
 
         select.innerHTML = [
-          '<option value="primary_region">Основной регион · ×1.00</option>',
-          '<option value="secondary_region">Второй регион · ×1.00</option>'
+          '<option value="primary_region">Основной регион</option>',
+          '<option value="secondary_region">Второй регион</option>'
         ].join('');
       };
 
       const syncScenarioFields = () => {
         const baseCondition = normalizeBaseCondition(document.getElementById('baseCondition')?.value);
+        const readyBaseShape = document.getElementById('readyBaseShape')?.value || 'straight';
         const stairType = document.getElementById('stairType')?.value || 'straight';
+        const isReadyBaseChoice = document.getElementById('baseCondition')?.value === 'ready_base';
         const isEmptyOpening = baseCondition === 'empty_opening';
         const isReadyFrame = baseCondition === 'existing_metal_frame';
         const isExistingConcrete = baseCondition === 'existing_concrete_base';
-        const isFinishOnly = baseCondition === 'finish_only';
-        const isConsultation = baseCondition === 'consultation';
-        const usesStructuralShape = isEmptyOpening || isReadyFrame;
-        const usesServiceOptions = isReadyFrame || isExistingConcrete || isFinishOnly;
+        const usesStructuralShape = isEmptyOpening;
+        const usesServiceOptions = isEmptyOpening || isReadyFrame || isExistingConcrete;
         const showTurnFields = usesStructuralShape && stairType !== 'straight';
         const toResultsBtn = document.getElementById('toResultsBtn');
         const frameMaterial = document.getElementById('frameMaterial');
+        const hasLanding = isReadyBaseChoice && ['l_turn_landing', 'u_turn_landing'].includes(readyBaseShape);
+        const hasWinders = isReadyBaseChoice && ['l_turn_winders', 'u_turn_winders'].includes(readyBaseShape);
+        const isFullCladding = document.getElementById('finishScope')?.value === 'full_cladding';
 
+        setHidden('baseSubtypeField', !isReadyBaseChoice);
         setHidden('openingTypeField', !isEmptyOpening);
         setHidden('stairTypeField', !usesStructuralShape);
         setHidden('turnDirectionField', !showTurnFields);
         setHidden('turnTypeField', !showTurnFields);
         setHidden('geometryInputGroup', !isEmptyOpening);
-        setHidden('readyFrameGroup', !isReadyFrame);
+        setHidden('readyBaseShapeField', !isReadyBaseChoice);
+        setHidden('readyFrameGroup', !(isReadyFrame || isExistingConcrete));
         setHidden('existingMetalGroup', !isReadyFrame);
         setHidden('existingConcreteGroup', !isExistingConcrete);
-        setHidden('finishOnlyGroup', !isFinishOnly);
-        setHidden('consultationGroup', !isConsultation);
-        setHidden('pricingInputGroup', isConsultation);
+        setHidden('landingToggleField', true);
+        setHidden('winderToggleField', true);
+        setHidden('landingLengthField', !hasLanding);
+        setHidden('landingWidthField', !hasLanding);
+        setHidden('landingAreaField', !hasLanding);
+        setHidden('winderCountField', !hasWinders);
+        setHidden('sheetCountField', !isFullCladding);
+        setHidden('sheetSizeField', !isFullCladding);
+        setHidden('pricingInputGroup', false);
         setHidden('frameMaterialField', !isEmptyOpening);
         setHidden('serviceOptionsGroup', !usesServiceOptions);
 
         if (frameMaterial && isReadyFrame) frameMaterial.value = 'metal';
+        if (frameMaterial && isExistingConcrete) frameMaterial.value = 'concrete';
 
         if (toResultsBtn) {
           if (isEmptyOpening) toResultsBtn.textContent = 'Рассчитать геометрию';
-          if (isReadyFrame) toResultsBtn.textContent = 'Проверить посадку и отделку';
-          if (isExistingConcrete) toResultsBtn.textContent = 'Рассчитать облицовку основания';
-          if (isFinishOnly) toResultsBtn.textContent = 'Рассчитать отделку';
-          if (isConsultation) toResultsBtn.textContent = 'Подготовить заявку на консультацию';
+          if (isReadyFrame) toResultsBtn.textContent = 'Рассчитать отделку металлокаркаса';
+          if (isExistingConcrete) toResultsBtn.textContent = 'Рассчитать отделку бетонной лестницы';
         }
 
         ensureRegionOptions();

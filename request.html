@@ -110,14 +110,32 @@ function buildCalcSummary(payload) {
     const geometry = payload.chosen_geometry_result || payload.geometryResult || {};
     const pricingRegion = payload.pricing_region;
     const pricingBreakdown = payload.pricing_breakdown;
+    const details = payload.scenario_details || {};
+    const selections = payload.price_relevant_selections || {};
+    const metrics = geometry.service_metrics || {};
     const summaryRows = Array.isArray(geometry.summary_rows)
       ? geometry.summary_rows.map((row) => `${row[0]}: ${row[1]}`)
       : [];
     return [
       `Сценарий: ${payload.baseCondition || payload.base_condition || '-'}`,
+      details.base_subtype ? `Тип основания: ${details.base_subtype === 'existing_metal_frame' ? 'Металлокаркас' : 'Бетонная лестница'}` : '',
       `Тип лестницы: ${payload.staircaseType || payload.selected_staircase_type || '-'}`,
       `Статус: ${payload.status || '-'}`,
-      pricingRegion ? `Регион цены: ${pricingRegion.name || pricingRegion.code} · x${Number(pricingRegion.price_coef || 1).toFixed(2)}` : '',
+      details.finish_scope_label ? `Что отделываем: ${details.finish_scope_label}` : '',
+      details.ready_frame_step_count ? `Ступеней: ${details.ready_frame_step_count}` : '',
+      details.ready_frame_march_width ? `Ширина ступени: ${details.ready_frame_march_width} мм` : '',
+      details.ready_frame_tread_depth ? `Глубина ступени: ${details.ready_frame_tread_depth} мм` : '',
+      details.ready_frame_riser_height ? `Высота подступенка: ${details.ready_frame_riser_height} мм` : '',
+      details.cladding_sheet_count ? `Листы: ${details.cladding_sheet_count} шт (${details.cladding_sheet_width || '-'}×${details.cladding_sheet_height || '-'} мм)` : '',
+      details.full_cladding_area_m2 ? `Площадь обшивки каркаса: ${details.full_cladding_area_m2} м²` : '',
+      details.total_finish_area_m2 ? `Общая площадь отделки: ${details.total_finish_area_m2} м²` : '',
+      details.has_landing ? `Площадка: ${details.landing_area || metrics.landingAreaM2 || '-'} м²` : '',
+      details.has_winders ? `Забежные ступени: ${details.winder_count || metrics.winderCount || '-'}` : '',
+      selections.finish_material ? `Отделка: ${selections.finish_material}` : '',
+      selections.coating_option ? `Покрытие: ${selections.coating_option}` : '',
+      selections.railing_option ? `Ограждение: ${selections.railing_option}` : '',
+      selections.lighting_option ? `Подсветка: ${selections.lighting_option}` : '',
+      pricingRegion ? `Регион цены: ${pricingRegion.name || pricingRegion.code}` : '',
       pricingBreakdown ? `База до региона: ${Number(pricingBreakdown.subtotal_before_region || 0).toLocaleString('ru-RU')} ₽` : '',
       dimensions.floor_to_floor_height || dimensions.floorHeight ? `Высота: ${dimensions.floor_to_floor_height || dimensions.floorHeight} мм` : '',
       dimensions.opening_length || dimensions.openingLength ? `Проём: ${dimensions.opening_length || dimensions.openingLength} x ${dimensions.opening_width || dimensions.openingWidth || '-'} мм` : '',
@@ -364,6 +382,8 @@ async function sendRequest() {
       chosen_geometry_result: calcPayload?.chosen_geometry_result || calcPayload?.geometryResult || null,
       base_condition: calcPayload?.base_condition || '',
       base_subtype: calcPayload?.base_subtype || '',
+      project_scenario: calcPayload?.project_scenario || '',
+      scenario_details: calcPayload?.scenario_details || {},
       configuration_type: calcPayload?.configuration_type || '',
       turn_type: calcPayload?.turn_type || '',
       turn_direction: calcPayload?.turn_direction || '',
@@ -376,6 +396,7 @@ async function sendRequest() {
     options_json: {
       selected: calcPayload?.selectedExtras || [],
       labels: (calcPayload?.selectedExtras || []).map((item) => item?.label || item?.code || ''),
+      price_relevant_selections: calcPayload?.price_relevant_selections || {},
       price_breakdown: calcPayload?.priceBreakdown || calcPayload?.pricing_breakdown || {},
       pricing_snapshot: calcPayload?.pricing_snapshot || null,
       meta: {
