@@ -15,10 +15,11 @@ body{margin:0;background:#0f0c0a;color:#f4e7d4;font-family:Inter,Arial,sans-seri
 .story b{display:block;color:#e7cfb1;margin-bottom:6px}
 .gallery-main{width:100%;border-radius:14px;margin:18px 0;background:#201b18;object-fit:cover;max-height:560px;cursor:pointer}
 .thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:10px;margin-bottom:16px}.thumbs img{width:100%;height:72px;object-fit:cover;border-radius:10px;border:1px solid rgba(255,255,255,.15);cursor:pointer}.thumbs img.active{border-color:#e8c8a2}
-.price{font-size:22px;color:#f0d7b7;font-weight:bold;margin:10px 0}.meta,.config,.trust{margin-top:18px;padding:18px;border:1px solid rgba(255,255,255,.08);border-radius:16px;background:rgba(255,255,255,.02)}
+.price{font-size:22px;color:#f0d7b7;font-weight:bold;margin:10px 0}.meta,.project-actions,.trust{margin-top:18px;padding:18px;border:1px solid rgba(255,255,255,.08);border-radius:16px;background:rgba(255,255,255,.02)}
 .meta p{margin:8px 0}.meta p.is-empty{display:none}.meta.is-empty{display:none}
 .btn{display:inline-block;margin-top:18px;padding:14px 20px;border-radius:12px;background:#e8c8a2;color:#1a120e;font-weight:700}
-.config-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.config select,.config input{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:#171310;color:#f4e7d4}
+.project-actions .actions-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.project-actions .btn{display:block;margin-top:0;text-align:center}
 .muted{font-size:13px;color:#ad9e8d}.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.86);display:none;align-items:center;justify-content:center;z-index:100}.lightbox.open{display:flex}.lightbox img{max-width:92vw;max-height:92vh;border-radius:12px}
 .project-back-link{display:inline-flex;margin-bottom:14px;color:#e8c8a2}.project-detail-page .site-header .site-nav a[aria-current="page"]{color:var(--gold-1,#efd2ac)}
 @media(max-width:760px){.config-grid{grid-template-columns:1fr}.wrap{padding-left:14px;padding-right:14px;padding-bottom:34px}}
@@ -35,20 +36,16 @@ body{margin:0;background:#0f0c0a;color:#f4e7d4;font-family:Inter,Arial,sans-seri
 <img id="mainImage" class="gallery-main" src="/assets/design/home-showcase.jpg" alt="Проект"><div class="thumbs" id="thumbs"></div>
 <div id="price" class="price"></div><p id="description"></p>
 <div class="meta" id="metaBox"><p id="materials"></p><p id="type"></p><p id="category"></p><p id="leadTime"></p></div>
-<div class="config"><h3>Мини-конфигуратор проекта</h3><p class="muted">Мягкий апселл: можно быстро посмотреть, как изменится ориентировочная стоимость при других материалах и опциях. Финальная смета подтверждается инженером.</p>
-<div class="config-grid">
-<div><label>Ограждение</label><select id="cfgRailing"></select></div>
-<div><label>Облицовка</label><select id="cfgCladding"></select></div>
-<div><label>Каркас</label><select id="cfgFrame"></select></div>
-<div><label>Финиш</label><select id="cfgFinish"></select></div>
-<div><label>Подсветка</label><select id="cfgLighting"><option value="0">Нет</option><option value="1">Да</option></select></div>
-<div><label>Покраска/покрытие</label><select id="cfgCoating"><option value="0">Базовое</option><option value="1">Премиум</option></select></div>
-</div>
-<p id="cfgBase" class="muted"></p><p id="cfgDelta" class="muted"></p><p id="cfgTotal" class="price"></p>
-<a id="cfgRequest" class="btn" href="/request.html">Отправить запрос по изменениям</a>
+<div class="project-actions">
+  <h3>Хотите похожую лестницу?</h3>
+  <p class="muted">Сделаем расчёт и заявку в единой логике калькулятора и админки — без отдельного mini-конфигуратора.</p>
+  <div class="actions-grid">
+    <a id="similarCalcBtn" class="btn" href="/calculator.html">Рассчитать похожую</a>
+    <a id="projectRequestBtn" class="btn" href="/request.html">Оставить заявку по этому проекту</a>
+  </div>
 </div>
 <div class="trust"><b>Что дальше после заявки:</b><p>Вам ответит инженер Tekstura, уточнит размеры и предложит 1–2 оптимальные конфигурации под ваш проём. Обычно связываемся в течение рабочего дня.</p><p class="muted">Вы общаетесь напрямую с командой производства в Казани, без посредников: Оренбургский тракт, 340.</p></div>
-<a class="btn" href="/request.html">Оставить заявку по проекту</a></main>
+</main>
 <div id="lightbox" class="lightbox"><img id="lightboxImage" src="" alt="Просмотр"></div>
 <script>
 const SITE_URL = 'https://tekstura.shop';
@@ -57,21 +54,17 @@ const params = new URLSearchParams(location.search); const id = params.get('id')
 const cfg = window.SUPABASE_CONFIG;
 const client = (cfg?.url && cfg?.anonKey && window.supabase) ? window.supabase.createClient(cfg.url, cfg.anonKey) : null;
 let project = null; let images = []; let basePrice = 0;
-const defaults = {
-  railing:[['none','Без ограждения',0],['metal','Металл',0],['glass','Стекло',38000],['wood','Дерево',21000]],
-  cladding:[['none','Без облицовки',-30000],['standard','Стандарт',0],['premium','Премиум',52000]],
-  frame:[['metal','Металлокаркас',0],['concrete','Бетонный каркас',42000],['wood','Деревянный каркас',26000]],
-  finish:[['basic','Базовый',0],['standard','Стандарт',18000],['premium','Премиум',48000]]
-};
 function safeProjectImage(raw){const value=String(raw||'').trim();return (!value||/logo|tekstura-logo|tekstura-header-logo|tekstura-mark|mark/i.test(value))?PROJECT_FALLBACK_IMAGE:value;}
 function updateSeoMeta(t,d){const base='Проект лестницы — Tekstura';const ft=t?`${t} — проект лестницы | Tekstura`:base;const fd=d||'Проект премиальной лестницы Tekstura';document.title=ft;document.querySelector('meta[name="description"]').setAttribute('content',fd);document.querySelector('meta[property="og:title"]').setAttribute('content',ft);document.querySelector('meta[property="og:description"]').setAttribute('content',fd);const canonical=document.querySelector('link[rel="canonical"]');const og=document.querySelector('meta[property="og:url"]');const url=`${SITE_URL}/project.html?id=${encodeURIComponent(id||'')}`;if(canonical) canonical.setAttribute('href',url);if(og) og.setAttribute('content',url);}
 if(!id) { document.getElementById('title').textContent='Проект не выбран'; document.getElementById('description').textContent='Откройте проект через страницу портфолио.'; } else loadProject();
 function setMainImage(url){const m=document.getElementById('mainImage');m.src=safeProjectImage(url);document.querySelectorAll('#thumbs img').forEach((i)=>i.classList.toggle('active',i.src===m.src));}
-function fillSelect(id,options){document.getElementById(id).innerHTML=options.map(o=>`<option value="${o[0]}" data-delta="${o[2]}">${o[1]}</option>`).join('');}
-function recalc(){const picks=['cfgRailing','cfgCladding','cfgFrame','cfgFinish'].map((id)=>document.getElementById(id).selectedOptions[0]);const delta=picks.reduce((s,o)=>s+Number(o.dataset.delta||0),0)+Number(document.getElementById('cfgLighting').value)*26000+Number(document.getElementById('cfgCoating').value)*18000;const total=basePrice+delta;document.getElementById('cfgBase').textContent=`Базовая цена проекта: ${new Intl.NumberFormat('ru-RU').format(basePrice)} ₽`;document.getElementById('cfgDelta').textContent=`Изменения: ${delta>=0?'+':''}${new Intl.NumberFormat('ru-RU').format(delta)} ₽`;document.getElementById('cfgTotal').textContent=`Оценка с изменениями: ${new Intl.NumberFormat('ru-RU').format(total)} ₽`;
-const payload={staircaseType:project?.title||'Проект',total,selectedExtras:[...picks.map((o)=>({label:o.textContent})),{label:Number(document.getElementById('cfgLighting').value)?'Подсветка':'Без подсветки'},{label:Number(document.getElementById('cfgCoating').value)?'Премиум покрытие':'Базовое покрытие'}],materialsSummary:{railing:picks[0].textContent,cladding:picks[1].textContent,frame:picks[2].textContent,finish:picks[3].textContent},priceBreakdown:{base:basePrice,delta},dimensions:{project_id:project?.id,project_title:project?.title}};
-const encoded = encodeURIComponent(JSON.stringify(payload)); try{sessionStorage.setItem('tekstura_calc_payload', encoded);}catch(e){console.error('cache payload failed', e);}
-document.getElementById('cfgRequest').href='/request.html?calc='+encoded;}
+function syncProjectActionLinks() {
+  const projectId = encodeURIComponent(String(project?.id || id || '').trim());
+  const calcUrl = projectId ? `/calculator.html?project_id=${projectId}` : '/calculator.html';
+  const requestUrl = projectId ? `/request.html?project_id=${projectId}` : '/request.html';
+  document.getElementById('similarCalcBtn').href = calcUrl;
+  document.getElementById('projectRequestBtn').href = requestUrl;
+}
 function setMetaLine(id, value, prefix){
   const node = document.getElementById(id);
   const hasValue = Boolean(value);
@@ -90,8 +83,7 @@ images=(imgData&&imgData.length)?imgData.filter((i)=>i.image_url):[{image_url:da
 const cover=images.find(i=>i.is_cover)?.image_url||images[0].image_url; setMainImage(cover);
 document.getElementById('thumbs').innerHTML=images.map((img)=>`<img loading="lazy" src="${safeProjectImage(img.image_url)}" alt="${img.alt_text||'Проект'}" onerror="this.onerror=null;this.src='${PROJECT_FALLBACK_IMAGE}';">`).join('');document.querySelectorAll('#thumbs img').forEach((img)=>img.onclick=()=>setMainImage(img.src));
 
-const opts=data.custom_options || {}; fillSelect('cfgRailing',opts.railing||defaults.railing); fillSelect('cfgCladding',opts.cladding||defaults.cladding); fillSelect('cfgFrame',opts.frame||defaults.frame); fillSelect('cfgFinish',opts.finish||defaults.finish);
-['cfgRailing','cfgCladding','cfgFrame','cfgFinish','cfgLighting','cfgCoating'].forEach((id)=>document.getElementById(id).addEventListener('change',recalc)); recalc();
+syncProjectActionLinks();
 
 document.getElementById('title').innerText=data.title||'Проект лестницы Tekstura';document.getElementById('subtitle').innerText=data.short_description||'';document.getElementById('description').innerText=data.full_description||data.description||'';
 document.getElementById('price').innerText=basePrice?('Цена: '+new Intl.NumberFormat('ru-RU').format(basePrice)+' ₽'):'Цена: по запросу';

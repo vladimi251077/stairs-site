@@ -143,6 +143,14 @@ function resolveLeadContext(lead = {}) {
   const source = hasCalculatorData ? 'Заявка из калькулятора' : 'Ручная заявка без расчёта';
 
   const leadId = String(lead?.id || '').trim();
+  const projectContext = dimensions?.project_context && typeof dimensions.project_context === 'object'
+    ? dimensions.project_context
+    : null;
+  const projectPriceText = projectContext
+    ? formatCurrency(projectContext.price || 0) !== 'не рассчитана'
+      ? formatCurrency(projectContext.price || 0)
+      : (projectContext.price_from ? `от ${Number(projectContext.price_from).toLocaleString('ru-RU')} ₽` : 'по запросу')
+    : '';
 
   return {
     source,
@@ -175,7 +183,18 @@ function resolveLeadContext(lead = {}) {
       readyMaterial: materials.ready_material || ''
     },
     selectedOptions,
-    calculatedPriceText: formatCurrency(calculatedPrice)
+    calculatedPriceText: formatCurrency(calculatedPrice),
+    projectContext: projectContext
+      ? {
+          projectId: toHumanText(projectContext.id, 'не указан'),
+          title: toHumanText(projectContext.title, 'не указан'),
+          priceText: projectPriceText,
+          materials: toHumanText(projectContext.materials, 'не указаны'),
+          staircaseType: toHumanText(projectContext.staircase_type, 'не указан'),
+          category: toHumanText(projectContext.category, 'не указана'),
+          leadTime: toHumanText(projectContext.lead_time, 'не указан')
+        }
+      : null
   };
 }
 
@@ -184,6 +203,7 @@ function formatLeadMessage(lead) {
   const staircase = ctx.staircase;
   const materials = ctx.materials;
   const optionsText = ctx.selectedOptions.length ? ctx.selectedOptions.join(', ') : 'не выбраны';
+  const project = ctx.projectContext;
 
   const lines = [
     'Новая заявка Tekstura',
@@ -216,6 +236,19 @@ function formatLeadMessage(lead) {
     `Lead ID: ${ctx.leadIdText}`
   ];
 
+  if (project) {
+    lines.push(
+      '',
+      `Заявка по проекту: ${project.title}`,
+      `Project ID: ${project.projectId}`,
+      `Ориентир проекта: ${project.priceText}`,
+      `Материалы: ${project.materials}`,
+      `Тип: ${project.staircaseType}`,
+      `Категория: ${project.category}`,
+      `Срок: ${project.leadTime}`
+    );
+  }
+
   if (!ctx.isCalculatorLead) {
     lines.push('', 'Расчёт не прикреплён. Требуется ручной созвон и уточнение параметров.');
   }
@@ -228,6 +261,7 @@ function formatLeadEmailHtml(lead) {
   const staircase = ctx.staircase;
   const materials = ctx.materials;
   const optionsText = ctx.selectedOptions.length ? ctx.selectedOptions.join(', ') : 'не выбраны';
+  const project = ctx.projectContext;
 
   const customerRows = [
     ['Имя', ctx.customer.name],
@@ -261,6 +295,17 @@ function formatLeadEmailHtml(lead) {
     ['Рассчитанная цена', ctx.calculatedPriceText],
     ['Lead ID', ctx.leadIdText]
   ];
+  const projectRowsExtra = project
+    ? [
+        ['Заявка по проекту', project.title],
+        ['Project ID', project.projectId],
+        ['Ориентир проекта', project.priceText],
+        ['Материалы', project.materials],
+        ['Тип', project.staircaseType],
+        ['Категория', project.category],
+        ['Срок', project.leadTime]
+      ]
+    : [];
 
   const tableRows = (rows) => rows
     .map(([label, value]) => `<tr><td style="padding:8px;border:1px solid #ddd;width:38%;"><b>${escapeHtml(label)}</b></td><td style="padding:8px;border:1px solid #ddd;">${escapeHtml(value)}</td></tr>`)
@@ -282,6 +327,7 @@ function formatLeadEmailHtml(lead) {
 
       <h3 style="margin:16px 0 8px;">Материалы и стоимость</h3>
       <table style="border-collapse:collapse;width:100%;max-width:780px;">${tableRows(materialRows)}</table>
+      ${projectRowsExtra.length ? `<h3 style="margin:16px 0 8px;">Контекст проекта</h3><table style="border-collapse:collapse;width:100%;max-width:780px;">${tableRows(projectRowsExtra)}</table>` : ''}
 
       ${manualNote}
     </div>
