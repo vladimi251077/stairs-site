@@ -751,7 +751,7 @@ function getFinishMetricsFromGeometry(config, geometry) {
 
   return {
     stepCount,
-    finishAreaM2: totalFinishAreaM2,
+    finishAreaM2,
     railingLengthM,
     coatingAreaM2: round(((geometry.walking_line_length || geometry.run_length || 0) / 1000) * widthM * 0.55, 2)
   };
@@ -766,7 +766,7 @@ function getFinishMetricsFromManualInputs(config, source) {
 
   return {
     stepCount,
-    finishAreaM2: totalFinishAreaM2,
+    finishAreaM2,
     railingLengthM,
     coatingAreaM2: finishAreaM2
   };

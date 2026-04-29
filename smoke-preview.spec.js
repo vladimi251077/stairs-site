@@ -44,6 +44,22 @@ test('calculator smoke: empty opening flow reaches request payload', async ({ pa
   expect(issues).toEqual([]);
 });
 
+
+
+test('calculator smoke: empty opening reaches price without ReferenceError', async ({ page }) => {
+  const issues = collectRuntimeIssues(page);
+  await page.goto(`${baseUrl}/calculator.html`);
+  await page.locator('[data-next-step="2"]').click();
+  await page.locator('#floorHeight').fill('3000');
+  await page.locator('#openingLength').fill('4200');
+  await page.locator('#openingWidth').fill('2200');
+  await page.locator('#marchWidth').fill('1000');
+  await page.locator('#toResultsBtn').click();
+  await expect(page.locator('#step3')).toHaveClass(/active/);
+  await page.locator('#calculateBtn').click();
+  await expect(page.locator('#step4')).toHaveClass(/active/);
+  expect(issues.join(' | ')).not.toContain('ReferenceError');
+});
 test('calculator smoke: ready metal base payload includes finish details', async ({ page }) => {
   const issues = collectRuntimeIssues(page);
 
