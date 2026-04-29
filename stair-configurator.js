@@ -112,9 +112,14 @@ const BASE_CONDITION_LABELS = {
   empty_opening: 'Пустой проём',
   existing_metal_frame: 'Готовый каркас',
   ready_frame: 'Готовый каркас',
-  existing_concrete_base: 'Готовое бетонное основание',
-  finish_only: 'Только отделка / облицовка',
-  consultation: 'Консультация'
+  ready_base: 'Готовое основание',
+  existing_concrete_base: 'Бетонная лестница'
+};
+
+const FINISH_SCOPE_LABELS = {
+  treads_only: 'Только ступени',
+  treads_and_risers: 'Ступени + подступенки',
+  full_cladding: 'Полная обшивка каркаса'
 };
 
 const OPTION_LABELS = {
@@ -173,6 +178,7 @@ const round = (value, digits = 2) => Number((value || 0).toFixed(digits));
 function normalizeBaseConditionValue(value, fallback = 'empty_opening') {
   const normalized = String(value || '').trim().toLowerCase();
   if (normalized === 'ready_frame') return 'existing_metal_frame';
+  if (normalized === 'ready_base') return $('baseSubtype')?.value || 'existing_metal_frame';
   return normalized || fallback;
 }
 
@@ -396,11 +402,20 @@ function setHidden(id, hidden) {
   $(id)?.classList.toggle('hidden', hidden);
 }
 
+function normalizeFinishScope(value) {
+  const normalized = String(value || '').trim();
+  if (['treads_only', 'treads_and_risers', 'full_cladding'].includes(normalized)) return normalized;
+  return 'treads_and_risers';
+}
+
 function sanitizeConfigByScenario(config) {
   const baseCondition = normalizeBaseConditionValue(config.base_condition || 'empty_opening');
   const sanitized = {
     ...config,
     base_condition: baseCondition,
+    project_scenario: baseCondition === 'empty_opening' ? 'empty_opening' : 'ready_base',
+    base_subtype: baseCondition === 'empty_opening' ? '' : baseCondition,
+    finish_scope: normalizeFinishScope(config.finish_scope),
     opening_type: normalizeOpeningTypeValue(config.opening_type || 'straight', 'straight')
   };
 
@@ -415,36 +430,31 @@ function sanitizeConfigByScenario(config) {
     sanitized.opening_type = 'none';
   }
 
-  if (!isReadyFrameCondition(baseCondition)) {
+  if (baseCondition === 'empty_opening') {
     sanitized.ready_frame_step_count = 0;
     sanitized.ready_frame_march_width = 0;
     sanitized.ready_frame_tread_depth = 0;
     sanitized.ready_frame_riser_height = 0;
     sanitized.ready_frame_straight_railing_length = 0;
+    sanitized.finish_scope = 'treads_only';
+    sanitized.clad_risers = false;
+    sanitized.has_landing = false;
+    sanitized.landing_length = 0;
+    sanitized.landing_width = 0;
+    sanitized.landing_area = 0;
+    sanitized.has_winders = false;
+    sanitized.winder_count = 0;
     sanitized.metal_frame_condition = 'good';
-    sanitized.existing_frame_notes = '';
-  } else {
-    sanitized.frame_material = 'metal';
-  }
-
-  if (baseCondition !== 'existing_concrete_base') {
-    sanitized.concrete_step_count = 0;
-    sanitized.concrete_stair_width = 0;
-    sanitized.concrete_tread_depth = 0;
     sanitized.concrete_base_condition = 'ready';
-  } else {
+    sanitized.existing_frame_notes = '';
+  } else if (isReadyFrameCondition(baseCondition)) {
+    sanitized.frame_material = 'metal';
+    sanitized.concrete_base_condition = 'ready';
+    sanitized.clad_risers = sanitized.finish_scope !== 'treads_only';
+  } else if (baseCondition === 'existing_concrete_base') {
     sanitized.frame_material = 'concrete';
-  }
-
-  if (baseCondition !== 'finish_only') {
-    sanitized.finish_step_count = 0;
-    sanitized.finish_stair_width = 0;
-    sanitized.finish_tread_depth = 0;
-    sanitized.finish_only_notes = '';
-  }
-
-  if (baseCondition !== 'consultation') {
-    sanitized.consultation_notes = '';
+    sanitized.metal_frame_condition = 'good';
+    sanitized.clad_risers = sanitized.finish_scope !== 'treads_only';
   }
 
   if (baseCondition !== 'empty_opening' && !isReadyFrameCondition(baseCondition)) {
@@ -462,47 +472,66 @@ function sanitizeConfigByScenario(config) {
 }
 
 function updateScenarioFields() {
-  const baseCondition = normalizeBaseConditionValue($('baseCondition')?.value || 'empty_opening');
+  const baseConditionRaw = $('baseCondition')?.value || 'empty_opening';
+  const baseCondition = normalizeBaseConditionValue(baseConditionRaw);
   const isEmptyOpening = baseCondition === 'empty_opening';
+  const isReadyBaseChoice = baseConditionRaw === 'ready_base';
   const isExistingMetal = isReadyFrameCondition(baseCondition);
   const isExistingConcrete = baseCondition === 'existing_concrete_base';
-  const isFinishOnly = baseCondition === 'finish_only';
-  const isConsultation = baseCondition === 'consultation';
   const usesGeometryInputs = isEmptyOpening;
-  const usesStructuralShape = isEmptyOpening || isExistingMetal;
-  const usesServiceOptions = isExistingMetal || isExistingConcrete || isFinishOnly;
+  const usesStructuralShape = isEmptyOpening;
+  const usesServiceOptions = isEmptyOpening || isExistingMetal || isExistingConcrete;
+  const hasLanding = !!$('hasLanding')?.checked;
+  const hasWinders = !!$('hasWinders')?.checked;
+  const isFullCladding = normalizeFinishScope($('finishScope')?.value) === 'full_cladding';
 
+  setHidden('baseSubtypeField', !isReadyBaseChoice);
   setHidden('openingTypeField', !isEmptyOpening);
   setHidden('stairTypeField', !usesStructuralShape);
   setHidden('geometryInputGroup', !usesGeometryInputs);
-  setHidden('readyFrameGroup', !isExistingMetal);
+  setHidden('readyFrameGroup', !(isExistingMetal || isExistingConcrete));
   setHidden('existingMetalGroup', !isExistingMetal);
   setHidden('existingConcreteGroup', !isExistingConcrete);
-  setHidden('finishOnlyGroup', !isFinishOnly);
-  setHidden('consultationGroup', !isConsultation);
-  setHidden('pricingInputGroup', isConsultation);
+  setHidden('landingLengthField', !hasLanding);
+  setHidden('landingWidthField', !hasLanding);
+  setHidden('landingAreaField', !hasLanding);
+  setHidden('winderCountField', !hasWinders);
+  setHidden('sheetCountField', !isFullCladding);
+  setHidden('sheetSizeField', !isFullCladding);
+  setHidden('pricingInputGroup', false);
   setHidden('frameMaterialField', !isEmptyOpening);
   setHidden('serviceOptionsGroup', !usesServiceOptions);
 
   const toResultsBtn = $('toResultsBtn');
   if (toResultsBtn) {
     if (isEmptyOpening) toResultsBtn.textContent = 'Рассчитать геометрию';
-    if (isExistingMetal) toResultsBtn.textContent = 'Проверить посадку и отделку';
-    if (isExistingConcrete) toResultsBtn.textContent = 'Рассчитать облицовку основания';
-    if (isFinishOnly) toResultsBtn.textContent = 'Рассчитать отделку';
-    if (isConsultation) toResultsBtn.textContent = 'Подготовить заявку на консультацию';
+    if (isExistingMetal) toResultsBtn.textContent = 'Рассчитать отделку металлокаркаса';
+    if (isExistingConcrete) toResultsBtn.textContent = 'Рассчитать отделку бетонной лестницы';
   }
 
   toggleTurnFields();
 }
 
 function getConfigFromForm() {
+  const baseConditionRaw = $('baseCondition')?.value || 'empty_opening';
+  const baseCondition = normalizeBaseConditionValue(baseConditionRaw);
+  const readyBaseShape = $('readyBaseShape')?.value || 'straight';
+  const shapeToStair = {
+    straight: { stair_type: 'straight', turn_type: 'landing' },
+    l_turn_landing: { stair_type: 'l_turn', turn_type: 'landing' },
+    l_turn_winders: { stair_type: 'l_turn', turn_type: 'winders' },
+    u_turn_landing: { stair_type: 'u_turn', turn_type: 'landing' },
+    u_turn_winders: { stair_type: 'u_turn', turn_type: 'winders' }
+  };
+  const mappedShape = shapeToStair[readyBaseShape] || shapeToStair.straight;
   return sanitizeConfigByScenario({
-    base_condition: normalizeBaseConditionValue($('baseCondition')?.value || 'empty_opening'),
+    base_condition: baseCondition,
+    project_scenario: baseConditionRaw === 'ready_base' ? 'ready_base' : 'empty_opening',
+    base_subtype: baseConditionRaw === 'ready_base' ? ($('baseSubtype')?.value || 'existing_metal_frame') : '',
     opening_type: normalizeOpeningTypeValue($('openingType')?.value || 'straight', 'straight'),
-    stair_type: $('stairType')?.value || 'straight',
+    stair_type: baseConditionRaw === 'ready_base' ? mappedShape.stair_type : ($('stairType')?.value || 'straight'),
     turn_direction: $('turnDirection')?.value || 'right',
-    turn_type: $('turnType')?.value || 'landing',
+    turn_type: baseConditionRaw === 'ready_base' ? mappedShape.turn_type : ($('turnType')?.value || 'landing'),
     floor_to_floor_height: Number($('floorHeight')?.value || 0),
     slab_thickness: Number($('slabThickness')?.value || 220),
     finish_thickness_top: Number($('finishThicknessTop')?.value || 0),
@@ -511,7 +540,6 @@ function getConfigFromForm() {
     opening_width: Number($('openingWidth')?.value || 0),
     march_width: Number($('marchWidth')?.value || 0),
     frame_material: $('frameMaterial')?.value || 'metal',
-    finish_level: $('finishLevel')?.value || 'basic',
     pricing_region_code: $('pricingRegion')?.value || getActivePricingRegions()[0]?.code || 'primary_region',
     finish_material: $('finishMaterial')?.value || 'oak',
     railing_option: $('railingOption')?.value || 'metal',
@@ -524,15 +552,27 @@ function getConfigFromForm() {
     ready_frame_tread_depth: Number($('readyFrameTreadDepth')?.value || 0),
     ready_frame_riser_height: Number($('readyFrameRiserHeight')?.value || 0),
     ready_frame_straight_railing_length: Number($('readyFrameStraightRailingLength')?.value || 0),
-    concrete_step_count: Number($('concreteStepCount')?.value || 0),
-    concrete_stair_width: Number($('concreteStairWidth')?.value || 0),
-    concrete_tread_depth: Number($('concreteTreadDepth')?.value || 0),
+    finish_scope: normalizeFinishScope($('finishScope')?.value),
+    clad_risers: normalizeFinishScope($('finishScope')?.value) !== 'treads_only',
+    cladding_sheet_count: Number($('claddingSheetCount')?.value || 5),
+    cladding_sheet_width: Number($('claddingSheetWidth')?.value || 1035),
+    cladding_sheet_height: Number($('claddingSheetHeight')?.value || 2800),
+    has_landing: !!$('hasLanding')?.checked,
+    landing_length: Number($('landingLength')?.value || 0),
+    landing_width: Number($('landingWidth')?.value || 0),
+    landing_area: Number($('landingArea')?.value || 0),
+    has_winders: !!$('hasWinders')?.checked,
+    winder_count: Number($('winderCount')?.value || 0),
+    concrete_step_count: Number($('readyFrameStepCount')?.value || 0),
+    concrete_stair_width: Number($('readyFrameMarchWidth')?.value || 0),
+    concrete_tread_depth: Number($('readyFrameTreadDepth')?.value || 0),
+    concrete_riser_height: Number($('readyFrameRiserHeight')?.value || 0),
     concrete_base_condition: $('concreteBaseCondition')?.value || 'ready',
-    finish_step_count: Number($('finishStepCount')?.value || 0),
-    finish_stair_width: Number($('finishStairWidth')?.value || 0),
-    finish_tread_depth: Number($('finishTreadDepth')?.value || 0),
-    finish_only_notes: $('finishOnlyNotes')?.value || '',
-    consultation_notes: $('consultationNotes')?.value || ''
+    finish_step_count: 0,
+    finish_stair_width: 0,
+    finish_tread_depth: 0,
+    finish_only_notes: '',
+    consultation_notes: ''
   });
 }
 
@@ -697,12 +737,6 @@ function renderGeometryDiagram(geometry) {
   `;
 }
 
-function getFinishLevelCoef(level) {
-  if (level === 'premium') return 1.2;
-  if (level === 'standard') return 1.08;
-  return 1;
-}
-
 function getFinishMetricsFromGeometry(config, geometry) {
   const widthM = (config.march_width || 1000) / 1000;
   const treadDepthM = (geometry.tread_depth || 280) / 1000;
@@ -740,10 +774,21 @@ function getReadyFrameServiceMetrics(config, geometry) {
   const stepCount = Math.max(Number(config.ready_frame_step_count || geometry.tread_count || 0), 0);
   const widthM = Math.max(Number(config.ready_frame_march_width || config.march_width || 0), 0) / 1000;
   const treadDepthM = Math.max(Number(config.ready_frame_tread_depth || geometry.tread_depth || 0), 0) / 1000;
-  const finishAreaM2 = round(stepCount * widthM * treadDepthM, 2);
+  const riserHeightM = Math.max(Number(config.ready_frame_riser_height || geometry.riser_height || 0), 0) / 1000;
+  const finishScope = normalizeFinishScope(config.finish_scope);
+  const treadAreaM2 = round(stepCount * widthM * treadDepthM, 2);
+  const riserAreaM2 = finishScope !== 'treads_only' ? round(stepCount * widthM * riserHeightM, 2) : 0;
+  const landingAreaM2 = config.has_landing
+    ? round(Number(config.landing_area || 0) || ((Number(config.landing_length || 0) / 1000) * (Number(config.landing_width || 0) / 1000)), 2)
+    : 0;
+  const winderCount = config.has_winders ? Math.max(Number(config.winder_count || 0), 0) : 0;
+  const sheetCount = finishScope === 'full_cladding' ? Math.max(Number(config.cladding_sheet_count || 0), 0) : 0;
+  const sheetAreaM2 = round((Number(config.cladding_sheet_width || 1035) / 1000) * (Number(config.cladding_sheet_height || 2800) / 1000), 3);
+  const fullCladdingAreaM2 = finishScope === 'full_cladding' ? round(sheetCount * sheetAreaM2, 2) : 0;
+  const finishAreaM2 = round(treadAreaM2 + riserAreaM2 + landingAreaM2 + fullCladdingAreaM2, 2);
   const manualStraightRailingLengthM = Math.max(Number(config.ready_frame_straight_railing_length || 0), 0);
   const autoStraightRailingLengthM = round(
-    (((geometry.lower_march?.run_length || 0) + (geometry.upper_march?.run_length || 0)) || geometry.run_length || 0) / 1000,
+    (((geometry.lower_march?.run_length || 0) + (geometry.upper_march?.run_length || 0)) || geometry.run_length || stepCount * treadDepthM * 1000) / 1000,
     2
   );
   const directRailingLengthM =
@@ -761,6 +806,18 @@ function getReadyFrameServiceMetrics(config, geometry) {
 
   return {
     stepCount,
+    finishScope,
+    finishScopeLabel: FINISH_SCOPE_LABELS[finishScope],
+    treadAreaM2,
+    riserAreaM2,
+    cladRisers: finishScope !== 'treads_only',
+    sheetCount,
+    fullCladdingAreaM2,
+    fullCladdingSummary: finishScope === 'full_cladding' ? `${sheetCount} листов ${config.cladding_sheet_width || 1035}×${config.cladding_sheet_height || 2800} мм = ${fullCladdingAreaM2} м²` : '',
+    hasLanding: !!config.has_landing,
+    landingAreaM2,
+    hasWinders: !!config.has_winders,
+    winderCount,
     finishAreaM2,
     coatingAreaM2: finishAreaM2,
     directRailingLengthM,
@@ -827,11 +884,15 @@ function calculateScenarioResult(config) {
     const warnings = [...(fit.warnings || [])];
     const blockers = [...(fit.blockers || [])];
 
-    if (config.metal_frame_condition === 'needs_repair') {
+    const manualRailingLength = Number(config.ready_frame_straight_railing_length || 0);
+    if (config.metal_frame_condition === 'defects') {
       warnings.push('Состояние металлокаркаса лучше проверить инженеру по фото или на объекте.');
     } else if (config.metal_frame_condition === 'needs_coating') {
-      warnings.push('В расчёт добавлено обновление покрытия металлокаркаса.');
+      warnings.push('В расчёт добавлена покраска металлокаркаса.');
+    } else if (config.metal_frame_condition === 'needs_fit') {
+      warnings.push('В расчёте учтена подгонка металлокаркаса перед отделкой.');
     }
+    if (manualRailingLength > 50) blockers.push('Введите длину в метрах, например 3.6 или 12, не в миллиметрах.');
 
     const status = blockers.length ? 'invalid' : warnings.length || fit.status === 'warning' ? 'warning' : 'recommended';
     const metrics = getReadyFrameServiceMetrics(config, fit);
@@ -862,7 +923,13 @@ function calculateScenarioResult(config) {
         ['Глубина ступени', formatMm(config.ready_frame_tread_depth || fit.tread_depth || 0)],
         ['Высота подступенка', formatMm(config.ready_frame_riser_height || fit.riser_height || 0)],
         ['Проверка посадки', fit.status === 'invalid' ? 'нужна инженерная проверка' : 'выполнена без зависимости от проёма'],
-        ['Отделка ступеней', `${metrics.finishAreaM2} м²`],
+        ['Что отделываем', metrics.finishScopeLabel],
+        ['Площадь проступей', `${metrics.treadAreaM2} м²`],
+        ['Подступенки', metrics.cladRisers ? `${metrics.riserAreaM2} м²` : 'Не обшиваются'],
+        ['Обшивка каркаса', metrics.fullCladdingSummary || 'Нет'],
+        ['Площадка', metrics.hasLanding ? `${metrics.landingAreaM2} м²` : 'Нет'],
+        ['Забежные ступени', metrics.hasWinders ? `${metrics.winderCount}` : 'Нет'],
+        ['Отделка всего', `${metrics.finishAreaM2} м²`],
         ['Длина прямого ограждения', config.railing_option === 'none' ? 'Не требуется' : directRailingText],
         ['Общая длина ограждения', config.railing_option === 'none' ? 'Не требуется' : `${metrics.railingLengthM} м`],
         ['Ограждение', getOptionLabel('railing', config.railing_option)],
@@ -873,13 +940,20 @@ function calculateScenarioResult(config) {
   }
 
   if (baseCondition === 'existing_concrete_base') {
-    const metrics = getFinishMetricsFromManualInputs(config, 'concrete');
+    const metrics = getReadyFrameServiceMetrics(config, {
+      tread_count: config.ready_frame_step_count,
+      tread_depth: config.ready_frame_tread_depth,
+      riser_height: config.ready_frame_riser_height,
+      run_length: config.ready_frame_step_count * config.ready_frame_tread_depth
+    });
     const warnings = [];
     const blockers = [];
 
-    if (!metrics.stepCount || !metrics.finishAreaM2) blockers.push('Укажите количество ступеней и базовые размеры бетонного основания.');
+    if (!metrics.stepCount || !metrics.finishAreaM2) blockers.push('Укажите количество ступеней, ширину, глубину и высоту подступенка.');
+    if (Number(config.ready_frame_straight_railing_length || 0) > 50) blockers.push('Введите длину в метрах, например 3.6 или 12, не в миллиметрах.');
     if (config.concrete_base_condition === 'prep_needed') warnings.push('Добавлена подготовка поверхности перед облицовкой.');
-    if (config.concrete_base_condition === 'repair_needed') warnings.push('Есть сколы или перепады: нужна ручная проверка объёма подготовки.');
+    if (config.concrete_base_condition === 'uneven') warnings.push('Есть перепады: нужна подготовка плоскостей перед отделкой.');
+    if (config.concrete_base_condition === 'chips') warnings.push('Есть сколы: нужна ручная проверка объёма ремонта.');
 
     const status = blockers.length ? 'invalid' : warnings.length ? 'warning' : 'recommended';
 
@@ -894,8 +968,14 @@ function calculateScenarioResult(config) {
         'Считаем облицовку, ограждение, финишную подготовку и монтажные работы без расчёта нового каркаса.',
       summary_rows: [
         ['Сценарий', BASE_CONDITION_LABELS.existing_concrete_base],
+        ['Что отделываем', metrics.finishScopeLabel],
         ['Ступеней', `${metrics.stepCount}`],
-        ['Площадь облицовки', `${metrics.finishAreaM2} м²`],
+        ['Площадь проступей', `${metrics.treadAreaM2} м²`],
+        ['Подступенки', metrics.cladRisers ? `${metrics.riserAreaM2} м²` : 'Не обшиваются'],
+        ['Обшивка каркаса', metrics.fullCladdingSummary || 'Нет'],
+        ['Площадка', metrics.hasLanding ? `${metrics.landingAreaM2} м²` : 'Нет'],
+        ['Забежные ступени', metrics.hasWinders ? `${metrics.winderCount}` : 'Нет'],
+        ['Площадь облицовки всего', `${metrics.finishAreaM2} м²`],
         ['Основание', $('concreteBaseCondition')?.selectedOptions?.[0]?.textContent || 'уточняется'],
         ['Ограждение', getOptionLabel('railing', config.railing_option)],
         ['Материал отделки', getOptionLabel('finish_material', config.finish_material)]
@@ -904,46 +984,7 @@ function calculateScenarioResult(config) {
     });
   }
 
-  if (baseCondition === 'finish_only') {
-    const metrics = getFinishMetricsFromManualInputs(config, 'finish');
-    const blockers = [];
-    if (!metrics.stepCount || !metrics.finishAreaM2) blockers.push('Укажите количество ступеней и размеры отделки.');
-
-    return makeScenarioResult(config, {
-      status: blockers.length ? 'invalid' : 'recommended',
-      result_kind: 'finish_only',
-      blockers,
-      service_metrics: metrics,
-      alert_title: 'Считаем только отделку',
-      alert_text:
-        'Структурную геометрию и каркас пропускаем: в расчёте остаются материалы отделки, ограждение при необходимости и монтаж.',
-      summary_rows: [
-        ['Сценарий', BASE_CONDITION_LABELS.finish_only],
-        ['Ступеней', `${metrics.stepCount}`],
-        ['Площадь отделки', `${metrics.finishAreaM2} м²`],
-        ['Материал отделки', getOptionLabel('finish_material', config.finish_material)],
-        ['Ограждение', getOptionLabel('railing', config.railing_option)],
-        ['Подсветка', getOptionLabel('lighting', config.lighting_option)]
-      ],
-      adjustment_hints: ['приложить фото текущей лестницы', 'уточнить материал ступеней и подступенков']
-    });
-  }
-
-  return makeScenarioResult(config, {
-    status: 'warning',
-    valid: false,
-    allow_continue: false,
-    result_kind: 'consultation',
-    alert_title: 'Передадим задачу инженеру',
-    alert_text:
-      'Для консультации калькулятор не строит геометрию и не делает смету вслепую. Отправьте вводные, и специалист предложит следующий шаг.',
-    summary_rows: [
-      ['Сценарий', BASE_CONDITION_LABELS.consultation],
-      ['Задача', config.consultation_notes || 'Клиент хочет обсудить варианты с инженером']
-    ],
-    warnings: ['Консультационный сценарий требует ручного разбора.'],
-    adjustment_hints: ['приложить фото проёма или текущей лестницы', 'указать город и удобный способ связи']
-  });
+  return makeScenarioResult(config, { status: 'invalid', valid: false, allow_continue: false, result_kind: 'unsupported' });
 }
 
 function getVisibleMessages(geometry) {
@@ -1057,8 +1098,14 @@ function calculateMaterials(config, geometry) {
     const metrics = geometry.service_metrics || {};
     const items = [
       { label: 'Сценарий', value: BASE_CONDITION_LABELS[config.base_condition] || 'Уточняется' },
+      { label: 'Что отделываем', value: metrics.finishScopeLabel || FINISH_SCOPE_LABELS[config.finish_scope] || 'Уточняется' },
       { label: 'Материал отделки', value: getOptionLabel('finish_material', config.finish_material) },
-      { label: 'Площадь отделки', value: `${metrics.finishAreaM2 || 0} м²` },
+      { label: 'Площадь проступей', value: `${metrics.treadAreaM2 || metrics.finishAreaM2 || 0} м²` },
+      { label: 'Подступенки', value: metrics.cladRisers ? `${metrics.riserAreaM2 || 0} м²` : 'Не обшиваются' },
+      { label: 'Обшивка каркаса', value: metrics.fullCladdingSummary || 'Нет' },
+      { label: 'Площадка', value: metrics.hasLanding ? `${metrics.landingAreaM2 || 0} м²` : 'Нет' },
+      { label: 'Забежные ступени', value: metrics.hasWinders ? `${metrics.winderCount || 0} шт` : 'Нет' },
+      { label: 'Площадь отделки всего', value: `${metrics.finishAreaM2 || 0} м²` },
       { label: 'Ограждение', value: metrics.railingLengthM ? `${getOptionLabel('railing', config.railing_option)} · ${metrics.railingLengthM} м` : 'Не требуется' },
       { label: 'Покрытие / защита', value: getOptionLabel('coating', config.coating_option) },
       { label: 'Подсветка', value: getOptionLabel('lighting', config.lighting_option) },
@@ -1092,7 +1139,7 @@ function calculateMaterials(config, geometry) {
     }
 
     if (config.base_condition === 'existing_concrete_base') {
-      items.splice(2, 0, { label: 'Подготовка основания', value: config.concrete_base_condition === 'ready' ? 'Минимальная' : 'Расширенная' });
+      items.splice(2, 0, { label: 'Состояние бетона', value: $('concreteBaseCondition')?.selectedOptions?.[0]?.textContent || 'уточняется' });
     }
 
     return {
@@ -1103,9 +1150,18 @@ function calculateMaterials(config, geometry) {
     };
   }
 
-  if (config.frame_material === 'wood') return calculateWoodMaterials(config, geometry);
-  if (config.frame_material === 'concrete') return calculateConcreteMaterials(config, geometry);
-  return calculateMetalMaterials(config, geometry);
+  const baseMaterials =
+    config.frame_material === 'wood'
+      ? calculateWoodMaterials(config, geometry)
+      : config.frame_material === 'concrete'
+        ? calculateConcreteMaterials(config, geometry)
+        : calculateMetalMaterials(config, geometry);
+
+  if (baseMaterials.valid) {
+    const finishMetrics = getFinishMetricsFromGeometry(config, geometry);
+    baseMaterials.metrics = { ...(baseMaterials.metrics || {}), finish: finishMetrics };
+  }
+  return baseMaterials;
 }
 
 function renderMaterials(materials) {
@@ -1141,8 +1197,7 @@ function calculatePrice(config, geometry, materials) {
   if (config.base_condition !== 'empty_opening') {
     const metrics = materials.metrics || {};
     const finishRate = scenarioRates.finishMaterialPerM2[config.finish_material] ?? scenarioRates.finishMaterialPerM2.oak ?? 0;
-    const finishCoef = getFinishLevelCoef(config.finish_level);
-    const finishCost = (metrics.finishAreaM2 || 0) * finishRate * finishCoef;
+    const finishCost = (metrics.finishAreaM2 || 0) * finishRate;
     const railingCost = (metrics.railingLengthM || 0) * (scenarioRates.railingPerM[config.railing_option] ?? 0);
     const lightingCost = (metrics.stepCount || 0) * (scenarioRates.lightingPerStep[config.lighting_option] ?? 0);
     const coatingCost = (metrics.coatingAreaM2 || 0) * (scenarioRates.coatingPerM2[config.coating_option] ?? 0);
@@ -1167,8 +1222,10 @@ function calculatePrice(config, geometry, materials) {
       materialCost = (materials.metrics.concreteVolumeM3 || 0) * defaults.concrete_rate_per_m3;
     }
 
-    const finishCoef = getFinishLevelCoef(config.finish_level);
-    subtotal = (baseLabor + materialCost) * defaults.install_coef * defaults.markup_coef * finishCoef;
+    const metrics = materials.metrics?.finish || getFinishMetricsFromGeometry(config, geometry);
+    const finishRate = scenarioRates.finishMaterialPerM2[config.finish_material] ?? scenarioRates.finishMaterialPerM2.oak ?? 0;
+    materialCost += (metrics.finishAreaM2 || 0) * finishRate;
+    subtotal = (baseLabor + materialCost) * defaults.install_coef * defaults.markup_coef;
   }
 
   const total = subtotal * regionCoef;
@@ -1253,7 +1310,9 @@ function buildCalculationPayload(config, geometry, materials = state.materials, 
   return {
     schema: 'tekstura.stair.phase1',
     request_mode: requestMode,
+    project_scenario: config.project_scenario,
     base_condition: config.base_condition,
+    base_subtype: config.base_subtype,
     baseCondition: BASE_CONDITION_LABELS[config.base_condition] || config.base_condition,
     selected_staircase_type: config.stair_type,
     staircaseType:
@@ -1286,14 +1345,26 @@ function buildCalculationPayload(config, geometry, materials = state.materials, 
     geometryResult: compactGeometry,
     price_relevant_selections: {
       frame_material: config.frame_material,
-      finish_level: config.finish_level,
       pricing_region_code: config.pricing_region_code,
       finish_material: config.finish_material,
       railing_option: config.railing_option,
       coating_option: config.coating_option,
       lighting_option: config.lighting_option,
       turn_direction: config.turn_direction,
-      turn_type: config.turn_type
+      turn_type: config.turn_type,
+      finish_scope: config.finish_scope,
+      finish_scope_label: FINISH_SCOPE_LABELS[config.finish_scope],
+      cladding_sheet_count: config.cladding_sheet_count,
+      cladding_sheet_width: config.cladding_sheet_width,
+      cladding_sheet_height: config.cladding_sheet_height,
+      full_cladding_area_m2: compactGeometry.service_metrics?.fullCladdingAreaM2 || 0,
+      total_finish_area_m2: compactGeometry.service_metrics?.finishAreaM2 || 0,
+      has_landing: config.has_landing,
+      landing_length: config.landing_length,
+      landing_width: config.landing_width,
+      landing_area: config.landing_area,
+      has_winders: config.has_winders,
+      winder_count: config.winder_count
     },
     pricing_region: {
       code: region.code,
@@ -1320,6 +1391,8 @@ function buildCalculationPayload(config, geometry, materials = state.materials, 
         }
       : null,
     scenario_details: {
+      project_scenario: config.project_scenario,
+      base_subtype: config.base_subtype,
       metal_frame_condition: config.metal_frame_condition,
       existing_frame_notes: config.existing_frame_notes,
       ready_frame_step_count: config.ready_frame_step_count,
@@ -1327,15 +1400,30 @@ function buildCalculationPayload(config, geometry, materials = state.materials, 
       ready_frame_tread_depth: config.ready_frame_tread_depth,
       ready_frame_riser_height: config.ready_frame_riser_height,
       ready_frame_straight_railing_length: config.ready_frame_straight_railing_length,
+      finish_scope: config.finish_scope,
+      finish_scope_label: FINISH_SCOPE_LABELS[config.finish_scope],
+      clad_risers: config.clad_risers,
+      cladding_sheet_count: config.cladding_sheet_count,
+      cladding_sheet_width: config.cladding_sheet_width,
+      cladding_sheet_height: config.cladding_sheet_height,
+      full_cladding_area_m2: compactGeometry.service_metrics?.fullCladdingAreaM2 || 0,
+      total_finish_area_m2: compactGeometry.service_metrics?.finishAreaM2 || 0,
+      railing_length_m: compactGeometry.service_metrics?.railingLengthM || 0,
+      has_landing: config.has_landing,
+      landing_length: config.landing_length,
+      landing_width: config.landing_width,
+      landing_area: config.landing_area,
+      has_winders: config.has_winders,
+      winder_count: config.winder_count,
       concrete_step_count: config.concrete_step_count,
       concrete_stair_width: config.concrete_stair_width,
       concrete_tread_depth: config.concrete_tread_depth,
+      concrete_riser_height: config.concrete_riser_height,
       concrete_base_condition: config.concrete_base_condition,
-      finish_step_count: config.finish_step_count,
-      finish_stair_width: config.finish_stair_width,
-      finish_tread_depth: config.finish_tread_depth,
-      finish_only_notes: config.finish_only_notes,
-      consultation_notes: config.consultation_notes
+      finish_material: config.finish_material,
+      coating_option: config.coating_option,
+      railing_option: config.railing_option,
+      lighting_option: config.lighting_option
     },
     materials: materials?.valid
       ? {
@@ -1504,6 +1592,7 @@ async function loadSupabaseDictionaries() {
 
 function init() {
   const baseConditionNode = $('baseCondition');
+  const baseSubtypeNode = $('baseSubtype');
   const stairTypeNode = $('stairType');
   const calculateBtn = $('calculateBtn');
   const toResultsBtn = $('toResultsBtn');
@@ -1511,6 +1600,10 @@ function init() {
   if (!stairTypeNode || !calculateBtn || !toResultsBtn) return;
 
   baseConditionNode?.addEventListener('change', updateScenarioFields);
+  baseSubtypeNode?.addEventListener('change', updateScenarioFields);
+  $('finishScope')?.addEventListener('change', updateScenarioFields);
+  $('hasLanding')?.addEventListener('change', updateScenarioFields);
+  $('hasWinders')?.addEventListener('change', updateScenarioFields);
   stairTypeNode.addEventListener('change', toggleTurnFields);
   calculateBtn.addEventListener('click', runConfigurator);
   toResultsBtn.addEventListener('click', runGeometryCalculation);

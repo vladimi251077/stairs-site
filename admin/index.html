@@ -790,9 +790,33 @@
             <label>Цена</label>
             <input data-k="price" value="${escapeHtml(item.price || '')}" />
           </div>
+          <div>
+            <label>Цена от</label>
+            <input data-k="price_from" value="${escapeHtml(item.price_from || '')}" />
+          </div>
+          <div>
+            <label>Тип лестницы</label>
+            <input data-k="staircase_type" value="${escapeHtml(item.staircase_type || '')}" />
+          </div>
+          <div>
+            <label>Категория</label>
+            <input data-k="category" value="${escapeHtml(item.category || '')}" />
+          </div>
+          <div>
+            <label>Материалы</label>
+            <input data-k="materials" value="${escapeHtml(item.materials || '')}" />
+          </div>
+          <div>
+            <label>Срок</label>
+            <input data-k="lead_time" value="${escapeHtml(item.lead_time || '')}" />
+          </div>
           <div class="full">
-            <label>Описание</label>
-            <textarea data-k="description">${escapeHtml(item.description || '')}</textarea>
+            <label>Короткое описание</label>
+            <textarea data-k="short_description">${escapeHtml(item.short_description || '')}</textarea>
+          </div>
+          <div class="full">
+            <label>Полное описание</label>
+            <textarea data-k="full_description">${escapeHtml(item.full_description || item.description || '')}</textarea>
           </div>
           <div>
             <label>Картинка (legacy)</label>
@@ -816,8 +840,10 @@
             </details>
           </div>
           <div class="full">
-            <label>Опции mini-configurator (JSON)</label>
-            <textarea data-k="custom_options">${escapeHtml(JSON.stringify(item.custom_options || {}))}</textarea>
+            <details class="advanced">
+              <summary>Служебное поле: custom_options (legacy JSON)</summary>
+              <textarea data-k="custom_options">${escapeHtml(JSON.stringify(item.custom_options || {}))}</textarea>
+            </details>
           </div>
         </div>
         <div class="row" style="margin-top:8px">
@@ -1449,11 +1475,18 @@
           rows.push({
             id: el.dataset.id,
             title: el.querySelector('[data-k="title"]').value.trim(),
-            description: el.querySelector('[data-k="description"]').value.trim(),
+            description: el.querySelector('[data-k="full_description"]').value.trim(),
+            full_description: el.querySelector('[data-k="full_description"]').value.trim(),
+            short_description: el.querySelector('[data-k="short_description"]').value.trim(),
+            materials: el.querySelector('[data-k="materials"]').value.trim(),
+            staircase_type: el.querySelector('[data-k="staircase_type"]').value.trim(),
+            category: el.querySelector('[data-k="category"]').value.trim(),
+            lead_time: el.querySelector('[data-k="lead_time"]').value.trim(),
             image: imageUrl,
             cover_image: cover?.image_url || imageUrl,
             custom_options: customOptions,
             price: el.querySelector('[data-k="price"]').value.trim() || null,
+            price_from: el.querySelector('[data-k="price_from"]').value.trim() || null,
             created_at: new Date().toISOString()
           });
 

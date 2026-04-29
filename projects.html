@@ -140,8 +140,8 @@ const esc = (s='') => String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').r
 const getPrice = (project) => project.price ? `${new Intl.NumberFormat('ru-RU').format(project.price)} ₽` : (project.price_from ? `от ${new Intl.NumberFormat('ru-RU').format(project.price_from)} ₽` : 'по запросу');
 const tagsFor = (project) => {
   const tags = [];
-  if (project.category) tags.push(project.category);
-  if (project.staircase_type) tags.push(project.staircase_type);
+  if (project.staircase_type) tags.push(`Тип: ${project.staircase_type}`);
+  if (project.materials || project.category) tags.push(project.materials ? `Материалы: ${project.materials}` : `Категория: ${project.category}`);
   if (project.lead_time) tags.push(`Срок: ${project.lead_time}`);
   return tags.slice(0, 3);
 };
@@ -162,7 +162,6 @@ const render = (items=[]) => {
 
   projectsRoot.innerHTML = items.map((p)=>{
     const title = p.title || 'Проект Tekstura';
-    const shortDescription = p.short_description || p.description || 'Индивидуальная инженерная проработка, точные узлы и премиальная реализация под интерьер дома.';
     const image = resolveProjectImage(p);
     const tags = tagsFor(p);
     return `<a class="project-card" href="/project.html?id=${encodeURIComponent(p.id)}" aria-label="Смотреть проект ${esc(title)}">
@@ -171,9 +170,7 @@ const render = (items=[]) => {
       </figure>
       <div class="project-card__body">
         <h3>${esc(title)}</h3>
-        <p>${esc(shortDescription)}</p>
         ${tags.length ? `<div class="project-tags">${tags.map((tag)=>`<span class="project-tag">${esc(tag)}</span>`).join('')}</div>` : ''}
-        <div class="project-card__note">Инженерная реализация и монтаж штатной бригадой Tekstura.</div>
         <div class="project-card__footer">
           <div class="project-card__price">${esc(getPrice(p))}</div>
           <span class="project-card__link">Смотреть проект</span>
