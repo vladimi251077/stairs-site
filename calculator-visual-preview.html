@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tekstura — preview визуала калькулятора</title>
+  <style>
+    :root{color-scheme:dark;--bg:#140f0b;--panel:rgba(46,33,24,.72);--panel2:rgba(72,52,36,.44);--line:rgba(255,255,255,.12);--text:#f5e7d4;--muted:#b9a58d;--gold:#e7c08b;--gold2:#b9854e;--bad:#ffaaa8;--warn:#f2d181;--ok:#a8efc0;--shadow:0 24px 70px rgba(0,0,0,.35);--r:22px}
+    *{box-sizing:border-box} html{background:#120d09} body{margin:0;font:15px/1.55 Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:var(--text);background:radial-gradient(circle at 15% 0,rgba(231,192,139,.18),transparent 28%),radial-gradient(circle at 90% 10%,rgba(185,133,78,.14),transparent 30%),linear-gradient(160deg,#17100c,#2b1d14 60%,#150f0b);min-height:100vh}
+    .wrap{width:min(1180px,calc(100% - 28px));margin:auto;padding:28px 0 46px}.hero,.card{border:1px solid var(--line);border-radius:var(--r);background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.015)),var(--panel);backdrop-filter:blur(10px);box-shadow:var(--shadow)}
+    .hero{padding:28px;margin-bottom:16px;overflow:hidden;position:relative}.eyebrow{color:var(--gold);letter-spacing:.22em;text-transform:uppercase;font-weight:700;font-size:12px}.hero h1{margin:10px 0 8px;font-size:clamp(32px,5vw,58px);line-height:1}.hero p{max-width:760px;color:#dec9ad;margin:0}
+    .layout{display:grid;grid-template-columns:1fr .95fr;gap:16px}.card{padding:18px}.card h2{margin:0 0 12px;font-size:24px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}.field label{color:#dbc7ad;font-size:13px}.field input,.field select{width:100%;border:1px solid rgba(255,255,255,.15);border-radius:13px;background:rgba(17,12,9,.68);color:var(--text);padding:12px 13px;font:inherit}.field input:disabled,.field select:disabled{opacity:.48;cursor:not-allowed}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.btn{border:0;border-radius:14px;padding:13px 17px;font-weight:800;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}.btn-primary{background:linear-gradient(135deg,#f5dcb4,#d7a965 56%,#f0cca0);color:#1d130d}.btn-secondary{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:var(--text)}.btn:disabled{opacity:.45;cursor:not-allowed;filter:grayscale(.5)}
+    .result-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.metric{border:1px solid rgba(255,255,255,.1);border-radius:16px;background:rgba(255,255,255,.035);padding:12px}.metric span{display:block;color:var(--muted);font-size:12px}.metric b{display:block;margin-top:4px;font-size:19px;color:#f3d8b0}.badge{display:inline-flex;border-radius:999px;padding:5px 10px;font-size:13px;font-weight:800}.recommended{background:rgba(80,180,118,.18);color:var(--ok)}.warning{background:rgba(235,198,88,.16);color:var(--warn)}.invalid{background:rgba(245,123,123,.18);color:var(--bad)}
+    .warnings,.checklist{display:grid;gap:8px;margin-top:12px}.warning-row,.check-row{border:1px solid rgba(242,209,129,.22);border-radius:14px;background:rgba(242,209,129,.08);padding:10px;color:#f4ddb0}.warning-row.bad,.check-row.bad{border-color:rgba(255,170,168,.28);background:rgba(255,170,168,.1);color:#ffd1d0}.check-row.ok{border-color:rgba(168,239,192,.22);background:rgba(168,239,192,.08);color:#d6ffe2}.check-row span{display:block;color:#c8b59d;font-size:12px;margin-top:3px}
+    svg{width:100%;height:auto;display:block;border-radius:12px}.svgbox{border:1px solid rgba(255,255,255,.1);border-radius:16px;background:rgba(255,255,255,.025);padding:10px;margin-top:10px}.price{font-size:34px;color:#f3d8b0;font-weight:900}.small{font-size:13px;color:var(--muted)}.hidden{display:none!important}.materials-panel{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}.section-title{display:flex;align-items:center;justify-content:space-between;gap:10px}.pill{border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:5px 9px;color:#d9c3a5;font-size:12px;background:rgba(255,255,255,.05)}
+    @media(max-width:900px){.layout{grid-template-columns:1fr}.result-grid{grid-template-columns:1fr 1fr}.materials-panel{grid-template-columns:1fr}.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<main class="wrap">
+  <section class="hero">
+    <div class="eyebrow">Tekstura visual preview</div>
+    <h1>Графика калькулятора: план, профиль и забежные</h1>
+    <p>Отдельная preview-страница. Она не заменяет текущий калькулятор и не меняет payload заявки. Цель — посмотреть визуал и список недостающих размеров.</p>
+  </section>
+
+  <div class="layout">
+    <section class="card">
+      <div class="section-title"><h2>Параметры</h2><span class="pill">renderer prototype</span></div>
+      <div class="grid">
+        <div class="field"><label>Сценарий</label><select id="scenario"><option value="empty">Пустой проём</option><option value="ready">Готовый каркас / основание</option><option value="unknown">Не знаю, нужна помощь</option></select></div>
+        <div class="field"><label>Тип лестницы</label><select id="type"><option value="straight">Прямая</option><option value="l_landing">Г-образная с площадкой</option><option value="l_winders">Г-образная с забежными</option><option value="u_landing">П-образная с площадкой</option><option value="u_winders">П-образная с забежными</option></select></div>
+        <div class="field emptyOnly"><label>Высота этаж-этаж, мм</label><input id="height" type="number" value="2800"></div>
+        <div class="field emptyOnly"><label>Длина проёма, мм</label><input id="openingL" type="number" value="4800"></div>
+        <div class="field emptyOnly"><label>Ширина проёма, мм</label><input id="openingW" type="number" value="2200"></div>
+        <div class="field"><label>Ширина марша, мм</label><input id="marchW" type="number" value="1000"></div>
+        <div class="field turnOnly hidden"><label>Направление поворота</label><select id="turnDir"><option value="right">Правый</option><option value="left">Левый</option></select></div>
+        <div class="field winderOnly hidden"><label>Забежных ступеней</label><input id="winderCount" type="number" value="3" min="2" max="8"></div>
+        <div class="field landingOnly hidden"><label>Длина площадки, мм</label><input id="landingL" type="number" value="1000"></div>
+        <div class="field landingOnly hidden"><label>Ширина площадки, мм</label><input id="landingW" type="number" value="1000"></div>
+        <div class="field readyOnly hidden"><label>Высота подступенка, мм</label><input id="readyRiser" type="number" value="170"></div>
+        <div class="field readyOnly hidden"><label>Глубина проступи, мм</label><input id="readyTread" type="number" value="280"></div>
+        <div class="field readyOnly hidden"><label>Количество подъёмов</label><input id="readySteps" type="number" value="16"></div>
+        <div class="field"><label>Толщина плиты, мм</label><input id="slab" type="number" value="220"></div>
+        <div class="field"><label>Финиш сверху/снизу, мм</label><input id="finishThick" type="number" value="40"></div>
+        <div class="field"><label>Каркас</label><select id="frame"><option value="metal">Металлокаркас</option><option value="concrete">Бетон</option><option value="wood">Дерево</option><option value="existing">Существующее</option></select></div>
+        <div class="field"><label>Материал ступеней</label><select id="stepMat"><option value="ash">Ясень</option><option value="oak">Дуб</option><option value="pine">Сосна</option><option value="mdf">МДФ</option></select></div>
+        <div class="field"><label>Ограждение</label><select id="rail"><option value="metal">Металл</option><option value="glass">Стекло</option><option value="wood">Дерево</option><option value="none">Без</option></select></div>
+        <div class="field"><label>Опции</label><select id="extras"><option value="none">Без опций</option><option value="lighting">Подсветка</option><option value="paint">Покраска</option><option value="both">Подсветка + покраска</option></select></div>
+      </div>
+      <div class="actions"><button class="btn btn-primary" id="calcBtn">Рассчитать визуал</button><button class="btn btn-secondary" id="resetBtn">Сбросить</button><button class="btn btn-secondary" id="sendBtn" disabled>Оставить заявку</button></div>
+      <p class="small">Кнопка заявки в preview специально disabled: на боевом калькуляторе она должна включаться только после сборки payload.</p>
+    </section>
+
+    <section class="card">
+      <h2>Графика</h2>
+      <div class="svgbox"><div id="planSvg"></div></div>
+      <div class="svgbox"><div id="sideSvg"></div></div>
+    </section>
+  </div>
+
+  <section class="card" style="margin-top:16px">
+    <h2>Результат</h2>
+    <div id="status"></div>
+    <div class="result-grid" id="metrics"></div>
+    <div class="warnings" id="warnings"></div>
+  </section>
+
+  <div class="layout" style="margin-top:16px">
+    <section class="card"><h2>💰 Смета</h2><div id="price"></div></section>
+    <section class="card"><h2>📐 Полное образмеривание</h2><div id="dimensionChecklist" class="checklist"></div></section>
+  </div>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const n = id => Number($(id)?.value || 0);
+const labels = {straight:'Прямая',l_landing:'Г-образная с площадкой',l_winders:'Г-образная с забежными',u_landing:'П-образная с площадкой',u_winders:'П-образная с забежными'};
+const LIMITS = {riser:{min:150,max:180},tread:{min:250,max:320},comfort:{min:600,max:640,target:620},angle:{max:42}};
+const round = (v,d=1)=>Number(Number(v||0).toFixed(d));
+
+function updateScenario(){
+  const ready = $('scenario').value === 'ready';
+  const unknown = $('scenario').value === 'unknown';
+  const type = $('type').value;
+  document.querySelectorAll('.readyOnly').forEach(el=>el.classList.toggle('hidden',!ready));
+  document.querySelectorAll('.emptyOnly').forEach(el=>el.classList.toggle('hidden',ready || unknown));
+  document.querySelectorAll('.turnOnly').forEach(el=>el.classList.toggle('hidden',type==='straight'));
+  document.querySelectorAll('.winderOnly').forEach(el=>el.classList.toggle('hidden',!type.includes('winders')));
+  document.querySelectorAll('.landingOnly').forEach(el=>el.classList.toggle('hidden',!type.includes('landing')));
+  if(ready) $('frame').value='existing';
+}
+
+function getSplit(type,risers){
+  if(type==='straight') return {lower:Math.max(1,risers-1),upper:0,turn:0,winder:0};
+  const winder = type.includes('winders') ? Math.max(2,n('winderCount')||3) : 0;
+  const platform = type.includes('landing') ? 1 : 0;
+  const rest = Math.max(4,risers-1-winder-platform);
+  const lower = Math.max(2,Math.ceil(rest/2));
+  const upper = Math.max(2,rest-lower);
+  return {lower,upper,turn:platform||winder,winder};
+}
+
+function fitsInOpening(type,tread,marchW,L,W,split){
+  if(type==='straight'){
+    const needL=tread*split.lower, needW=marchW;
+    return {needL:round(needL),needW:round(needW),fits:needL<=L&&needW<=W,overflowL:round(Math.max(0,needL-L)),overflowW:round(Math.max(0,needW-W))};
+  }
+  if(type.startsWith('l_')){
+    const turnBlock = type.includes('landing') ? Math.max(n('landingL')||marchW,marchW) : marchW;
+    const needL=tread*split.lower+turnBlock, needW=tread*split.upper+turnBlock;
+    return {needL:round(needL),needW:round(needW),fits:needL<=L&&needW<=W,overflowL:round(Math.max(0,needL-L)),overflowW:round(Math.max(0,needW-W))};
+  }
+  const turnBlock = type.includes('landing') ? Math.max(n('landingL')||marchW,marchW) : marchW;
+  const needL=Math.max(tread*split.lower,tread*split.upper)+turnBlock, needW=marchW*2;
+  return {needL:round(needL),needW:round(needW),fits:needL<=L&&needW<=W,overflowL:round(Math.max(0,needL-L)),overflowW:round(Math.max(0,needW-W))};
+}
+
+function optimizeGeometry(type,height,L,W,marchW){
+  let best=null,bestScore=-Infinity;
+  const minRisers=Math.ceil(height/LIMITS.riser.max), maxRisers=Math.floor(height/LIMITS.riser.min);
+  for(let risers=minRisers;risers<=maxRisers;risers++){
+    const riser=height/risers;
+    const split=getSplit(type,risers);
+    const totalTreads=split.lower+split.upper+split.turn;
+    let tread=type==='straight'?L/Math.max(1,risers-1):(L+W)/(totalTreads+1);
+    tread=Math.min(LIMITS.tread.max,Math.max(LIMITS.tread.min,tread));
+    const fit=fitsInOpening(type,tread,marchW,L,W,split);
+    const comfort=2*riser+tread;
+    const angle=round(Math.atan(riser/tread)*180/Math.PI,1);
+    let score=100-Math.abs(comfort-LIMITS.comfort.target)*.8-Math.max(0,angle-LIMITS.angle.max)*3;
+    if(!fit.fits) score-=50;
+    if(score>bestScore){bestScore=score;best={type,risers,treadCount:totalTreads,riser:round(riser),tread:round(tread),angle,comfort:round(comfort),fit,split,ready:false,L,W,marchW};}
+  }
+  return best;
+}
+
+function getGeometry(){
+  const scenario=$('scenario').value, type=$('type').value, marchW=n('marchW');
+  if(scenario==='ready'){
+    const risers=n('readySteps'), riser=n('readyRiser'), tread=n('readyTread'), split=getSplit(type,risers);
+    const totalTreads=split.lower+split.upper+split.turn;
+    const L=n('openingL')||fitsInOpening(type,tread,marchW,999999,999999,split).needL;
+    const W=n('openingW')||fitsInOpening(type,tread,marchW,999999,999999,split).needW;
+    const fit=fitsInOpening(type,tread,marchW,L,W,split);
+    return {type,risers,treadCount:totalTreads,riser:round(riser),tread:round(tread),angle:round(Math.atan(riser/tread)*180/Math.PI,1),comfort:round(2*riser+tread),fit,split,ready:true,L,W,marchW};
+  }
+  if(scenario==='unknown') return null;
+  return optimizeGeometry(type,n('height'),n('openingL'),n('openingW'),marchW);
+}
+
+function polar(cx,cy,r,a){const rad=a*Math.PI/180;return {x:cx+Math.cos(rad)*r,y:cy+Math.sin(rad)*r};}
+function wedge(cx,cy,r0,r1,a1,a2){const p1=polar(cx,cy,r0,a1),p2=polar(cx,cy,r1,a1),p3=polar(cx,cy,r1,a2),p4=polar(cx,cy,r0,a2);return `M ${p1.x} ${p1.y} L ${p2.x} ${p2.y} L ${p3.x} ${p3.y} L ${p4.x} ${p4.y} Z`;}
+function dimText(x,y,t){return `<text x="${x}" y="${y}" fill="#b9a58d" font-size="11">${t}</text>`;}
+
+function drawPlan(geom){
+  const Wsvg=540,Hsvg=320,type=geom.type,marchW=geom.marchW,tread=geom.tread,split=geom.split;
+  const scale=Math.min(430/Math.max(geom.fit.needL,1),230/Math.max(geom.fit.needW,1));
+  const offX=55,offY=42,tx=x=>offX+x*scale,ty=y=>offY+y*scale;
+  let svg=`<svg viewBox="0 0 ${Wsvg} ${Hsvg}" style="background:#1a1512;border-radius:12px">`;
+  svg+=`<rect x="20" y="20" width="500" height="270" rx="14" fill="rgba(255,255,255,.02)" stroke="rgba(255,255,255,.1)"/>`;
+  svg+=`<rect x="${tx(0)}" y="${ty(0)}" width="${geom.fit.needL*scale}" height="${geom.fit.needW*scale}" rx="6" fill="rgba(221,183,134,.055)" stroke="rgba(221,183,134,.38)"/>`;
+  if(type==='straight'){
+    for(let i=0;i<split.lower;i++){const x=i*tread;svg+=`<rect x="${tx(x)}" y="${ty(0)}" width="${tread*scale-1}" height="${marchW*scale}" fill="rgba(221,183,134,.22)" stroke="#ddb786" stroke-width="1" rx="2"/>`;svg+=`<text x="${tx(x+tread/2)}" y="${ty(marchW/2)}" fill="#f2dec6" font-size="8" text-anchor="middle">${i+1}</text>`;}
+  } else if(type.startsWith('l_')){
+    const a=split.lower*tread, sign=$('turnDir').value==='left'?-1:1;
+    const y0=sign<0?geom.fit.needW-marchW:0;
+    for(let i=0;i<split.lower;i++){const x=i*tread;svg+=`<rect x="${tx(x)}" y="${ty(y0)}" width="${tread*scale-1}" height="${marchW*scale}" fill="rgba(221,183,134,.22)" stroke="#ddb786" stroke-width="1" rx="2"/>`;svg+=`<text x="${tx(x+tread/2)}" y="${ty(y0+marchW/2)}" fill="#f2dec6" font-size="7" text-anchor="middle">${i+1}</text>`;}
+    if(type.includes('winders')){
+      const count=split.winder||3, cx=tx(a), cy=ty(sign<0?y0:marchW), r0=10, r1=marchW*scale;
+      const start=sign<0?0:-90, end=sign<0?90:0;
+      for(let i=0;i<count;i++){const a1=start+(end-start)*i/count,a2=start+(end-start)*(i+1)/count;svg+=`<path d="${wedge(cx,cy,r0,r1,a1,a2)}" fill="rgba(231,192,139,.24)" stroke="#ddb786" stroke-width="1"/>`;}
+      svg+=`<circle cx="${cx}" cy="${cy}" r="3" fill="#85caff"/>`;
+    } else {
+      svg+=`<rect x="${tx(a)}" y="${ty(y0)}" width="${marchW*scale}" height="${marchW*scale}" fill="rgba(100,160,220,.16)" stroke="#85caff" stroke-width="1.2" rx="3"/>`;
+    }
+    const colY=sign<0?0:marchW;
+    for(let i=0;i<split.upper;i++){const z=i*tread;svg+=`<rect x="${tx(a)}" y="${ty(colY+z)}" width="${marchW*scale}" height="${tread*scale-1}" fill="rgba(221,183,134,.22)" stroke="#ddb786" stroke-width="1" rx="2"/>`;svg+=`<text x="${tx(a+marchW/2)}" y="${ty(colY+z+tread/2)}" fill="#f2dec6" font-size="7" text-anchor="middle">${split.lower+split.turn+i+1}</text>`;}
+  } else {
+    const lowerY=0, upperY=marchW, turnX=Math.max(split.lower,split.upper)*tread;
+    for(let i=0;i<split.lower;i++){const x=i*tread;svg+=`<rect x="${tx(x)}" y="${ty(lowerY)}" width="${tread*scale-1}" height="${marchW*scale}" fill="rgba(221,183,134,.22)" stroke="#ddb786" stroke-width="1" rx="2"/>`;}
+    for(let i=0;i<split.upper;i++){const x=i*tread;svg+=`<rect x="${tx(x)}" y="${ty(upperY)}" width="${tread*scale-1}" height="${marchW*scale}" fill="rgba(221,183,134,.22)" stroke="#ddb786" stroke-width="1" rx="2"/>`;}
+    if(type.includes('winders')){
+      const count=split.winder||5, cx=tx(turnX), cy=ty(marchW), r0=12, r1=marchW*scale;
+      for(let i=0;i<count;i++){const a1=-90+180*i/count,a2=-90+180*(i+1)/count;svg+=`<path d="${wedge(cx,cy,r0,r1,a1,a2)}" fill="rgba(231,192,139,.24)" stroke="#ddb786" stroke-width="1"/>`;}
+      svg+=`<circle cx="${cx}" cy="${cy}" r="3" fill="#85caff"/>`;
+    } else {
+      svg+=`<rect x="${tx(turnX)}" y="${ty(0)}" width="${marchW*scale}" height="${marchW*2*scale}" fill="rgba(100,160,220,.16)" stroke="#85caff" stroke-width="1.2" rx="3"/>`;
+    }
+  }
+  svg+=dimText(28,306,`Пятно лестницы: ${geom.fit.needL} × ${geom.fit.needW} мм · ${labels[type]}`);
+  svg+='</svg>';
+  return svg;
+}
+
+function drawProfile(geom){
+  const W=540,H=290,steps=Math.max(1,geom.treadCount),totalRun=steps*geom.tread,totalRise=geom.risers*geom.riser;
+  const sx=430/Math.max(totalRun,1),sy=210/Math.max(totalRise,1),ox=55,oy=242,tx=x=>ox+x*sx,ty=y=>oy-y*sy;
+  let svg=`<svg viewBox="0 0 ${W} ${H}" style="background:#1a1512;border-radius:12px">`;
+  svg+=`<rect x="20" y="20" width="500" height="230" rx="14" fill="rgba(255,255,255,.02)" stroke="rgba(255,255,255,.1)"/>`;
+  let x=0;
+  for(let i=0;i<steps;i++){svg+=`<path d="M${tx(x)} ${ty(i*geom.riser)} L${tx(x)} ${ty((i+1)*geom.riser)} L${tx(x+geom.tread)} ${ty((i+1)*geom.riser)}" stroke="#ddb786" stroke-width="2" fill="none"/>`;x+=geom.tread;}
+  const slabY=ty(Math.max(0,totalRise-n('slab')-n('finishThick')));
+  svg+=`<line x1="${tx(0)}" y1="${slabY}" x2="${tx(totalRun)}" y2="${slabY}" stroke="#f2d181" stroke-dasharray="6 6" opacity=".8"/>`;
+  svg+=`<line x1="${tx(0)}" y1="${ty(0)}" x2="${tx(totalRun)}" y2="${ty(totalRise)}" stroke="#f97316" stroke-width="2" stroke-dasharray="6 4" opacity=".75"/>`;
+  svg+=dimText(28,275,`Профиль: h=${geom.riser} мм · b=${geom.tread} мм · угол ${geom.angle}° · 2h+b=${geom.comfort} мм`);
+  svg+='</svg>'; return svg;
+}
+
+function renderChecklist(geom){
+  const scenario=$('scenario').value,type=$('type').value;
+  const rows=[];
+  const add=(ok,title,details)=>rows.push(`<div class="check-row ${ok?'ok':'bad'}">${ok?'✅':'⚠️'} ${title}<span>${details}</span></div>`);
+  if(scenario==='unknown'){add(false,'Нет исходного сценария','Нужна кнопка/сценарий “Не знаю — нужна помощь инженера” с возможностью отправить заявку без полного расчёта.');}
+  add(Boolean(n('height')||scenario==='ready'),'Высота этаж-этаж','Для пустого проёма обязательна. Для готового основания может считаться из количества подъёмов и h.');
+  add(Boolean(n('openingL')||scenario==='ready'),'Длина проёма','Нужна для fit-check пустого проёма и понятной схемы сверху.');
+  add(Boolean(n('openingW')||scenario==='ready'),'Ширина проёма','Нужна для поворотных лестниц и проверки ширины двух маршей.');
+  add(Boolean(n('marchW')),'Ширина марша','Обязательна во всех сценариях.');
+  add(type==='straight'||Boolean($('turnDir').value),'Направление поворота','Для Г/П-образных нужно левый/правый, иначе схема может вводить в заблуждение.');
+  add(!type.includes('landing')||(n('landingL')&&n('landingW')),'Размер площадки','Для площадки нужны длина и ширина, отдельно от ширины марша.');
+  add(!type.includes('winders')||n('winderCount')>0,'Количество забежных','Для забежных нужно не жёстко 3, а пользовательское количество.');
+  add(Boolean(n('slab')),'Толщина плиты','Нужна для просвета/бокового вида.');
+  add(Boolean(n('finishThick')),'Финиш сверху/снизу','Нужен для реального просвета после отделки.');
+  add(scenario!=='ready'||(n('readySteps')&&n('readyRiser')&&n('readyTread')),'Готовое основание','Для готового основания нужны количество подъёмов, h и b по факту.');
+  if(geom){add(true,'Габаритное пятно',`Сейчас рассчитано ${geom.fit.needL} × ${geom.fit.needW} мм. На боевом UI это должно быть видно рядом со схемой.`);}
+  $('dimensionChecklist').innerHTML=rows.join('');
+}
+
+function render(){
+  updateScenario();
+  const geom=getGeometry();
+  if(!geom){$('status').innerHTML='<span class="badge warning">Нужен инженерный ввод</span>';$('metrics').innerHTML='';$('warnings').innerHTML='<div class="warning-row">Выбран сценарий без исходных размеров. Это должен быть мягкий путь к заявке.</div>';$('planSvg').innerHTML='';$('sideSvg').innerHTML='';$('price').innerHTML='<div class="small">Нет расчёта без исходных данных.</div>';renderChecklist(null);return;}
+  const statusClass=(!geom.fit.fits||geom.angle>LIMITS.angle.max||geom.comfort<LIMITS.comfort.min||geom.comfort>LIMITS.comfort.max)?'warning':'recommended';
+  $('status').innerHTML=`<span class="badge ${statusClass}">${statusClass==='recommended'?'✅ Рекомендуем':'⚠️ Проверить'}</span>`;
+  $('metrics').innerHTML=[['Тип',labels[geom.type]],['Подъёмов',geom.risers],['Ступеней',geom.treadCount],['Подступёнок',geom.riser+' мм'],['Проступь',geom.tread+' мм'],['2h+b',geom.comfort+' мм'],['Угол',geom.angle+'°'],['Пятно',`${geom.fit.needL}×${geom.fit.needW} мм`]].map(([a,b])=>`<div class="metric"><span>${a}</span><b>${b}</b></div>`).join('');
+  const warns=[]; if(!geom.fit.fits) warns.push(['bad',`Не помещается: +${geom.fit.overflowL} мм по длине, +${geom.fit.overflowW} мм по ширине`]); if(geom.comfort<LIMITS.comfort.min||geom.comfort>LIMITS.comfort.max) warns.push(['warn','2h+b вне зоны 600–640 мм']); if(geom.angle>LIMITS.angle.max) warns.push(['warn','Угол >42° — проверьте удобство']); if(geom.ready) warns.push(['warn','Готовое основание: это preview по удалённым размерам, не strict fit-check.']);
+  $('warnings').innerHTML=warns.length?warns.map(w=>`<div class="warning-row ${w[0]}">${w[1]}</div>`).join(''):'<div class="warning-row">✅ В пределах ориентиров</div>';
+  $('planSvg').innerHTML=drawPlan(geom); $('sideSvg').innerHTML=drawProfile(geom);
+  const frameMap={metal:170000,concrete:190000,wood:145000,existing:0}, stepMap={pine:9000,ash:18000,oak:26000,mdf:11000}, railMap={none:0,metal:9500,glass:18000,wood:12000};
+  let total=(frameMap[$('frame').value]+stepMap[$('stepMat').value]*geom.treadCount+railMap[$('rail').value]*(geom.fit.needL/1000+geom.fit.needW/1000)+18000+geom.treadCount*2600+n('distance')*110);
+  if(['lighting','both'].includes($('extras').value)) total+=geom.treadCount*2200; if(['paint','both'].includes($('extras').value)) total+=22000;
+  const coef={straight:1,l_landing:1.12,l_winders:1.2,u_landing:1.18,u_winders:1.28}[geom.type]; total=Math.round(total*coef/1000)*1000;
+  $('price').innerHTML=`<div class="price">${total.toLocaleString('ru-RU')} ₽</div><div class="small">Визуальный prototype расчёта. Боевой расчёт должен брать priceBreakdown из текущего калькулятора.</div>`;
+  renderChecklist(geom);
+}
+
+$('calcBtn').addEventListener('click',render); $('resetBtn').addEventListener('click',()=>{document.querySelectorAll('input').forEach(i=>i.value=i.defaultValue);document.querySelectorAll('select').forEach(s=>s.selectedIndex=0);render();}); ['scenario','type','turnDir','frame','stepMat','rail','extras'].forEach(id=>$(id).addEventListener('change',render)); document.querySelectorAll('input').forEach(i=>i.addEventListener('input',()=>{updateScenario();}));
+render();
+</script>
+</body>
+</html>
