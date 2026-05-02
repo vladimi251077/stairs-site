@@ -1655,7 +1655,10 @@ function init() {
     clearIrrelevantScenarioFields();
     updateScenarioFields();
   });
-  baseSubtypeNode?.addEventListener('change', updateScenarioFields);
+  baseSubtypeNode?.addEventListener('change', () => {
+    clearIrrelevantScenarioFields();
+    updateScenarioFields();
+  });
   $('readyBaseShape')?.addEventListener('change', updateScenarioFields);
   $('finishScope')?.addEventListener('change', updateScenarioFields);
   $('hasLanding')?.addEventListener('change', updateScenarioFields);
