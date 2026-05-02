@@ -510,6 +510,47 @@ function updateScenarioFields() {
   toggleTurnFields();
 }
 
+function resetFieldValue(id, value) {
+  const node = $(id);
+  if (!node) return;
+  if (node.type === 'checkbox') {
+    node.checked = Boolean(value);
+    return;
+  }
+  node.value = value;
+}
+
+function clearIrrelevantScenarioFields() {
+  const baseConditionRaw = $('baseCondition')?.value || 'empty_opening';
+  const baseCondition = normalizeBaseConditionValue(baseConditionRaw);
+  const isEmptyOpening = baseCondition === 'empty_opening';
+  const isReadyBaseChoice = baseConditionRaw === 'ready_base';
+  const isReadyFrame = isReadyFrameCondition(baseCondition);
+  const isConcreteBase = baseCondition === 'existing_concrete_base';
+
+  if (isEmptyOpening) {
+    resetFieldValue('readyFrameStepCount', '');
+    resetFieldValue('readyFrameMarchWidth', '');
+    resetFieldValue('readyFrameTreadDepth', '');
+    resetFieldValue('readyFrameRiserHeight', '');
+    resetFieldValue('readyFrameStraightRailingLength', '');
+    resetFieldValue('metalFrameCondition', 'good');
+    resetFieldValue('concreteBaseCondition', 'ready');
+    resetFieldValue('existingFrameNotes', '');
+    resetFieldValue('readyBaseShape', 'straight');
+    return;
+  }
+
+  resetFieldValue('openingType', 'none');
+  if (!isReadyBaseChoice) resetFieldValue('baseSubtype', 'existing_metal_frame');
+
+  if (!isReadyFrame) {
+    resetFieldValue('metalFrameCondition', 'good');
+    resetFieldValue('existingFrameNotes', '');
+  }
+  if (!isConcreteBase) resetFieldValue('concreteBaseCondition', 'ready');
+}
+
 function getConfigFromForm() {
   const baseConditionRaw = $('baseCondition')?.value || 'empty_opening';
   const baseCondition = normalizeBaseConditionValue(baseConditionRaw);
@@ -1610,8 +1651,14 @@ function init() {
 
   if (!stairTypeNode || !calculateBtn || !toResultsBtn) return;
 
-  baseConditionNode?.addEventListener('change', updateScenarioFields);
-  baseSubtypeNode?.addEventListener('change', updateScenarioFields);
+  baseConditionNode?.addEventListener('change', () => {
+    clearIrrelevantScenarioFields();
+    updateScenarioFields();
+  });
+  baseSubtypeNode?.addEventListener('change', () => {
+    clearIrrelevantScenarioFields();
+    updateScenarioFields();
+  });
   $('readyBaseShape')?.addEventListener('change', updateScenarioFields);
   $('finishScope')?.addEventListener('change', updateScenarioFields);
   $('hasLanding')?.addEventListener('change', updateScenarioFields);
