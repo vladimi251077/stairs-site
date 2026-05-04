@@ -115,14 +115,17 @@ async function getYandexUserId(token) {
 }
 
 async function fetchYandexQueries(token, userId, from, to) {
-  const params = new URLSearchParams({
-    order_by: 'TOTAL_SHOWS',
-    query_indicator: 'TOTAL_SHOWS,TOTAL_CLICKS,AVG_SHOW_POSITION,AVG_CLICK_POSITION',
-    device_type_indicator: 'ALL',
-    date_from: from,
-    date_to: to,
-    limit: '500'
-  });
+  const params = new URLSearchParams();
+
+  params.set('order_by', 'TOTAL_SHOWS');
+  params.append('query_indicator', 'TOTAL_SHOWS');
+  params.append('query_indicator', 'TOTAL_CLICKS');
+  params.append('query_indicator', 'AVG_SHOW_POSITION');
+  params.append('query_indicator', 'AVG_CLICK_POSITION');
+  params.set('device_type_indicator', 'ALL');
+  params.set('date_from', from);
+  params.set('date_to', to);
+  params.set('limit', '500');
   const url = `${WEBMASTER_API_BASE}/user/${encodeURIComponent(userId)}/hosts/${encodeURIComponent(HOST_ID)}/search-queries/popular?${params.toString()}`;
   const response = await fetch(url, { headers: { authorization: `OAuth ${token}` } });
   const data = await response.json().catch(() => null);
