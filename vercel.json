@@ -11,11 +11,20 @@
       "permanent": true
     }
   ],
+  "rewrites": [
+    { "source": "/admin/seo", "destination": "/admin/seo.html" }
+  ],
   "routes": [
     { "src": "/projects", "dest": "/projects.html" },
     { "src": "/services", "dest": "/services.html" },
     { "src": "/calculator", "dest": "/calculator.html" },
     { "src": "/request", "dest": "/request.html" },
     { "src": "/project.html", "dest": "/project.html" }
+  ],
+  "crons": [
+    {
+      "path": "/api/seo-sync",
+      "schedule": "15 3 * * *"
+    }
   ]
 }
