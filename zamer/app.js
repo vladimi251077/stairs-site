@@ -5,18 +5,43 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => Array.from(document.querySelectorAll(s));
 
-const state = {
-  user: null,
-  profile: null,
-  measurements: [],
-  selected: null,
-  photos: [],
+const state = { user: null, profile: null, measurements: [], selected: null, photos: [] };
+
+const photoTypeSlug = {
+  "Ручной эскиз замера": "manual_sketch",
+  "Бумажный лист с размерами": "paper_sizes",
+  "Общий вид снизу": "general_bottom",
+  "Проём снизу": "opening_bottom",
+  "Проём сверху": "opening_top",
+  "Место старта": "start_place",
+  "Место выхода": "exit_place",
+  "Левая сторона": "left_side",
+  "Правая сторона": "right_side",
+  "Коммуникации": "communications",
+  "Ограждения / балюстрада": "railings_balustrade",
+  "Ступени / марши": "steps_flights",
+  "Дополнительные размеры": "extra_sizes",
+  "Другое": "other",
 };
 
 function setMessage(el, text, type = "") {
   if (!el) return;
   el.textContent = text || "";
   el.className = `form-message ${type}`.trim();
+}
+
+function safeSlug(text) {
+  return (photoTypeSlug[text] || String(text || "file"))
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, "_")
+    .replace(/^_+|_+$/g, "") || "file";
+}
+
+function safeExt(filename) {
+  const raw = String(filename || "jpg").split(".").pop().toLowerCase();
+  const ext = raw.replace(/[^a-z0-9]/g, "");
+  if (["jpg", "jpeg", "png", "webp", "gif", "heic", "jfif"].includes(ext)) return ext;
+  return "jpg";
 }
 
 function toNumber(value) {
@@ -38,27 +63,13 @@ function showApp(isAuthed) {
 
 async function loadProfile() {
   const { data } = await supabaseClient.from("profiles").select("*").eq("id", state.user.id).maybeSingle();
-  if (data) {
-    state.profile = data;
-    return;
-  }
-  const name = state.user.email?.split("@")[0] || "Пользователь";
-  const { data: created, error } = await supabaseClient
-    .from("profiles")
-    .insert({ id: state.user.id, full_name: name, role: "zamer" })
-    .select("*")
-    .single();
-  if (error) throw error;
-  state.profile = created;
+  state.profile = data || { id: state.user.id, full_name: state.user.email?.split("@")[0] || "Пользователь", role: "zamer" };
 }
 
 async function init() {
   const { data } = await supabaseClient.auth.getSession();
   state.user = data.session?.user || null;
-  if (!state.user) {
-    showApp(false);
-    return;
-  }
+  if (!state.user) return showApp(false);
   await loadProfile();
   showApp(true);
   await loadMeasurements();
@@ -66,10 +77,7 @@ async function init() {
 
 async function login() {
   setMessage($("#auth-message"), "Вход...");
-  const { data, error } = await supabaseClient.auth.signInWithPassword({
-    email: $("#email").value.trim(),
-    password: $("#password").value,
-  });
+  const { data, error } = await supabaseClient.auth.signInWithPassword({ email: $("#email").value.trim(), password: $("#password").value });
   if (error) return setMessage($("#auth-message"), error.message, "error");
   state.user = data.user;
   await loadProfile();
@@ -80,18 +88,10 @@ async function login() {
 
 async function signup() {
   setMessage($("#auth-message"), "Создаю пользователя...");
-  const { data, error } = await supabaseClient.auth.signUp({
-    email: $("#email").value.trim(),
-    password: $("#password").value,
-  });
+  const { data, error } = await supabaseClient.auth.signUp({ email: $("#email").value.trim(), password: $("#password").value });
   if (error) return setMessage($("#auth-message"), error.message, "error");
-  setMessage($("#auth-message"), "Пользователь создан. Если Supabase попросит — подтвердите почту и войдите.", "ok");
-  if (data.user) {
-    state.user = data.user;
-    await loadProfile();
-    showApp(true);
-    await loadMeasurements();
-  }
+  setMessage($("#auth-message"), "Пользователь создан. Теперь нажмите Войти.", "ok");
+  if (data.user) state.user = data.user;
 }
 
 async function logout() {
@@ -149,10 +149,7 @@ function getFormData() {
 }
 
 async function loadMeasurements() {
-  const { data, error } = await supabaseClient
-    .from("measurements")
-    .select("*, clients(*)")
-    .order("created_at", { ascending: false });
+  const { data, error } = await supabaseClient.from("measurements").select("*, clients(*)").order("created_at", { ascending: false });
   if (error) throw error;
   state.measurements = data || [];
   renderStats();
@@ -176,37 +173,17 @@ function renderStats() {
 function renderList() {
   const list = $("#measurements-list");
   const items = filteredMeasurements();
-  if (!items.length) {
-    list.innerHTML = `<p class="muted-text">Замеров пока нет.</p>`;
-    return;
-  }
+  if (!items.length) return list.innerHTML = `<p class="muted-text">Замеров пока нет.</p>`;
   list.innerHTML = items.map((m) => {
     const c = m.clients || {};
     const active = state.selected?.id === m.id ? "active" : "";
-    return `<button class="measurement-item ${active}" data-id="${m.id}">
-      <div class="number">${m.number}</div>
-      <div>${c.name || "Клиент не указан"}</div>
-      <div class="address">${c.address || "Адрес не указан"}</div>
-      <div class="measurement-meta">
-        <span class="small-chip">${m.status}</span>
-        <span class="small-chip">${m.site_situation}</span>
-        <span class="small-chip">${m.opening_type}</span>
-      </div>
-    </button>`;
+    return `<button class="measurement-item ${active}" data-id="${m.id}"><div class="number">${m.number}</div><div>${c.name || "Клиент не указан"}</div><div class="address">${c.address || "Адрес не указан"}</div><div class="measurement-meta"><span class="small-chip">${m.status}</span><span class="small-chip">${m.site_situation}</span><span class="small-chip">${m.opening_type}</span></div></button>`;
   }).join("");
   $$(".measurement-item").forEach((btn) => btn.addEventListener("click", () => selectMeasurement(btn.dataset.id)));
 }
 
 function newMeasurement() {
-  state.selected = {
-    number: makeNumber(),
-    status: "Черновик",
-    clients: {},
-    site_situation: "Пустой проём",
-    opening_type: "Прямой",
-    object_stage: "Черновая",
-    has_warm_floor: "Не знаю",
-  };
+  state.selected = { number: makeNumber(), status: "Черновик", clients: {}, site_situation: "Пустой проём", opening_type: "Прямой", object_stage: "Черновая", has_warm_floor: "Не знаю" };
   state.photos = [];
   fillForm(state.selected);
   $("#empty-detail").classList.add("hidden");
@@ -234,9 +211,7 @@ function fillForm(m) {
   form.client_name.value = c.name || "";
   form.client_phone.value = c.phone || "";
   form.address.value = c.address || "";
-  ["status", "object_stage", "site_situation", "opening_type", "stair_direction", "turn_type", "height_clean_to_clean_mm", "slab_thickness_mm", "ceiling_height_1_mm", "desired_flight_width_mm", "opening_length_mm", "opening_width_mm", "flight1_length_mm", "flight1_width_mm", "flight2_length_mm", "flight2_width_mm", "corner_zone_length_mm", "corner_zone_width_mm", "wall_material", "slab_material", "has_warm_floor", "obstacles_comment", "general_comment"].forEach((name) => {
-    if (form[name] && m[name] !== undefined && m[name] !== null) form[name].value = m[name];
-  });
+  ["status", "object_stage", "site_situation", "opening_type", "stair_direction", "turn_type", "height_clean_to_clean_mm", "slab_thickness_mm", "ceiling_height_1_mm", "desired_flight_width_mm", "opening_length_mm", "opening_width_mm", "flight1_length_mm", "flight1_width_mm", "flight2_length_mm", "flight2_width_mm", "corner_zone_length_mm", "corner_zone_width_mm", "wall_material", "slab_material", "has_warm_floor", "obstacles_comment", "general_comment"].forEach((name) => { if (form[name] && m[name] !== undefined && m[name] !== null) form[name].value = m[name]; });
   form.has_pipes.checked = Boolean(m.has_pipes);
   form.has_electricity.checked = Boolean(m.has_electricity);
   form.has_ventilation.checked = Boolean(m.has_ventilation);
@@ -251,7 +226,6 @@ async function saveMeasurement() {
     setMessage($("#form-message"), "Заполните клиента, телефон и адрес.", "error");
     return null;
   }
-
   let clientId = state.selected?.client_id;
   if (clientId) {
     const { error } = await supabaseClient.from("clients").update(client).eq("id", clientId);
@@ -261,14 +235,7 @@ async function saveMeasurement() {
     if (error) throw error;
     clientId = data.id;
   }
-
-  const payload = {
-    ...measurement,
-    client_id: clientId,
-    created_by: state.selected?.created_by || state.user.id,
-    measurer_id: state.selected?.measurer_id || state.user.id,
-  };
-
+  const payload = { ...measurement, client_id: clientId, created_by: state.selected?.created_by || state.user.id, measurer_id: state.selected?.measurer_id || state.user.id };
   if (state.selected?.id) {
     const { data, error } = await supabaseClient.from("measurements").update(payload).eq("id", state.selected.id).select("*, clients(*)").single();
     if (error) throw error;
@@ -278,7 +245,6 @@ async function saveMeasurement() {
     if (error) throw error;
     state.selected = data;
   }
-
   await loadMeasurements();
   await selectMeasurement(state.selected.id);
   setMessage($("#form-message"), "Сохранено.", "ok");
@@ -316,11 +282,12 @@ async function uploadPhoto() {
   const file = $("#photo-file").files[0];
   if (!file) return setMessage($("#form-message"), "Выберите фото.", "error");
   setMessage($("#form-message"), "Загружаю фото...");
-  const ext = file.name.split(".").pop() || "jpg";
-  const path = `${state.selected.number}/${Date.now()}_${$("#photo-type").value}.${ext}`;
-  const { error: uploadError } = await supabaseClient.storage.from("measurement-photos").upload(path, file);
+  const photoType = $("#photo-type").value;
+  const ext = safeExt(file.name);
+  const path = `${state.selected.number}/${Date.now()}_${safeSlug(photoType)}.${ext}`;
+  const { error: uploadError } = await supabaseClient.storage.from("measurement-photos").upload(path, file, { upsert: false });
   if (uploadError) throw uploadError;
-  const { error } = await supabaseClient.from("measurement_photos").insert({ measurement_id: state.selected.id, photo_type: $("#photo-type").value, file_path: path, is_required: true, added_by: state.user.id });
+  const { error } = await supabaseClient.from("measurement_photos").insert({ measurement_id: state.selected.id, photo_type: photoType, file_path: path, is_required: true, added_by: state.user.id });
   if (error) throw error;
   $("#photo-file").value = "";
   await loadPhotos(state.selected.id);
@@ -340,9 +307,7 @@ function checkItems() {
   measurement.opening_length_mm ? add("ok", "Длина проёма заполнена") : add("error", "Не заполнена длина проёма");
   measurement.opening_width_mm ? add("ok", "Ширина проёма заполнена") : add("error", "Не заполнена ширина проёма");
   const photoTypes = state.photos.map((p) => p.photo_type);
-  ["Ручной эскиз замера", "Общий вид снизу", "Проём сверху", "Место старта", "Место выхода"].forEach((t) => {
-    photoTypes.includes(t) ? add("ok", `Фото есть: ${t}`) : add("error", `Нет фото: ${t}`);
-  });
+  ["Ручной эскиз замера", "Общий вид снизу", "Проём сверху", "Место старта", "Место выхода"].forEach((t) => { photoTypes.includes(t) ? add("ok", `Фото есть: ${t}`) : add("error", `Нет фото: ${t}`); });
   if (measurement.has_warm_floor === "Да" && !measurement.obstacles_comment) add("warn", "Есть тёплый пол — добавьте комментарий");
   return result;
 }
@@ -363,17 +328,8 @@ function downloadText(filename, text, type) {
   URL.revokeObjectURL(url);
 }
 
-function downloadJson() {
-  if (!state.selected) return;
-  downloadText(`${state.selected.number}_data.json`, JSON.stringify({ measurement: state.selected, photos: state.photos }, null, 2), "application/json");
-}
-
-function downloadCsv() {
-  if (!state.selected) return;
-  const m = state.selected;
-  const c = m.clients || {};
-  downloadText(`${m.number}_data.csv`, `Номер;Статус;Клиент;Телефон;Адрес\n${m.number};${m.status};${c.name || ""};${c.phone || ""};${c.address || ""}`, "text/csv;charset=utf-8");
-}
+function downloadJson() { if (state.selected) downloadText(`${state.selected.number}_data.json`, JSON.stringify({ measurement: state.selected, photos: state.photos }, null, 2), "application/json"); }
+function downloadCsv() { if (state.selected) { const m = state.selected; const c = m.clients || {}; downloadText(`${m.number}_data.csv`, `Номер;Статус;Клиент;Телефон;Адрес\n${m.number};${m.status};${c.name || ""};${c.phone || ""};${c.address || ""}`, "text/csv;charset=utf-8"); } }
 
 function bind() {
   $("#login-btn").addEventListener("click", () => login().catch((e) => setMessage($("#auth-message"), e.message, "error")));
@@ -384,29 +340,15 @@ function bind() {
   $("#status-filter").addEventListener("change", renderList);
   $("#measurement-form").addEventListener("submit", (event) => { event.preventDefault(); saveMeasurement().catch((e) => setMessage($("#form-message"), e.message, "error")); });
   $("#upload-photo-btn").addEventListener("click", () => uploadPhoto().catch((e) => setMessage($("#form-message"), e.message, "error")));
-  $("#send-review-btn").addEventListener("click", async () => {
-    const saved = await saveMeasurement();
-    if (!saved) return;
-    const errors = renderChecks().filter((i) => i.type === "error");
-    if (errors.length) return setMessage($("#form-message"), `Нельзя отправить: ошибок ${errors.length}.`, "error");
-    await setStatus("На проверке");
-  });
+  $("#send-review-btn").addEventListener("click", async () => { const saved = await saveMeasurement(); if (!saved) return; const errors = renderChecks().filter((i) => i.type === "error"); if (errors.length) return setMessage($("#form-message"), `Нельзя отправить: ошибок ${errors.length}.`, "error"); await setStatus("На проверке"); });
   $("#accept-btn").addEventListener("click", () => setStatus("Готовый замер", { checked_by: state.user.id, checked_at: new Date().toISOString() }).catch((e) => alert(e.message)));
   $("#archive-btn").addEventListener("click", () => setStatus("Архив", { is_archived: true, archived_at: new Date().toISOString(), archived_by: state.user.id }).catch((e) => alert(e.message)));
   $("#soft-delete-btn").addEventListener("click", () => setStatus("Удалён", { is_deleted: true, deleted_at: new Date().toISOString(), deleted_by: state.user.id }).catch((e) => alert(e.message)));
   $("#download-json-btn").addEventListener("click", downloadJson);
   $("#download-csv-btn").addEventListener("click", downloadCsv);
   $("#measurement-form").addEventListener("input", renderChecks);
-  $$(".tab").forEach((tab) => tab.addEventListener("click", () => {
-    $$(".tab").forEach((t) => t.classList.remove("active"));
-    tab.classList.add("active");
-    $$(".tab-panel").forEach((p) => p.classList.toggle("hidden", p.dataset.panel !== tab.dataset.tab));
-    if (tab.dataset.tab === "check") renderChecks();
-  }));
+  $$(".tab").forEach((tab) => tab.addEventListener("click", () => { $$(".tab").forEach((t) => t.classList.remove("active")); tab.classList.add("active"); $$(".tab-panel").forEach((p) => p.classList.toggle("hidden", p.dataset.panel !== tab.dataset.tab)); if (tab.dataset.tab === "check") renderChecks(); }));
 }
 
 bind();
-init().catch((e) => {
-  console.error(e);
-  setMessage($("#auth-message"), e.message, "error");
-});
+init().catch((e) => { console.error(e); setMessage($("#auth-message"), e.message, "error"); });
