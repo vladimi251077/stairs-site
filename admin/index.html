@@ -724,16 +724,68 @@
                 <p class="pricing-group-compact">Покрытия и подбор цвета для дерева.</p>
               </summary>
               <div class="pricing-group-details">
-                <p>Тип покрытия: морилка, лак, масло, эмаль, подбор цвета.</p>
-                <p class="pricing-group-meta">Примеры вариантов: морилка + лак, масло, эмаль, индивидуальный подбор цвета.</p>
-                <p class="pricing-group-meta">Влияет на: надбавки по финишной обработке и визуальный класс проекта.</p>
-                <p class="pricing-group-meta">Где не используется: базовые ставки металла и бетона.</p>
+                <p>Подготовительный read-only/read-edit UI для финишной обработки: защита, покраска и внешний вид покрытия.</p>
+                <p class="pricing-group-meta">Примеры вариантов: морилка, лак, масло, масло-воск, эмаль, эмаль по RAL, подбор цвета по образцу.</p>
+                <p class="pricing-group-meta">Влияет на: финишную обработку, защиту, покраску, внешний вид покрытия.</p>
+                <p class="pricing-group-meta">Не используется: материал проступей, облицовка, ограждения, подсветка.</p>
                 <div class="pricing-group-actions">
-                  <button class="btn btn-secondary" type="button" disabled>Настроить группу</button>
-                  <button class="btn btn-secondary" type="button" disabled>Добавить вариант</button>
-                  <p class="pricing-group-actions-note">Редактирование будет подключено после настройки структуры тарифов.</p>
+                  <button class="btn btn-secondary" type="button">Настроить группу</button>
+                  <button class="btn btn-secondary" type="button" disabled>Добавление будет подключено следующим PR</button>
+                  <p class="pricing-group-actions-note">Сохранение будет подключено следующим PR.</p>
                 </div>
-                <p class="pricing-group-note">Редактирование будет добавлено позже.</p>
+                <div class="pricing-items-readonly" aria-label="Варианты финишной обработки">
+                  <article class="pricing-item-card"><h4>Морилка</h4><div class="grid two">
+                    <label>Название<input type="text" value="Морилка" disabled /></label><label>Внутренний код<input type="text" value="stain" disabled /></label>
+                    <label>Цена<input type="text" value="Не задано" disabled /></label><label>Единица расчёта<input type="text" value="за м²" disabled /></label>
+                    <label>Активен / скрыт<input type="text" value="Активен" disabled /></label><label>Порядок показа<input type="number" value="1" disabled /></label>
+                    <label>Подсказка для клиента<input type="text" value="Подчёркивает текстуру древесины и задаёт оттенок." disabled /></label><label>Комментарий для админа<input type="text" value="Финишная обработка поверхности, без связи с материалом ступеней." disabled /></label>
+                  </div><p class="pricing-group-meta">Влияет на: финишную обработку, защиту, покраску, внешний вид покрытия.</p><p class="pricing-group-meta">Не используется: материал проступей, облицовка, ограждения, подсветка.</p></article>
+                  <article class="pricing-item-card"><h4>Лак</h4><div class="grid two">
+                    <label>Название<input type="text" value="Лак" disabled /></label><label>Внутренний код<input type="text" value="lacquer" disabled /></label>
+                    <label>Цена<input type="text" value="Не задано" disabled /></label><label>Единица расчёта<input type="text" value="за м²" disabled /></label>
+                    <label>Активен / скрыт<input type="text" value="Активен" disabled /></label><label>Порядок показа<input type="number" value="2" disabled /></label>
+                    <label>Подсказка для клиента<input type="text" value="Защищает поверхность и формирует финишный блеск." disabled /></label><label>Комментарий для админа<input type="text" value="Использовать как финишный защитный слой." disabled /></label>
+                  </div><p class="pricing-group-meta">Влияет на: финишную обработку, защиту, покраску, внешний вид покрытия.</p><p class="pricing-group-meta">Не используется: материал проступей, облицовка, ограждения, подсветка.</p></article>
+                  <article class="pricing-item-card"><h4>Масло</h4><div class="grid two">
+                    <label>Название<input type="text" value="Масло" disabled /></label><label>Внутренний код<input type="text" value="oil" disabled /></label>
+                    <label>Цена<input type="text" value="Не задано" disabled /></label><label>Единица расчёта<input type="text" value="за м²" disabled /></label>
+                    <label>Активен / скрыт<input type="text" value="Активен" disabled /></label><label>Порядок показа<input type="number" value="3" disabled /></label>
+                    <label>Подсказка для клиента<input type="text" value="Естественная защита с матовым эффектом." disabled /></label><label>Комментарий для админа<input type="text" value="Финишная пропитка для внешнего вида и защиты." disabled /></label>
+                  </div><p class="pricing-group-meta">Влияет на: финишную обработку, защиту, покраску, внешний вид покрытия.</p><p class="pricing-group-meta">Не используется: материал проступей, облицовка, ограждения, подсветка.</p></article>
+                  <article class="pricing-item-card"><h4>Масло-воск</h4><div class="grid two">
+                    <label>Название<input type="text" value="Масло-воск" disabled /></label><label>Внутренний код<input type="text" value="oil_wax" disabled /></label>
+                    <label>Цена<input type="text" value="Не задано" disabled /></label><label>Единица расчёта<input type="text" value="за м²" disabled /></label>
+                    <label>Активен / скрыт<input type="text" value="Активен" disabled /></label><label>Порядок показа<input type="number" value="4" disabled /></label>
+                    <label>Подсказка для клиента<input type="text" value="Комбинированное покрытие для защиты и тактильности." disabled /></label><label>Комментарий для админа<input type="text" value="Финишная обработка без изменения логики материалов." disabled /></label>
+                  </div><p class="pricing-group-meta">Влияет на: финишную обработку, защиту, покраску, внешний вид покрытия.</p><p class="pricing-group-meta">Не используется: материал проступей, облицовка, ограждения, подсветка.</p></article>
+                  <article class="pricing-item-card"><h4>Эмаль</h4><div class="grid two">
+                    <label>Название<input type="text" value="Эмаль" disabled /></label><label>Внутренний код<input type="text" value="enamel" disabled /></label>
+                    <label>Цена<input type="text" value="Не задано" disabled /></label><label>Единица расчёта<input type="text" value="за м²" disabled /></label>
+                    <label>Активен / скрыт<input type="text" value="Активен" disabled /></label><label>Порядок показа<input type="number" value="5" disabled /></label>
+                    <label>Подсказка для клиента<input type="text" value="Плотное укрывное покрытие с декоративным эффектом." disabled /></label><label>Комментарий для админа<input type="text" value="Отдельно от МДФ под эмаль в группе облицовки." disabled /></label>
+                  </div><p class="pricing-group-meta">Влияет на: финишную обработку, защиту, покраску, внешний вид покрытия.</p><p class="pricing-group-meta">Не используется: материал проступей, облицовка, ограждения, подсветка.</p></article>
+                  <article class="pricing-item-card"><h4>Эмаль по RAL</h4><div class="grid two">
+                    <label>Название<input type="text" value="Эмаль по RAL" disabled /></label><label>Внутренний код<input type="text" value="enamel_ral" disabled /></label>
+                    <label>Цена<input type="text" value="Не задано" disabled /></label><label>Единица расчёта<input type="text" value="за м²" disabled /></label>
+                    <label>Активен / скрыт<input type="text" value="Активен" disabled /></label><label>Порядок показа<input type="number" value="6" disabled /></label>
+                    <label>Подсказка для клиента<input type="text" value="Цвет можно указать сейчас или согласовать позже после замера и подбора образцов." disabled /></label><label>Комментарий для админа<input type="text" value="RAL — необязательная опция только внутри эмали/покраски." disabled /></label>
+                  </div><p class="pricing-group-meta">Влияет на: финишную обработку, защиту, покраску, внешний вид покрытия.</p><p class="pricing-group-meta">Не используется: материал проступей, облицовка, ограждения, подсветка.</p>
+                  <div class="grid two">
+                    <label>requires_color<input type="text" value="optional" disabled /></label>
+                    <label>color_system<input type="text" value="RAL" disabled /></label>
+                    <label>allow_color_later<input type="text" value="да" disabled /></label>
+                    <label>default_color<input type="text" value="не выбран" disabled /></label>
+                  </div>
+                  <p class="pricing-group-meta">RAL — необязательная опция.</p><p class="pricing-group-meta">Цвет можно указать сейчас или согласовать позже.</p><p class="pricing-group-meta">Не должен блокировать расчёт.</p><p class="pricing-group-meta">Не должен быть обязательным для отправки заявки.</p><p class="pricing-group-meta">Показывать только для эмали/покраски в будущей логике.</p>
+                  <p class="pricing-group-meta">popular_ral_examples: RAL 9016 — белый; RAL 9003 — сигнальный белый; RAL 9005 — чёрный; RAL 7016 — антрацит; RAL 7040 — серый; RAL 1013 — слоновая кость.</p></article>
+                  <article class="pricing-item-card"><h4>Подбор цвета по образцу</h4><div class="grid two">
+                    <label>Название<input type="text" value="Подбор цвета по образцу" disabled /></label><label>Внутренний код<input type="text" value="color_match_sample" disabled /></label>
+                    <label>Цена<input type="text" value="Не задано" disabled /></label><label>Единица расчёта<input type="text" value="за м²" disabled /></label>
+                    <label>Активен / скрыт<input type="text" value="Активен" disabled /></label><label>Порядок показа<input type="number" value="7" disabled /></label>
+                    <label>Подсказка для клиента<input type="text" value="Точное согласование оттенка под предоставленный образец." disabled /></label><label>Комментарий для админа<input type="text" value="Финишная услуга под покраску и визуальное соответствие." disabled /></label>
+                  </div><p class="pricing-group-meta">Влияет на: финишную обработку, защиту, покраску, внешний вид покрытия.</p><p class="pricing-group-meta">Не используется: материал проступей, облицовка, ограждения, подсветка.</p></article>
+                </div>
+                <p class="pricing-group-note">Режим подготовки: read-only/read-edit UI для группы. Сохранение будет подключено следующим PR.</p>
               </div>
             </details>
           </article>
