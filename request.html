@@ -113,6 +113,9 @@ function buildCalcSummary(payload) {
     const details = payload.scenario_details || {};
     const selections = payload.price_relevant_selections || {};
     const metrics = geometry.service_metrics || {};
+    const readyBaseScenarios = new Set(['ready_base', 'existing_metal_frame', 'ready_frame', 'existing_concrete_base']);
+    const isReadyBaseScenario = readyBaseScenarios.has(String(payload.base_condition || '').toLowerCase())
+      || readyBaseScenarios.has(String(details.base_subtype || '').toLowerCase());
     const summaryRows = Array.isArray(geometry.summary_rows)
       ? geometry.summary_rows.map((row) => `${row[0]}: ${row[1]}`)
       : [];
@@ -141,7 +144,7 @@ function buildCalcSummary(payload) {
       dimensions.opening_length || dimensions.openingLength ? `Проём: ${dimensions.opening_length || dimensions.openingLength} x ${dimensions.opening_width || dimensions.openingWidth || '-'} мм` : '',
       geometry.riser_height ? `Подступенок: ${geometry.riser_height} мм` : '',
       geometry.tread_depth ? `Проступь: ${geometry.tread_depth} мм` : '',
-      geometry.headroom_min ? `Просвет: ${geometry.headroom_min} мм` : '',
+      !isReadyBaseScenario && geometry.headroom_min ? `Просвет: ${geometry.headroom_min} мм` : '',
       ...summaryRows,
       `Ориентир: ${Number(payload.total || 0).toLocaleString('ru-RU')} ₽`
     ].filter(Boolean);
