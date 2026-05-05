@@ -1,5 +1,5 @@
-const SUPABASE_URL = "PASTE_SUPABASE_URL_HERE";
-const SUPABASE_ANON_KEY = "PASTE_SUPABASE_ANON_KEY_HERE";
+const SUPABASE_URL = "https://rhmlykqqhwweaywjopvm.supabase.co";
+const SUPABASE_ANON_KEY = sb_publishable_kzU8UDdLyl9WGvS-o5jFsw_xkg5-Sqv
 
 const isConfigured = !SUPABASE_URL.includes("PASTE_") && !SUPABASE_ANON_KEY.includes("PASTE_");
 const supabaseClient = isConfigured ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
