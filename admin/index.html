@@ -955,19 +955,123 @@
                   <h3>Ограждения</h3>
                   <span class="pricing-group-status ready">Подготовлено</span>
                 </div>
-                <p class="pricing-group-compact">Доплата за выбранный тип ограждений.</p>
+                <p class="pricing-group-compact">Отдельная коммерческая группа для стоимости ограждений.</p>
               </summary>
               <div class="pricing-group-details">
-                <p>Ставки для ограждений: металл, стекло, дерево или отсутствие ограждения.</p>
-                <p class="pricing-group-meta">Примеры вариантов: без ограждения, металл, стекло, дерево.</p>
-                <p class="pricing-group-meta">Влияет на: добавочную стоимость за погонный метр.</p>
-                <p class="pricing-group-meta">Где не используется: расчёт отделки ступеней и финишных покрытий.</p>
+                <p>Варианты ограждений показываются отдельно от материалов ступеней, облицовки и финишной обработки.</p>
+                <p class="pricing-group-meta">Цена подготавливается как будущая ставка, чаще всего за погонный метр.</p>
                 <div class="pricing-group-actions">
-                  <button class="btn btn-secondary" type="button" disabled>Настроить группу</button>
-                  <button class="btn btn-secondary" type="button" disabled>Добавить вариант</button>
-                  <p class="pricing-group-actions-note">Редактирование будет подключено после настройки структуры тарифов.</p>
+                  <button class="btn btn-secondary" type="button">Настроить группу</button>
+                  <button class="btn btn-secondary" type="button" disabled>Добавление будет подключено следующим PR</button>
                 </div>
-                <p class="pricing-group-note">Редактирование будет добавлено позже.</p>
+                <div class="pricing-items-list" aria-label="Варианты группы Ограждения">
+                  <article class="pricing-item-card">
+                    <h4>Без ограждения</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Без ограждения" disabled /></label>
+                      <label>Внутренний код<input type="text" value="no_railing" disabled /></label>
+                      <label>Цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="за пог. м" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="1" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Выбирается, если ограждение не требуется." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Отдельный вариант группы ограждений, не смешивать с другими группами." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: стоимость ограждения и погонные метры.</p>
+                    <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, подсветка.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Металлическое ограждение</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Металлическое ограждение" disabled /></label>
+                      <label>Внутренний код<input type="text" value="metal_railing" disabled /></label>
+                      <label>Цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="за пог. м" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="2" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Классический металлический вариант для лестничных ограждений." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Только группа Ограждения; не относится к финишной обработке." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: стоимость ограждения и погонные метры.</p>
+                    <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, подсветка.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Ограждение из стекла</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Ограждение из стекла" disabled /></label>
+                      <label>Внутренний код<input type="text" value="glass_railing" disabled /></label>
+                      <label>Цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="за пог. м" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="3" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Современное прозрачное решение с визуальной лёгкостью." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Стекло учитывается только как тип ограждения." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: стоимость ограждения и погонные метры.</p>
+                    <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, подсветка.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Деревянное ограждение</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Деревянное ограждение" disabled /></label>
+                      <label>Внутренний код<input type="text" value="wood_railing" disabled /></label>
+                      <label>Цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="за пог. м" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="4" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Тёплое ограждение из древесных элементов." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Дерево здесь — только тип ограждения, не материал ступеней." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: стоимость ограждения и погонные метры.</p>
+                    <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, подсветка.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Комбинированное ограждение</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Комбинированное ограждение" disabled /></label>
+                      <label>Внутренний код<input type="text" value="combined_railing" disabled /></label>
+                      <label>Цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="за пог. м" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="5" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Сочетание нескольких материалов в одном ограждении." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Коммерческий гибридный вариант группы Ограждения." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: стоимость ограждения и погонные метры.</p>
+                    <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, подсветка.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Кованое ограждение</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Кованое ограждение" disabled /></label>
+                      <label>Внутренний код<input type="text" value="forged_railing" disabled /></label>
+                      <label>Цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="за пог. м" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="6" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Декоративное решение с художественными коваными элементами." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Не переносить в финишную обработку и не смешивать с подсветкой." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: стоимость ограждения и погонные метры.</p>
+                    <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, подсветка.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Индивидуальное ограждение</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Индивидуальное ограждение" disabled /></label>
+                      <label>Внутренний код<input type="text" value="custom_railing" disabled /></label>
+                      <label>Цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="за пог. м" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="7" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Индивидуальная конфигурация ограждения под проект." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Резерв для нестандартных решений в рамках группы Ограждения." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: стоимость ограждения и погонные метры.</p>
+                    <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, подсветка.</p>
+                  </article>
+                </div>
+                <p class="pricing-group-note">Режим подготовки: read-only/read-edit UI для группы. Сохранение будет подключено следующим PR.</p>
               </div>
             </details>
           </article>
