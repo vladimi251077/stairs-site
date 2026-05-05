@@ -152,7 +152,7 @@ const OPTION_LABELS = {
 
 
 const PRICING_ADMIN_GROUPS = [
-  { group_key: 'step_materials', title: 'Материалы ступеней', description: 'Массив древесины для ступеней и подступенков.', sort_order: 10, is_active: true },
+  { group_key: 'step_materials', title: 'Материалы ступеней', description: 'Массив древесины для проступей, площадок и забежных ступеней.', sort_order: 10, is_active: true },
   { group_key: 'cladding_materials', title: 'Отделка / облицовка', description: 'Материалы облицовки поверх базовой конструкции.', sort_order: 20, is_active: true },
   { group_key: 'cladding_scope', title: 'Объём отделки', description: 'Какая часть лестницы участвует в отделке.', sort_order: 30, is_active: true },
   { group_key: 'finish_treatments', title: 'Финишная обработка', description: 'Морилки, лаки, масла, эмали и подбор цвета.', sort_order: 40, is_active: true },
