@@ -137,6 +137,13 @@
       grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
       gap:10px;
     }
+    .content-admin{
+      display:grid;
+      grid-template-columns:260px minmax(0,1fr);
+      gap:12px;
+    }
+    .content-block-list{display:flex;flex-direction:column;gap:8px}
+    .content-block-btn{text-align:left}
     .gallery-card{
       border:1px solid var(--line);
       border-radius:12px;
@@ -360,6 +367,15 @@
       </section>
 
       <section class="panel">
+        <h2>Контент сайта</h2>
+        <div class="content-admin">
+          <aside id="contentBlockList" class="content-block-list"></aside>
+          <div id="contentEditor"></div>
+        </div>
+        <div id="contentStatus" class="status small" aria-live="polite"></div>
+      </section>
+
+      <section class="panel">
         <h2>Проекты</h2>
         <div id="projectsList"></div>
         <div class="row">
@@ -421,6 +437,9 @@
     const projectsList = document.getElementById('projectsList');
     const pricingRegionsList = document.getElementById('pricingRegionsList');
     const pricingRulesList = document.getElementById('pricingRulesList');
+    const contentBlockList = document.getElementById('contentBlockList');
+    const contentEditor = document.getElementById('contentEditor');
+    const contentStatusBox = document.getElementById('contentStatus');
 
     const state = {
       settings: null,
@@ -429,7 +448,18 @@
       scenarioRateRows: [],
       services: [],
       projects: [],
+      contentBlocks: {},
+      activeContentBlock: 'materials_nodes'
     };
+    const contentBlockDefs = [
+      { key: 'hero', title: 'Hero' },
+      { key: 'featured_projects', title: 'Два реализованных объекта' },
+      { key: 'materials_nodes', title: 'Материалы и узлы' },
+      { key: 'process', title: 'Как мы работаем' },
+      { key: 'norms', title: 'Нормы и уход' },
+      { key: 'cta', title: 'CTA' },
+      { key: 'contacts_footer', title: 'Контакты / футер' }
+    ];
 
     function setStatus(msg, isError = false) {
       statusBox.textContent = msg || '';
@@ -443,6 +473,11 @@
       if (type === 'error' || type === 'warning' || type === 'success') {
         contactsStatusBox.classList.add(type);
       }
+    }
+    function setContentStatus(msg, type = 'info') {
+      contentStatusBox.textContent = msg || '';
+      contentStatusBox.classList.remove('error', 'warning', 'success');
+      if (type === 'error' || type === 'warning' || type === 'success') contentStatusBox.classList.add(type);
     }
 
     function renderEffectiveNotifyEmail(settings = {}) {
@@ -1001,6 +1036,67 @@
         createDefaultScenarioRateRows().forEach((item, index) => pricingRulesList.appendChild(pricingRuleItem(item, index)));
       }
     }
+    function defaultMaterialsNodesContent() {
+      return {
+        eyebrow: 'Детали',
+        title: 'Материалы и узлы',
+        items: [
+          { title: 'Материалы', caption: 'Комбинации дерева и металла под интерьер.', image: '/assets/visuals/detail-materials.svg', imageAlt: 'Детали материалов лестницы' },
+          { title: 'Узлы', caption: 'Контроль узлов, примыканий и креплений.', image: '/assets/visuals/detail-node.svg', imageAlt: 'Детали узлов и креплений' }
+        ]
+      };
+    }
+    function renderContentBlocksNav() {
+      contentBlockList.innerHTML = '';
+      contentBlockDefs.forEach((block) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `btn btn-secondary content-block-btn ${state.activeContentBlock === block.key ? '' : ''}`;
+        btn.textContent = block.title;
+        btn.onclick = () => { state.activeContentBlock = block.key; renderContentEditor(); };
+        contentBlockList.appendChild(btn);
+      });
+    }
+    function renderMaterialsEditor() {
+      const content = state.contentBlocks.materials_nodes || defaultMaterialsNodesContent();
+      const items = Array.isArray(content.items) ? content.items : [];
+      contentEditor.innerHTML = `
+        <div class="grid">
+          <div><label>Eyebrow</label><input id="materialsEyebrow" value="${escapeHtml(content.eyebrow || '')}" /></div>
+          <div><label>Title</label><input id="materialsTitle" value="${escapeHtml(content.title || '')}" /></div>
+          <div class="full"><button id="addMaterialsItem" type="button" class="btn btn-secondary">Добавить карточку</button></div>
+          <div class="full" id="materialsItemsWrap"></div>
+          <div class="full"><button id="saveMaterialsBlock" type="button" class="btn">Сохранить</button></div>
+        </div>
+      `;
+      const wrap = document.getElementById('materialsItemsWrap');
+      items.forEach((item, idx) => wrap.appendChild(materialItemEl(item, idx)));
+      document.getElementById('addMaterialsItem').onclick = () => wrap.appendChild(materialItemEl({}, wrap.children.length));
+      document.getElementById('saveMaterialsBlock').onclick = saveMaterialsBlock;
+    }
+    function materialItemEl(item = {}, idx = 0) {
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.innerHTML = `<div class="grid">
+        <div><label>Заголовок</label><input data-k="title" value="${escapeHtml(item.title || '')}" /></div>
+        <div><label>Alt</label><input data-k="imageAlt" value="${escapeHtml(item.imageAlt || '')}" /></div>
+        <div class="full"><label>Подпись</label><textarea data-k="caption">${escapeHtml(item.caption || '')}</textarea></div>
+        <div><label>URL фото</label><input data-k="image" value="${escapeHtml(item.image || '')}" /></div>
+        <div><label>Загрузка фото</label><input data-k="imageFile" type="file" accept="image/*" /><img class="preview ${item.image ? '' : 'hidden'}" src="${escapeHtml(item.image || '')}" alt="preview" /></div>
+      </div><div class="row" style="margin-top:8px"><button type="button" class="btn btn-secondary" data-up>↑</button><button type="button" class="btn btn-secondary" data-down>↓</button><button type="button" class="btn btn-danger" data-remove>Удалить</button></div>`;
+      div.querySelector('[data-remove]').onclick = () => div.remove();
+      div.querySelector('[data-up]').onclick = () => { if (div.previousElementSibling) div.parentElement.insertBefore(div, div.previousElementSibling); };
+      div.querySelector('[data-down]').onclick = () => { if (div.nextElementSibling) div.parentElement.insertBefore(div.nextElementSibling, div); };
+      const imageInput = div.querySelector('[data-k="image"]');
+      const preview = div.querySelector('.preview');
+      imageInput.addEventListener('input', () => showPreview(preview, imageInput.value.trim()));
+      return div;
+    }
+    function renderContentEditor() {
+      renderContentBlocksNav();
+      if (state.activeContentBlock === 'materials_nodes') renderMaterialsEditor();
+      else contentEditor.innerHTML = '<p class="small">Для этого блока форма будет добавлена на следующем этапе.</p>';
+    }
 
     function escapeHtml(str) {
       return String(str)
@@ -1104,6 +1200,17 @@
       state.projects = rows.map((r) => ({ ...r, gallery_images: grouped.get(r.id) || [] }));
       renderProjects(state.projects);
     }
+    async function loadSiteContentBlocks() {
+      const { data, error } = await client.from('site_content_blocks').select('*').eq('page_key', 'home');
+      if (error) {
+        console.warn('site_content_blocks load failed', error);
+        state.contentBlocks = { materials_nodes: defaultMaterialsNodesContent() };
+      } else {
+        state.contentBlocks = Object.fromEntries((data || []).map((row) => [row.block_key, row.content || {}]));
+        if (!state.contentBlocks.materials_nodes) state.contentBlocks.materials_nodes = defaultMaterialsNodesContent();
+      }
+      renderContentEditor();
+    }
 
     async function loadAllData() {
       setStatus('Загрузка данных...');
@@ -1113,7 +1220,8 @@
         loadPricingRegions(),
         loadPricingRules(),
         loadServices(),
-        loadProjects()
+        loadProjects(),
+        loadSiteContentBlocks()
       ]);
       setStatus('Данные загружены');
     }
@@ -1422,6 +1530,41 @@
     document.getElementById('addProject').onclick = () => {
       projectsList.appendChild(projectItem({}));
     };
+    async function saveMaterialsBlock() {
+      try {
+        setContentStatus('Сохранение...');
+        const items = [...document.querySelectorAll('#materialsItemsWrap .item')];
+        const payloadItems = [];
+        for (const el of items) {
+          let image = el.querySelector('[data-k="image"]').value.trim();
+          const file = el.querySelector('[data-k="imageFile"]').files[0];
+          if (file) image = await uploadFile(file, `content/home/materials_nodes`);
+          payloadItems.push({
+            title: el.querySelector('[data-k="title"]').value.trim(),
+            caption: el.querySelector('[data-k="caption"]').value.trim(),
+            image,
+            imageAlt: el.querySelector('[data-k="imageAlt"]').value.trim()
+          });
+        }
+        const content = {
+          eyebrow: document.getElementById('materialsEyebrow').value.trim(),
+          title: document.getElementById('materialsTitle').value.trim(),
+          items: payloadItems
+        };
+        const { error } = await client.from('site_content_blocks').upsert({
+          page_key: 'home',
+          block_key: 'materials_nodes',
+          title: content.title || 'Материалы и узлы',
+          content,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'page_key,block_key' });
+        if (error) throw error;
+        setContentStatus('Сохранено', 'success');
+        await loadSiteContentBlocks();
+      } catch (err) {
+        setContentStatus('Ошибка: ' + explainError(err), 'error');
+      }
+    }
 
     document.getElementById('saveProjects').onclick = async () => {
       try {
