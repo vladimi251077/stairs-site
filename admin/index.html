@@ -1085,16 +1085,106 @@
                 <p class="pricing-group-compact">Сценарии подсветки ступеней.</p>
               </summary>
               <div class="pricing-group-details">
-                <p>Сценарии подсветки: без подсветки, точечная и линейная.</p>
-                <p class="pricing-group-meta">Примеры вариантов: нет подсветки, точечные светильники, линейная LED.</p>
-                <p class="pricing-group-meta">Влияет на: стоимость подсветки за ступень.</p>
-                <p class="pricing-group-meta">Где не используется: базовая цена каркаса и региональные коэффициенты.</p>
+                <p>Подготовительный read-only/read-edit UI группы подсветки для коммерческих сценариев.</p>
+                <p class="pricing-group-meta">Подсветка считается отдельно от материалов ступеней, облицовки, финишной обработки, ограждений и монтажных работ.</p>
                 <div class="pricing-group-actions">
-                  <button class="btn btn-secondary" type="button" disabled>Настроить группу</button>
-                  <button class="btn btn-secondary" type="button" disabled>Добавить вариант</button>
-                  <p class="pricing-group-actions-note">Редактирование будет подключено после настройки структуры тарифов.</p>
+                  <button class="btn btn-secondary" type="button">Настроить группу</button>
+                  <button class="btn btn-secondary" type="button" disabled>Добавление будет подключено следующим PR</button>
+                  <p class="pricing-group-actions-note">Сохранение будет подключено следующим PR.</p>
                 </div>
-                <p class="pricing-group-note">Редактирование будет добавлено позже.</p>
+                <div class="pricing-items-list" aria-label="Варианты группы Подсветка">
+                  <article class="pricing-item-card">
+                    <h4>Без подсветки</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Без подсветки" disabled /></label>
+                      <label>Внутренний код<input type="text" value="no_lighting" disabled /></label>
+                      <label>Цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="без единицы" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="1" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Выберите, если подсветка лестницы не требуется." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Отдельный коммерческий вариант без расчёта подсветки." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: стоимость подсветки, количество точек/метров, электромонтаж.</p>
+                    <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, ограждения.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Точечная подсветка ступеней</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Точечная подсветка ступеней" disabled /></label>
+                      <label>Внутренний код<input type="text" value="step_spot_lighting" disabled /></label>
+                      <label>Цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="за точку / за ступень" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="2" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Точечные светильники для локальной подсветки каждой ступени." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Чаще считается по точкам или по ступеням, отдельно от ограждений." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: стоимость подсветки, количество точек/метров, электромонтаж.</p>
+                    <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, ограждения.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Линейная LED-подсветка</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Линейная LED-подсветка" disabled /></label>
+                      <label>Внутренний код<input type="text" value="linear_led_lighting" disabled /></label>
+                      <label>Цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="за метр" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="3" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Равномерная контурная подсветка LED-лентой." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Чаще считается за метр и включает отдельный электромонтаж." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: стоимость подсветки, количество точек/метров, электромонтаж.</p>
+                    <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, ограждения.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Подсветка под поручнем</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Подсветка под поручнем" disabled /></label>
+                      <label>Внутренний код<input type="text" value="under_handrail_lighting" disabled /></label>
+                      <label>Цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="за пог. м" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="4" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Мягкая подсветка вдоль поручня для навигации и акцента." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Подсветка отдельной коммерческой группы, не элемент ограждений." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: стоимость подсветки, количество точек/метров, электромонтаж.</p>
+                    <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, ограждения.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Подсветка по стене / плинтусу</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Подсветка по стене / плинтусу" disabled /></label>
+                      <label>Внутренний код<input type="text" value="wall_plinth_lighting" disabled /></label>
+                      <label>Цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="за метр" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="5" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Контурная подсветка по стене или вдоль плинтуса." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Линейный сценарий: учитывать длину трассы и электромонтаж." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: стоимость подсветки, количество точек/метров, электромонтаж.</p>
+                    <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, ограждения.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Индивидуальная подсветка</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Индивидуальная подсветка" disabled /></label>
+                      <label>Внутренний код<input type="text" value="custom_lighting" disabled /></label>
+                      <label>Цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="ручная оценка" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="6" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Нестандартный проект подсветки с подбором решения под объект." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Требует ручной оценки, согласования сценария и сметы электромонтажа." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: стоимость подсветки, количество точек/метров, электромонтаж.</p>
+                    <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, ограждения.</p>
+                  </article>
+                </div>
+                <p class="pricing-group-note">Режим подготовки: read-only/read-edit UI для группы. Сохранение будет подключено следующим PR.</p>
               </div>
             </details>
           </article>
