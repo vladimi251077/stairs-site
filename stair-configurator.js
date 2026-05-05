@@ -41,7 +41,7 @@ function createDefaultPricingRegions() {
 
 function createDefaultScenarioRateRows() {
   return [
-    { rate_group: 'finishMaterialPerM2', rate_key: 'oak', label: 'Дуб / шпон', rate: 22000, sort_order: 1, active: true },
+    { rate_group: 'finishMaterialPerM2', rate_key: 'oak', label: 'Дуб', rate: 22000, sort_order: 1, active: true },
     { rate_group: 'finishMaterialPerM2', rate_key: 'ash', label: 'Ясень', rate: 19000, sort_order: 2, active: true },
     { rate_group: 'finishMaterialPerM2', rate_key: 'stone', label: 'Камень', rate: 34000, sort_order: 3, active: true },
     { rate_group: 'finishMaterialPerM2', rate_key: 'porcelain', label: 'Керамогранит', rate: 17500, sort_order: 4, active: true },
@@ -125,7 +125,7 @@ const FINISH_SCOPE_LABELS = {
 
 const OPTION_LABELS = {
   finish_material: {
-    oak: 'Дуб / шпон',
+    oak: 'Дуб',
     ash: 'Ясень',
     stone: 'Камень',
     porcelain: 'Керамогранит',
@@ -146,6 +146,31 @@ const OPTION_LABELS = {
     none: 'Не нужна',
     step: 'Точечная по ступеням',
     linear: 'Линейная'
+  }
+};
+
+
+
+const PRICING_ADMIN_GROUPS = [
+  { group_key: 'step_materials', title: 'Материалы ступеней', description: 'Массив древесины для проступей, площадок и забежных ступеней.', sort_order: 10, is_active: true },
+  { group_key: 'cladding_materials', title: 'Отделка / облицовка', description: 'Материалы облицовки поверх базовой конструкции.', sort_order: 20, is_active: true },
+  { group_key: 'cladding_scope', title: 'Объём отделки', description: 'Какая часть лестницы участвует в отделке.', sort_order: 30, is_active: true },
+  { group_key: 'finish_treatments', title: 'Финишная обработка', description: 'Морилки, лаки, масла, эмали и подбор цвета.', sort_order: 40, is_active: true },
+  { group_key: 'railings', title: 'Ограждения', description: 'Ставки на варианты ограждений.', sort_order: 50, is_active: true },
+  { group_key: 'lighting', title: 'Подсветка', description: 'Ставки на подсветку ступеней.', sort_order: 60, is_active: true },
+  { group_key: 'work_rates', title: 'Работы и подготовка', description: 'Сервисные ставки: замер, подготовка, монтаж.', sort_order: 70, is_active: true },
+  { group_key: 'pricing_regions', title: 'Регионы', description: 'Региональные коэффициенты цены.', sort_order: 80, is_active: true },
+  { group_key: 'pricing_coefficients', title: 'Коэффициенты', description: 'Базовые коэффициенты и инженерные множители.', sort_order: 90, is_active: true },
+  { group_key: 'pricing_disclaimers', title: 'Тексты и дисклеймеры', description: 'Тексты для клиента и служебные пояснения.', sort_order: 100, is_active: true }
+];
+
+const PRICING_ADMIN_ITEM_SCHEMA = {
+  required_fields: ['group_key', 'item_key', 'title', 'description', 'unit', 'price', 'applies_to', 'excludes', 'sort_order', 'is_active', 'client_hint', 'admin_note'],
+  flags: {
+    where_used: 'applies_to',
+    where_not_used: 'excludes',
+    can_disable_without_delete: 'is_active',
+    show_to_client: 'client_hint'
   }
 };
 
