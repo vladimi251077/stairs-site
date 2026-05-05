@@ -1641,21 +1641,182 @@
               <summary>
                 <div class="pricing-group-summary">
                   <h3>Тексты и дисклеймеры</h3>
-                  <span class="pricing-group-status future">Будущий раздел</span>
+                  <span class="pricing-group-status ready">Подготовлено</span>
                 </div>
-                <p class="pricing-group-compact">Пояснения к результату калькулятора.</p>
+                <p class="pricing-group-compact">Read-only тексты для будущей коммуникации результата калькулятора.</p>
               </summary>
               <div class="pricing-group-details">
-                <p>Пояснения к расчёту, ограничения и тексты про ориентировочный характер цены.</p>
-                <p class="pricing-group-meta">Примеры вариантов: заметки об ориентировочности, ограничения по выезду и материалам.</p>
-                <p class="pricing-group-meta">Влияет на: корректную коммуникацию результата клиенту.</p>
-                <p class="pricing-group-meta">Где не используется: вычисление числовой части калькулятора.</p>
+                <p>Подготовительный список будущих управляемых текстов: пояснения к предварительной цене, инженерным проверкам, замеру и отправке заявки.</p>
+                <p class="pricing-group-meta">Влияет на: коммуникацию результата калькулятора и заявки.</p>
+                <p class="pricing-group-meta">Не используется: числовой расчёт, материалы, коэффициенты, Supabase.</p>
                 <div class="pricing-group-actions">
-                  <button class="btn btn-secondary" type="button" disabled>Настроить группу</button>
-                  <button class="btn btn-secondary" type="button" disabled>Добавить вариант</button>
-                  <p class="pricing-group-actions-note">Редактирование будет подключено после настройки структуры тарифов.</p>
+                  <button class="btn btn-secondary" type="button">Настроить группу</button>
+                  <button class="btn btn-secondary" type="button" disabled>Добавление будет подключено следующим PR</button>
+                  <p class="pricing-group-actions-note">Сохранение, Supabase и подключение к публичному калькулятору не входят в этот этап.</p>
                 </div>
-                <p class="pricing-group-note">Редактирование будет добавлено позже.</p>
+                <div class="pricing-items-list" aria-label="Варианты текстов и дисклеймеров">
+                  <article class="pricing-item-card">
+                    <h4>Общий дисклеймер калькулятора</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Общий дисклеймер калькулятора" disabled /></label>
+                      <label>Внутренний код<input type="text" value="calculator_general_disclaimer" disabled /></label>
+                      <label>Где используется<input type="text" value="Результат онлайн-калькулятора и вводная подпись к расчёту" disabled /></label>
+                      <label>Тип текста<input type="text" value="Общий дисклеймер" disabled /></label>
+                      <label class="full">Текст для клиента<textarea disabled>Расчёт является предварительным и требует проверки исходных данных: размеров, основания, выбранных материалов и условий на объекте.</textarea></label>
+                      <label class="full">Текст для менеджера / админа<textarea disabled>Показывать как общий поясняющий текст рядом с результатом, без влияния на формулы и итоговую сумму.</textarea></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="1" disabled /></label>
+                      <label class="full">Комментарий для админа<textarea disabled>Базовый дисклеймер для коммуникации ориентировочного характера онлайн-расчёта.</textarea></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: коммуникацию результата калькулятора и заявки.</p>
+                    <p class="pricing-group-meta">Не используется: числовой расчёт, материалы, коэффициенты, Supabase.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Предварительная стоимость отделки</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Предварительная стоимость отделки" disabled /></label>
+                      <label>Внутренний код<input type="text" value="finishing_preliminary_price" disabled /></label>
+                      <label>Где используется<input type="text" value="Сценарии ready_base / existing_metal_frame / ready_frame / existing_concrete_base" disabled /></label>
+                      <label>Тип текста<input type="text" value="Пояснение к стоимости отделки" disabled /></label>
+                      <label class="full">Текст для клиента<textarea disabled>Цена рассчитана по введённым размерам и выбранным материалам. Итоговая стоимость уточняется после проверки состояния каркаса, размеров ступеней, узлов примыкания и объёма работ на объекте.</textarea></label>
+                      <label class="full">Текст для менеджера / админа<textarea disabled>Использовать для сценариев отделки существующего основания или готового каркаса; не раскрывать клиенту внутреннюю разбивку цены.</textarea></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="2" disabled /></label>
+                      <label class="full">Комментарий для админа<textarea disabled>Смысл соответствует текущей логике готового основания и не меняет расчёт.</textarea></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: коммуникацию результата калькулятора и заявки.</p>
+                    <p class="pricing-group-meta">Не используется: числовой расчёт, материалы, коэффициенты, Supabase.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Готовый каркас / инженерная проверка</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Готовый каркас / инженерная проверка" disabled /></label>
+                      <label>Внутренний код<input type="text" value="ready_frame_engineering_check" disabled /></label>
+                      <label>Где используется<input type="text" value="Сценарий готового металлического или другого каркаса" disabled /></label>
+                      <label>Тип текста<input type="text" value="Инженерное предупреждение" disabled /></label>
+                      <label class="full">Текст для клиента<textarea disabled>Готовый каркас не рассчитывается как проектирование новой лестницы. Перед финальной ценой требуется проверить размеры, состояние каркаса и узлы примыкания. Онлайн-цена предварительная.</textarea></label>
+                      <label class="full">Текст для менеджера / админа<textarea disabled>Напоминание менеджеру: фиксировать необходимость инженерной проверки готового каркаса до подтверждения стоимости.</textarea></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="3" disabled /></label>
+                      <label class="full">Комментарий для админа<textarea disabled>Важно не показывать внутреннюю разбивку цены клиенту; текст только поясняет предварительный статус.</textarea></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: коммуникацию результата калькулятора и заявки.</p>
+                    <p class="pricing-group-meta">Не используется: числовой расчёт, материалы, коэффициенты, Supabase.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Бетонное основание / проверка состояния</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Бетонное основание / проверка состояния" disabled /></label>
+                      <label>Внутренний код<input type="text" value="concrete_base_condition_check" disabled /></label>
+                      <label>Где используется<input type="text" value="Сценарий существующего бетонного основания" disabled /></label>
+                      <label>Тип текста<input type="text" value="Предупреждение по основанию" disabled /></label>
+                      <label class="full">Текст для клиента<textarea disabled>Бетонное основание требует проверки состояния, геометрии и поверхности. Итоговая цена зависит от подготовки основания и объёма дополнительных работ.</textarea></label>
+                      <label class="full">Текст для менеджера / админа<textarea disabled>Уточнить состояние бетона, перепады, дефекты поверхности и необходимость подготовки перед согласованием цены.</textarea></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="4" disabled /></label>
+                      <label class="full">Комментарий для админа<textarea disabled>Резерв для будущего управляемого текста по бетонным основаниям.</textarea></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: коммуникацию результата калькулятора и заявки.</p>
+                    <p class="pricing-group-meta">Не используется: числовой расчёт, материалы, коэффициенты, Supabase.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Пустой проём / проектирование новой лестницы</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Пустой проём / проектирование новой лестницы" disabled /></label>
+                      <label>Внутренний код<input type="text" value="empty_opening_new_stair_design" disabled /></label>
+                      <label>Где используется<input type="text" value="Сценарий пустого проёма и проектирования новой лестницы" disabled /></label>
+                      <label>Тип текста<input type="text" value="Пояснение к проектированию" disabled /></label>
+                      <label class="full">Текст для клиента<textarea disabled>Это сценарий проектирования новой лестницы. Здесь допустимы проверки геометрии, проёма, удобства подъёма и посадки лестницы в помещение.</textarea></label>
+                      <label class="full">Текст для менеджера / админа<textarea disabled>Перед расчётом нужны исходные размеры проёма, высота, ограничения помещения и требования к удобству.</textarea></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="5" disabled /></label>
+                      <label class="full">Комментарий для админа<textarea disabled>Текст отделяет проектирование новой лестницы от отделки готового каркаса.</textarea></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: коммуникацию результата калькулятора и заявки.</p>
+                    <p class="pricing-group-meta">Не используется: числовой расчёт, материалы, коэффициенты, Supabase.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Индивидуальный проект / ручной расчёт</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Индивидуальный проект / ручной расчёт" disabled /></label>
+                      <label>Внутренний код<input type="text" value="custom_project_manual_estimate" disabled /></label>
+                      <label>Где используется<input type="text" value="Нестандартные решения и сложные условия" disabled /></label>
+                      <label>Тип текста<input type="text" value="Ручной расчёт" disabled /></label>
+                      <label class="full">Текст для клиента<textarea disabled>Нестандартные решения рассчитываются вручную после уточнения задачи, размеров, материалов, конструктивных ограничений и пожеланий по внешнему виду.</textarea></label>
+                      <label class="full">Текст для менеджера / админа<textarea disabled>Передать заявку на ручную оценку, если стандартных данных калькулятора недостаточно.</textarea></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="6" disabled /></label>
+                      <label class="full">Комментарий для админа<textarea disabled>Для сценариев, где автоматический расчёт не должен обещать точную цену.</textarea></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: коммуникацию результата калькулятора и заявки.</p>
+                    <p class="pricing-group-meta">Не используется: числовой расчёт, материалы, коэффициенты, Supabase.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Цена после замера</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Цена после замера" disabled /></label>
+                      <label>Внутренний код<input type="text" value="final_price_after_measurement" disabled /></label>
+                      <label>Где используется<input type="text" value="Финальное уточнение стоимости перед договором" disabled /></label>
+                      <label>Тип текста<input type="text" value="Финальный дисклеймер" disabled /></label>
+                      <label class="full">Текст для клиента<textarea disabled>Итоговая стоимость фиксируется после замера, проверки основания и согласования материалов, узлов примыкания и состава работ.</textarea></label>
+                      <label class="full">Текст для менеджера / админа<textarea disabled>Использовать как спокойное пояснение, почему онлайн-расчёт не равен финальному коммерческому предложению.</textarea></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="7" disabled /></label>
+                      <label class="full">Комментарий для админа<textarea disabled>Поддерживает коммуникацию между заявкой, замером и финальным предложением.</textarea></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: коммуникацию результата калькулятора и заявки.</p>
+                    <p class="pricing-group-meta">Не используется: числовой расчёт, материалы, коэффициенты, Supabase.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Онлайн-расчёт не является офертой</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Онлайн-расчёт не является офертой" disabled /></label>
+                      <label>Внутренний код<input type="text" value="online_estimate_not_public_offer" disabled /></label>
+                      <label>Где используется<input type="text" value="Юридическое пояснение рядом с результатом и заявкой" disabled /></label>
+                      <label>Тип текста<input type="text" value="Юридический дисклеймер" disabled /></label>
+                      <label class="full">Текст для клиента<textarea disabled>Онлайн-расчёт носит информационный характер и не является публичной офертой. Финальные условия согласуются индивидуально после проверки проекта.</textarea></label>
+                      <label class="full">Текст для менеджера / админа<textarea disabled>Не использовать как изменение договора или публичных текстов без отдельного согласования.</textarea></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="8" disabled /></label>
+                      <label class="full">Комментарий для админа<textarea disabled>Подготовительный текст без подключения к публичному калькулятору.</textarea></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: коммуникацию результата калькулятора и заявки.</p>
+                    <p class="pricing-group-meta">Не используется: числовой расчёт, материалы, коэффициенты, Supabase.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Ошибка / недостаточно данных</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Ошибка / недостаточно данных" disabled /></label>
+                      <label>Внутренний код<input type="text" value="not_enough_data_message" disabled /></label>
+                      <label>Где используется<input type="text" value="Состояния формы, когда данных не хватает для предварительного расчёта" disabled /></label>
+                      <label>Тип текста<input type="text" value="Сообщение об ошибке" disabled /></label>
+                      <label class="full">Текст для клиента<textarea disabled>Не хватает данных для предварительного расчёта. Заполните обязательные поля или отправьте заявку на инженерную проверку.</textarea></label>
+                      <label class="full">Текст для менеджера / админа<textarea disabled>Тон должен оставаться спокойным и полезным, без пугающей формулировки ошибки.</textarea></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="9" disabled /></label>
+                      <label class="full">Комментарий для админа<textarea disabled>Будущий текст для человекочитаемых ошибок, сейчас никуда не подключён.</textarea></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: коммуникацию результата калькулятора и заявки.</p>
+                    <p class="pricing-group-meta">Не используется: числовой расчёт, материалы, коэффициенты, Supabase.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Успешная отправка заявки</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Успешная отправка заявки" disabled /></label>
+                      <label>Внутренний код<input type="text" value="request_success_message" disabled /></label>
+                      <label>Где используется<input type="text" value="Состояние успешной отправки заявки" disabled /></label>
+                      <label>Тип текста<input type="text" value="Сервисное сообщение" disabled /></label>
+                      <label class="full">Текст для клиента<textarea disabled>Заявка отправлена. Мы проверим размеры и свяжемся с вами для уточнения деталей.</textarea></label>
+                      <label class="full">Текст для менеджера / админа<textarea disabled>Использовать как спокойное подтверждение получения заявки после будущего подключения текстов.</textarea></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="10" disabled /></label>
+                      <label class="full">Комментарий для админа<textarea disabled>Не менять текущие тексты request.html и публичного калькулятора в этом PR.</textarea></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: коммуникацию результата калькулятора и заявки.</p>
+                    <p class="pricing-group-meta">Не используется: числовой расчёт, материалы, коэффициенты, Supabase.</p>
+                  </article>
+                </div>
+                <p class="pricing-group-note">Режим подготовки: все поля disabled/read-only. Тексты пока не подключены к публичному калькулятору, заявке, Supabase или расчётам.</p>
               </div>
             </details>
           </article>
