@@ -1434,9 +1434,13 @@ function buildCalculationPayload(config, geometry, materials = state.materials, 
           subtotal_before_region: Math.round(price.subtotalBeforeRegion || 0),
           regional_adjustment: Math.round(price.regionalAdjustment || 0),
           regional_coef: Number(price.regionalCoef || 1),
-          total: Math.round(price.total || 0)
+          total: Math.round(price.total || 0),
+          min: Math.round(price.min || 0),
+          max: Math.round(price.max || 0)
         }
       : null,
+    preliminary_price_min: price?.min ? Math.round(price.min) : 0,
+    preliminary_price_max: price?.max ? Math.round(price.max) : 0,
     pricing_snapshot: price
       ? {
           defaults: state.dictionaries.defaults,

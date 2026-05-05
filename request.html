@@ -128,9 +128,28 @@ function buildCalcSummary(payload) {
           })
           .map((row) => `${row[0]}: ${row[1]}`)
       : [];
-    const total = Number(payload.total || 0);
-    const inspectionMin = Math.round(total * 0.9);
-    const inspectionMax = Math.round(total * 1.18);
+    const total = Number(payload.total || pricingBreakdown?.total || 0);
+    const payloadPrice = payload.price || {};
+    const resolvedMin = Number(
+      payloadPrice.min
+      ?? payload.preliminary_price_min
+      ?? payload.price_range_min
+      ?? pricingBreakdown?.min
+      ?? pricingBreakdown?.price_range_min
+      ?? pricingBreakdown?.preliminary_price_min
+      ?? 0
+    );
+    const resolvedMax = Number(
+      payloadPrice.max
+      ?? payload.preliminary_price_max
+      ?? payload.price_range_max
+      ?? pricingBreakdown?.max
+      ?? pricingBreakdown?.price_range_max
+      ?? pricingBreakdown?.preliminary_price_max
+      ?? 0
+    );
+    const inspectionMin = Math.round(resolvedMin > 0 ? resolvedMin : total * 0.9);
+    const inspectionMax = Math.round(resolvedMax > 0 ? resolvedMax : total * 1.18);
     return [
       `Сценарий: ${payload.baseCondition || payload.base_condition || '-'}`,
       details.base_subtype ? `Тип основания: ${details.base_subtype === 'existing_metal_frame' ? 'Металлокаркас' : 'Бетонная лестница'}` : '',
