@@ -1004,16 +1004,167 @@
                 <p class="pricing-group-compact">Сервисные и монтажные операции.</p>
               </summary>
               <div class="pricing-group-details">
-                <p>Сервисные позиции: проверка каркаса, подготовка основания, монтаж отделки.</p>
-                <p class="pricing-group-meta">Примеры вариантов: проверка каркаса, подготовка основания, монтаж отделки.</p>
-                <p class="pricing-group-meta">Влияет на: инженерные и монтажные добавки к смете.</p>
-                <p class="pricing-group-meta">Где не используется: выбор породы дерева для ступеней и облицовка.</p>
+                <p>Сервисные позиции: инженерная проверка, подготовка основания, монтажные операции и дополнительные работы.</p>
+                <p class="pricing-group-meta">Это сервисные/монтажные работы, а не материалы, не финиш и не объём отделки.</p>
+                <p class="pricing-group-meta">Проверки готового металлокаркаса и бетонного основания относятся к инженерной проверке и уточнению цены.</p>
+                <p class="pricing-group-meta">Не использовать как geometry fit для пустого проёма.</p>
                 <div class="pricing-group-actions">
-                  <button class="btn btn-secondary" type="button" disabled>Настроить группу</button>
-                  <button class="btn btn-secondary" type="button" disabled>Добавить вариант</button>
-                  <p class="pricing-group-actions-note">Редактирование будет подключено после настройки структуры тарифов.</p>
+                  <button class="btn btn-secondary" type="button">Настроить группу</button>
+                  <button class="btn btn-secondary" type="button" disabled>Добавление будет подключено следующим PR</button>
                 </div>
-                <p class="pricing-group-note">Редактирование будет добавлено позже.</p>
+                <div class="pricing-items-list" aria-label="Варианты группы Работы и подготовка">
+                  <article class="pricing-item-card">
+                    <h4>Инженерная проверка размеров</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Инженерная проверка размеров" disabled /></label>
+                      <label>Внутренний код<input type="text" value="engineering_size_check" disabled /></label>
+                      <label>Цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="за выезд" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="1" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Инженер уточняет размеры и условия монтажа перед запуском работ." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Базовая сервисная проверка без привязки к материалам." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: инженерные, подготовительные и монтажные работы.</p>
+                    <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, ограждения, подсветка.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Проверка готового металлокаркаса</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Проверка готового металлокаркаса" disabled /></label>
+                      <label>Внутренний код<input type="text" value="existing_metal_frame_check" disabled /></label>
+                      <label>Цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="за объект" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="2" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Проверяем готовый металлокаркас до подбора работ и отделки." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Связи: ready_base / existing_metal_frame / ready_frame; не считать как geometry fit для пустого проёма." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: инженерные, подготовительные и монтажные работы.</p>
+                    <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, ограждения, подсветка.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Проверка бетонного основания</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Проверка бетонного основания" disabled /></label>
+                      <label>Внутренний код<input type="text" value="existing_concrete_base_check" disabled /></label>
+                      <label>Цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="за объект" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="3" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Проверяем состояние и допуски бетонного основания перед работами." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Связь: existing_concrete_base; сервисная инженерная операция для уточнения сметы." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: инженерные, подготовительные и монтажные работы.</p>
+                    <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, ограждения, подсветка.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Подготовка основания</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Подготовка основания" disabled /></label>
+                      <label>Внутренний код<input type="text" value="base_preparation" disabled /></label>
+                      <label>Цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="за объект" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="4" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Подготовка основания под монтаж лестницы и сопутствующих узлов." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Сервисная подготовительная операция без участия материалных тарифов." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: инженерные, подготовительные и монтажные работы.</p>
+                    <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, ограждения, подсветка.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Подгонка сложного каркаса</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Подгонка сложного каркаса" disabled /></label>
+                      <label>Внутренний код<input type="text" value="complex_frame_adjustment" disabled /></label>
+                      <label>Цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="за объект" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="5" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Дополнительная подгонка сложных узлов каркаса на объекте." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Монтажная операция для сложной геометрии существующего каркаса." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: инженерные, подготовительные и монтажные работы.</p>
+                    <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, ограждения, подсветка.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Монтаж отделки</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Монтаж отделки" disabled /></label>
+                      <label>Внутренний код<input type="text" value="finish_installation" disabled /></label>
+                      <label>Цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="за м²" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="6" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Монтаж облицовки и отделочных элементов по выбранному сценарию." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Работа по монтажу, не тариф материала." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: инженерные, подготовительные и монтажные работы.</p>
+                    <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, ограждения, подсветка.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Полная обшивка каркаса</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Полная обшивка каркаса" disabled /></label>
+                      <label>Внутренний код<input type="text" value="full_frame_cladding" disabled /></label>
+                      <label>Цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="за объект" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="7" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Полный монтаж и закрытие каркаса отделочными элементами." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Комплексная монтажная операция, отдельная от выбора материалов." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: инженерные, подготовительные и монтажные работы.</p>
+                    <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, ограждения, подсветка.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Выезд / замер</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Выезд / замер" disabled /></label>
+                      <label>Внутренний код<input type="text" value="site_visit_measurement" disabled /></label>
+                      <label>Цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="за выезд" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="8" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Выезд специалиста для замера и уточнения условий монтажа." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Сервисная ставка для предварительного этапа проекта." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: инженерные, подготовительные и монтажные работы.</p>
+                    <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, ограждения, подсветка.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Доставка / подъём</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Доставка / подъём" disabled /></label>
+                      <label>Внутренний код<input type="text" value="delivery_lifting" disabled /></label>
+                      <label>Цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="за объект" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="9" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Доставка комплектующих и подъём на объект с учётом условий доступа." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Логистическая сервисная операция, отдельно от материалов." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: инженерные, подготовительные и монтажные работы.</p>
+                    <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, ограждения, подсветка.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Индивидуальные дополнительные работы</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Индивидуальные дополнительные работы" disabled /></label>
+                      <label>Внутренний код<input type="text" value="custom_additional_works" disabled /></label>
+                      <label>Цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="за объект" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="10" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Дополнительные сервисные работы по индивидуальному согласованию." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Резервная позиция под нестандартные инженерные и монтажные задачи." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: инженерные, подготовительные и монтажные работы.</p>
+                    <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, ограждения, подсветка.</p>
+                  </article>
+                </div>
+                <p class="pricing-group-note">Режим подготовки: read-only/read-edit UI для группы. Сохранение и добавление вариантов будут подключены следующим PR.</p>
               </div>
             </details>
           </article>
