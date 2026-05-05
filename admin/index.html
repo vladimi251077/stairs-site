@@ -1369,19 +1369,96 @@
                   <h3>Регионы</h3>
                   <span class="pricing-group-status ready">Подготовлено</span>
                 </div>
-                <p class="pricing-group-compact">Региональные множители итоговой цены.</p>
+                <p class="pricing-group-compact">Региональные коэффициенты, логистика и зоны выезда.</p>
               </summary>
               <div class="pricing-group-details">
-                <p>Набор региональных коэффициентов для двух рабочих зон продаж.</p>
-                <p class="pricing-group-meta">Примеры вариантов: Москва и область, Санкт-Петербург и область.</p>
-                <p class="pricing-group-meta">Влияет на: умножение итоговой базы калькулятора по региону.</p>
-                <p class="pricing-group-meta">Где не используется: локальные ставки материалов и отделочных опций.</p>
+                <p>Подготовительный read-only/read-edit UI для региональных коэффициентов и зон работы без сохранения и без влияния на расчёты.</p>
+                <p class="pricing-group-meta">Базовый рабочий регион: Татарстан / Казань.</p>
+                <p class="pricing-group-meta">Влияет на: региональную корректировку итоговой стоимости, логистику, выезд.</p>
+                <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, ограждения, подсветка.</p>
                 <div class="pricing-group-actions">
-                  <button class="btn btn-secondary" type="button" disabled>Настроить группу</button>
+                  <button class="btn btn-secondary" type="button">Настроить группу</button>
                   <button class="btn btn-secondary" type="button" disabled>Добавить вариант</button>
-                  <p class="pricing-group-actions-note">Редактирование будет подключено после настройки структуры тарифов.</p>
+                  <p class="pricing-group-actions-note">Добавление будет подключено следующим PR.</p>
                 </div>
-                <p class="pricing-group-note">Редактирование будет добавлено позже.</p>
+                <div class="pricing-group-items">
+                  <article class="pricing-item-card">
+                    <h4>Татарстан / Казань</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Татарстан / Казань" disabled /></label>
+                      <label>Внутренний код<input type="text" value="tatarstan_kazan" disabled /></label>
+                      <label>Региональный коэффициент<input type="text" value="Не задано" disabled /></label>
+                      <label>Минимальная сумма выезда / логистики<input type="text" value="Не задано" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="1" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Базовый рабочий регион с типовыми условиями выезда и логистики." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Базовый регион для расчётов и сравнения региональной корректировки." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: региональную корректировку итоговой стоимости, логистику, выезд.</p>
+                    <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, ограждения, подсветка.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Москва и область</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Москва и область" disabled /></label>
+                      <label>Внутренний код<input type="text" value="moscow_region" disabled /></label>
+                      <label>Региональный коэффициент<input type="text" value="Не задано" disabled /></label>
+                      <label>Минимальная сумма выезда / логистики<input type="text" value="Не задано" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="2" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Коэффициент и логистика уточняются по зоне объекта в Московском регионе." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Регион продаж с отдельной проверкой условий выезда и доставки." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: региональную корректировку итоговой стоимости, логистику, выезд.</p>
+                    <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, ограждения, подсветка.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Санкт-Петербург и область</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Санкт-Петербург и область" disabled /></label>
+                      <label>Внутренний код<input type="text" value="spb_region" disabled /></label>
+                      <label>Региональный коэффициент<input type="text" value="Не задано" disabled /></label>
+                      <label>Минимальная сумма выезда / логистики<input type="text" value="Не задано" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="3" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Условия выезда и логистики зависят от удалённости и доступа к объекту." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Отдельная региональная зона с индивидуальной логистической проверкой." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: региональную корректировку итоговой стоимости, логистику, выезд.</p>
+                    <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, ограждения, подсветка.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Другой регион</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Другой регион" disabled /></label>
+                      <label>Внутренний код<input type="text" value="other_region" disabled /></label>
+                      <label>Региональный коэффициент<input type="text" value="Не задано" disabled /></label>
+                      <label>Минимальная сумма выезда / логистики<input type="text" value="Не задано" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="4" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Требуется ручная оценка региональной корректировки и условий логистики." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Ручная оценка обязательна: уточнять коэффициент, выезд и транспортные расходы." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: региональную корректировку итоговой стоимости, логистику, выезд.</p>
+                    <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, ограждения, подсветка.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Индивидуальная логистика / удалённый объект</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Индивидуальная логистика / удалённый объект" disabled /></label>
+                      <label>Внутренний код<input type="text" value="custom_logistics_remote" disabled /></label>
+                      <label>Региональный коэффициент<input type="text" value="Не задано" disabled /></label>
+                      <label>Минимальная сумма выезда / логистики<input type="text" value="Не задано" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="5" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Удалённый объект рассчитывается только после ручной оценки маршрута и условий." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Обязательная ручная оценка логистики, выезда и итоговой региональной корректировки." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: региональную корректировку итоговой стоимости, логистику, выезд.</p>
+                    <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, ограждения, подсветка.</p>
+                  </article>
+                </div>
+                <p class="pricing-group-note">Режим подготовки: read-only/read-edit UI для группы. Сохранение и добавление вариантов будут подключены следующим PR.</p>
               </div>
             </details>
           </article>
