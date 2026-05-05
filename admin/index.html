@@ -1467,21 +1467,172 @@
               <summary>
                 <div class="pricing-group-summary">
                   <h3>Коэффициенты</h3>
-                  <span class="pricing-group-status future">Будущий раздел</span>
+                  <span class="pricing-group-status ready">Подготовлено</span>
                 </div>
-                <p class="pricing-group-compact">Проверка логики формулы и надбавок.</p>
+                <p class="pricing-group-compact">Подготовленные коэффициенты для внутренней корректировки итоговой стоимости.</p>
               </summary>
               <div class="pricing-group-details">
-                <p>Сводный раздел коэффициентов для понятной проверки цепочки расчёта.</p>
-                <p class="pricing-group-meta">Примеры вариантов: коэффициент монтажа, коэффициент маржи, коэффициенты сценариев.</p>
-                <p class="pricing-group-meta">Влияет на: прозрачность контроля формулы и внутренних надбавок.</p>
-                <p class="pricing-group-meta">Где не используется: ручное редактирование прайса по позициям.</p>
+                <p>Сводная read-only/read-edit структура коэффициентов для будущего управления внутренними поправками без изменения действующих расчётов.</p>
+                <p class="pricing-group-meta">Влияет на: внутреннюю корректировку итоговой стоимости</p>
+                <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, ограждения, подсветка</p>
                 <div class="pricing-group-actions">
-                  <button class="btn btn-secondary" type="button" disabled>Настроить группу</button>
-                  <button class="btn btn-secondary" type="button" disabled>Добавить вариант</button>
-                  <p class="pricing-group-actions-note">Редактирование будет подключено после настройки структуры тарифов.</p>
+                  <button class="btn btn-secondary" type="button">Настроить группу</button>
+                  <button class="btn btn-secondary" type="button" disabled>Добавление будет подключено следующим PR</button>
+                  <p class="pricing-group-actions-note">Сохранение будет подключено следующим PR.</p>
                 </div>
-                <p class="pricing-group-note">Редактирование будет добавлено позже.</p>
+                <div class="pricing-items-list" aria-label="Варианты коэффициентов">
+                  <article class="pricing-item-card">
+                    <h4>Коэффициент сложности объекта</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Коэффициент сложности объекта" disabled /></label>
+                      <label>Внутренний код<input type="text" value="object_complexity" disabled /></label>
+                      <label>Значение коэффициента<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица / тип<input type="text" value="множитель" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="1" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Учитывает сложность геометрии, доступа и условий объекта." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Внутренняя корректировка сложности объекта без изменения базовых ставок." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: внутреннюю корректировку итоговой стоимости</p>
+                    <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, ограждения, подсветка</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Коэффициент готового каркаса</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Коэффициент готового каркаса" disabled /></label>
+                      <label>Внутренний код<input type="text" value="existing_frame" disabled /></label>
+                      <label>Значение коэффициента<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица / тип<input type="text" value="множитель" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="2" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Применяется, если каркас уже готов и требует проверки на объекте." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Использовать после оценки готового основания и совместимости с проектом." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: внутреннюю корректировку итоговой стоимости</p>
+                    <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, ограждения, подсветка</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Коэффициент бетонного основания</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Коэффициент бетонного основания" disabled /></label>
+                      <label>Внутренний код<input type="text" value="concrete_base" disabled /></label>
+                      <label>Значение коэффициента<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица / тип<input type="text" value="множитель" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="3" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Учитывает особенности монтажа по бетонному основанию." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Для внутренних поправок при работе с бетонным основанием." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: внутреннюю корректировку итоговой стоимости</p>
+                    <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, ограждения, подсветка</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Коэффициент индивидуального проекта</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Коэффициент индивидуального проекта" disabled /></label>
+                      <label>Внутренний код<input type="text" value="custom_project" disabled /></label>
+                      <label>Значение коэффициента<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица / тип<input type="text" value="множитель" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="4" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Применяется для нестандартных решений и индивидуальной проработки." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Ручная корректировка для проектов вне типового сценария." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: внутреннюю корректировку итоговой стоимости</p>
+                    <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, ограждения, подсветка</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Коэффициент срочности</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Коэффициент срочности" disabled /></label>
+                      <label>Внутренний код<input type="text" value="urgency" disabled /></label>
+                      <label>Значение коэффициента<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица / тип<input type="text" value="множитель" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Скрыт" disabled /></label>
+                      <label>Порядок показа<input type="number" value="5" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Может учитывать сжатые сроки производства и монтажа." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Пока скрыт: включать только после согласования правил срочности." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: внутреннюю корректировку итоговой стоимости</p>
+                    <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, ограждения, подсветка</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Коэффициент премиального исполнения</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Коэффициент премиального исполнения" disabled /></label>
+                      <label>Внутренний код<input type="text" value="premium_execution" disabled /></label>
+                      <label>Значение коэффициента<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица / тип<input type="text" value="множитель" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Скрыт" disabled /></label>
+                      <label>Порядок показа<input type="number" value="6" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Для повышенных требований к деталям и уровню исполнения." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Резерв для премиальных сценариев без привязки к материалам и отделке." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: внутреннюю корректировку итоговой стоимости</p>
+                    <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, ограждения, подсветка</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Коэффициент риска / непредвиденных работ</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Коэффициент риска / непредвиденных работ" disabled /></label>
+                      <label>Внутренний код<input type="text" value="risk_contingency" disabled /></label>
+                      <label>Значение коэффициента<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица / тип<input type="text" value="множитель" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="7" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Помогает учесть риски и возможные непредвиденные работы." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Внутренний резерв на риски, не показывать как отдельную клиентскую позицию." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: внутреннюю корректировку итоговой стоимости</p>
+                    <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, ограждения, подсветка</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Коэффициент маржи</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Коэффициент маржи" disabled /></label>
+                      <label>Внутренний код<input type="text" value="margin" disabled /></label>
+                      <label>Значение коэффициента<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица / тип<input type="text" value="множитель" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="8" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Внутренняя коммерческая корректировка итоговой стоимости." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Не смешивать с базовыми ставками, скидками и региональной логистикой." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: внутреннюю корректировку итоговой стоимости</p>
+                    <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, ограждения, подсветка</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Коэффициент округления цены</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Коэффициент округления цены" disabled /></label>
+                      <label>Внутренний код<input type="text" value="price_rounding" disabled /></label>
+                      <label>Значение коэффициента<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица / тип<input type="text" value="правило округления" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="9" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Финальное округление цены для аккуратного отображения результата." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Техническая финальная корректировка после расчёта итоговой стоимости." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: внутреннюю корректировку итоговой стоимости</p>
+                    <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, ограждения, подсветка</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Индивидуальный коэффициент</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Индивидуальный коэффициент" disabled /></label>
+                      <label>Внутренний код<input type="text" value="custom_coefficient" disabled /></label>
+                      <label>Значение коэффициента<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица / тип<input type="text" value="множитель" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Скрыт" disabled /></label>
+                      <label>Порядок показа<input type="number" value="10" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Индивидуальная корректировка после ручной оценки проекта." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Резервный коэффициент для ручного сценария и нестандартных условий." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: внутреннюю корректировку итоговой стоимости</p>
+                    <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, ограждения, подсветка</p>
+                  </article>
+                </div>
+                <p class="pricing-group-note">Режим подготовки: read-only/read-edit UI для группы. Сохранение и добавление вариантов будут подключены следующим PR.</p>
               </div>
             </details>
           </article>
