@@ -117,8 +117,20 @@ function buildCalcSummary(payload) {
     const isReadyBaseScenario = readyBaseScenarios.has(String(payload.base_condition || '').toLowerCase())
       || readyBaseScenarios.has(String(details.base_subtype || '').toLowerCase());
     const summaryRows = Array.isArray(geometry.summary_rows)
-      ? geometry.summary_rows.map((row) => `${row[0]}: ${row[1]}`)
+      ? geometry.summary_rows
+          .filter((row) => {
+            if (!isReadyBaseScenario) return true;
+            const label = String(row?.[0] || '').toLowerCase();
+            const value = String(row?.[1] || '').toLowerCase();
+            if (label.includes('просвет')) return false;
+            if (value.includes('онлайн-подбор не нашёл безопасное решение')) return false;
+            return true;
+          })
+          .map((row) => `${row[0]}: ${row[1]}`)
       : [];
+    const total = Number(payload.total || 0);
+    const inspectionMin = Math.round(total * 0.9);
+    const inspectionMax = Math.round(total * 1.18);
     return [
       `Сценарий: ${payload.baseCondition || payload.base_condition || '-'}`,
       details.base_subtype ? `Тип основания: ${details.base_subtype === 'existing_metal_frame' ? 'Металлокаркас' : 'Бетонная лестница'}` : '',
@@ -146,7 +158,12 @@ function buildCalcSummary(payload) {
       geometry.tread_depth ? `Проступь: ${geometry.tread_depth} мм` : '',
       !isReadyBaseScenario && geometry.headroom_min ? `Просвет: ${geometry.headroom_min} мм` : '',
       ...summaryRows,
-      `Ориентир: ${Number(payload.total || 0).toLocaleString('ru-RU')} ₽`
+      isReadyBaseScenario
+        ? `Предварительная стоимость отделки: от ${inspectionMin.toLocaleString('ru-RU')} до ${inspectionMax.toLocaleString('ru-RU')} ₽`
+        : `Ориентир: ${total.toLocaleString('ru-RU')} ₽`,
+      isReadyBaseScenario
+        ? 'Итоговая стоимость уточняется после проверки состояния основания, размеров ступеней, узлов примыкания и объёма работ на объекте.'
+        : ''
     ].filter(Boolean);
   }
   if (!payload) return ['Расчёт не передан. Вы можете оставить заявку без калькулятора.'];
