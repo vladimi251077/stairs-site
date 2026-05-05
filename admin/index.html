@@ -460,16 +460,107 @@
                 <p class="pricing-group-compact">Массив дерева для ступеней и площадок.</p>
               </summary>
               <div class="pricing-group-details">
-                <p>Массив дерева для ступеней: дуб, ясень, бук, лиственница, карагач, термоясень.</p>
-                <p class="pricing-group-meta">Примеры вариантов: дуб, ясень, бук, лиственница, карагач, термоясень.</p>
-                <p class="pricing-group-meta">Влияет на: стоимость проступей, площадок и забежных ступеней.</p>
-                <p class="pricing-group-meta">Где не используется: шпон, подступенки и финишные покрытия.</p>
+                <p>Массив дерева только для ступеней: дуб, ясень, бук, лиственница, карагач, термоясень.</p>
+                <p class="pricing-group-meta">Влияет на: проступи, площадки, забежные ступени.</p>
+                <p class="pricing-group-meta">Не используется: шпон, подступенки, боковая обшивка, финишная обработка.</p>
                 <div class="pricing-group-actions">
-                  <button class="btn btn-secondary" type="button" disabled>Настроить группу</button>
-                  <button class="btn btn-secondary" type="button" disabled>Добавить вариант</button>
-                  <p class="pricing-group-actions-note">Редактирование будет подключено после настройки структуры тарифов.</p>
+                  <button class="btn btn-secondary" type="button">Настроить группу</button>
+                  <button class="btn btn-secondary" type="button" disabled>Добавление будет подключено следующим PR</button>
+                  <p class="pricing-group-actions-note">Сохранение будет подключено следующим PR.</p>
                 </div>
-                <p class="pricing-group-note">Редактирование будет добавлено позже.</p>
+                <div class="pricing-items-list" aria-label="Варианты материалов ступеней">
+                  <article class="pricing-item-card">
+                    <h4>Дуб</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Дуб" disabled /></label>
+                      <label>Внутренний код<input type="text" value="oak" disabled /></label>
+                      <label>Цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="за м²" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="1" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Классический материал с выраженной текстурой." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Только для проступей, площадок и забежных ступеней." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: проступи, площадки, забежные ступени.</p>
+                    <p class="pricing-group-meta">Не используется: шпон, подступенки, боковая обшивка, финишная обработка.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Ясень</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Ясень" disabled /></label>
+                      <label>Внутренний код<input type="text" value="ash" disabled /></label>
+                      <label>Цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="за м²" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="2" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Светлая порода с хорошей износостойкостью." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Без смешения с отделкой и подступенками." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: проступи, площадки, забежные ступени.</p>
+                    <p class="pricing-group-meta">Не используется: шпон, подступенки, боковая обшивка, финишная обработка.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Бук</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Бук" disabled /></label>
+                      <label>Внутренний код<input type="text" value="beech" disabled /></label>
+                      <label>Цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="за м²" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="3" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Ровная структура и спокойный оттенок." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Группа Материалы ступеней, read-only." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: проступи, площадки, забежные ступени.</p>
+                    <p class="pricing-group-meta">Не используется: шпон, подступенки, боковая обшивка, финишная обработка.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Лиственница</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Лиственница" disabled /></label>
+                      <label>Внутренний код<input type="text" value="larch" disabled /></label>
+                      <label>Цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="за м²" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="4" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Практичный вариант с естественной плотностью." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Не включать в отделку/шпон/МДФ." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: проступи, площадки, забежные ступени.</p>
+                    <p class="pricing-group-meta">Не используется: шпон, подступенки, боковая обшивка, финишная обработка.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Карагач</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Карагач" disabled /></label>
+                      <label>Внутренний код<input type="text" value="elm" disabled /></label>
+                      <label>Цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="за м²" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Скрыт" disabled /></label>
+                      <label>Порядок показа<input type="number" value="5" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Декоративный материал с выразительным рисунком." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Пока скрыт в тестовом перечне." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: проступи, площадки, забежные ступени.</p>
+                    <p class="pricing-group-meta">Не используется: шпон, подступенки, боковая обшивка, финишная обработка.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Термоясень</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Термоясень" disabled /></label>
+                      <label>Внутренний код<input type="text" value="thermo_ash" disabled /></label>
+                      <label>Цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="за м²" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="6" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Термостабилизированный ясень для повышенной стойкости." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Сохранение значений отключено до следующего PR." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: проступи, площадки, забежные ступени.</p>
+                    <p class="pricing-group-meta">Не используется: шпон, подступенки, боковая обшивка, финишная обработка.</p>
+                  </article>
+                </div>
+                <p class="pricing-group-note">Режим подготовки: read-only. Сохранение будет подключено следующим PR.</p>
               </div>
             </details>
           </article>
