@@ -1,5 +1,5 @@
 const SUPABASE_URL = "https://rhmlykqqhwweaywjopvm.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_kzU8UDdLyl9WGvS-o5jFsw_xkg5-Sqv";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJobmx5a3FxaHd3ZWF5d2pvcHZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxODE0NjksImV4cCI6MjA5MTc1NzQ2OX0.a0K1q7VKDBRW_7A6fbf5jyMOqO0KpRXQdn8XMBeXfwg";
 
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -346,7 +346,7 @@ function checkItems() {
   measurement.opening_length_mm ? add("ok", "Длина проёма заполнена") : add("error", "Не заполнена длина проёма");
   measurement.opening_width_mm ? add("ok", "Ширина проёма заполнена") : add("error", "Не заполнена ширина проёма");
   const photoTypes = state.photos.map((p) => p.photo_type);
-  ["Общий вид снизу", "Проём сверху", "Место старта", "Место выхода"].forEach((t) => photoTypes.includes(t) ? add("ok", `Фото есть: ${t}`) : add("error", `Нет фото: ${t}`));
+  ["Ручной эскиз замера", "Общий вид снизу", "Проём сверху", "Место старта", "Место выхода"].forEach((t) => photoTypes.includes(t) ? add("ok", `Фото есть: ${t}`) : add("error", `Нет фото: ${t}`));
   if (measurement.has_warm_floor === "Да" && !measurement.obstacles_comment) add("warn", "Есть тёплый пол — добавьте комментарий");
   return items;
 }
