@@ -1347,9 +1347,9 @@ function renderPrice(price) {
       ? '<div class="muted">Цена рассчитана по введённым размерам и выбранным материалам. Итоговая стоимость уточняется после проверки состояния каркаса, размеров ступеней, узлов примыкания и объёма работ на объекте.</div>'
       : `<div class="muted">Диапазон: ${money(price.min)} — ${money(price.max)}</div>`}
     ${isInspection ? '' : `<div class="muted">База до региона: ${money(price.subtotalBeforeRegion)}</div>`}
-    <div class="muted">Регион: ${escapeHtml(price.pricingRegion?.name || 'не выбран')}</div>
-    <div class="muted">Региональная корректировка: ${money(price.regionalAdjustment)}</div>
-    <div class="muted">Работы: ${money(price.baseLabor)} · Материалы: ${money(price.materialCost)}</div>
+    ${isInspection ? '' : `<div class="muted">Регион: ${escapeHtml(price.pricingRegion?.name || 'не выбран')}</div>`}
+    ${isInspection ? '' : `<div class="muted">Региональная корректировка: ${money(price.regionalAdjustment)}</div>`}
+    ${isInspection ? '' : `<div class="muted">Работы: ${money(price.baseLabor)} · Материалы: ${money(price.materialCost)}</div>`}
   `;
 }
 
