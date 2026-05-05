@@ -574,16 +574,120 @@
                 <p class="pricing-group-compact">Облицовка по площади и коммерческим сценариям.</p>
               </summary>
               <div class="pricing-group-details">
-                <p>Варианты облицовки: дубовый шпон, МДФ под эмаль, керамогранит, микроцемент.</p>
-                <p class="pricing-group-meta">Примеры вариантов: дубовый шпон, МДФ под эмаль, керамогранит, микроцемент.</p>
-                <p class="pricing-group-meta">Влияет на: стоимость облицовки и финальную смету по покрываемой площади.</p>
-                <p class="pricing-group-meta">Где не используется: выбор массива ступеней и ограждения.</p>
+                <p>Подготовительный read-only список материалов облицовки для подступенков, боковой и полной обшивки каркаса.</p>
                 <div class="pricing-group-actions">
-                  <button class="btn btn-secondary" type="button" disabled>Настроить группу</button>
+                  <button class="btn btn-secondary" type="button">Настроить группу</button>
                   <button class="btn btn-secondary" type="button" disabled>Добавить вариант</button>
-                  <p class="pricing-group-actions-note">Редактирование будет подключено после настройки структуры тарифов.</p>
+                  <p class="pricing-group-actions-note">Добавление будет подключено следующим PR.</p>
                 </div>
-                <p class="pricing-group-note">Редактирование будет добавлено позже.</p>
+                <div class="pricing-items-readonly">
+                  <article class="pricing-item-card">
+                    <h4>Дубовый шпон</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Дубовый шпон" disabled /></label>
+                      <label>Внутренний код<input type="text" value="oak_veneer" disabled /></label>
+                      <label>Цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="за м²" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="1" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Натуральный шпон дуба для тёплой текстуры облицовки." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Только облицовка. Не относить к массивным ступеням." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: подступенки, боковая обшивка, полная обшивка металлокаркаса, бетонное основание, декоративные панели.</p>
+                    <p class="pricing-group-meta">Не используется: проступи, площадки, забежные ступени, ограждения, подсветка, финишная обработка.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Ясеневый шпон</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Ясеневый шпон" disabled /></label>
+                      <label>Внутренний код<input type="text" value="ash_veneer" disabled /></label>
+                      <label>Цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="за м²" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="2" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Светлый шпон ясеня для декоративной облицовки." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Отдельно от ясеня как материала проступей." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: подступенки, боковая обшивка, полная обшивка металлокаркаса, бетонное основание, декоративные панели.</p>
+                    <p class="pricing-group-meta">Не используется: проступи, площадки, забежные ступени, ограждения, подсветка, финишная обработка.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>МДФ под эмаль</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="МДФ под эмаль" disabled /></label>
+                      <label>Внутренний код<input type="text" value="mdf_paint_ready" disabled /></label>
+                      <label>Цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="за м²" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="3" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Ровная база под эмалевое декоративное покрытие." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Это материал облицовки, не финишная обработка эмалью." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: подступенки, боковая обшивка, полная обшивка металлокаркаса, бетонное основание, декоративные панели.</p>
+                    <p class="pricing-group-meta">Не используется: проступи, площадки, забежные ступени, ограждения, подсветка, финишная обработка.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>МДФ шпон</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="МДФ шпон" disabled /></label>
+                      <label>Внутренний код<input type="text" value="mdf_veneer" disabled /></label>
+                      <label>Цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="за м²" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="4" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Экономичная облицовка МДФ с натуральным шпоном." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Использовать для облицовочных поверхностей, не для проступей." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: подступенки, боковая обшивка, полная обшивка металлокаркаса, бетонное основание, декоративные панели.</p>
+                    <p class="pricing-group-meta">Не используется: проступи, площадки, забежные ступени, ограждения, подсветка, финишная обработка.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Керамогранит</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Керамогранит" disabled /></label>
+                      <label>Внутренний код<input type="text" value="porcelain_tile" disabled /></label>
+                      <label>Цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="за м²" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="5" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Износостойкая облицовка для интенсивной эксплуатации." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Актуально для бетонного основания и полной обшивки." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: подступенки, боковая обшивка, полная обшивка металлокаркаса, бетонное основание, декоративные панели.</p>
+                    <p class="pricing-group-meta">Не используется: проступи, площадки, забежные ступени, ограждения, подсветка, финишная обработка.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Камень</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Камень" disabled /></label>
+                      <label>Внутренний код<input type="text" value="stone_cladding" disabled /></label>
+                      <label>Цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="за м²" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="6" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Премиальная облицовка натуральным или инженерным камнем." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Не включать в ограждения и финишную обработку." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: подступенки, боковая обшивка, полная обшивка металлокаркаса, бетонное основание, декоративные панели.</p>
+                    <p class="pricing-group-meta">Не используется: проступи, площадки, забежные ступени, ограждения, подсветка, финишная обработка.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Микроцемент</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Микроцемент" disabled /></label>
+                      <label>Внутренний код<input type="text" value="microcement" disabled /></label>
+                      <label>Цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="за м²" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="7" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Бесшовная современная облицовка для сложных форм." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Применять как отделочный материал, без связи с подсветкой." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: подступенки, боковая обшивка, полная обшивка металлокаркаса, бетонное основание, декоративные панели.</p>
+                    <p class="pricing-group-meta">Не используется: проступи, площадки, забежные ступени, ограждения, подсветка, финишная обработка.</p>
+                  </article>
+                </div>
+                <p class="pricing-group-note">Режим подготовки: read-only/read-edit UI для группы. Сохранение будет подключено следующим PR.</p>
               </div>
             </details>
           </article>
