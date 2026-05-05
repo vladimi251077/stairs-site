@@ -701,16 +701,108 @@
                 <p class="pricing-group-compact">Коэффициенты объёма отделочных работ.</p>
               </summary>
               <div class="pricing-group-details">
-                <p>Объём работ по отделке: локальная, полная и связанные коэффициенты объёма.</p>
-                <p class="pricing-group-meta">Примеры вариантов: локальная отделка, полная отделка, коэффициенты перехода.</p>
-                <p class="pricing-group-meta">Влияет на: итог отделочных работ в м² и сервисные операции.</p>
-                <p class="pricing-group-meta">Где не используется: базовые ставки массива ступеней и региональный множитель.</p>
+                <p>Подготовительный read-only/read-edit UI для объёма отделки: сценарии объёма работ, определяющие какие поверхности участвуют в расчёте отделки.</p>
+                <p class="pricing-group-meta">Примеры вариантов: только ступени, ступени с подступенками, расширенный объём с боковинами, полная обшивка каркаса, бетонное основание, индивидуальный сценарий.</p>
+                <p class="pricing-group-meta">Влияет на: какие поверхности участвуют в расчёте отделки.</p>
+                <p class="pricing-group-meta">Не используется: выбор материала, финишная обработка, ограждения, подсветка.</p>
                 <div class="pricing-group-actions">
-                  <button class="btn btn-secondary" type="button" disabled>Настроить группу</button>
-                  <button class="btn btn-secondary" type="button" disabled>Добавить вариант</button>
-                  <p class="pricing-group-actions-note">Редактирование будет подключено после настройки структуры тарифов.</p>
+                  <button class="btn btn-secondary" type="button">Настроить группу</button>
+                  <button class="btn btn-secondary" type="button" disabled>Добавление будет подключено следующим PR</button>
+                  <p class="pricing-group-actions-note">Сохранение будет подключено следующим PR.</p>
                 </div>
-                <p class="pricing-group-note">Редактирование будет добавлено позже.</p>
+                <div class="pricing-items-readonly" aria-label="Варианты объёма отделки">
+                  <article class="pricing-item-card">
+                    <h4>Только ступени</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Только ступени" disabled /></label>
+                      <label>Внутренний код<input type="text" value="finish_scope_steps_only" disabled /></label>
+                      <label>Коэффициент / цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="коэффициент объёма" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="1" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Отделываются только проступи и площадки." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Влияет на проступи и площадки; не включает подступенки и боковины." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: какие поверхности участвуют в расчёте отделки — проступи и площадки.</p>
+                    <p class="pricing-group-meta">Не используется: выбор материала, финишная обработка, ограждения, подсветка.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Ступени + подступенки</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Ступени + подступенки" disabled /></label>
+                      <label>Внутренний код<input type="text" value="finish_scope_steps_risers" disabled /></label>
+                      <label>Коэффициент / цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="коэффициент объёма" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="2" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Добавляет отделку подступенков к ступеням и площадкам." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Влияет на проступи, площадки и подступенки; не включает боковины и полную обшивку каркаса." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: какие поверхности участвуют в расчёте отделки — проступи, площадки, подступенки.</p>
+                    <p class="pricing-group-meta">Не используется: выбор материала, финишная обработка, ограждения, подсветка.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Ступени + подступенки + боковины</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Ступени + подступенки + боковины" disabled /></label>
+                      <label>Внутренний код<input type="text" value="finish_scope_steps_risers_sides" disabled /></label>
+                      <label>Коэффициент / цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="коэффициент объёма" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="3" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Расширенный объём: ступени, подступенки и боковые панели." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Влияет на проступи, подступенки и боковины; не является полной обшивкой металлокаркаса." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: какие поверхности участвуют в расчёте отделки — проступи, подступенки, боковые панели.</p>
+                    <p class="pricing-group-meta">Не используется: выбор материала, финишная обработка, ограждения, подсветка.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Полная обшивка металлокаркаса</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Полная обшивка металлокаркаса" disabled /></label>
+                      <label>Внутренний код<input type="text" value="finish_scope_full_metal_frame" disabled /></label>
+                      <label>Коэффициент / цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="коэффициент объёма" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="4" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Закрытие каркаса и сопряжённых элементов в едином сценарии отделки." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Влияет на закрытие каркаса, боковые элементы, подступенки, панели и узлы примыкания; требует инженерной проверки." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: какие поверхности участвуют в расчёте отделки — полная обшивка металлокаркаса и сопряжённые элементы.</p>
+                    <p class="pricing-group-meta">Не используется: выбор материала, финишная обработка, ограждения, подсветка.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Отделка бетонного основания</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Отделка бетонного основания" disabled /></label>
+                      <label>Внутренний код<input type="text" value="finish_scope_concrete_base" disabled /></label>
+                      <label>Коэффициент / цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="коэффициент объёма" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="5" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Сценарий для облицовки бетонной лестницы или основания." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Влияет на облицовку бетонной лестницы/основания; требует проверки состояния основания." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: какие поверхности участвуют в расчёте отделки — поверхности бетонного основания.</p>
+                    <p class="pricing-group-meta">Не используется: выбор материала, финишная обработка, ограждения, подсветка.</p>
+                  </article>
+                  <article class="pricing-item-card">
+                    <h4>Индивидуальный объём</h4>
+                    <div class="grid two">
+                      <label>Название<input type="text" value="Индивидуальный объём" disabled /></label>
+                      <label>Внутренний код<input type="text" value="finish_scope_custom" disabled /></label>
+                      <label>Коэффициент / цена<input type="text" value="Не задано" disabled /></label>
+                      <label>Единица расчёта<input type="text" value="коэффициент объёма" disabled /></label>
+                      <label>Активен / скрыт<input type="text" value="Активен" disabled /></label>
+                      <label>Порядок показа<input type="number" value="6" disabled /></label>
+                      <label>Подсказка для клиента<input type="text" value="Для нестандартных задач, когда типовые варианты не подходят." disabled /></label>
+                      <label>Комментарий для админа<input type="text" value="Используется при нестандартном объёме работ; требует ручной инженерной оценки." disabled /></label>
+                    </div>
+                    <p class="pricing-group-meta">Влияет на: какие поверхности участвуют в расчёте отделки — определяется вручную инженером.</p>
+                    <p class="pricing-group-meta">Не используется: выбор материала, финишная обработка, ограждения, подсветка.</p>
+                  </article>
+                </div>
+                <p class="pricing-group-note">Режим подготовки: read-only/read-edit UI для группы. Сохранение будет подключено следующим PR.</p>
               </div>
             </details>
           </article>
