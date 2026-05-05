@@ -1,7 +1,9 @@
 const SUPABASE_URL = "https://rhnlykqqhwweaywjopvm.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXJhYmFzZSIsInJlZiI6InJobmx5a3FxaHd3ZWF5d2pvcHZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxODE0NjksImV4cCI6MjA5MTc1NzQ2OX0.a0K1q7VKDBRW_7A6fbf5jyMOqO0KpRXQdn8XMBeXfwg";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJobmx5a3FxaHd3ZWF5d2pvcHZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxODE0NjksImV4cCI6MjA5MTc1NzQ2OX0.a0K1q7VKDBRW_7A6fbf5jyMOqO0KpRXQdn8XMBeXfwg";
 
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => Array.from(document.querySelectorAll(s));
 
 const state = {
   user: null,
@@ -11,28 +13,98 @@ const state = {
   photos: [],
 };
 
-const $ = (selector) => document.querySelector(selector);
-const $$ = (selector) => Array.from(document.querySelectorAll(selector));
-
-function msg(el, text, type = "") {
+function setMessage(el, text, type = "") {
   if (!el) return;
   el.textContent = text || "";
   el.className = `form-message ${type}`.trim();
 }
 
-function numberOrNull(value) {
+function toNumber(value) {
   if (value === "" || value === null || value === undefined) return null;
   const n = Number(value);
   return Number.isFinite(n) ? n : null;
 }
 
 function makeNumber() {
-  const y = new Date().getFullYear();
-  const n = Math.floor(Math.random() * 900000 + 100000);
-  return `KZN-ZM-${y}-${n}`;
+  return `KZN-ZM-${new Date().getFullYear()}-${Math.floor(Math.random() * 900000 + 100000)}`;
 }
 
-function valuesFromForm() {
+function showApp(isAuthed) {
+  $("#auth-view").classList.toggle("hidden", isAuthed);
+  $("#main-view").classList.toggle("hidden", !isAuthed);
+  $("#logout-btn").classList.toggle("hidden", !isAuthed);
+  $("#user-role").textContent = isAuthed ? `${state.profile?.full_name || state.user?.email} · ${state.profile?.role || "user"}` : "Не вошли";
+}
+
+async function loadProfile() {
+  const { data } = await supabaseClient.from("profiles").select("*").eq("id", state.user.id).maybeSingle();
+  if (data) {
+    state.profile = data;
+    return;
+  }
+  const name = state.user.email?.split("@")[0] || "Пользователь";
+  const { data: created, error } = await supabaseClient
+    .from("profiles")
+    .insert({ id: state.user.id, full_name: name, role: "zamer" })
+    .select("*")
+    .single();
+  if (error) throw error;
+  state.profile = created;
+}
+
+async function init() {
+  const { data } = await supabaseClient.auth.getSession();
+  state.user = data.session?.user || null;
+  if (!state.user) {
+    showApp(false);
+    return;
+  }
+  await loadProfile();
+  showApp(true);
+  await loadMeasurements();
+}
+
+async function login() {
+  setMessage($("#auth-message"), "Вход...");
+  const { data, error } = await supabaseClient.auth.signInWithPassword({
+    email: $("#email").value.trim(),
+    password: $("#password").value,
+  });
+  if (error) return setMessage($("#auth-message"), error.message, "error");
+  state.user = data.user;
+  await loadProfile();
+  showApp(true);
+  await loadMeasurements();
+  setMessage($("#auth-message"), "");
+}
+
+async function signup() {
+  setMessage($("#auth-message"), "Создаю пользователя...");
+  const { data, error } = await supabaseClient.auth.signUp({
+    email: $("#email").value.trim(),
+    password: $("#password").value,
+  });
+  if (error) return setMessage($("#auth-message"), error.message, "error");
+  setMessage($("#auth-message"), "Пользователь создан. Если Supabase попросит — подтвердите почту и войдите.", "ok");
+  if (data.user) {
+    state.user = data.user;
+    await loadProfile();
+    showApp(true);
+    await loadMeasurements();
+  }
+}
+
+async function logout() {
+  await supabaseClient.auth.signOut();
+  state.user = null;
+  state.profile = null;
+  state.measurements = [];
+  state.selected = null;
+  state.photos = [];
+  showApp(false);
+}
+
+function getFormData() {
   const form = $("#measurement-form");
   const fd = new FormData(form);
   return {
@@ -51,18 +123,18 @@ function valuesFromForm() {
       opening_type: fd.get("opening_type") || "Прямой",
       stair_direction: fd.get("stair_direction") || null,
       turn_type: fd.get("turn_type") || null,
-      height_clean_to_clean_mm: numberOrNull(fd.get("height_clean_to_clean_mm")),
-      slab_thickness_mm: numberOrNull(fd.get("slab_thickness_mm")),
-      ceiling_height_1_mm: numberOrNull(fd.get("ceiling_height_1_mm")),
-      desired_flight_width_mm: numberOrNull(fd.get("desired_flight_width_mm")),
-      opening_length_mm: numberOrNull(fd.get("opening_length_mm")),
-      opening_width_mm: numberOrNull(fd.get("opening_width_mm")),
-      flight1_length_mm: numberOrNull(fd.get("flight1_length_mm")),
-      flight1_width_mm: numberOrNull(fd.get("flight1_width_mm")),
-      flight2_length_mm: numberOrNull(fd.get("flight2_length_mm")),
-      flight2_width_mm: numberOrNull(fd.get("flight2_width_mm")),
-      corner_zone_length_mm: numberOrNull(fd.get("corner_zone_length_mm")),
-      corner_zone_width_mm: numberOrNull(fd.get("corner_zone_width_mm")),
+      height_clean_to_clean_mm: toNumber(fd.get("height_clean_to_clean_mm")),
+      slab_thickness_mm: toNumber(fd.get("slab_thickness_mm")),
+      ceiling_height_1_mm: toNumber(fd.get("ceiling_height_1_mm")),
+      desired_flight_width_mm: toNumber(fd.get("desired_flight_width_mm")),
+      opening_length_mm: toNumber(fd.get("opening_length_mm")),
+      opening_width_mm: toNumber(fd.get("opening_width_mm")),
+      flight1_length_mm: toNumber(fd.get("flight1_length_mm")),
+      flight1_width_mm: toNumber(fd.get("flight1_width_mm")),
+      flight2_length_mm: toNumber(fd.get("flight2_length_mm")),
+      flight2_width_mm: toNumber(fd.get("flight2_width_mm")),
+      corner_zone_length_mm: toNumber(fd.get("corner_zone_length_mm")),
+      corner_zone_width_mm: toNumber(fd.get("corner_zone_width_mm")),
       wall_material: fd.get("wall_material") || null,
       slab_material: fd.get("slab_material") || null,
       has_warm_floor: fd.get("has_warm_floor") || "Не знаю",
@@ -76,80 +148,6 @@ function valuesFromForm() {
   };
 }
 
-function show(isAuthed) {
-  $("#auth-view").classList.toggle("hidden", isAuthed);
-  $("#main-view").classList.toggle("hidden", !isAuthed);
-  $("#logout-btn").classList.toggle("hidden", !isAuthed);
-  $("#user-role").textContent = isAuthed ? `${state.profile?.full_name || state.user?.email} · ${state.profile?.role || "user"}` : "Не вошли";
-}
-
-async function loadProfile() {
-  const { data } = await supabaseClient.from("profiles").select("*").eq("id", state.user.id).maybeSingle();
-  if (data) {
-    state.profile = data;
-    return;
-  }
-  const fallbackName = state.user.email?.split("@")[0] || "Пользователь";
-  const { data: created, error } = await supabaseClient
-    .from("profiles")
-    .insert({ id: state.user.id, full_name: fallbackName, role: "zamer" })
-    .select("*")
-    .single();
-  if (error) throw error;
-  state.profile = created;
-}
-
-async function init() {
-  const { data } = await supabaseClient.auth.getSession();
-  state.user = data.session?.user || null;
-  if (!state.user) {
-    show(false);
-    return;
-  }
-  await loadProfile();
-  show(true);
-  await loadMeasurements();
-}
-
-async function login() {
-  msg($("#auth-message"), "Вход...");
-  const { data, error } = await supabaseClient.auth.signInWithPassword({
-    email: $("#email").value.trim(),
-    password: $("#password").value,
-  });
-  if (error) return msg($("#auth-message"), error.message, "error");
-  state.user = data.user;
-  await loadProfile();
-  show(true);
-  await loadMeasurements();
-  msg($("#auth-message"), "");
-}
-
-async function signup() {
-  msg($("#auth-message"), "Создание пользователя...");
-  const { data, error } = await supabaseClient.auth.signUp({
-    email: $("#email").value.trim(),
-    password: $("#password").value,
-  });
-  if (error) return msg($("#auth-message"), error.message, "error");
-  msg($("#auth-message"), "Пользователь создан. Если нужно — подтвердите почту и войдите.", "ok");
-  if (data.user) {
-    state.user = data.user;
-    await loadProfile();
-    show(true);
-    await loadMeasurements();
-  }
-}
-
-async function logout() {
-  await supabaseClient.auth.signOut();
-  state.user = null;
-  state.profile = null;
-  state.measurements = [];
-  state.selected = null;
-  show(false);
-}
-
 async function loadMeasurements() {
   const { data, error } = await supabaseClient
     .from("measurements")
@@ -157,8 +155,8 @@ async function loadMeasurements() {
     .order("created_at", { ascending: false });
   if (error) throw error;
   state.measurements = data || [];
-  renderList();
   renderStats();
+  renderList();
 }
 
 function filteredMeasurements() {
@@ -183,12 +181,12 @@ function renderList() {
     return;
   }
   list.innerHTML = items.map((m) => {
-    const client = m.clients || {};
+    const c = m.clients || {};
     const active = state.selected?.id === m.id ? "active" : "";
     return `<button class="measurement-item ${active}" data-id="${m.id}">
       <div class="number">${m.number}</div>
-      <div>${client.name || "Клиент не указан"}</div>
-      <div class="address">${client.address || "Адрес не указан"}</div>
+      <div>${c.name || "Клиент не указан"}</div>
+      <div class="address">${c.address || "Адрес не указан"}</div>
       <div class="measurement-meta">
         <span class="small-chip">${m.status}</span>
         <span class="small-chip">${m.site_situation}</span>
@@ -196,19 +194,7 @@ function renderList() {
       </div>
     </button>`;
   }).join("");
-  $$(".measurement-item").forEach((button) => button.addEventListener("click", () => selectMeasurement(button.dataset.id)));
-}
-
-async function selectMeasurement(id) {
-  state.selected = state.measurements.find((m) => m.id === id);
-  if (!state.selected) return;
-  await loadPhotos(id);
-  fillForm(state.selected);
-  $("#empty-detail").classList.add("hidden");
-  $("#measurement-form").classList.remove("hidden");
-  renderList();
-  renderPhotos();
-  renderChecks();
+  $$(".measurement-item").forEach((btn) => btn.addEventListener("click", () => selectMeasurement(btn.dataset.id)));
 }
 
 function newMeasurement() {
@@ -229,6 +215,18 @@ function newMeasurement() {
   renderChecks();
 }
 
+async function selectMeasurement(id) {
+  state.selected = state.measurements.find((m) => m.id === id);
+  if (!state.selected) return;
+  await loadPhotos(id);
+  fillForm(state.selected);
+  $("#empty-detail").classList.add("hidden");
+  $("#measurement-form").classList.remove("hidden");
+  renderList();
+  renderPhotos();
+  renderChecks();
+}
+
 function fillForm(m) {
   const form = $("#measurement-form");
   form.reset();
@@ -237,7 +235,7 @@ function fillForm(m) {
   form.client_phone.value = c.phone || "";
   form.address.value = c.address || "";
   ["status", "object_stage", "site_situation", "opening_type", "stair_direction", "turn_type", "height_clean_to_clean_mm", "slab_thickness_mm", "ceiling_height_1_mm", "desired_flight_width_mm", "opening_length_mm", "opening_width_mm", "flight1_length_mm", "flight1_width_mm", "flight2_length_mm", "flight2_width_mm", "corner_zone_length_mm", "corner_zone_width_mm", "wall_material", "slab_material", "has_warm_floor", "obstacles_comment", "general_comment"].forEach((name) => {
-    if (form[name] && m[name] !== null && m[name] !== undefined) form[name].value = m[name];
+    if (form[name] && m[name] !== undefined && m[name] !== null) form[name].value = m[name];
   });
   form.has_pipes.checked = Boolean(m.has_pipes);
   form.has_electricity.checked = Boolean(m.has_electricity);
@@ -247,10 +245,10 @@ function fillForm(m) {
 }
 
 async function saveMeasurement() {
-  msg($("#form-message"), "Сохраняю...");
-  const { client, measurement } = valuesFromForm();
+  setMessage($("#form-message"), "Сохраняю...");
+  const { client, measurement } = getFormData();
   if (!client.name || !client.phone || !client.address) {
-    msg($("#form-message"), "Заполните клиента, телефон и адрес.", "error");
+    setMessage($("#form-message"), "Заполните клиента, телефон и адрес.", "error");
     return null;
   }
 
@@ -280,21 +278,17 @@ async function saveMeasurement() {
     if (error) throw error;
     state.selected = data;
   }
+
   await loadMeasurements();
   await selectMeasurement(state.selected.id);
-  msg($("#form-message"), "Сохранено.", "ok");
+  setMessage($("#form-message"), "Сохранено.", "ok");
   return state.selected;
 }
 
 async function setStatus(status, extra = {}) {
   if (!state.selected?.id) await saveMeasurement();
   if (!state.selected?.id) return;
-  const { data, error } = await supabaseClient
-    .from("measurements")
-    .update({ status, updated_at: new Date().toISOString(), ...extra })
-    .eq("id", state.selected.id)
-    .select("*, clients(*)")
-    .single();
+  const { data, error } = await supabaseClient.from("measurements").update({ status, updated_at: new Date().toISOString(), ...extra }).eq("id", state.selected.id).select("*, clients(*)").single();
   if (error) throw error;
   state.selected = data;
   await loadMeasurements();
@@ -320,8 +314,8 @@ async function uploadPhoto() {
     if (!saved) return;
   }
   const file = $("#photo-file").files[0];
-  if (!file) return msg($("#form-message"), "Выберите фото.", "error");
-  msg($("#form-message"), "Загружаю фото...");
+  if (!file) return setMessage($("#form-message"), "Выберите фото.", "error");
+  setMessage($("#form-message"), "Загружаю фото...");
   const ext = file.name.split(".").pop() || "jpg";
   const path = `${state.selected.number}/${Date.now()}_${$("#photo-type").value}.${ext}`;
   const { error: uploadError } = await supabaseClient.storage.from("measurement-photos").upload(path, file);
@@ -332,13 +326,13 @@ async function uploadPhoto() {
   await loadPhotos(state.selected.id);
   renderPhotos();
   renderChecks();
-  msg($("#form-message"), "Фото загружено.", "ok");
+  setMessage($("#form-message"), "Фото загружено.", "ok");
 }
 
 function checkItems() {
-  const { client, measurement } = valuesFromForm();
-  const items = [];
-  const add = (type, text) => items.push({ type, text });
+  const { client, measurement } = getFormData();
+  const result = [];
+  const add = (type, text) => result.push({ type, text });
   client.name ? add("ok", "Клиент заполнен") : add("error", "Не заполнен клиент");
   client.phone ? add("ok", "Телефон заполнен") : add("error", "Не заполнен телефон");
   client.address ? add("ok", "Адрес заполнен") : add("error", "Не заполнен адрес");
@@ -346,9 +340,11 @@ function checkItems() {
   measurement.opening_length_mm ? add("ok", "Длина проёма заполнена") : add("error", "Не заполнена длина проёма");
   measurement.opening_width_mm ? add("ok", "Ширина проёма заполнена") : add("error", "Не заполнена ширина проёма");
   const photoTypes = state.photos.map((p) => p.photo_type);
-  ["Ручной эскиз замера", "Общий вид снизу", "Проём сверху", "Место старта", "Место выхода"].forEach((t) => photoTypes.includes(t) ? add("ok", `Фото есть: ${t}`) : add("error", `Нет фото: ${t}`));
+  ["Ручной эскиз замера", "Общий вид снизу", "Проём сверху", "Место старта", "Место выхода"].forEach((t) => {
+    photoTypes.includes(t) ? add("ok", `Фото есть: ${t}`) : add("error", `Нет фото: ${t}`);
+  });
   if (measurement.has_warm_floor === "Да" && !measurement.obstacles_comment) add("warn", "Есть тёплый пол — добавьте комментарий");
-  return items;
+  return result;
 }
 
 function renderChecks() {
@@ -380,19 +376,19 @@ function downloadCsv() {
 }
 
 function bind() {
-  $("#login-btn").addEventListener("click", () => login().catch((e) => msg($("#auth-message"), e.message, "error")));
-  $("#signup-btn").addEventListener("click", () => signup().catch((e) => msg($("#auth-message"), e.message, "error")));
+  $("#login-btn").addEventListener("click", () => login().catch((e) => setMessage($("#auth-message"), e.message, "error")));
+  $("#signup-btn").addEventListener("click", () => signup().catch((e) => setMessage($("#auth-message"), e.message, "error")));
   $("#logout-btn").addEventListener("click", logout);
   $("#new-measurement-btn").addEventListener("click", newMeasurement);
   $("#refresh-btn").addEventListener("click", () => loadMeasurements().catch((e) => alert(e.message)));
   $("#status-filter").addEventListener("change", renderList);
-  $("#measurement-form").addEventListener("submit", (e) => { e.preventDefault(); saveMeasurement().catch((err) => msg($("#form-message"), err.message, "error")); });
-  $("#upload-photo-btn").addEventListener("click", () => uploadPhoto().catch((e) => msg($("#form-message"), e.message, "error")));
+  $("#measurement-form").addEventListener("submit", (event) => { event.preventDefault(); saveMeasurement().catch((e) => setMessage($("#form-message"), e.message, "error")); });
+  $("#upload-photo-btn").addEventListener("click", () => uploadPhoto().catch((e) => setMessage($("#form-message"), e.message, "error")));
   $("#send-review-btn").addEventListener("click", async () => {
     const saved = await saveMeasurement();
     if (!saved) return;
     const errors = renderChecks().filter((i) => i.type === "error");
-    if (errors.length) return msg($("#form-message"), `Нельзя отправить: ошибок ${errors.length}.`, "error");
+    if (errors.length) return setMessage($("#form-message"), `Нельзя отправить: ошибок ${errors.length}.`, "error");
     await setStatus("На проверке");
   });
   $("#accept-btn").addEventListener("click", () => setStatus("Готовый замер", { checked_by: state.user.id, checked_at: new Date().toISOString() }).catch((e) => alert(e.message)));
@@ -412,5 +408,5 @@ function bind() {
 bind();
 init().catch((e) => {
   console.error(e);
-  msg($("#auth-message"), e.message, "error");
+  setMessage($("#auth-message"), e.message, "error");
 });
