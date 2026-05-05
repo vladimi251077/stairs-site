@@ -187,6 +187,11 @@ function isReadyFrameCondition(value) {
   return normalizeBaseConditionValue(value, 'existing_metal_frame') === 'existing_metal_frame';
 }
 
+function isInspectionScenario(baseCondition) {
+  const normalized = normalizeBaseConditionValue(baseCondition, 'empty_opening');
+  return normalized !== 'empty_opening';
+}
+
 function normalizeOpeningTypeValue(value, fallback = 'straight') {
   const normalized = String(value || '').trim().toLowerCase();
 
@@ -938,12 +943,12 @@ function calculateScenarioResult(config) {
     }
     if (manualRailingLength > 50) blockers.push('Введите длину в метрах, например 3.6 или 12, не в миллиметрах.');
 
-    const status = blockers.length ? 'invalid' : warnings.length || fit.status === 'warning' ? 'warning' : 'recommended';
+    const status = warnings.length || fit.status === 'warning' ? 'warning' : 'recommended';
     const metrics = getReadyFrameServiceMetrics(config, fit);
         return makeScenarioResult(config, {
       ...fit,
-      valid: status !== 'invalid',
-      allow_continue: status !== 'invalid',
+      valid: true,
+      allow_continue: true,
       status,
       warnings,
       blockers,
@@ -997,7 +1002,7 @@ function calculateScenarioResult(config) {
     if (config.concrete_base_condition === 'uneven') warnings.push('Есть перепады: нужна подготовка плоскостей перед отделкой.');
     if (config.concrete_base_condition === 'chips') warnings.push('Есть сколы: нужна ручная проверка объёма ремонта.');
 
-    const status = blockers.length ? 'invalid' : warnings.length ? 'warning' : 'recommended';
+    const status = warnings.length ? 'warning' : 'recommended';
 
     return makeScenarioResult(config, {
       status,
@@ -1309,10 +1314,14 @@ function renderPrice(price) {
     return;
   }
 
+  const isInspection = isInspectionScenario(state.config?.base_condition);
   root.innerHTML = `
-    <div class="price-main">${money(price.total)}</div>
-    <div class="muted">Диапазон: ${money(price.min)} — ${money(price.max)}</div>
-    <div class="muted">База до региона: ${money(price.subtotalBeforeRegion)}</div>
+    ${isInspection ? '<div class="muted">Предварительная стоимость отделки</div>' : ''}
+    <div class="price-main">${isInspection ? `от ${money(price.min)} до ${money(price.max)}` : money(price.total)}</div>
+    ${isInspection
+      ? '<div class="muted">Цена рассчитана по введённым размерам и выбранным материалам. Итоговая стоимость уточняется после проверки состояния каркаса, размеров ступеней, узлов примыкания и объёма работ на объекте.</div>'
+      : `<div class="muted">Диапазон: ${money(price.min)} — ${money(price.max)}</div>`}
+    ${isInspection ? '' : `<div class="muted">База до региона: ${money(price.subtotalBeforeRegion)}</div>`}
     <div class="muted">Регион: ${escapeHtml(price.pricingRegion?.name || 'не выбран')}</div>
     <div class="muted">Региональная корректировка: ${money(price.regionalAdjustment)}</div>
     <div class="muted">Работы: ${money(price.baseLabor)} · Материалы: ${money(price.materialCost)}</div>
@@ -1514,7 +1523,9 @@ function updateRequestLinks(payload) {
 function updateGeometryActions(geometry) {
   const calculateBtn = $('calculateBtn');
   const reviewLink = $('engineerReviewLink');
+  const requestLink = $('requestLink');
   const canContinue = geometry.valid && geometry.allow_continue !== false;
+  const inspectionScenario = isInspectionScenario(state.config?.base_condition);
 
   if (calculateBtn) {
     calculateBtn.classList.toggle('hidden', !canContinue);
@@ -1526,7 +1537,14 @@ function updateGeometryActions(geometry) {
   }
 
   if (reviewLink) {
-    reviewLink.classList.toggle('hidden', geometry.status === 'recommended' && canContinue);
+    reviewLink.textContent = 'Отправить размеры на инженерную проверку';
+    reviewLink.classList.toggle('hidden', inspectionScenario || (geometry.status === 'recommended' && canContinue));
+  }
+
+  if (requestLink) {
+    requestLink.textContent = inspectionScenario
+      ? 'Отправить размеры на инженерную проверку'
+      : 'Оставить заявку';
   }
 }
 
