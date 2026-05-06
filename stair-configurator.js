@@ -1382,10 +1382,99 @@ function compactGeometryForPayload(geometry) {
   };
 }
 
+function buildScenarioDetails(config, geometry) {
+  const serviceMetrics = geometry.service_metrics || {};
+  const base = {
+    project_scenario: config.project_scenario,
+    finish_material: config.finish_material,
+    coating_option: config.coating_option,
+    railing_option: config.railing_option,
+    lighting_option: config.lighting_option
+  };
+
+  if (config.base_condition === 'empty_opening') {
+    return {
+      ...base,
+      opening_type: config.opening_type,
+      stair_type: config.stair_type,
+      turn_type: config.turn_type,
+      turn_direction: config.turn_direction,
+      frame_material: config.frame_material,
+      floor_to_floor_height: config.floor_to_floor_height,
+      slab_thickness: config.slab_thickness,
+      finish_thickness_top: config.finish_thickness_top,
+      finish_thickness_bottom: config.finish_thickness_bottom,
+      opening_length: config.opening_length,
+      opening_width: config.opening_width,
+      march_width: config.march_width
+    };
+  }
+
+  if (isReadyFrameCondition(config.base_condition)) {
+    return {
+      ...base,
+      base_subtype: config.base_subtype,
+      stair_type: config.stair_type,
+      turn_type: config.turn_type,
+      turn_direction: config.turn_direction,
+      metal_frame_condition: config.metal_frame_condition,
+      ready_frame_step_count: config.ready_frame_step_count,
+      ready_frame_march_width: config.ready_frame_march_width,
+      ready_frame_tread_depth: config.ready_frame_tread_depth,
+      ready_frame_riser_height: config.ready_frame_riser_height,
+      ready_frame_straight_railing_length: config.ready_frame_straight_railing_length,
+      existing_frame_notes: config.existing_frame_notes,
+      finish_scope: config.finish_scope,
+      finish_scope_label: FINISH_SCOPE_LABELS[config.finish_scope],
+      clad_risers: config.clad_risers,
+      has_landing: config.has_landing,
+      landing_length: config.landing_length,
+      landing_width: config.landing_width,
+      landing_area: config.landing_area,
+      has_winders: config.has_winders,
+      winder_count: config.winder_count,
+      full_cladding_area_m2: serviceMetrics.fullCladdingAreaM2 || 0,
+      finish_surface_area_m2: serviceMetrics.finishSurfaceAreaM2 || 0,
+      total_finish_area_m2: serviceMetrics.totalFinishAreaM2 || serviceMetrics.finishAreaM2 || 0,
+      railing_length_m: serviceMetrics.railingLengthM || 0
+    };
+  }
+
+  if (config.base_condition === 'existing_concrete_base') {
+    return {
+      ...base,
+      base_subtype: config.base_subtype,
+      stair_type: config.stair_type,
+      turn_type: config.turn_type,
+      turn_direction: config.turn_direction,
+      concrete_step_count: config.concrete_step_count,
+      concrete_stair_width: config.concrete_stair_width,
+      concrete_tread_depth: config.concrete_tread_depth,
+      concrete_riser_height: config.concrete_riser_height,
+      concrete_base_condition: config.concrete_base_condition,
+      finish_scope: config.finish_scope,
+      finish_scope_label: FINISH_SCOPE_LABELS[config.finish_scope],
+      clad_risers: config.clad_risers,
+      has_landing: config.has_landing,
+      landing_length: config.landing_length,
+      landing_width: config.landing_width,
+      landing_area: config.landing_area,
+      has_winders: config.has_winders,
+      winder_count: config.winder_count,
+      full_cladding_area_m2: serviceMetrics.fullCladdingAreaM2 || 0,
+      finish_surface_area_m2: serviceMetrics.finishSurfaceAreaM2 || 0,
+      total_finish_area_m2: serviceMetrics.totalFinishAreaM2 || serviceMetrics.finishAreaM2 || 0
+    };
+  }
+
+  return base;
+}
+
 function buildCalculationPayload(config, geometry, materials = state.materials, price = state.price, requestMode = 'calculation') {
   const compactGeometry = compactGeometryForPayload(geometry);
   const warnings = geometry.status === 'invalid' ? geometry.blockers || [] : geometry.warnings || [];
   const region = getPricingRegion(config.pricing_region_code);
+  const scenarioDetails = buildScenarioDetails(config, geometry);
 
   return {
     schema: 'tekstura.stair.phase1',
@@ -1477,44 +1566,7 @@ function buildCalculationPayload(config, geometry, materials = state.materials, 
           }
         }
       : null,
-    scenario_details: {
-      project_scenario: config.project_scenario,
-      base_subtype: config.base_subtype,
-      metal_frame_condition: config.metal_frame_condition,
-      existing_frame_notes: config.existing_frame_notes,
-      ready_frame_step_count: config.ready_frame_step_count,
-      ready_frame_march_width: config.ready_frame_march_width,
-      ready_frame_tread_depth: config.ready_frame_tread_depth,
-      ready_frame_riser_height: config.ready_frame_riser_height,
-      ready_frame_straight_railing_length: config.ready_frame_straight_railing_length,
-      ready_frame_additional_railing_length_m: config.ready_frame_straight_railing_length,
-      additional_railing_length_m: config.ready_frame_straight_railing_length,
-      finish_scope: config.finish_scope,
-      finish_scope_label: FINISH_SCOPE_LABELS[config.finish_scope],
-      clad_risers: config.clad_risers,
-      cladding_sheet_count: config.cladding_sheet_count,
-      cladding_sheet_width: config.cladding_sheet_width,
-      cladding_sheet_height: config.cladding_sheet_height,
-      full_cladding_area_m2: compactGeometry.service_metrics?.fullCladdingAreaM2 || 0,
-      finish_surface_area_m2: compactGeometry.service_metrics?.finishSurfaceAreaM2 || 0,
-      total_finish_area_m2: compactGeometry.service_metrics?.totalFinishAreaM2 || compactGeometry.service_metrics?.finishAreaM2 || 0,
-      railing_length_m: compactGeometry.service_metrics?.railingLengthM || 0,
-      has_landing: config.has_landing,
-      landing_length: config.landing_length,
-      landing_width: config.landing_width,
-      landing_area: config.landing_area,
-      has_winders: config.has_winders,
-      winder_count: config.winder_count,
-      concrete_step_count: config.concrete_step_count,
-      concrete_stair_width: config.concrete_stair_width,
-      concrete_tread_depth: config.concrete_tread_depth,
-      concrete_riser_height: config.concrete_riser_height,
-      concrete_base_condition: config.concrete_base_condition,
-      finish_material: config.finish_material,
-      coating_option: config.coating_option,
-      railing_option: config.railing_option,
-      lighting_option: config.lighting_option
-    },
+    scenario_details: scenarioDetails,
     materials: materials?.valid
       ? {
           type: materials.type,
