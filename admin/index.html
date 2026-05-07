@@ -44,6 +44,9 @@
       grid-template-columns:repeat(2,minmax(0,1fr));
       gap:12px;
     }
+    .grid > *{
+      min-width:0;
+    }
     .full{grid-column:1/-1}
     label{
       font-weight:700;
@@ -179,6 +182,83 @@
       color:var(--muted);
       text-align:center;
     }
+    .pricing-admin-panel{
+      display:grid;
+      gap:12px;
+    }
+    .pricing-admin-section{
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:#171310;
+      overflow:hidden;
+    }
+    .pricing-admin-section > summary{
+      list-style:none;
+      cursor:pointer;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      padding:14px;
+      user-select:none;
+    }
+    .pricing-admin-section > summary::-webkit-details-marker{
+      display:none;
+    }
+    .pricing-admin-section > summary h3{
+      margin:0 0 6px;
+      font-size:18px;
+    }
+    .pricing-admin-section > summary p{
+      margin:0;
+      color:var(--muted);
+    }
+    .pricing-admin-section-label{
+      display:inline-flex;
+      flex-shrink:0;
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:3px 9px;
+      color:var(--muted);
+      font-size:12px;
+    }
+    .pricing-admin-section-body{
+      border-top:1px solid var(--line);
+      padding:14px;
+      display:grid;
+      gap:14px;
+    }
+    .pricing-current-block{
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px;
+      background:#120f0d;
+    }
+    .pricing-current-block h3{
+      margin:0 0 8px;
+      font-size:17px;
+    }
+    .pricing-current-block .row{
+      margin-top:12px;
+    }
+    .pricing-items-list,
+    .pricing-items-readonly{
+      display:grid;
+      gap:10px;
+      min-width:0;
+    }
+    .pricing-item-card{
+      border:1px solid var(--line);
+      border-radius:10px;
+      padding:10px;
+      background:#120f0d;
+      min-width:0;
+      overflow:hidden;
+    }
+    .pricing-item-card h4{
+      margin:0 0 8px;
+      font-size:15px;
+    }
     .pricing-groups-grid{
       display:grid;
       grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
@@ -284,9 +364,18 @@
       margin-bottom:8px;
     }
     @media (max-width:760px){
-      .grid{grid-template-columns:1fr}
+      .wrap{padding:14px}
+      .grid{grid-template-columns:minmax(0,1fr)}
       .topbar{align-items:flex-start;flex-direction:column}
       .gallery-meta{grid-template-columns:1fr}
+      .pricing-groups-grid{grid-template-columns:minmax(0,1fr)}
+      .pricing-admin-section > summary{flex-direction:column}
+      .pricing-admin-section-label{align-self:flex-start}
+      .pricing-admin-section-body{padding:12px}
+      .pricing-current-block{padding:10px}
+      .pricing-group-toggle{padding:10px}
+      .pricing-group-summary{flex-direction:column}
+      .pricing-group-status{align-self:flex-start}
     }
   </style>
 </head>
@@ -391,64 +480,83 @@
         </div>
       </section>
 
-      <section class="panel">
-        <h2>Калькулятор: базовые ставки</h2>
-        <p class="small">Это базовая инженерная цена до регионального коэффициента. Региональная регулировка применяется поверх итоговой базы.</p>
-        <div class="grid">
-          <div>
-            <label for="laborRate">Работы за ступень</label>
-            <input id="laborRate" type="number" min="0" step="1" />
-          </div>
-          <div>
-            <label for="metalRate">Металл за метр</label>
-            <input id="metalRate" type="number" min="0" step="1" />
-          </div>
-          <div>
-            <label for="woodRate">Дерево за м²</label>
-            <input id="woodRate" type="number" min="0" step="1" />
-          </div>
-          <div>
-            <label for="concreteRate">Бетон за м³</label>
-            <input id="concreteRate" type="number" min="0" step="1" />
-          </div>
-          <div>
-            <label for="installCoef">Коэффициент монтажа</label>
-            <input id="installCoef" type="number" min="0" step="0.01" />
-          </div>
-          <div>
-            <label for="markupCoef">Коэффициент маржи</label>
-            <input id="markupCoef" type="number" min="0" step="0.01" />
-          </div>
-        </div>
-        <div class="row" style="margin-top:12px">
-          <button id="savePricingDefaults" class="btn">Сохранить базовые ставки</button>
-        </div>
-      </section>
-
-      <section class="panel">
-        <h2>Калькулятор: регионы</h2>
-        <p class="small">План регулировки цены: итоговая база калькулятора умножается на коэффициент региона. Держите здесь два рабочих региона и правьте коэффициенты без изменения кода.</p>
-        <div id="pricingRegionsList"></div>
-        <div class="row">
-          <button id="addPricingRegion" class="btn btn-secondary">Добавить регион</button>
-          <button id="savePricingRegions" class="btn">Сохранить регионы</button>
-        </div>
-      </section>
-
-      <section class="panel">
-        <h2>Калькулятор: коммерческие ставки</h2>
-        <p class="small">Здесь регулируются ставки отделки, ограждений, подсветки, покрытия и сервисных работ. Эти значения используются в сценариях, где калькулятор считает отделку и коммерческую часть.</p>
-        <div id="pricingRulesList"></div>
-        <div class="row">
-          <button id="addPricingRule" class="btn btn-secondary">Добавить ставку</button>
-          <button id="savePricingRules" class="btn">Сохранить ставки</button>
-        </div>
-      </section>
-
-      <section class="panel">
+      <section class="panel pricing-admin-panel">
         <h2>Калькулятор / Цены</h2>
-        <p class="small">Подготовленные группы будущих настроек цен. Пока это безопасная структура без CRUD и без изменения действующих расчётов.</p>
-        <p class="small">Сейчас раздел работает в режиме просмотра. Редактирование тарифов будет добавлено отдельным PR.</p>
+        <details class="pricing-admin-section">
+          <summary>
+            <div>
+              <h3>Действующие ставки</h3>
+              <p>Это текущие рабочие тарифы, которые уже используются и сохраняются. Не удалять до переноса в новую структуру.</p>
+            </div>
+            <span class="pricing-admin-section-label">Свернуто</span>
+          </summary>
+          <div class="pricing-admin-section-body">
+            <section class="pricing-current-block">
+              <h3>Базовые ставки</h3>
+              <p class="small">Это базовая инженерная цена до регионального коэффициента. Региональная регулировка применяется поверх итоговой базы.</p>
+              <div class="grid">
+                <div>
+                  <label for="laborRate">Работы за ступень</label>
+                  <input id="laborRate" type="number" min="0" step="1" />
+                </div>
+                <div>
+                  <label for="metalRate">Металл за метр</label>
+                  <input id="metalRate" type="number" min="0" step="1" />
+                </div>
+                <div>
+                  <label for="woodRate">Дерево за м²</label>
+                  <input id="woodRate" type="number" min="0" step="1" />
+                </div>
+                <div>
+                  <label for="concreteRate">Бетон за м³</label>
+                  <input id="concreteRate" type="number" min="0" step="1" />
+                </div>
+                <div>
+                  <label for="installCoef">Коэффициент монтажа</label>
+                  <input id="installCoef" type="number" min="0" step="0.01" />
+                </div>
+                <div>
+                  <label for="markupCoef">Коэффициент маржи</label>
+                  <input id="markupCoef" type="number" min="0" step="0.01" />
+                </div>
+              </div>
+              <div class="row">
+                <button id="savePricingDefaults" class="btn">Сохранить базовые ставки</button>
+              </div>
+            </section>
+
+            <section class="pricing-current-block">
+              <h3>Регионы</h3>
+              <p class="small">План регулировки цены: итоговая база калькулятора умножается на коэффициент региона. Держите здесь два рабочих региона и правьте коэффициенты без изменения кода.</p>
+              <div id="pricingRegionsList"></div>
+              <div class="row">
+                <button id="addPricingRegion" class="btn btn-secondary">Добавить регион</button>
+                <button id="savePricingRegions" class="btn">Сохранить регионы</button>
+              </div>
+            </section>
+
+            <section class="pricing-current-block">
+              <h3>Коммерческие ставки</h3>
+              <p class="small">Здесь регулируются ставки отделки, ограждений, подсветки, покрытия и сервисных работ. Эти значения используются в сценариях, где калькулятор считает отделку и коммерческую часть.</p>
+              <div id="pricingRulesList"></div>
+              <div class="row">
+                <button id="addPricingRule" class="btn btn-secondary">Добавить ставку</button>
+                <button id="savePricingRules" class="btn">Сохранить ставки</button>
+              </div>
+            </section>
+          </div>
+        </details>
+
+        <details class="pricing-admin-section">
+          <summary>
+            <div>
+              <h3>Подготовленная структура тарифов</h3>
+              <p>Подготовленные группы будущих настроек цен. Пока это безопасная структура без CRUD и без изменения действующих расчётов.</p>
+            </div>
+            <span class="pricing-admin-section-label">Свернуто</span>
+          </summary>
+          <div class="pricing-admin-section-body">
+            <p class="small">Сейчас раздел работает в режиме просмотра. Редактирование тарифов будет добавлено отдельным PR.</p>
         <div class="pricing-groups-grid">
           <article class="pricing-group-card">
             <details class="pricing-group-toggle">
@@ -1821,6 +1929,8 @@
             </details>
           </article>
         </div>
+          </div>
+        </details>
       </section>
 
       <section class="panel">
