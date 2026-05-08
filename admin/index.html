@@ -99,6 +99,41 @@
       padding:12px;
       margin-bottom:10px;
     }
+    #projectsList{
+      display:grid;
+      gap:10px;
+      min-width:0;
+    }
+    .project-card{
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px;
+      margin-bottom:0;
+      min-width:0;
+      max-width:100%;
+      overflow:hidden;
+    }
+    .project-card > summary{
+      list-style:none;
+      cursor:pointer;
+      user-select:none;
+      font-weight:700;
+      min-width:0;
+    }
+    .project-card > summary::-webkit-details-marker{
+      display:none;
+    }
+    .project-card > summary::marker{
+      content:'';
+    }
+    .project-card[open] > .project-card-body{
+      border-top:1px solid var(--line);
+      margin-top:12px;
+      padding-top:12px;
+    }
+    .project-card-body{
+      min-width:0;
+    }
     .hidden{display:none !important}
     .status{
       margin-top:10px;
@@ -2359,12 +2394,31 @@
       return div;
     }
 
-    function projectItem(item = {}) {
-      const div = document.createElement('div');
-      div.className = 'item';
+    function getProjectSummaryTitle(projectEl, index) {
+      const titleInput = projectEl.querySelector('[data-k="title"]');
+      const title = (titleInput?.value || '').trim();
+      const fallback = projectEl.dataset.isNewProject === 'true' ? 'новый проект' : 'без названия';
+      return `Проект ${index + 1} — ${title || fallback}`;
+    }
+
+    function updateProjectSummaries() {
+      [...projectsList.querySelectorAll('.project-card')].forEach((projectEl, index) => {
+        const summaryTitle = projectEl.querySelector('[data-k="projectSummaryTitle"]');
+        if (summaryTitle) {
+          summaryTitle.textContent = getProjectSummaryTitle(projectEl, index);
+        }
+      });
+    }
+
+    function projectItem(item = {}, isNewProject = false) {
+      const div = document.createElement('details');
+      div.className = 'item project-card';
       div.dataset.id = item.id || uid();
+      div.dataset.isNewProject = isNewProject ? 'true' : 'false';
       const initialGallery = normalizeGalleryEntries(item.gallery_images || [], item.cover_image || item.image || '');
       div.innerHTML = `
+        <summary><span data-k="projectSummaryTitle"></span></summary>
+        <div class="project-card-body">
         <div class="grid">
           <div>
             <label>Заголовок</label>
@@ -2407,7 +2461,13 @@
         <div class="row" style="margin-top:8px">
           <button type="button" class="btn btn-danger" data-remove>Удалить</button>
         </div>
+        </div>
       `;
+      const titleInput = div.querySelector('[data-k="title"]');
+      titleInput.addEventListener('input', () => {
+        div.dataset.isNewProject = 'false';
+        updateProjectSummaries();
+      });
       const galleryJsonTextarea = div.querySelector('[data-k="gallery_json"]');
       div._galleryState = { images: initialGallery };
       renderProjectGallery(div);
@@ -2444,7 +2504,10 @@
           event.target.value = '';
         }
       });
-      div.querySelector('[data-remove]').onclick = () => div.remove();
+      div.querySelector('[data-remove]').onclick = () => {
+        div.remove();
+        updateProjectSummaries();
+      };
       return div;
     }
 
@@ -2567,6 +2630,7 @@
     function renderProjects(items) {
       projectsList.innerHTML = '';
       (items || []).forEach(item => projectsList.appendChild(projectItem(item)));
+      updateProjectSummaries();
     }
 
     function renderPricingRegions(items) {
@@ -3003,7 +3067,8 @@
     };
 
     document.getElementById('addProject').onclick = () => {
-      projectsList.appendChild(projectItem({}));
+      projectsList.appendChild(projectItem({}, true));
+      updateProjectSummaries();
     };
 
     document.getElementById('saveProjects').onclick = async () => {
