@@ -136,6 +136,36 @@ const client = (cfg?.url && cfg?.anonKey && window.supabase)
   ? window.supabase.createClient(cfg.url, cfg.anonKey)
   : null;
 const fallbackProjectImage = '/assets/design/home-showcase.jpg';
+const fallbackProjects = [
+  {
+    title: 'Монокосоур в тёплом минимализме',
+    staircase_type: 'Монокосоур, прямой марш',
+    material_label: 'Металл + дуб, стекло',
+    short_description: 'Лёгкий визуально марш с подсветкой ступеней и аккуратным стеклянным ограждением для современного частного дома.',
+    image: '/assets/design/home-showcase.jpg'
+  },
+  {
+    title: 'Г-образная лестница с площадкой',
+    staircase_type: 'Г-образная, площадка',
+    material_label: 'Металлокаркас + ясень',
+    short_description: 'Сценарий для семейного дома: комфортная геометрия шага, тёплая древесина и сдержанная архитектурная пластика.',
+    image: '/IMG_5190.jpeg'
+  },
+  {
+    title: 'Обшивка готового основания деревом',
+    staircase_type: 'Отделка существующего основания',
+    material_label: 'Дубовый шпон + защитное покрытие',
+    short_description: 'Комплексная облицовка с выравниванием узлов, подготовкой кромок и премиальной финишной текстурой дерева.',
+    image: '/assets/design/calculator-hero.jpg'
+  },
+  {
+    title: 'П-образная лестница для второго света',
+    staircase_type: 'П-образная, забежные ступени',
+    material_label: 'Металл + дерево + акцентное ограждение',
+    short_description: 'Проект с акцентом на пропорции в высоком пространстве: инженерный расчёт, чистая посадка и спокойная премиальная отделка.',
+    image: '/assets/design/home-hero.jpg'
+  }
+];
 const esc = (s='') => String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'", '&#039;');
 const getPrice = (project) => project.price ? `${new Intl.NumberFormat('ru-RU').format(project.price)} ₽` : (project.price_from ? `от ${new Intl.NumberFormat('ru-RU').format(project.price_from)} ₽` : 'по запросу');
 const tagsFor = (project) => {
@@ -151,8 +181,11 @@ const resolveProjectImage = (project) => {
   return raw;
 };
 
-const render = (items=[]) => {
-  projectsCount.textContent = items.length ? `Реализованных кейсов: ${items.length}` : 'Коллекция обновляется';
+const render = (items=[], options={}) => {
+  const isFallback = Boolean(options.isFallback);
+  projectsCount.textContent = items.length
+    ? (isFallback ? `Кейсы из подборки: ${items.length}` : `Реализованных кейсов: ${items.length}`)
+    : 'Коллекция обновляется';
   projectsRoot.classList.toggle('projects-grid--curated', items.length > 0 && items.length <= 2);
 
   if (!items.length) {
@@ -163,9 +196,14 @@ const render = (items=[]) => {
   projectsRoot.innerHTML = items.map((p)=>{
     const title = p.title || 'Проект Tekstura';
     const shortDescription = p.short_description || p.description || 'Индивидуальная инженерная проработка, точные узлы и премиальная реализация под интерьер дома.';
-    const image = resolveProjectImage(p);
-    const tags = tagsFor(p);
-    return `<a class="project-card" href="/project.html?id=${encodeURIComponent(p.id)}" aria-label="Смотреть проект ${esc(title)}">
+    const image = isFallback ? (p.image || fallbackProjectImage) : resolveProjectImage(p);
+    const tags = isFallback
+      ? [p.staircase_type, p.material_label].filter(Boolean)
+      : tagsFor(p);
+    const href = isFallback ? '/request.html' : `/project.html?id=${encodeURIComponent(p.id)}`;
+    const cardLabel = isFallback ? `Обсудить похожий проект: ${title}` : `Смотреть проект ${title}`;
+    const cardAction = isFallback ? 'Обсудить похожий проект' : 'Смотреть проект';
+    return `<a class="project-card" href="${esc(href)}" aria-label="${esc(cardLabel)}">
       <figure class="project-card__media">
         <img src="${esc(image)}" alt="${esc(title)}" loading="lazy" onerror="this.onerror=null;this.src='${fallbackProjectImage}';">
       </figure>
@@ -175,8 +213,8 @@ const render = (items=[]) => {
         ${tags.length ? `<div class="project-tags">${tags.map((tag)=>`<span class="project-tag">${esc(tag)}</span>`).join('')}</div>` : ''}
         <div class="project-card__note">Инженерная реализация и монтаж штатной бригадой Tekstura.</div>
         <div class="project-card__footer">
-          <div class="project-card__price">${esc(getPrice(p))}</div>
-          <span class="project-card__link">Смотреть проект</span>
+          <div class="project-card__price">${isFallback ? 'Формат: под ключ' : esc(getPrice(p))}</div>
+          <span class="project-card__link">${esc(cardAction)}</span>
         </div>
       </div>
     </a>`;
@@ -186,22 +224,20 @@ const render = (items=[]) => {
 (async function load(){
   try {
     if (!client) {
-      projectsCount.textContent = 'Каталог в базовом режиме';
-      projectsRoot.innerHTML = '<div class="projects-state">Каталог временно недоступен. Оставьте заявку — отправим curated-подборку реализованных объектов Tekstura вручную.</div>';
+      render(fallbackProjects, { isFallback: true });
       return;
     }
     const { data, error } = await client.from('projects').select('*').order('created_at', { ascending: false });
     if (error) throw error;
     const items = data || [];
-    if (!items.length) return render([]);
+    if (!items.length) return render(fallbackProjects, { isFallback: true });
     const { data: images } = await client.from('project_images').select('project_id,image_url,is_cover,sort_order').in('project_id', items.map((i)=>i.id)).order('sort_order', { ascending: true });
     const coverMap = new Map();
     (images||[]).forEach((img)=>{ if(!coverMap.has(img.project_id) || img.is_cover) coverMap.set(img.project_id, img.image_url); });
     render(items.map((p)=>({ ...p, cover_image: coverMap.get(p.id) || p.cover_image })));
   } catch (err) {
     console.error(err);
-    projectsCount.textContent='Не удалось загрузить коллекцию';
-    projectsRoot.innerHTML='<div class="projects-state">Не удалось загрузить каталог из Supabase. Оставьте заявку, и инженер отправит актуальные кейсы из реализованных объектов Tekstura.</div>';
+    render(fallbackProjects, { isFallback: true });
   }
 })();
 </script>
