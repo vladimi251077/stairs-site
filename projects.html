@@ -151,6 +151,47 @@ const resolveProjectImage = (project) => {
   return raw;
 };
 
+const staticFallbackCases = [
+  {
+    id: 'static-oak-u-shape',
+    title: 'П-образная лестница из дуба с подсветкой ступеней',
+    short_description: 'Частный дом, два марша с разворотной площадкой, интегрированная LED-подсветка и скрытые крепления.',
+    category: 'Премиум',
+    staircase_type: 'П-образная',
+    lead_time: '7 недель',
+    price_from: 985000,
+    cover_image: fallbackProjectImage,
+    isStatic: true,
+  },
+  {
+    id: 'static-metal-glass-console',
+    title: 'Консольная лестница металл + стекло',
+    short_description: 'Минималистичный интерьер: консольные ступени на металлокаркасе, стеклянное ограждение и точный монтаж в чистовой отделке.',
+    category: 'Современная',
+    staircase_type: 'Консольная',
+    lead_time: '6 недель',
+    price_from: 1120000,
+    cover_image: fallbackProjectImage,
+    isStatic: true,
+  },
+  {
+    id: 'static-ash-open-riser',
+    title: 'Открытая лестница из ясеня на центральном косоуре',
+    short_description: 'Лёгкий визуальный силуэт, тёплая текстура массива и инженерная жёсткость для ежедневной эксплуатации.',
+    category: 'Сканди',
+    staircase_type: 'На косоуре',
+    lead_time: '5 недель',
+    price_from: 760000,
+    cover_image: fallbackProjectImage,
+    isStatic: true,
+  }
+];
+
+const renderFallbackCases = (mode='fallback') => {
+  projectsCount.textContent = mode === 'static' ? 'Показаны базовые кейсы' : 'Показаны fallback-кейсы';
+  render(staticFallbackCases);
+};
+
 const render = (items=[]) => {
   projectsCount.textContent = items.length ? `Реализованных кейсов: ${items.length}` : 'Коллекция обновляется';
   projectsRoot.classList.toggle('projects-grid--curated', items.length > 0 && items.length <= 2);
@@ -165,7 +206,8 @@ const render = (items=[]) => {
     const shortDescription = p.short_description || p.description || 'Индивидуальная инженерная проработка, точные узлы и премиальная реализация под интерьер дома.';
     const image = resolveProjectImage(p);
     const tags = tagsFor(p);
-    return `<a class="project-card" href="/project.html?id=${encodeURIComponent(p.id)}" aria-label="Смотреть проект ${esc(title)}">
+    const href = p.isStatic ? '/calculator.html' : `/project.html?id=${encodeURIComponent(p.id)}`;
+    return `<a class="project-card" href="${href}" aria-label="Смотреть проект ${esc(title)}">
       <figure class="project-card__media">
         <img src="${esc(image)}" alt="${esc(title)}" loading="lazy" onerror="this.onerror=null;this.src='${fallbackProjectImage}';">
       </figure>
@@ -186,22 +228,20 @@ const render = (items=[]) => {
 (async function load(){
   try {
     if (!client) {
-      projectsCount.textContent = 'Каталог в базовом режиме';
-      projectsRoot.innerHTML = '<div class="projects-state">Каталог временно недоступен. Оставьте заявку — отправим curated-подборку реализованных объектов Tekstura вручную.</div>';
+      renderFallbackCases('static');
       return;
     }
     const { data, error } = await client.from('projects').select('*').order('created_at', { ascending: false });
     if (error) throw error;
     const items = data || [];
-    if (!items.length) return render([]);
+    if (!items.length) return renderFallbackCases();
     const { data: images } = await client.from('project_images').select('project_id,image_url,is_cover,sort_order').in('project_id', items.map((i)=>i.id)).order('sort_order', { ascending: true });
     const coverMap = new Map();
     (images||[]).forEach((img)=>{ if(!coverMap.has(img.project_id) || img.is_cover) coverMap.set(img.project_id, img.image_url); });
     render(items.map((p)=>({ ...p, cover_image: coverMap.get(p.id) || p.cover_image })));
   } catch (err) {
     console.error(err);
-    projectsCount.textContent='Не удалось загрузить коллекцию';
-    projectsRoot.innerHTML='<div class="projects-state">Не удалось загрузить каталог из Supabase. Оставьте заявку, и инженер отправит актуальные кейсы из реализованных объектов Tekstura.</div>';
+    renderFallbackCases();
   }
 })();
 </script>
