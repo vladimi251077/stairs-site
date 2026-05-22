@@ -140,43 +140,13 @@
           <p>Показываем завершённые объекты Tekstura с реальными фото лестниц: материал, формат работ и итог на объекте.</p>
           <div class="projects-scroll-hint" aria-hidden="true">Листайте проекты →</div>
         </div>
-        <div class="projects-preview-carousel" aria-label="Карусель готовых проектов лестниц Tekstura">
-          <a class="project-preview-card" href="/projects.html" aria-label="Смотреть готовый проект: П-образная лестница из дуба с подсветкой">
-            <figure>
-              <img src="/IMG_5190.jpeg" alt="Готовый проект: П-образная лестница из дуба" loading="lazy">
-            </figure>
+        <div id="homepageProjectsCarousel" class="projects-preview-carousel" aria-label="Карусель готовых проектов лестниц Tekstura" aria-live="polite">
+          <article class="project-preview-card project-preview-card--state">
             <div class="project-preview-card__body">
-              <h3>П-образная лестница в частном доме, Казань</h3>
-              <div class="project-preview-card__tags"><span>дуб</span><span>металлокаркас</span><span>монтаж под ключ</span></div>
-              <p>Обшили готовый каркас: ступени, подступенки и чистовая регулировка узлов после монтажа.</p>
-              <span class="project-preview-card__cta">Смотреть проект</span>
+              <h3>Загружаем готовые проекты</h3>
+              <p>Подбираем реальные объекты из каталога Tekstura.</p>
             </div>
-          </a>
-
-          <a class="project-preview-card" href="/projects.html" aria-label="Смотреть готовый проект: консольная лестница металл и стекло">
-            <figure>
-              <img src="/assets/design/home-showcase.jpg" alt="Готовый проект: консольная лестница металл и стекло" loading="lazy">
-            </figure>
-            <div class="project-preview-card__body">
-              <h3>Консольная лестница в современном интерьере</h3>
-              <div class="project-preview-card__tags"><span>металл</span><span>стекло</span><span>премиум отделка</span></div>
-              <p>Сделали визуально лёгкий марш, стеклянное ограждение и точную посадку в чистовой отделке.</p>
-              <span class="project-preview-card__cta">Смотреть проект</span>
-            </div>
-          </a>
-
-          <a class="project-preview-card" href="/projects.html" aria-label="Смотреть готовый проект: лестница из ясеня на косоуре">
-            <figure>
-              <img src="/assets/design/home-hero.jpg" alt="Готовый проект: лестница из ясеня на косоуре" loading="lazy">
-            </figure>
-            <div class="project-preview-card__body">
-              <h3>Открытая лестница из ясеня на косоуре</h3>
-              <div class="project-preview-card__tags"><span>ясень</span><span>косоур</span><span>производство и монтаж</span></div>
-              <p>Изготовили комплект деталей под объект и выполнили финальную сборку с проверкой геометрии шага.</p>
-              <span class="project-preview-card__cta">Смотреть проект</span>
-            </div>
-          </a>
-
+          </article>
         </div>
         <div class="section-heading section-heading--small">
           <div class="section-eyebrow">Детали</div>
@@ -301,6 +271,67 @@
   </footer>
 
   <script>
+
+    const homepageProjectsCarousel = document.getElementById('homepageProjectsCarousel');
+    const fallbackProjectImage = '/assets/design/home-showcase.jpg';
+    const normalizeText = (value = '') => String(value || '').toLowerCase().replace(/ё/g, 'е');
+    const projectImageLooksValid = (value = '') => {
+      const raw = String(value || '').trim();
+      if (!raw) return false;
+      const lowered = normalizeText(raw);
+      if (lowered.endsWith('.svg')) return false;
+      if (/(logo|mark|node|detail|texture|pattern|icon)/.test(lowered)) return false;
+      return true;
+    };
+    const resolveProjectImage = (project = {}) => {
+      const image = String(project.cover_image || project.image || '').trim();
+      if (projectImageLooksValid(image)) return image;
+      return projectImageLooksValid(fallbackProjectImage) ? fallbackProjectImage : '';
+    };
+    const buildProjectTags = (project = {}) => {
+      const tags = [];
+      if (project.staircase_type) tags.push(project.staircase_type);
+      if (project.category) tags.push(project.category);
+      if (project.lead_time) tags.push(`Срок: ${project.lead_time}`);
+      return tags.slice(0, 3);
+    };
+    const renderHomepageProjectsFallbackState = () => {
+      if (!homepageProjectsCarousel) return;
+      homepageProjectsCarousel.innerHTML = `
+        <a class="project-preview-card project-preview-card--state" href="/projects.html" aria-label="Перейти к портфолио проектов Tekstura">
+          <div class="project-preview-card__body">
+            <h3>Портфолио обновляется</h3>
+            <p>Сейчас каталог проектов обновляется. Откройте общий список, чтобы посмотреть актуальные кейсы Tekstura.</p>
+            <span class="project-preview-card__cta">Смотреть все проекты</span>
+          </div>
+        </a>`;
+    };
+    const renderHomepageProjects = (items = []) => {
+      if (!homepageProjectsCarousel) return;
+      const prepared = (Array.isArray(items) ? items : [])
+        .map((project) => ({ ...project, _image: resolveProjectImage(project) }))
+        .filter((project) => Boolean(project._image));
+      if (!prepared.length) {
+        renderHomepageProjectsFallbackState();
+        return;
+      }
+      homepageProjectsCarousel.innerHTML = prepared.map((project) => {
+        const title = project.title || 'Проект Tekstura';
+        const shortDescription = project.short_description || project.description || 'Реализованный проект лестницы с инженерной проработкой и монтажом.';
+        const tags = buildProjectTags(project);
+        const href = `/project.html?id=${encodeURIComponent(project.id)}`;
+        return `<a class="project-preview-card" href="${href}" aria-label="Смотреть проект ${escapeHtml(title)}">
+          <figure><img src="${escapeHtml(project._image)}" alt="${escapeHtml(title)}" loading="lazy" onerror="this.onerror=null;this.src='${fallbackProjectImage}';"></figure>
+          <div class="project-preview-card__body">
+            <h3>${escapeHtml(title)}</h3>
+            ${tags.length ? `<div class="project-preview-card__tags">${tags.map((tag) => `<span>${escapeHtml(tag)}</span>`).join('')}</div>` : ''}
+            <p>${escapeHtml(shortDescription)}</p>
+            <span class="project-preview-card__cta">Смотреть проект</span>
+          </div>
+        </a>`;
+      }).join('');
+    };
+
     const fallback = {
       settings: {
         logo: '',
@@ -417,16 +448,34 @@
     async function bootHomepageData() {
       renderSettings(fallback.settings);
       renderServices(fallback.services);
+      renderHomepageProjectsFallbackState();
       try {
         const cfg = window.SUPABASE_CONFIG;
         if (!cfg?.url || !cfg?.anonKey || !window.supabase) return;
         const client = window.supabase.createClient(cfg.url, cfg.anonKey);
-        const [{ data: settingsData, error: settingsError }, { data: servicesData, error: servicesError }] = await Promise.all([
+        const [{ data: settingsData, error: settingsError }, { data: servicesData, error: servicesError }, { data: projectsData, error: projectsError }] = await Promise.all([
           client.from('settings').select('*').order('updated_at', { ascending: false }).limit(1).maybeSingle(),
-          client.from('services').select('*').order('sort_order', { ascending: true })
+          client.from('services').select('*').order('sort_order', { ascending: true }),
+          client.from('projects').select('*').order('created_at', { ascending: false }).limit(6)
         ]);
         if (!settingsError && settingsData) renderSettings(settingsData);
         if (!servicesError && Array.isArray(servicesData)) renderServices(servicesData);
+        if (!projectsError && Array.isArray(projectsData) && projectsData.length) {
+          const ids = projectsData.map((p) => p.id).filter(Boolean);
+          if (ids.length) {
+            const { data: imagesData } = await client.from('project_images').select('project_id,image_url,is_cover,sort_order').in('project_id', ids).order('sort_order', { ascending: true });
+            const coverMap = new Map();
+            (imagesData || []).forEach((img) => {
+              if (!coverMap.has(img.project_id) || img.is_cover) coverMap.set(img.project_id, img.image_url);
+            });
+            const merged = projectsData.map((project) => ({ ...project, cover_image: coverMap.get(project.id) || project.cover_image }));
+            renderHomepageProjects(merged.slice(0, 5));
+          } else {
+            renderHomepageProjects(projectsData.slice(0, 5));
+          }
+        } else {
+          renderHomepageProjectsFallbackState();
+        }
       } catch (err) {
         console.warn('Homepage fallback mode enabled:', err?.message || err);
       }
