@@ -102,3 +102,13 @@ button:disabled { cursor:not-allowed; opacity:.5; }
 .svg-label { fill:#d7c7b0; font-size:120px; font-family:Inter, Arial, sans-serif; }
 .svg-label-strong { fill:#f0d7b7; font-weight:800; }
 @media (max-width:760px){ .grid { grid-template-columns:1fr; } .field-wide { grid-column:auto; } .actions { flex-direction:column; } button, .btn-review { width:100%; box-sizing:border-box; } .top { flex-direction:column; align-items:flex-start; } .result-heading { flex-direction:column; } .diagram-grid { grid-template-columns:1fr; } .stair-svg { height:260px; }}
+
+
+.calc-orientation__title { margin: 0 0 10px; font-size: 24px; }
+.calc-progress { margin: 0; padding-left: 18px; display: grid; gap: 6px; color: #ddccb5; }
+.calc-progress li { line-height: 1.45; }
+.calc-progress span { color: #f0d7b7; font-weight: 700; }
+.quick-mode-note { margin-top: 14px; border: 1px solid rgba(255,255,255,.1); border-radius: 12px; padding: 12px; background: rgba(255,255,255,.03); }
+.quick-mode-note h3 { margin: 0 0 8px; font-size: 18px; }
+.quick-mode-note ul { margin: 0; padding-left: 18px; color: #d7c7b0; display: grid; gap: 5px; }
+.post-submit-info ul { margin: 8px 0 0; padding-left: 18px; color: #d7c7b0; display: grid; gap: 5px; }
