@@ -117,10 +117,10 @@
           <figure class="photo-card"><img src="/assets/design/home-showcase.jpg" alt="Избранный проект Tekstura №2"><figcaption>Проект №2: современный марш с акцентом на материалы.</figcaption></figure>
         </div>
         <div class="section-heading section-heading--small">
-          <div class="section-eyebrow">Детали</div>
-          <h2>Материалы и узлы</h2>
+          <div class="section-eyebrow" id="materialsEyebrow">Детали</div>
+          <h2 id="materialsTitle">Материалы и узлы</h2>
         </div>
-        <div class="detail-visuals-grid">
+        <div class="detail-visuals-grid" id="materialsGrid">
           <figure class="photo-card"><img src="/assets/visuals/detail-materials.svg" alt="Детали материалов лестницы"><figcaption>Комбинации дерева и металла под интерьер.</figcaption></figure>
           <figure class="photo-card"><img src="/assets/visuals/detail-node.svg" alt="Детали узлов и креплений"><figcaption>Контроль узлов, примыканий и креплений.</figcaption></figure>
         </div>
@@ -351,20 +351,40 @@
       const grid = document.getElementById('servicesGrid');
       grid.innerHTML = rows.sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)).map((service, idx) => `<article class="feature-card"><div class="feature-card__icon">${String(idx + 1).padStart(2, '0')}</div><h3>${escapeHtml(service.title || 'Услуга')}</h3><p>${escapeHtml(service.description || '')}</p></article>`).join('');
     }
+    const fallbackMaterials = {
+      eyebrow: 'Детали',
+      title: 'Материалы и узлы',
+      items: [
+        { title: 'Материалы', caption: 'Комбинации дерева и металла под интерьер.', image: '/assets/visuals/detail-materials.svg', imageAlt: 'Детали материалов лестницы' },
+        { title: 'Узлы', caption: 'Контроль узлов, примыканий и креплений.', image: '/assets/visuals/detail-node.svg', imageAlt: 'Детали узлов и креплений' }
+      ]
+    };
+    function renderMaterialsNodes(content) {
+      const data = content && Array.isArray(content.items) && content.items.length ? content : fallbackMaterials;
+      document.getElementById('materialsEyebrow').textContent = data.eyebrow || fallbackMaterials.eyebrow;
+      document.getElementById('materialsTitle').textContent = data.title || fallbackMaterials.title;
+      document.getElementById('materialsGrid').innerHTML = data.items.map((item) => `<figure class="photo-card"><img src="${escapeHtml(item.image || '')}" alt="${escapeHtml(item.imageAlt || '')}"><figcaption>${escapeHtml(item.caption || '')}</figcaption></figure>`).join('');
+    }
 
     async function bootHomepageData() {
       renderSettings(fallback.settings);
       renderServices(fallback.services);
+      renderMaterialsNodes(fallbackMaterials);
       try {
         const cfg = window.SUPABASE_CONFIG;
         if (!cfg?.url || !cfg?.anonKey || !window.supabase) return;
         const client = window.supabase.createClient(cfg.url, cfg.anonKey);
-        const [{ data: settingsData, error: settingsError }, { data: servicesData, error: servicesError }] = await Promise.all([
+        const [{ data: settingsData, error: settingsError }, { data: servicesData, error: servicesError }, { data: contentData, error: contentError }] = await Promise.all([
           client.from('settings').select('*').order('updated_at', { ascending: false }).limit(1).maybeSingle(),
-          client.from('services').select('*').order('sort_order', { ascending: true })
+          client.from('services').select('*').order('sort_order', { ascending: true }),
+          client.from('site_content_blocks').select('*').eq('page_key', 'home')
         ]);
         if (!settingsError && settingsData) renderSettings(settingsData);
         if (!servicesError && Array.isArray(servicesData)) renderServices(servicesData);
+        if (!contentError && Array.isArray(contentData)) {
+          const blocksByKey = Object.fromEntries(contentData.map((row) => [row.block_key, row.content || {}]));
+          renderMaterialsNodes(blocksByKey.materials_nodes);
+        }
       } catch (err) {
         console.warn('Homepage fallback mode enabled:', err?.message || err);
       }
