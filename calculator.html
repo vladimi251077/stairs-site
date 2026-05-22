@@ -18,6 +18,25 @@
       <a class="back-link" href="/">На главную</a>
     </div>
 
+    <section class="panel calc-orientation" aria-label="Ориентир по этапам калькулятора">
+      <h2 class="calc-orientation__title">Ориентир по этапам</h2>
+      <ol class="calc-progress" aria-label="Шаги калькулятора">
+        <li><span>Шаг 1:</span> основание</li>
+        <li><span>Шаг 2:</span> материалы</li>
+        <li><span>Шаг 3:</span> ограждение и опции</li>
+        <li><span>Шаг 4:</span> отправка на инженерную проверку</li>
+      </ol>
+      <div class="quick-mode-note">
+        <h3>Не знаете точные размеры?</h3>
+        <ul>
+          <li>Заполните то, что известно на текущем этапе.</li>
+          <li>Инженер Tekstura уточнит недостающие данные по проёму и основанию.</li>
+          <li>Предварительный расчёт не является финальной сметой.</li>
+          <li>Точность подтверждается после проверки проёма, каркаса или бетонного основания.</li>
+        </ul>
+      </div>
+    </section>
+
     <div class="panel">
       <section class="step active" id="step1">
         <h2>Шаг 1. Конфигурация лестницы</h2>
@@ -355,9 +374,19 @@
           <div id="priceResult"></div>
         </div>
 
+        <div class="result-box post-submit-info">
+          <h3>Что произойдёт после отправки</h3>
+          <ul>
+            <li>Инженер проверит размеры и конфигурацию лестницы.</li>
+            <li>Уточнит материалы, ограждение и важные узлы.</li>
+            <li>Подтвердит ориентир стоимости после проверки данных.</li>
+            <li>Предложит следующий шаг: замер, консультацию или уточнение деталей.</li>
+          </ul>
+        </div>
+
         <div class="actions">
           <button class="btn-secondary" type="button" data-prev-step="3" onclick="document.querySelectorAll('.step').forEach(function(node){node.classList.remove('active');});document.getElementById('step3').classList.add('active');">Назад</button>
-          <a class="back-link" id="requestLink" href="/request.html">Оставить заявку</a>
+          <a class="back-link" id="requestLink" href="/request.html">Отправить расчёт на инженерную проверку</a>
         </div>
       </section>
     </div>
