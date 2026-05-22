@@ -602,3 +602,13 @@ main > section {
   .projects-preview-carousel { gap: 14px; }
   .project-preview-card { flex-basis: 84vw; }
 }
+
+
+.project-preview-card__cta {
+  margin-top: 2px;
+  color: #f0d7b7;
+  font-size: 12px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
