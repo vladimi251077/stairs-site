@@ -74,6 +74,15 @@
           <div class="projects-count" id="projectsCount" aria-live="polite">Загрузка коллекции...</div>
         </div>
 
+        <div class="projects-filters" id="projectsFilters" aria-label="Фильтры проектов">
+          <button class="projects-filter is-active" type="button" data-filter="all">Все проекты</button>
+          <button class="projects-filter" type="button" data-filter="concrete-cladding">Обшивка бетонной лестницы</button>
+          <button class="projects-filter" type="button" data-filter="metal-wood">Металлокаркас + дерево</button>
+          <button class="projects-filter" type="button" data-filter="monostringer">Монокосоур</button>
+          <button class="projects-filter" type="button" data-filter="wood-glass">Дерево + стекло</button>
+          <button class="projects-filter" type="button" data-filter="steps-details">Ступени / детали</button>
+        </div>
+
         <div id="projectsRoot" class="projects-grid" aria-live="polite">
           <div class="loading-skeleton"></div>
           <div class="loading-skeleton"></div>
@@ -132,6 +141,9 @@ projectsNav?.addEventListener('click', (event) => {
 const cfg = window.SUPABASE_CONFIG;
 const projectsCount = document.getElementById('projectsCount');
 const projectsRoot = document.getElementById('projectsRoot');
+const projectsFilters = document.getElementById('projectsFilters');
+let activeFilter = 'all';
+let currentItems = [];
 const client = (cfg?.url && cfg?.anonKey && window.supabase)
   ? window.supabase.createClient(cfg.url, cfg.anonKey)
   : null;
@@ -145,6 +157,68 @@ const tagsFor = (project) => {
   if (project.lead_time) tags.push(`Срок: ${project.lead_time}`);
   return tags.slice(0, 3);
 };
+
+const normalizeText = (value='') => String(value || '').toLowerCase().replace(/ё/g, 'е');
+const classifyProject = (project = {}) => {
+  const hay = [
+    project.title,
+    project.short_description,
+    project.description,
+    project.category,
+    project.staircase_type,
+    project.material,
+    project.work_format,
+    project.work_type,
+    project.location
+  ].map(normalizeText).join(' ');
+
+  if (/бетон|обшивк/.test(hay)) return 'concrete-cladding';
+  if (/монокосоур|mono/.test(hay)) return 'monostringer';
+  if ((/металл|металлокаркас/.test(hay) && /дерев|дуб|ясен/.test(hay))) return 'metal-wood';
+  if ((/дерев|дуб|ясен/.test(hay) && /стекл/.test(hay))) return 'wood-glass';
+  if (/ступен|детал|подступен|площадк/.test(hay)) return 'steps-details';
+  return 'metal-wood';
+};
+
+const deriveCaseMeta = (project = {}) => {
+  const group = classifyProject(project);
+  const map = {
+    'concrete-cladding': {
+      type: 'Обшивка бетонной лестницы',
+      material: 'Дерево + инженерная подготовка',
+      format: 'Отделка и монтаж под ключ',
+      done: 'Подготовили основание, изготовили облицовку и собрали чистовой контур.'
+    },
+    'metal-wood': {
+      type: 'Металлокаркас + дерево',
+      material: 'Металл, дуб или ясень',
+      format: 'Производство и монтаж под ключ',
+      done: 'Собрали каркас, установили ступени и настроили финальные примыкания.'
+    },
+    'monostringer': {
+      type: 'Монокосоур',
+      material: 'Металл + массив дерева',
+      format: 'Индивидуальное проектирование',
+      done: 'Реализовали лёгкий силуэт и жёсткость конструкции под интерьер.'
+    },
+    'wood-glass': {
+      type: 'Дерево + стекло',
+      material: 'Дуб/ясень, закалённое стекло',
+      format: 'Премиальная чистовая комплектация',
+      done: 'Согласовали прозрачное ограждение и безопасные узлы крепления.'
+    },
+    'steps-details': {
+      type: 'Ступени и детали',
+      material: 'Массив дерева, защитные покрытия',
+      format: 'Изготовление элементов и установка',
+      done: 'Изготовили комплект ступеней и деталей с точной посадкой по месту.'
+    }
+  };
+  return map[group] || map['metal-wood'];
+};
+
+const matchesFilter = (project, filter) => filter === 'all' || classifyProject(project) === filter;
+
 const resolveProjectImage = (project) => {
   const raw = String(project.cover_image || project.image || '').trim();
   if (!raw || /logo|tekstura-logo|tekstura-header-logo|tekstura-mark|mark/i.test(raw)) return fallbackProjectImage;
@@ -193,19 +267,22 @@ const renderFallbackCases = (mode='fallback') => {
 };
 
 const render = (items=[]) => {
-  projectsCount.textContent = items.length ? `Реализованных кейсов: ${items.length}` : 'Коллекция обновляется';
-  projectsRoot.classList.toggle('projects-grid--curated', items.length > 0 && items.length <= 2);
+  currentItems = Array.isArray(items) ? items : [];
+  const filteredItems = currentItems.filter((item) => matchesFilter(item, activeFilter));
+  projectsCount.textContent = filteredItems.length ? `Реализованных кейсов: ${filteredItems.length}` : 'Коллекция обновляется';
+  projectsRoot.classList.toggle('projects-grid--curated', filteredItems.length > 0 && filteredItems.length <= 2);
 
-  if (!items.length) {
+  if (!filteredItems.length) {
     projectsRoot.innerHTML = '<div class="projects-empty">Публичная коллекция сейчас обновляется. Мы показываем только актуальные кейсы, поэтому часть объектов может быть скрыта до подготовки описаний и фото. Оставьте заявку — инженер Tekstura подберёт похожие реализованные лестницы под ваш проём.</div>';
     return;
   }
 
-  projectsRoot.innerHTML = items.map((p)=>{
+  projectsRoot.innerHTML = filteredItems.map((p)=>{
     const title = p.title || 'Проект Tekstura';
     const shortDescription = p.short_description || p.description || 'Индивидуальная инженерная проработка, точные узлы и премиальная реализация под интерьер дома.';
     const image = resolveProjectImage(p);
     const tags = tagsFor(p);
+    const caseMeta = deriveCaseMeta(p);
     const href = p.isStatic ? '/calculator.html' : `/project.html?id=${encodeURIComponent(p.id)}`;
     return `<a class="project-card" href="${href}" aria-label="Смотреть проект ${esc(title)}">
       <figure class="project-card__media">
@@ -215,6 +292,12 @@ const render = (items=[]) => {
         <h3>${esc(title)}</h3>
         <p>${esc(shortDescription)}</p>
         ${tags.length ? `<div class="project-tags">${tags.map((tag)=>`<span class="project-tag">${esc(tag)}</span>`).join('')}</div>` : ''}
+        <div class="project-case-meta">
+          <div><span>Тип проекта:</span> ${esc(caseMeta.type)}</div>
+          <div><span>Материал:</span> ${esc(caseMeta.material)}</div>
+          <div><span>Формат работ:</span> ${esc(caseMeta.format)}</div>
+          <div><span>Что сделано:</span> ${esc(caseMeta.done)}</div>
+        </div>
         <div class="project-card__note">Инженерная реализация и монтаж штатной бригадой Tekstura.</div>
         <div class="project-card__footer">
           <div class="project-card__price">${esc(getPrice(p))}</div>
@@ -224,6 +307,14 @@ const render = (items=[]) => {
     </a>`;
   }).join('');
 };
+
+projectsFilters?.addEventListener('click', (event) => {
+  const button = event.target.closest('[data-filter]');
+  if (!button) return;
+  activeFilter = button.dataset.filter || 'all';
+  projectsFilters.querySelectorAll('[data-filter]').forEach((node) => node.classList.toggle('is-active', node === button));
+  render(currentItems);
+});
 
 (async function load(){
   try {
