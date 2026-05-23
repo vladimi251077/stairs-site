@@ -10,7 +10,8 @@
     "materials",
     "configurationPresets",
     "materialPackages",
-    "benchmarks"
+    "benchmarks",
+    "researchSources"
   ],
   "properties": {
     "pricingModel": {
@@ -63,12 +64,27 @@
       "additionalProperties": { "$ref": "#/$defs/benchmarkCase" },
       "description": "Эталонные кейсы для контроля калькулятора"
     },
+    "researchSources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["url"],
+        "properties": {
+          "url": { "type": "string", "format": "uri" },
+          "title": { "type": "string" },
+          "note": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
     "meta": {
       "type": "object",
       "properties": {
         "version": { "type": "string" },
         "currency": { "type": "string", "default": "RUB" },
         "updatedAt": { "type": "string", "format": "date-time" },
+        "sourceNotes": { "type": "string" },
         "source": { "type": "string" }
       },
       "additionalProperties": false
@@ -95,7 +111,8 @@
         "wasteCoef": { "type": "number", "minimum": 1, "default": 1 },
         "note": { "type": "string" },
         "source": { "type": "string" },
-        "updatedAt": { "type": "string", "format": "date-time" }
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "sourceNotes": { "type": "string" }
       },
       "additionalProperties": false
     },
