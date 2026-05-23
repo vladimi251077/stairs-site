@@ -112,3 +112,27 @@ button:disabled { cursor:not-allowed; opacity:.5; }
 .quick-mode-note h3 { margin: 0 0 8px; font-size: 18px; }
 .quick-mode-note ul { margin: 0; padding-left: 18px; color: #d7c7b0; display: grid; gap: 5px; }
 .post-submit-info ul { margin: 8px 0 0; padding-left: 18px; color: #d7c7b0; display: grid; gap: 5px; }
+
+/* visual-readability-premium-polish */
+.panel {
+  border-color: rgba(255,255,255,.12);
+}
+
+.field-help {
+  color: #b9a790;
+  line-height: 1.55;
+}
+
+.result-box {
+  border-color: rgba(255,255,255,.12);
+  background: rgba(255,255,255,.03);
+}
+
+.result-table th,
+.result-table td {
+  line-height: 1.5;
+}
+
+.price-main {
+  letter-spacing: -0.012em;
+}
