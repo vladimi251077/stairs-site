@@ -706,3 +706,38 @@ body.projects-page::after {
   color: #f0d7b7;
   font-weight: 700;
 }
+
+/* hero-type-scale-lock */
+.projects-hero h1 {
+  font-size: clamp(44px, 6.1vw, 82px);
+  line-height: 0.94;
+  letter-spacing: -0.038em;
+}
+
+.projects-toolbar h2 {
+  font-size: clamp(34px, 4.4vw, 56px);
+  line-height: 1.03;
+}
+
+.projects-toolbar p,
+.projects-hero p {
+  font-size: clamp(16px, 1.4vw, 20px);
+  line-height: 1.72;
+  color: #e1cfb8;
+}
+
+.project-card__body h3 {
+  font-size: clamp(24px, 2.3vw, 32px);
+  line-height: 1.12;
+}
+
+.project-card__body p,
+.project-card__note,
+.project-case-meta {
+  line-height: 1.62;
+}
+
+.project-tag {
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
