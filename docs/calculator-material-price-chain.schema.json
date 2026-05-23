@@ -1,0 +1,175 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tekstura.local/schemas/calculator-material-price-chain.schema.json",
+  "title": "Tekstura Calculator Material Price Chain",
+  "type": "object",
+  "required": [
+    "pricingModel",
+    "turnkeyCoefDefault",
+    "consumablesPercentDefault",
+    "materials",
+    "configurationPresets",
+    "materialPackages",
+    "benchmarks"
+  ],
+  "properties": {
+    "pricingModel": {
+      "type": "string",
+      "const": "materials_x_coefficient"
+    },
+    "turnkeyCoefDefault": {
+      "type": "number",
+      "minimum": 1.0,
+      "default": 2.7
+    },
+    "consumablesPercentDefault": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "default": 0.08
+    },
+    "materials": {
+      "type": "object",
+      "required": [
+        "stepMaterials",
+        "sheetMaterials",
+        "coatings",
+        "railings",
+        "trim",
+        "consumables"
+      ],
+      "properties": {
+        "stepMaterials": { "$ref": "#/$defs/materialGroup" },
+        "sheetMaterials": { "$ref": "#/$defs/materialGroup" },
+        "coatings": { "$ref": "#/$defs/materialGroup" },
+        "railings": { "$ref": "#/$defs/materialGroup" },
+        "trim": { "$ref": "#/$defs/materialGroup" },
+        "consumables": { "$ref": "#/$defs/materialGroup" }
+      },
+      "additionalProperties": false
+    },
+    "configurationPresets": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/configPreset" },
+      "description": "Нормы материалов по конфигурациям лестниц"
+    },
+    "materialPackages": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/materialPackage" },
+      "description": "Пакеты комбинаций (эконом/стандарт/премиум)"
+    },
+    "benchmarks": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/benchmarkCase" },
+      "description": "Эталонные кейсы для контроля калькулятора"
+    },
+    "meta": {
+      "type": "object",
+      "properties": {
+        "version": { "type": "string" },
+        "currency": { "type": "string", "default": "RUB" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "source": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "materialGroup": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/materialItem" }
+    },
+    "materialItem": {
+      "type": "object",
+      "required": ["title", "unit", "price", "active"],
+      "properties": {
+        "title": { "type": "string" },
+        "unit": {
+          "type": "string",
+          "enum": ["m2", "lm", "pcs", "sheet", "liter", "kg", "set", "percent"]
+        },
+        "price": { "type": "number", "minimum": 0 },
+        "currency": { "type": "string", "default": "RUB" },
+        "active": { "type": "boolean", "default": true },
+        "wasteCoef": { "type": "number", "minimum": 1, "default": 1 },
+        "note": { "type": "string" },
+        "source": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "additionalProperties": false
+    },
+    "configPreset": {
+      "type": "object",
+      "properties": {
+        "label": { "type": "string" },
+        "rules": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/presetRule" }
+        },
+        "requiresMasterValidation": { "type": "boolean", "default": false },
+        "note": { "type": "string" }
+      },
+      "required": ["label", "rules"],
+      "additionalProperties": false
+    },
+    "presetRule": {
+      "type": "object",
+      "required": ["materialKey", "quantityMode"],
+      "properties": {
+        "materialKey": { "type": "string" },
+        "quantityMode": {
+          "type": "string",
+          "enum": ["formula", "fixed", "range", "per_step", "per_m2", "per_lm", "per_node"]
+        },
+        "formula": { "type": "string" },
+        "fixed": { "type": "number", "minimum": 0 },
+        "min": { "type": "number", "minimum": 0 },
+        "max": { "type": "number", "minimum": 0 },
+        "unit": {
+          "type": "string",
+          "enum": ["m2", "lm", "pcs", "sheet", "liter", "kg", "set"]
+        },
+        "doubleCountGuard": { "type": "string" },
+        "note": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "materialPackage": {
+      "type": "object",
+      "required": ["label", "turnkeyCoef", "materials"],
+      "properties": {
+        "label": { "type": "string" },
+        "turnkeyCoef": { "type": "number", "minimum": 1 },
+        "consumablesPercent": { "type": "number", "minimum": 0, "maximum": 1 },
+        "materials": {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "description": "Map logical slot -> material key"
+        },
+        "note": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "benchmarkCase": {
+      "type": "object",
+      "required": ["label", "inputs", "targetPrice"],
+      "properties": {
+        "label": { "type": "string" },
+        "inputs": { "type": "object" },
+        "targetPrice": { "type": "number", "minimum": 0 },
+        "acceptableRange": {
+          "type": "object",
+          "properties": {
+            "min": { "type": "number", "minimum": 0 },
+            "max": { "type": "number", "minimum": 0 }
+          },
+          "required": ["min", "max"],
+          "additionalProperties": false
+        },
+        "note": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  }
+}
