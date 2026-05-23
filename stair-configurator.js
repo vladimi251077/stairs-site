@@ -355,6 +355,136 @@ function getOptionLabel(kind, key) {
   return key || 'Уточняется';
 }
 
+
+function isPriceDebugEnabled() {
+  try {
+    const params = new URLSearchParams(window.location.search || '');
+    if (params.get('debugPrice') === '1') return true;
+  } catch (_) {}
+
+  try {
+    return localStorage.getItem('debugPrice') === '1';
+  } catch (_) {
+    return false;
+  }
+}
+
+function buildPriceDebugBreakdown({ config, geometry, materials, price }) {
+  const metrics = materials?.metrics || {};
+  const scenarioRates = price?.scenarioRatesUsed || getScenarioRates();
+  const finishRate = scenarioRates.finishMaterialPerM2?.[config.finish_material] ?? scenarioRates.finishMaterialPerM2?.oak ?? 0;
+
+  const finishMaterialSubtotal = (metrics.finishSurfaceAreaM2 || metrics.finishAreaM2 || 0) * finishRate;
+  const fullCladdingSubtotal = (metrics.fullCladdingAreaM2 || 0) * (scenarioRates.service?.fullCladdingPerM2 ?? 0);
+  const installSubtotal = (metrics.finishAreaM2 || 0) * (scenarioRates.service?.installPerM2 ?? 0);
+  const coatingSubtotal = (metrics.coatingAreaM2 || 0) * (scenarioRates.coatingPerM2?.[config.coating_option] ?? 0);
+  const railingSubtotal = (metrics.railingLengthM || 0) * (scenarioRates.railingPerM?.[config.railing_option] ?? 0);
+  const prepSubtotal = config.base_condition === 'existing_concrete_base' && config.concrete_base_condition !== 'ready'
+    ? (metrics.finishAreaM2 || 0) * (scenarioRates.service?.prepPerM2 ?? 0)
+    : 0;
+  const fitCheckSubtotal = isReadyFrameCondition(config.base_condition) ? (scenarioRates.service?.fitCheck ?? 0) : 0;
+  const lightingSubtotal = (metrics.stepCount || 0) * (scenarioRates.lightingPerStep?.[config.lighting_option] ?? 0);
+
+  const priceBeforeRegionCoef = Number(price?.subtotalBeforeRegion || 0);
+  const regionCoef = Number(price?.regionalCoef || 1);
+  const priceAfterRegionCoef = Number(price?.total || 0);
+  const targetPrice = 290000;
+  const differenceRub = priceAfterRegionCoef - targetPrice;
+  const differencePercent = targetPrice > 0 ? (differenceRub / targetPrice) * 100 : 0;
+
+  return {
+    inputs: {
+      base_condition: config.base_condition,
+      stair_type: config.stair_type,
+      turn_type: config.turn_type,
+      finish_scope: config.finish_scope,
+      finish_material: config.finish_material,
+      coating_option: config.coating_option,
+      railing_option: config.railing_option,
+      lighting_option: config.lighting_option,
+      pricing_region_code: config.pricing_region_code,
+      ready_frame_step_count: config.ready_frame_step_count,
+      ready_frame_march_width: config.ready_frame_march_width,
+      ready_frame_tread_depth: config.ready_frame_tread_depth,
+      ready_frame_riser_height: config.ready_frame_riser_height,
+      has_landing: config.has_landing,
+      landing_length: config.landing_length,
+      landing_width: config.landing_width,
+      landing_area: config.landing_area,
+      ready_frame_straight_railing_length: config.ready_frame_straight_railing_length
+    },
+    geometryMetrics: {
+      finishSurfaceAreaM2: Number(metrics.finishSurfaceAreaM2 || 0),
+      fullCladdingAreaM2: Number(metrics.fullCladdingAreaM2 || 0),
+      totalFinishAreaM2: Number(metrics.totalFinishAreaM2 || metrics.finishAreaM2 || 0),
+      coatingAreaM2: Number(metrics.coatingAreaM2 || 0),
+      railingLengthM: Number(metrics.railingLengthM || 0),
+      additionalRailingLengthM: Number(metrics.additionalRailingLengthM || 0)
+    },
+    finishSurfaceAreaM2: Number(metrics.finishSurfaceAreaM2 || 0),
+    fullCladdingAreaM2: Number(metrics.fullCladdingAreaM2 || 0),
+    totalFinishAreaM2: Number(metrics.totalFinishAreaM2 || metrics.finishAreaM2 || 0),
+    coatingAreaM2: Number(metrics.coatingAreaM2 || 0),
+    railingLengthM: Number(metrics.railingLengthM || 0),
+    additionalRailingLengthM: Number(metrics.additionalRailingLengthM || 0),
+    finishMaterialSubtotal,
+    fullCladdingSubtotal,
+    installSubtotal,
+    coatingSubtotal,
+    railingSubtotal,
+    upperBalustradeSubtotal: (metrics.additionalRailingLengthM || 0) * (scenarioRates.railingPerM?.[config.railing_option] ?? 0),
+    fitCheckSubtotal,
+    prepSubtotal,
+    lightingSubtotal,
+    priceBeforeRegionCoef,
+    regionCoef,
+    priceAfterRegionCoef,
+    minPrice: Number(price?.min || 0),
+    maxPrice: Number(price?.max || 0),
+    finalPrice: priceAfterRegionCoef,
+    targetPrice,
+    differenceRub,
+    differencePercent,
+    coefficientsApplied: {
+      install_coef: Number(state.dictionaries?.defaults?.install_coef || 1),
+      markup_coef: Number(state.dictionaries?.defaults?.markup_coef || 1),
+      regionCoef
+    }
+  };
+}
+
+function emitPriceDebugBreakdown({ config, geometry, materials, price }) {
+  if (!isPriceDebugEnabled()) return;
+  const payload = buildPriceDebugBreakdown({ config, geometry, materials, price });
+  window.__lastCalculation = payload;
+  try {
+    console.group('[price-debug] stair calculator breakdown');
+    console.log(payload);
+    console.table({
+      finishMaterialSubtotal: Math.round(payload.finishMaterialSubtotal || 0),
+      fullCladdingSubtotal: Math.round(payload.fullCladdingSubtotal || 0),
+      installSubtotal: Math.round(payload.installSubtotal || 0),
+      coatingSubtotal: Math.round(payload.coatingSubtotal || 0),
+      railingSubtotal: Math.round(payload.railingSubtotal || 0),
+      upperBalustradeSubtotal: Math.round(payload.upperBalustradeSubtotal || 0),
+      fitCheckSubtotal: Math.round(payload.fitCheckSubtotal || 0),
+      prepSubtotal: Math.round(payload.prepSubtotal || 0),
+      lightingSubtotal: Math.round(payload.lightingSubtotal || 0),
+      priceBeforeRegionCoef: Math.round(payload.priceBeforeRegionCoef || 0),
+      priceAfterRegionCoef: Math.round(payload.priceAfterRegionCoef || 0),
+      minPrice: Math.round(payload.minPrice || 0),
+      maxPrice: Math.round(payload.maxPrice || 0),
+      finalPrice: Math.round(payload.finalPrice || 0),
+      targetPrice: Math.round(payload.targetPrice || 0),
+      differenceRub: Math.round(payload.differenceRub || 0),
+      differencePercent: Number((payload.differencePercent || 0).toFixed(2))
+    });
+    console.groupEnd();
+  } catch (_) {
+    console.log('[price-debug]', payload);
+  }
+}
+
 function renderScenarioRateOptions(group, preferredValue = null) {
   const config = SCENARIO_RATE_SELECTS[group];
   const select = config ? $(config.id) : null;
@@ -1615,6 +1745,7 @@ function runConfigurator() {
 
   state.price = calculatePrice(config, geometry, materials);
   renderPrice(state.price);
+  emitPriceDebugBreakdown({ config, geometry, materials, price: state.price });
 
   const payload = buildCalculationPayload(config, geometry, materials, state.price);
   saveCalculationPayload(payload);
