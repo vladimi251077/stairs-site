@@ -4,6 +4,7 @@ import {
   calculateWoodMaterials,
   calculateConcreteMaterials
 } from './stair-materials.js';
+import { runQuantityEngine } from './quantity-engine.js';
 
 const STORAGE_KEY = 'tekstura_stair_calc_payload';
 
@@ -69,6 +70,7 @@ const state = {
   materials: null,
   price: null,
   payload: null,
+  quantityEngine: null,
   dictionaries: {
     defaults: createDefaultPricingDefaults(),
     materialRules: [],
@@ -1165,6 +1167,7 @@ function renderGeometry(geometry) {
 }
 
 function calculateMaterials(config, geometry) {
+  state.quantityEngine = runQuantityEngine({ config, geometry });
   if (config.base_condition !== 'empty_opening') {
     if (!geometry.valid) {
       return { valid: false, reason: 'Нужна инженерная проверка перед расчётом состава работ.' };
@@ -1261,6 +1264,7 @@ function renderMaterials(materials) {
 
 function calculatePrice(config, geometry, materials) {
   if (!geometry.valid || !materials.valid) return null;
+  const quantityEngine = runQuantityEngine({ config, geometry });
 
   const region = getPricingRegion(config.pricing_region_code);
   const regionCoef = Number(region?.price_coef || 1);
@@ -1287,21 +1291,10 @@ function calculatePrice(config, geometry, materials) {
     materialCost = finishCost + fullCladdingCost + railingCost + lightingCost + coatingCost;
     subtotal = baseLabor + materialCost;
   } else {
-    const defaults = state.dictionaries.defaults;
-    baseLabor = geometry.tread_count * defaults.labor_rate_per_step;
-
-    if (materials.type === 'metal') {
-      materialCost = (materials.metrics.profileTubeLengthM || 0) * defaults.metal_rate_per_meter;
-    } else if (materials.type === 'wood') {
-      materialCost = (materials.metrics.treadAreaM2 || 0) * defaults.wood_rate_per_m2;
-    } else {
-      materialCost = (materials.metrics.concreteVolumeM3 || 0) * defaults.concrete_rate_per_m3;
-    }
-
-    const metrics = materials.metrics?.finish || getFinishMetricsFromGeometry(config, geometry);
-    const finishRate = scenarioRates.finishMaterialPerM2[config.finish_material] ?? scenarioRates.finishMaterialPerM2.oak ?? 0;
-    materialCost += (metrics.finishAreaM2 || 0) * finishRate;
-    subtotal = (baseLabor + materialCost) * defaults.install_coef * defaults.markup_coef;
+    baseLabor = 0;
+    materialCost = Number(quantityEngine.totals.materialSubtotal || 0);
+    const consumablesCost = Number(quantityEngine.totals.consumables || 0);
+    subtotal = materialCost + consumablesCost;
   }
 
   const total = subtotal * regionCoef;
@@ -1321,6 +1314,7 @@ function calculatePrice(config, geometry, materials) {
       name: region.name
     },
     scenarioRatesUsed: scenarioRates,
+    quantityEngine,
     baseLabor,
     materialCost
   };
