@@ -56,16 +56,21 @@ create policy if not exists "public read active railing_types"
 create policy if not exists "public read active configuration_presets"
   on public.configuration_presets for select using (active = true);
 
+-- MDF_36_SHEET is used for treads and platforms; MDF_10_SHEET is used for risers.
 insert into public.materials_catalog (code, name, unit, category, base_cost, waste_percent, active, visible_to_client, sort_order)
 values
   ('MDF_18_SHEET', 'MDF 18 мм, лист', 'sheet', 'MDF', 2500, 12, true, false, 10),
+  ('MDF_36_SHEET', 'MDF 36 мм, лист', 'sheet', 'MDF', 5000, 12, true, false, 15),
   ('MDF_10_SHEET', 'MDF 10 мм, лист', 'sheet', 'MDF', 1700, 12, true, false, 20),
   ('OAK_TREAD_BLANK', 'Дуб, заготовка ступени', 'm2', 'дуб', 18500, 15, true, false, 30),
   ('ASH_TREAD_BLANK', 'Ясень, заготовка ступени', 'm2', 'ясень', 14500, 15, true, false, 40),
   ('ENAMEL_FINISH', 'Эмаль', 'l', 'эмаль', 1200, 8, true, false, 50),
   ('LACQUER_FINISH', 'Лак', 'l', 'лак', 1350, 8, true, false, 60),
   ('PRIMER_BASE', 'Грунт', 'l', 'грунт', 650, 8, true, false, 70),
-  ('FASTENERS_BASIC', 'Крепёж и клей', 'set', 'расходники', 900, 10, true, false, 80),
+  ('FASTENERS_BASIC', 'Крепёж', 'set', 'расходники', 900, 10, true, false, 80),
+  ('ADHESIVE_BASIC', 'Клей монтажный', 'kg', 'расходники', 420, 8, true, false, 82),
+  ('SEALANT_BASIC', 'Герметик', 'tube', 'расходники', 360, 8, true, false, 84),
+  ('CONSUMABLE_KIT', 'Расходный набор', 'set', 'расходники', 650, 10, true, false, 86),
   ('ADDONS_TRIMS', 'Доборы и планки', 'm', 'доборы', 950, 10, true, false, 90),
   ('METAL_RAILING_PARTS', 'Металлические элементы ограждения', 'm', 'металл', 6200, 7, true, false, 100),
   ('GLASS_RAILING_PARTS', 'Стеклянные элементы ограждения', 'm', 'стекло', 12800, 7, true, false, 110)
