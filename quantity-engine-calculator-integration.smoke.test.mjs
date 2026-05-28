@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { calculateQuantityFromCalculator } from './quantity-engine-calculator-adapter.js';
 import {
   buildMaterialsFromQuantityEngine,
@@ -38,7 +39,16 @@ function assertIntegratedResult(result) {
   assert.equal(materials.metrics.quantityEngineResult, result.quantityEngineResult);
   assert.ok(materials.items.some((item) => item.label === 'Ступени'));
   assert.ok(materials.items.some((item) => item.label === 'MDF 36 листы'));
-  assert.ok(materials.items.some((item) => item.label === 'Итог материалов и расходников'));
+  assert.equal(materials.items.some((item) => item.label === 'Итог материалов и расходников'), false);
+  assert.ok(materials.items.some((item) => item.label === 'Состав расчёта'));
+
+  const consumablesRow = materials.items.find((item) => item.label === 'Расходники');
+  assert.ok(consumablesRow);
+  assert.equal(consumablesRow.value.includes('₽'), false);
+
+  const railingRow = materials.items.find((item) => item.label === 'Ограждение');
+  assert.ok(railingRow);
+  assert.equal(railingRow.value.includes('₽'), false);
 
   assert.equal(price.pricingModel, 'quantity_engine_turnkey_coefficient');
   assert.equal(price.total, result.quantityEngineResult.pricing.clientPrice);
@@ -67,6 +77,10 @@ assert.equal(emptyOpeningNoRailing.valid, true);
 assert.equal(emptyOpeningNoRailing.quantityEngineInput.railingEnabled, false);
 assert.equal(emptyOpeningNoRailing.quantityEngineResult.railing.enabled, false);
 assert.equal(emptyOpeningNoRailing.quantityEngineResult.railing.materialSubtotal, 0);
+assert.equal(
+  buildMaterialsFromQuantityEngine(emptyOpeningNoRailing).items.find((item) => item.label === 'Ограждение').value,
+  'Не требуется'
+);
 assertIntegratedResult(emptyOpeningNoRailing);
 
 const existingMetalFrame = calculateQuantityFromCalculator(
@@ -107,6 +121,18 @@ assert.equal(landingPlatform.valid, true);
 assert.equal(landingPlatform.quantityEngineInput.platformCount, 1);
 assert.equal(landingPlatform.quantityEngineResult.quantities.platforms.count, 1);
 assertIntegratedResult(landingPlatform);
+
+const configuratorSource = readFileSync(new URL('./stair-configurator.js', import.meta.url), 'utf8');
+assert.ok(configuratorSource.includes('Предварительная стоимость под ключ'));
+assert.ok(configuratorSource.includes('Финальная смета уточняется после проверки размеров, основания и выбранной комплектации.'));
+for (const forbiddenClientString of [
+  'Коэффициент turnkey',
+  'материалы и расходники × коэффициент',
+  'Модель:',
+  'Итог материалов и расходников'
+]) {
+  assert.equal(configuratorSource.includes(forbiddenClientString), false);
+}
 
 const invalidGeometry = calculateQuantityFromCalculator(baseConfig(), { valid: false });
 const invalidMaterials = buildMaterialsFromQuantityEngine(invalidGeometry);

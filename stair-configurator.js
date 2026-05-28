@@ -1200,10 +1200,6 @@ function formatQuantityEngineQuantity(value, unit = '') {
   return `${formatQuantityEngineNumber(value, 3)}${suffix}`;
 }
 
-function summarizeRowsSubtotal(rows = []) {
-  return rows.reduce((sum, row) => sum + Number(row.subtotal || 0), 0);
-}
-
 function getQuantityEngineDiagnosticsText(diagnostics = []) {
   if (!diagnostics.length) return 'Quantity Engine не вернул подробную диагностику.';
   return diagnostics
@@ -1232,13 +1228,9 @@ export function buildMaterialsFromQuantityEngine(quantityAdapterResult) {
   const result = quantityAdapterResult.quantityEngineResult;
   const quantities = result.quantities || {};
   const mdfSheets = quantities.mdfSheets || {};
-  const pricing = result.pricing || {};
   const primer = quantities.primer || {};
   const enamel = quantities.enamel || {};
   const lacquer = quantities.lacquer || {};
-  const consumablesSubtotal = summarizeRowsSubtotal(result.consumables || []);
-  const materialsSubtotal = summarizeRowsSubtotal(result.materials || []);
-  const railingSubtotal = Number(result.railing?.materialSubtotal || 0);
 
   return {
     valid: true,
@@ -1270,17 +1262,17 @@ export function buildMaterialsFromQuantityEngine(quantityAdapterResult) {
       },
       {
         label: 'Расходники',
-        value: `${money(consumablesSubtotal)} · крепёж ${formatQuantityEngineQuantity(quantities.consumables?.fasteners?.sets || 0, 'компл.')}, клей ${formatQuantityEngineQuantity(quantities.consumables?.adhesive?.kg || 0, 'кг')}, герметик ${formatQuantityEngineQuantity(quantities.consumables?.sealant?.tubes || 0, 'туб')}`
+        value: `крепёж ${formatQuantityEngineQuantity(quantities.consumables?.fasteners?.sets || 0, 'компл.')}, клей ${formatQuantityEngineQuantity(quantities.consumables?.adhesive?.kg || 0, 'кг')}, герметик ${formatQuantityEngineQuantity(quantities.consumables?.sealant?.tubes || 0, 'туб')}`
       },
       {
         label: 'Ограждение',
         value: result.railing?.enabled
-          ? `${result.railing.name || 'Ограждение'} · ${formatQuantityEngineLength(result.railing.totalLengthM)} · ${money(railingSubtotal)}`
-          : 'Не требуется · 0 ₽'
+          ? `${result.railing.name || 'Ограждение'} · ${formatQuantityEngineLength(result.railing.totalLengthM)}`
+          : 'Не требуется'
       },
       {
-        label: 'Итог материалов и расходников',
-        value: `${money(pricing.materialAndConsumablesSubtotal)} (материалы ${money(materialsSubtotal)}, расходники ${money(consumablesSubtotal)}, ограждение ${money(railingSubtotal)})`
+        label: 'Состав расчёта',
+        value: 'материалы, расходники, покрытие и ограждение учтены'
       }
     ],
     metrics: {
@@ -1332,9 +1324,8 @@ function renderPrice(price) {
   if (price.pricingModel === 'quantity_engine_turnkey_coefficient') {
     root.innerHTML = `
       <div class="price-main">${money(price.total)}</div>
-      <div class="muted">Материалы и расходники: ${money(price.materialCost)}</div>
-      <div class="muted">Коэффициент turnkey: ${formatQuantityEngineNumber(price.turnkeyCoefficient, 2)}</div>
-      <div class="muted">Модель: материалы и расходники × коэффициент</div>
+      <div class="muted">Предварительная стоимость под ключ</div>
+      <div class="muted">Финальная смета уточняется после проверки размеров, основания и выбранной комплектации.</div>
     `;
     return;
   }
