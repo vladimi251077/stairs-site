@@ -398,6 +398,65 @@
       user-select:none;
       margin-bottom:8px;
     }
+
+    .admin-warning{
+      border:1px solid rgba(255,207,122,0.45);
+      border-radius:10px;
+      padding:10px 12px;
+      background:rgba(255,207,122,0.08);
+      color:#ffcf7a;
+      font-size:13px;
+      margin:0;
+    }
+    .qe-admin-table-wrap{
+      overflow-x:auto;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:#120f0d;
+    }
+    .qe-admin-table{
+      width:100%;
+      min-width:920px;
+      border-collapse:collapse;
+    }
+    .qe-admin-table th,
+    .qe-admin-table td{
+      border-bottom:1px solid var(--line);
+      padding:8px;
+      text-align:left;
+      vertical-align:top;
+    }
+    .qe-admin-table th{
+      color:var(--muted);
+      font-size:12px;
+      font-weight:700;
+    }
+    .qe-admin-table tr:last-child td{
+      border-bottom:0;
+    }
+    .qe-admin-table input,
+    .qe-admin-table textarea{
+      min-width:110px;
+      padding:8px;
+    }
+    .qe-admin-table textarea{
+      min-width:180px;
+      min-height:42px;
+    }
+    .qe-admin-table input[type="checkbox"]{
+      width:auto;
+      min-width:0;
+      transform:translateY(2px);
+    }
+    .qe-actions{
+      min-width:210px;
+    }
+    .qe-actions .btn{
+      padding:7px 9px;
+      font-size:12px;
+      margin:0 5px 6px 0;
+    }
+
     @media (max-width:760px){
       .wrap{padding:14px}
       .grid{grid-template-columns:minmax(0,1fr)}
@@ -517,15 +576,59 @@
 
       <section class="panel pricing-admin-panel">
         <h2>Калькулятор / Цены</h2>
+        <details class="pricing-admin-section" open>
+          <summary>
+            <div>
+              <h3>Quantity Engine / Цена под ключ</h3>
+              <p>Основные справочники и внутренний коэффициент текущего расчёта.</p>
+            </div>
+            <span class="pricing-admin-section-label">Основной блок</span>
+          </summary>
+          <div class="pricing-admin-section-body">
+            <section class="pricing-current-block">
+              <h3>Коэффициент под ключ</h3>
+              <p class="small">Включает работу, монтаж, покраску как труд, накладные, прибыль и организационные расходы. Клиенту не показывается.</p>
+              <div class="grid">
+                <div>
+                  <label for="turnkeyCoefficient">turnkeyCoefficient</label>
+                  <input id="turnkeyCoefficient" type="number" min="1" step="0.01" />
+                </div>
+              </div>
+              <div class="row">
+                <button id="saveQuantityEngineSettings" class="btn">Сохранить коэффициент</button>
+              </div>
+            </section>
+
+            <section class="pricing-current-block">
+              <h3>Материалы и расходники</h3>
+              <p class="admin-warning">Новые материалы появятся в справочнике. Чтобы они начали участвовать в автоматической формуле калькулятора, их код должен использоваться Quantity Engine или быть подключён отдельным правилом расчёта.</p>
+              <div id="materialsCatalogAdmin"></div>
+              <div class="row">
+                <button id="addMaterialCatalogRow" class="btn btn-secondary">Добавить материал</button>
+              </div>
+            </section>
+
+            <section class="pricing-current-block">
+              <h3>Ограждения</h3>
+              <p class="admin-warning">Новые виды ограждений можно хранить в справочнике. Для появления в клиентском выборе и расчёте может потребоваться mapping в калькуляторе.</p>
+              <div id="railingTypesAdmin"></div>
+              <div class="row">
+                <button id="addRailingTypeRow" class="btn btn-secondary">Добавить ограждение</button>
+              </div>
+            </section>
+          </div>
+        </details>
+
         <details class="pricing-admin-section">
           <summary>
             <div>
-              <h3>Действующие ставки</h3>
-              <p>Это текущие рабочие тарифы, которые уже используются и сохраняются. Не удалять до переноса в новую структуру.</p>
+              <h3>Legacy-настройки старого калькулятора</h3>
+              <p>Не используются как основной расчёт после перехода на Quantity Engine.</p>
             </div>
-            <span class="pricing-admin-section-label">Свернуто</span>
+            <span class="pricing-admin-section-label">Legacy</span>
           </summary>
           <div class="pricing-admin-section-body">
+            <p class="admin-warning">Не используются как основной расчёт после перехода на Quantity Engine.</p>
             <section class="pricing-current-block">
               <h3>Базовые ставки</h3>
               <p class="small">Это базовая инженерная цена до регионального коэффициента. Региональная регулировка применяется поверх итоговой базы.</p>
@@ -572,7 +675,7 @@
 
             <section class="pricing-current-block">
               <h3>Коммерческие ставки</h3>
-              <p class="small">Здесь регулируются ставки отделки, ограждений, подсветки, покрытия и сервисных работ. Эти значения используются в сценариях, где калькулятор считает отделку и коммерческую часть.</p>
+              <p class="small">Здесь регулируются ставки отделки, ограждений, подсветки, покрытия и сервисных работ. Эти значения используются только в legacy-настройках.</p>
               <div id="pricingRulesList"></div>
               <div class="row">
                 <button id="addPricingRule" class="btn btn-secondary">Добавить ставку</button>
@@ -2039,12 +2142,18 @@
     const projectsList = document.getElementById('projectsList');
     const pricingRegionsList = document.getElementById('pricingRegionsList');
     const pricingRulesList = document.getElementById('pricingRulesList');
+    const turnkeyCoefficientInput = document.getElementById('turnkeyCoefficient');
+    const materialsCatalogAdmin = document.getElementById('materialsCatalogAdmin');
+    const railingTypesAdmin = document.getElementById('railingTypesAdmin');
 
     const state = {
       settings: null,
       pricingDefaults: null,
       pricingRegions: [],
       scenarioRateRows: [],
+      quantityEngineSettings: null,
+      materialsCatalogRows: [],
+      railingTypeRows: [],
       services: [],
       projects: [],
     };
@@ -2649,6 +2758,293 @@
       }
     }
 
+
+    function isUniqueError(err) {
+      return err?.code === '23505' || /duplicate key|unique constraint|already exists/i.test([err?.message, err?.details, err?.hint].filter(Boolean).join(' '));
+    }
+
+    function normalizeQuantityEngineSettings(row) {
+      return {
+        id: row?.id || 'default',
+        turnkey_coefficient: Number(row?.turnkey_coefficient || 2.35),
+        notes: row?.notes || ''
+      };
+    }
+
+    function fillQuantityEngineSettingsForm(settings) {
+      turnkeyCoefficientInput.value = Number(settings?.turnkey_coefficient || 2.35);
+    }
+
+    function materialAdminItem(item = {}, isNew = false) {
+      const row = document.createElement('tr');
+      row.dataset.code = item.code || '';
+      row.dataset.isNew = isNew ? 'true' : 'false';
+      row.innerHTML = `
+        <td><input data-k="code" value="${escapeHtml(item.code || '')}" placeholder="MDF_40_SHEET" ${isNew ? '' : 'readonly'} /></td>
+        <td><input data-k="name" value="${escapeHtml(item.name || '')}" placeholder="MDF 40 мм, лист" /></td>
+        <td><input data-k="unit" value="${escapeHtml(item.unit || '')}" placeholder="sheet" /></td>
+        <td><input data-k="category" value="${escapeHtml(item.category || '')}" placeholder="MDF" /></td>
+        <td><input data-k="base_cost" type="number" min="0" step="0.01" value="${Number(item.base_cost || 0)}" /></td>
+        <td><input data-k="waste_percent" type="number" min="0" step="0.01" value="${Number(item.waste_percent || 0)}" /></td>
+        <td><input data-k="active" type="checkbox" ${item.active !== false ? 'checked' : ''} /></td>
+        <td><input data-k="visible_to_client" type="checkbox" ${item.visible_to_client ? 'checked' : ''} /></td>
+        <td><input data-k="sort_order" type="number" step="1" value="${Number(item.sort_order || 100)}" /></td>
+        <td class="qe-actions">
+          <button class="btn" type="button" data-act="save">Сохранить</button>
+          <button class="btn btn-secondary" type="button" data-act="hide">Скрыть</button>
+          <button class="btn btn-secondary" type="button" data-act="restore">Восстановить</button>
+          <button class="btn btn-danger" type="button" data-act="delete">Удалить окончательно</button>
+        </td>`;
+      row.querySelector('[data-act="save"]').onclick = async () => {
+        try {
+          const payload = readMaterialCatalogRow(row);
+          if (row.dataset.isNew === 'true') await createMaterialCatalogRow(payload);
+          else await saveMaterialCatalogRow(payload);
+        } catch (err) {
+          setStatus('Ошибка сохранения материала: ' + explainError(err), true);
+        }
+      };
+      row.querySelector('[data-act="hide"]').onclick = async () => deactivateMaterialCatalogRow(row.querySelector('[data-k="code"]').value.trim());
+      row.querySelector('[data-act="restore"]').onclick = async () => restoreMaterialCatalogRow(row.querySelector('[data-k="code"]').value.trim());
+      row.querySelector('[data-act="delete"]').onclick = async () => deleteMaterialCatalogRow(row.querySelector('[data-k="code"]').value.trim());
+      return row;
+    }
+
+    function railingAdminItem(item = {}, isNew = false) {
+      const row = document.createElement('tr');
+      row.dataset.id = item.id || '';
+      row.dataset.name = item.name || '';
+      row.dataset.isNew = isNew ? 'true' : 'false';
+      row.innerHTML = `
+        <td><input data-k="name" value="${escapeHtml(item.name || '')}" placeholder="стекло" /></td>
+        <td><input data-k="price_per_meter" type="number" min="0" step="0.01" value="${Number(item.price_per_meter || 0)}" /></td>
+        <td><textarea data-k="description" placeholder="Описание">${escapeHtml(item.description || '')}</textarea></td>
+        <td><input data-k="active" type="checkbox" ${item.active !== false ? 'checked' : ''} /></td>
+        <td><input data-k="visible_to_client" type="checkbox" ${item.visible_to_client !== false ? 'checked' : ''} /></td>
+        <td><input data-k="sort_order" type="number" step="1" value="${Number(item.sort_order || 100)}" /></td>
+        <td class="qe-actions">
+          <button class="btn" type="button" data-act="save">Сохранить</button>
+          <button class="btn btn-secondary" type="button" data-act="hide">Скрыть</button>
+          <button class="btn btn-secondary" type="button" data-act="restore">Восстановить</button>
+          <button class="btn btn-danger" type="button" data-act="delete">Удалить окончательно</button>
+        </td>`;
+      row.querySelector('[data-act="save"]').onclick = async () => {
+        try {
+          const payload = readRailingTypeRow(row);
+          if (row.dataset.isNew === 'true') await createRailingTypeRow(payload);
+          else await saveRailingTypeRow(payload);
+        } catch (err) {
+          setStatus('Ошибка сохранения ограждения: ' + explainError(err), true);
+        }
+      };
+      row.querySelector('[data-act="hide"]').onclick = async () => deactivateRailingTypeRow(row.dataset.id || row.dataset.name || row.querySelector('[data-k="name"]').value.trim());
+      row.querySelector('[data-act="restore"]').onclick = async () => restoreRailingTypeRow(row.dataset.id || row.dataset.name || row.querySelector('[data-k="name"]').value.trim());
+      row.querySelector('[data-act="delete"]').onclick = async () => deleteRailingTypeRow(row.dataset.id || row.dataset.name || row.querySelector('[data-k="name"]').value.trim());
+      return row;
+    }
+
+    function readMaterialCatalogRow(row) {
+      const payload = {
+        code: row.querySelector('[data-k="code"]').value.trim(),
+        name: row.querySelector('[data-k="name"]').value.trim(),
+        unit: row.querySelector('[data-k="unit"]').value.trim(),
+        category: row.querySelector('[data-k="category"]').value.trim(),
+        base_cost: Number(row.querySelector('[data-k="base_cost"]').value || 0),
+        waste_percent: Number(row.querySelector('[data-k="waste_percent"]').value || 0),
+        active: row.querySelector('[data-k="active"]').checked,
+        visible_to_client: row.querySelector('[data-k="visible_to_client"]').checked,
+        sort_order: Number(row.querySelector('[data-k="sort_order"]').value || 100),
+        updated_at: new Date().toISOString()
+      };
+      validateMaterialCatalogRow(payload);
+      return payload;
+    }
+
+    function readRailingTypeRow(row) {
+      const payload = {
+        name: row.querySelector('[data-k="name"]').value.trim(),
+        price_per_meter: Number(row.querySelector('[data-k="price_per_meter"]').value || 0),
+        description: row.querySelector('[data-k="description"]').value.trim(),
+        active: row.querySelector('[data-k="active"]').checked,
+        visible_to_client: row.querySelector('[data-k="visible_to_client"]').checked,
+        sort_order: Number(row.querySelector('[data-k="sort_order"]').value || 100),
+        updated_at: new Date().toISOString()
+      };
+      if (row.dataset.id) payload.id = row.dataset.id;
+      validateRailingTypeRow(payload);
+      return payload;
+    }
+
+    function validateMaterialCatalogRow(row) {
+      if (!row.code) throw new Error('code обязателен');
+      if (!row.name) throw new Error('name обязателен');
+      if (!row.unit) throw new Error('unit обязателен');
+      if (!Number.isFinite(row.base_cost) || row.base_cost < 0) throw new Error('base_cost должен быть >= 0');
+      if (!Number.isFinite(row.waste_percent) || row.waste_percent < 0) throw new Error('waste_percent должен быть >= 0');
+    }
+
+    function validateRailingTypeRow(row) {
+      if (!row.name) throw new Error('name обязателен');
+      if (!Number.isFinite(row.price_per_meter) || row.price_per_meter < 0) throw new Error('price_per_meter должен быть >= 0');
+    }
+
+    function renderMaterialsCatalogAdmin(rows) {
+      materialsCatalogAdmin.innerHTML = `
+        <div class="qe-admin-table-wrap">
+          <table class="qe-admin-table">
+            <thead><tr><th>code</th><th>name</th><th>unit</th><th>category</th><th>base_cost</th><th>waste_percent</th><th>active</th><th>visible_to_client</th><th>sort_order</th><th>Действия</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>`;
+      const tbody = materialsCatalogAdmin.querySelector('tbody');
+      (rows || []).forEach((row) => tbody.appendChild(materialAdminItem(row)));
+    }
+
+    function renderRailingTypesAdmin(rows) {
+      railingTypesAdmin.innerHTML = `
+        <div class="qe-admin-table-wrap">
+          <table class="qe-admin-table">
+            <thead><tr><th>name</th><th>price_per_meter</th><th>description</th><th>active</th><th>visible_to_client</th><th>sort_order</th><th>Действия</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>`;
+      const tbody = railingTypesAdmin.querySelector('tbody');
+      (rows || []).forEach((row) => tbody.appendChild(railingAdminItem(row)));
+    }
+
+    async function loadQuantityEngineAdmin() {
+      const [settingsResult, materialsResult, railingsResult] = await Promise.all([
+        client.from('quantity_engine_settings').select('*').eq('id', 'default').maybeSingle(),
+        client.from('materials_catalog').select('*').order('sort_order', { ascending: true }).order('code', { ascending: true }),
+        client.from('railing_types').select('*').order('sort_order', { ascending: true }).order('name', { ascending: true })
+      ]);
+      throwIfSupabaseError(settingsResult, 'Не удалось загрузить quantity_engine_settings');
+      throwIfSupabaseError(materialsResult, 'Не удалось загрузить materials_catalog');
+      throwIfSupabaseError(railingsResult, 'Не удалось загрузить railing_types');
+      state.quantityEngineSettings = normalizeQuantityEngineSettings(settingsResult.data || null);
+      state.materialsCatalogRows = materialsResult.data || [];
+      state.railingTypeRows = railingsResult.data || [];
+      fillQuantityEngineSettingsForm(state.quantityEngineSettings);
+      renderMaterialsCatalogAdmin(state.materialsCatalogRows);
+      renderRailingTypesAdmin(state.railingTypeRows);
+    }
+
+    async function saveMaterialCatalogRow(row) {
+      validateMaterialCatalogRow(row);
+      const { error } = await client.from('materials_catalog').update(row).eq('code', row.code);
+      if (error) throw error;
+      setStatus('Материал сохранён');
+      await loadQuantityEngineAdmin();
+    }
+
+    async function createMaterialCatalogRow(row) {
+      validateMaterialCatalogRow(row);
+      const { error } = await client.from('materials_catalog').insert(row);
+      if (error) {
+        if (isUniqueError(error)) throw new Error('Материал с таким кодом уже существует');
+        throw error;
+      }
+      setStatus('Материал добавлен');
+      await loadQuantityEngineAdmin();
+    }
+
+    async function deactivateMaterialCatalogRow(code) {
+      if (!code) return setStatus('Нельзя скрыть материал без code', true);
+      const { error } = await client.from('materials_catalog').update({ active: false, updated_at: new Date().toISOString() }).eq('code', code);
+      if (error) return setStatus('Ошибка скрытия материала: ' + explainError(error), true);
+      setStatus('Материал скрыт');
+      await loadQuantityEngineAdmin();
+    }
+
+    async function restoreMaterialCatalogRow(code) {
+      if (!code) return setStatus('Нельзя восстановить материал без code', true);
+      const { error } = await client.from('materials_catalog').update({ active: true, updated_at: new Date().toISOString() }).eq('code', code);
+      if (error) return setStatus('Ошибка восстановления материала: ' + explainError(error), true);
+      setStatus('Материал восстановлен');
+      await loadQuantityEngineAdmin();
+    }
+
+    async function deleteMaterialCatalogRow(code) {
+      if (!code) return setStatus('Нельзя удалить материал без code', true);
+      if (!confirm('Удалить материал окончательно? Это может повлиять на старые заявки и историю расчётов.')) return;
+      const { error } = await client.from('materials_catalog').delete().eq('code', code);
+      if (error) return setStatus('Ошибка удаления материала: ' + explainError(error), true);
+      setStatus('Материал удалён окончательно');
+      await loadQuantityEngineAdmin();
+    }
+
+    async function saveRailingTypeRow(row) {
+      validateRailingTypeRow(row);
+      const query = client.from('railing_types').update(row);
+      const { error } = row.id ? await query.eq('id', row.id) : await query.eq('name', row.name);
+      if (error) {
+        if (isUniqueError(error)) throw new Error('Ограждение с таким названием уже существует');
+        throw error;
+      }
+      setStatus('Ограждение сохранено');
+      await loadQuantityEngineAdmin();
+    }
+
+    async function createRailingTypeRow(row) {
+      validateRailingTypeRow(row);
+      const { error } = await client.from('railing_types').insert(row);
+      if (error) {
+        if (isUniqueError(error)) throw new Error('Ограждение с таким названием уже существует');
+        throw error;
+      }
+      setStatus('Ограждение добавлено');
+      await loadQuantityEngineAdmin();
+    }
+
+    function railingIdentityFilter(query, idOrName) {
+      const value = String(idOrName || '').trim();
+      return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
+        ? query.eq('id', value)
+        : query.eq('name', value);
+    }
+
+    async function deactivateRailingTypeRow(idOrName) {
+      if (!idOrName) return setStatus('Нельзя скрыть ограждение без id или name', true);
+      const { error } = await railingIdentityFilter(client.from('railing_types').update({ active: false, updated_at: new Date().toISOString() }), idOrName);
+      if (error) return setStatus('Ошибка скрытия ограждения: ' + explainError(error), true);
+      setStatus('Ограждение скрыто');
+      await loadQuantityEngineAdmin();
+    }
+
+    async function restoreRailingTypeRow(idOrName) {
+      if (!idOrName) return setStatus('Нельзя восстановить ограждение без id или name', true);
+      const { error } = await railingIdentityFilter(client.from('railing_types').update({ active: true, updated_at: new Date().toISOString() }), idOrName);
+      if (error) return setStatus('Ошибка восстановления ограждения: ' + explainError(error), true);
+      setStatus('Ограждение восстановлено');
+      await loadQuantityEngineAdmin();
+    }
+
+    async function deleteRailingTypeRow(idOrName) {
+      if (!idOrName) return setStatus('Нельзя удалить ограждение без id или name', true);
+      if (!confirm('Удалить ограждение окончательно? Это может повлиять на старые заявки и историю расчётов.')) return;
+      const { error } = await railingIdentityFilter(client.from('railing_types').delete(), idOrName);
+      if (error) return setStatus('Ошибка удаления ограждения: ' + explainError(error), true);
+      setStatus('Ограждение удалено окончательно');
+      await loadQuantityEngineAdmin();
+    }
+
+    async function saveQuantityEngineSettings() {
+      try {
+        const value = Number(turnkeyCoefficientInput.value || 0);
+        if (!Number.isFinite(value) || value < 1) throw new Error('turnkeyCoefficient должен быть >= 1');
+        const { error } = await client.from('quantity_engine_settings').upsert({
+          id: 'default',
+          turnkey_coefficient: value,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'id' });
+        if (error) throw error;
+        setStatus('Коэффициент Quantity Engine сохранён');
+        await loadQuantityEngineAdmin();
+      } catch (err) {
+        setStatus('Ошибка сохранения коэффициента: ' + explainError(err), true);
+      }
+    }
+
     function escapeHtml(str) {
       return String(str)
         .replaceAll('&', '&amp;')
@@ -2756,6 +3152,7 @@
       setStatus('Загрузка данных...');
       await Promise.all([
         loadSettings(),
+        loadQuantityEngineAdmin(),
         loadPricingDefaults(),
         loadPricingRegions(),
         loadPricingRules(),
@@ -2791,6 +3188,27 @@
         .channel('admin-stair-scenario-rates')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'stair_scenario_rates' }, async () => {
           try { await loadPricingRules(); } catch (e) { console.error('stair_scenario_rates realtime failed', e); }
+        })
+        .subscribe();
+
+      client
+        .channel('admin-quantity-engine-settings')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'quantity_engine_settings' }, async () => {
+          try { await loadQuantityEngineAdmin(); } catch (e) { console.error('quantity_engine_settings realtime failed', e); }
+        })
+        .subscribe();
+
+      client
+        .channel('admin-materials-catalog')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'materials_catalog' }, async () => {
+          try { await loadQuantityEngineAdmin(); } catch (e) { console.error('materials_catalog realtime failed', e); }
+        })
+        .subscribe();
+
+      client
+        .channel('admin-railing-types')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'railing_types' }, async () => {
+          try { await loadQuantityEngineAdmin(); } catch (e) { console.error('railing_types realtime failed', e); }
         })
         .subscribe();
 
@@ -3037,6 +3455,18 @@
       } catch (err) {
         setStatus('Ошибка сохранения коммерческих ставок: ' + explainError(err), true);
       }
+    };
+
+    document.getElementById('saveQuantityEngineSettings').onclick = saveQuantityEngineSettings;
+
+    document.getElementById('addMaterialCatalogRow').onclick = () => {
+      const tbody = materialsCatalogAdmin.querySelector('tbody');
+      if (tbody) tbody.prepend(materialAdminItem({ active: true, visible_to_client: false, sort_order: 100 }, true));
+    };
+
+    document.getElementById('addRailingTypeRow').onclick = () => {
+      const tbody = railingTypesAdmin.querySelector('tbody');
+      if (tbody) tbody.prepend(railingAdminItem({ active: true, visible_to_client: true, sort_order: 100 }, true));
     };
 
     document.getElementById('addService').onclick = () => {
