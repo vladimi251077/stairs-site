@@ -172,7 +172,10 @@ export function calculateQuantityEngine(rawInput = {}, options = {}) {
   const preset = resolvePreset(rawInput.configurationType ?? rawInput.type ?? rawInput.stair_type, diagnostics);
   const geometry = normalizeGeometry(rawInput, preset, diagnostics);
   const catalog = options.materialsCatalog || materialsCatalog;
-  const selectedRailingType = resolveRailingType(rawInput.railingTypeId ?? rawInput.railingType, options.railingTypes || railingTypes, diagnostics);
+  const railingDisabled = isRailingDisabled(rawInput);
+  const selectedRailingType = railingDisabled
+    ? null
+    : resolveRailingType(rawInput.railingTypeId ?? rawInput.railingType, options.railingTypes || railingTypes, diagnostics);
   const materialRows = buildMaterialRows({ catalog, geometry, preset });
   const consumableRows = buildConsumableRows({ catalog, geometry, preset });
   const railing = buildRailing(rawInput, preset, selectedRailingType);
@@ -441,6 +444,19 @@ function buildConsumableRows({ catalog, geometry, preset }) {
 }
 
 function buildRailing(rawInput, preset, selectedRailingType) {
+  if (isRailingDisabled(rawInput)) {
+    return {
+      enabled: false,
+      typeId: null,
+      name: 'без ограждения',
+      pricePerMeter: 0,
+      totalLengthM: 0,
+      topBalustradeLengthM: 0,
+      upperBalustradeIsSeparateType: false,
+      materialSubtotal: 0
+    };
+  }
+
   const topBalustradeLengthM = numberValue(
     rawInput.topBalustradeLengthM ?? rawInput.upperBalustradeLengthM,
     preset.railingDefaults.topBalustradeLengthM || 0
@@ -457,6 +473,7 @@ function buildRailing(rawInput, preset, selectedRailingType) {
   const materialSubtotal = roundTo(effectiveLengthM * selectedRailingType.pricePerMeter, 2);
 
   return {
+    enabled: true,
     typeId: selectedRailingType.id,
     name: selectedRailingType.name,
     pricePerMeter: selectedRailingType.pricePerMeter,
@@ -465,6 +482,17 @@ function buildRailing(rawInput, preset, selectedRailingType) {
     upperBalustradeIsSeparateType: false,
     materialSubtotal
   };
+}
+
+function isRailingDisabled(rawInput = {}) {
+  return rawInput.railingEnabled === false
+    || rawInput.hasRailing === false
+    || isNoRailingType(rawInput.railingTypeId)
+    || isNoRailingType(rawInput.railingType);
+}
+
+function isNoRailingType(value) {
+  return String(value || '').trim().toLowerCase() === 'none';
 }
 
 function defaultRailingLength(rawInput) {

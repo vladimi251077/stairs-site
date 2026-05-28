@@ -58,9 +58,53 @@ const railingResult = calculateQuantityEngine({
   railingLengthM: 3,
   topBalustradeLengthM: 2
 });
+assert.equal(railingResult.railing.enabled, true);
 assert.equal(railingResult.railing.totalLengthM, 5);
 assert.equal(railingResult.railing.topBalustradeLengthM, 2);
 assert.equal(railingResult.railing.upperBalustradeIsSeparateType, false);
+assert.equal(railingResult.railing.materialSubtotal, 47500);
+
+const fallbackRailingResult = calculateQuantityEngine({
+  configurationType: 'straight',
+  stepCount: 10,
+  marchWidth: 1000,
+  treadDepth: 300,
+  riserHeight: 170,
+  topBalustradeLengthM: 0
+});
+assert.equal(fallbackRailingResult.railing.enabled, true);
+assert.equal(fallbackRailingResult.railing.totalLengthM, 3);
+assert.equal(fallbackRailingResult.railing.materialSubtotal, 28500);
+
+const disabledRailingFlagResult = calculateQuantityEngine({
+  configurationType: 'straight',
+  stepCount: 10,
+  marchWidth: 1000,
+  treadDepth: 300,
+  riserHeight: 170,
+  railingEnabled: false,
+  topBalustradeLengthM: 2
+});
+assert.equal(disabledRailingFlagResult.railing.enabled, false);
+assert.equal(disabledRailingFlagResult.railing.name, 'без ограждения');
+assert.equal(disabledRailingFlagResult.railing.totalLengthM, 0);
+assert.equal(disabledRailingFlagResult.railing.topBalustradeLengthM, 0);
+assert.equal(disabledRailingFlagResult.railing.materialSubtotal, 0);
+assert.equal(disabledRailingFlagResult.railing.upperBalustradeIsSeparateType, false);
+
+const disabledRailingTypeResult = calculateQuantityEngine({
+  configurationType: 'straight',
+  stepCount: 10,
+  marchWidth: 1000,
+  treadDepth: 300,
+  riserHeight: 170,
+  railingTypeId: 'none',
+  topBalustradeLengthM: 2
+});
+assert.equal(disabledRailingTypeResult.railing.enabled, false);
+assert.equal(disabledRailingTypeResult.railing.totalLengthM, 0);
+assert.equal(disabledRailingTypeResult.railing.materialSubtotal, 0);
+assert.ok(!warningCodes(disabledRailingTypeResult).includes('UNKNOWN_RAILING_TYPE'));
 
 const clampedCoefficientResult = calculateQuantityEngine({
   stepCount: 1,
