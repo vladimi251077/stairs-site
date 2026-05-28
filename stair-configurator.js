@@ -1,10 +1,5 @@
 import { calculateReadyFrameGeometry, calculateStairGeometry } from './stair-geometry-engine.js';
 import { calculateQuantityFromCalculator } from './quantity-engine-calculator-adapter.js';
-import {
-  calculateMetalMaterials,
-  calculateWoodMaterials,
-  calculateConcreteMaterials
-} from './stair-materials.js';
 
 const STORAGE_KEY = 'tekstura_stair_calc_payload';
 
@@ -13,9 +8,7 @@ function createDefaultPricingDefaults() {
     labor_rate_per_step: 2500,
     metal_rate_per_meter: 1800,
     wood_rate_per_m2: 16000,
-    concrete_rate_per_m3: 14000,
-    install_coef: 1.12,
-    markup_coef: 1.08
+    concrete_rate_per_m3: 14000
   };
 }
 
@@ -234,9 +227,7 @@ function normalizePricingDefaults(row = {}) {
     labor_rate_per_step: Number(row.labor_rate_per_step ?? fallback.labor_rate_per_step),
     metal_rate_per_meter: Number(row.metal_rate_per_meter ?? fallback.metal_rate_per_meter),
     wood_rate_per_m2: Number(row.wood_rate_per_m2 ?? fallback.wood_rate_per_m2),
-    concrete_rate_per_m3: Number(row.concrete_rate_per_m3 ?? fallback.concrete_rate_per_m3),
-    install_coef: Number(row.install_coef ?? fallback.install_coef),
-    markup_coef: Number(row.markup_coef ?? fallback.markup_coef)
+    concrete_rate_per_m3: Number(row.concrete_rate_per_m3 ?? fallback.concrete_rate_per_m3)
   };
 }
 
@@ -1168,81 +1159,6 @@ function renderGeometry(geometry) {
   updateGeometryActions(geometry);
 }
 
-function calculateMaterials(config, geometry) {
-  if (config.base_condition !== 'empty_opening') {
-    if (!geometry.valid) {
-      return { valid: false, reason: 'Нужна инженерная проверка перед расчётом состава работ.' };
-    }
-
-    const metrics = geometry.service_metrics || {};
-    const items = [
-      { label: 'Сценарий', value: BASE_CONDITION_LABELS[config.base_condition] || 'Уточняется' },
-      { label: 'Что отделываем', value: metrics.finishScopeLabel || FINISH_SCOPE_LABELS[config.finish_scope] || 'Уточняется' },
-      { label: 'Материал отделки', value: getOptionLabel('finish_material', config.finish_material) },
-      { label: 'Площадь проступей', value: `${metrics.treadAreaM2 || metrics.finishAreaM2 || 0} м²` },
-      { label: 'Подступенки', value: metrics.cladRisers ? `${metrics.riserAreaM2 || 0} м²` : 'Не обшиваются' },
-      { label: 'Обшивка каркаса', value: metrics.fullCladdingSummary || 'Нет' },
-      { label: 'Площадка', value: metrics.hasLanding ? `${metrics.landingAreaM2 || 0} м²` : 'Нет' },
-      { label: 'Забежные ступени', value: metrics.hasWinders ? `${metrics.winderCount || 0} шт` : 'Нет' },
-      { label: 'Отделка ступеней/подступенков/площадки', value: `${metrics.finishSurfaceAreaM2 || metrics.finishAreaM2 || 0} м²` },
-      { label: 'Полная обшивка каркаса', value: `${metrics.fullCladdingAreaM2 || 0} м²` },
-      { label: 'Площадь отделки всего', value: `${metrics.totalFinishAreaM2 || metrics.finishAreaM2 || 0} м²` },
-      { label: 'Ограждение', value: metrics.railingLengthM ? `${getOptionLabel('railing', config.railing_option)} · ${metrics.railingLengthM} м` : 'Не требуется' },
-      { label: 'Покрытие / защита', value: getOptionLabel('coating', config.coating_option) },
-      { label: 'Подсветка', value: getOptionLabel('lighting', config.lighting_option) },
-      { label: 'Монтаж', value: 'Подготовка и установка отделки' }
-    ];
-
-    if (isReadyFrameCondition(config.base_condition)) {
-      items.splice(
-        1,
-        0,
-        { label: 'Проверка каркаса', value: 'Посадка, покрытие, узлы крепления' },
-        { label: 'Ступеней', value: `${geometry.tread_count || metrics.stepCount || 0} шт` },
-        { label: 'Ширина марша', value: formatMm(config.ready_frame_march_width || 0) },
-        { label: 'Глубина ступени', value: formatMm(config.ready_frame_tread_depth || 0) },
-        { label: 'Высота подступенка', value: formatMm(config.ready_frame_riser_height || 0) }
-      );
-
-      if (config.railing_option !== 'none') {
-        items.splice(
-          6,
-          0,
-          {
-            label: 'Дополнительная балюстрада',
-            value:
-              `${metrics.additionalRailingLengthM || 0} м`
-          }
-        );
-      }
-    }
-
-    if (config.base_condition === 'existing_concrete_base') {
-      items.splice(2, 0, { label: 'Состояние бетона', value: $('concreteBaseCondition')?.selectedOptions?.[0]?.textContent || 'уточняется' });
-    }
-
-    return {
-      valid: true,
-      type: config.base_condition,
-      items,
-      metrics
-    };
-  }
-
-  const baseMaterials =
-    config.frame_material === 'wood'
-      ? calculateWoodMaterials(config, geometry)
-      : config.frame_material === 'concrete'
-        ? calculateConcreteMaterials(config, geometry)
-        : calculateMetalMaterials(config, geometry);
-
-  if (baseMaterials.valid) {
-    const finishMetrics = getFinishMetricsFromGeometry(config, geometry);
-    baseMaterials.metrics = { ...(baseMaterials.metrics || {}), finish: finishMetrics };
-  }
-  return baseMaterials;
-}
-
 function renderMaterials(materials) {
   const root = $('materialsResult');
   if (!root) return;
@@ -1397,73 +1313,6 @@ export function buildPriceFromQuantityEngine(quantityAdapterResult) {
     materialCost: materialAndConsumablesSubtotal,
     pricingModel: 'quantity_engine_turnkey_coefficient',
     turnkeyCoefficient: Number(pricing.turnkeyCoefficient || 1)
-  };
-}
-
-function calculatePrice(config, geometry, materials) {
-  if (!geometry.valid || !materials.valid) return null;
-
-  const region = getPricingRegion(config.pricing_region_code);
-  const regionCoef = Number(region?.price_coef || 1);
-  const scenarioRates = getScenarioRates();
-  let subtotal = 0;
-  let baseLabor = 0;
-  let materialCost = 0;
-
-  if (config.base_condition !== 'empty_opening') {
-    const metrics = materials.metrics || {};
-    const finishRate = scenarioRates.finishMaterialPerM2[config.finish_material] ?? scenarioRates.finishMaterialPerM2.oak ?? 0;
-    const finishCost = (metrics.finishSurfaceAreaM2 || metrics.finishAreaM2 || 0) * finishRate;
-    const fullCladdingCost = (metrics.fullCladdingAreaM2 || 0) * (scenarioRates.service.fullCladdingPerM2 ?? 0);
-    const railingCost = (metrics.railingLengthM || 0) * (scenarioRates.railingPerM[config.railing_option] ?? 0);
-    const lightingCost = (metrics.stepCount || 0) * (scenarioRates.lightingPerStep[config.lighting_option] ?? 0);
-    const coatingCost = (metrics.coatingAreaM2 || 0) * (scenarioRates.coatingPerM2[config.coating_option] ?? 0);
-    const prepCost =
-      config.base_condition === 'existing_concrete_base' && config.concrete_base_condition !== 'ready'
-        ? (metrics.finishAreaM2 || 0) * (scenarioRates.service.prepPerM2 ?? 0)
-        : 0;
-    const fitCheckCost = isReadyFrameCondition(config.base_condition) ? (scenarioRates.service.fitCheck ?? 0) : 0;
-    const installCost = (metrics.finishAreaM2 || 0) * (scenarioRates.service.installPerM2 ?? 0);
-    baseLabor = installCost + fitCheckCost + prepCost;
-    materialCost = finishCost + fullCladdingCost + railingCost + lightingCost + coatingCost;
-    subtotal = baseLabor + materialCost;
-  } else {
-    const defaults = state.dictionaries.defaults;
-    baseLabor = geometry.tread_count * defaults.labor_rate_per_step;
-
-    if (materials.type === 'metal') {
-      materialCost = (materials.metrics.profileTubeLengthM || 0) * defaults.metal_rate_per_meter;
-    } else if (materials.type === 'wood') {
-      materialCost = (materials.metrics.treadAreaM2 || 0) * defaults.wood_rate_per_m2;
-    } else {
-      materialCost = (materials.metrics.concreteVolumeM3 || 0) * defaults.concrete_rate_per_m3;
-    }
-
-    const metrics = materials.metrics?.finish || getFinishMetricsFromGeometry(config, geometry);
-    const finishRate = scenarioRates.finishMaterialPerM2[config.finish_material] ?? scenarioRates.finishMaterialPerM2.oak ?? 0;
-    materialCost += (metrics.finishAreaM2 || 0) * finishRate;
-    subtotal = (baseLabor + materialCost) * defaults.install_coef * defaults.markup_coef;
-  }
-
-  const total = subtotal * regionCoef;
-  const regionalAdjustment = total - subtotal;
-  const rangeMin = config.base_condition !== 'empty_opening' ? total * 0.9 : total * 0.92;
-  const rangeMax = config.base_condition !== 'empty_opening' ? total * 1.18 : total * 1.12;
-
-  return {
-    total,
-    min: rangeMin,
-    max: rangeMax,
-    subtotalBeforeRegion: subtotal,
-    regionalAdjustment,
-    regionalCoef: regionCoef,
-    pricingRegion: {
-      code: region.code,
-      name: region.name
-    },
-    scenarioRatesUsed: scenarioRates,
-    baseLabor,
-    materialCost
   };
 }
 
