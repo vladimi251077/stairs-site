@@ -31,6 +31,8 @@ create table if not exists public.railing_types (
 create table if not exists public.configuration_presets (
   id uuid primary key default gen_random_uuid(),
   type text not null unique check (type in ('straight', 'L', 'U', 'platform', 'winder', 'concrete', 'metal_frame')),
+  internal_key text not null unique,
+  display_name text not null,
   mdf_sheet_norms jsonb not null default '{}'::jsonb,
   addons jsonb not null default '{}'::jsonb,
   waste_percent numeric not null default 0 check (waste_percent >= 0),
@@ -97,6 +99,8 @@ on conflict (name) do update set
 
 insert into public.configuration_presets (
   type,
+  internal_key,
+  display_name,
   mdf_sheet_norms,
   addons,
   waste_percent,
@@ -107,14 +111,16 @@ insert into public.configuration_presets (
   sort_order
 )
 values
-  ('straight', '{"treadSheetFactor":0.18,"riserSheetFactor":0.08,"platformSheetFactor":0}'::jsonb, '{"shoesPerStep":1,"nosingPerStepM":1,"endTrimPerOpenSideM":0.45}'::jsonb, 10, 1.00, '{"enabled":true,"topBalustradeLengthM":0}'::jsonb, true, false, 10),
-  ('L', '{"treadSheetFactor":0.20,"riserSheetFactor":0.09,"platformSheetFactor":0.80}'::jsonb, '{"shoesPerStep":1,"nosingPerStepM":1,"endTrimPerOpenSideM":0.55}'::jsonb, 12, 1.12, '{"enabled":true,"topBalustradeLengthM":0.8}'::jsonb, true, false, 20),
-  ('U', '{"treadSheetFactor":0.22,"riserSheetFactor":0.10,"platformSheetFactor":1.20}'::jsonb, '{"shoesPerStep":1,"nosingPerStepM":1,"endTrimPerOpenSideM":0.65}'::jsonb, 14, 1.20, '{"enabled":true,"topBalustradeLengthM":1.2}'::jsonb, true, false, 30),
-  ('platform', '{"treadSheetFactor":0.18,"riserSheetFactor":0.08,"platformSheetFactor":1.00}'::jsonb, '{"shoesPerStep":1,"nosingPerStepM":1,"endTrimPerOpenSideM":0.60}'::jsonb, 12, 1.10, '{"enabled":true,"topBalustradeLengthM":0.8}'::jsonb, true, false, 40),
-  ('winder', '{"treadSheetFactor":0.24,"riserSheetFactor":0.10,"platformSheetFactor":0}'::jsonb, '{"shoesPerStep":1,"nosingPerStepM":1.08,"endTrimPerOpenSideM":0.70}'::jsonb, 16, 1.28, '{"enabled":true,"topBalustradeLengthM":1.0}'::jsonb, true, false, 50),
-  ('concrete', '{"treadSheetFactor":0.16,"riserSheetFactor":0.08,"platformSheetFactor":0.80}'::jsonb, '{"shoesPerStep":0,"nosingPerStepM":1,"endTrimPerOpenSideM":0.50}'::jsonb, 11, 1.08, '{"enabled":true,"topBalustradeLengthM":0}'::jsonb, true, false, 60),
-  ('metal_frame', '{"treadSheetFactor":0.20,"riserSheetFactor":0.08,"platformSheetFactor":0.90}'::jsonb, '{"shoesPerStep":1,"nosingPerStepM":1,"endTrimPerOpenSideM":0.60}'::jsonb, 13, 1.15, '{"enabled":true,"topBalustradeLengthM":0}'::jsonb, true, false, 70)
+  ('straight', 'straight', 'Прямая лестница', '{"treadSheetFactor":0.18,"riserSheetFactor":0.08,"platformSheetFactor":0}'::jsonb, '{"shoesPerStep":1,"nosingPerStepM":1,"endTrimPerOpenSideM":0.45}'::jsonb, 10, 1.00, '{"enabled":true,"topBalustradeLengthM":0}'::jsonb, true, false, 10),
+  ('L', 'L', 'Г-образная лестница', '{"treadSheetFactor":0.20,"riserSheetFactor":0.09,"platformSheetFactor":0.80}'::jsonb, '{"shoesPerStep":1,"nosingPerStepM":1,"endTrimPerOpenSideM":0.55}'::jsonb, 12, 1.12, '{"enabled":true,"topBalustradeLengthM":0.8}'::jsonb, true, false, 20),
+  ('U', 'U', 'П-образная лестница', '{"treadSheetFactor":0.22,"riserSheetFactor":0.10,"platformSheetFactor":1.20}'::jsonb, '{"shoesPerStep":1,"nosingPerStepM":1,"endTrimPerOpenSideM":0.65}'::jsonb, 14, 1.20, '{"enabled":true,"topBalustradeLengthM":1.2}'::jsonb, true, false, 30),
+  ('platform', 'platform', 'Лестница с площадкой', '{"treadSheetFactor":0.18,"riserSheetFactor":0.08,"platformSheetFactor":1.00}'::jsonb, '{"shoesPerStep":1,"nosingPerStepM":1,"endTrimPerOpenSideM":0.60}'::jsonb, 12, 1.10, '{"enabled":true,"topBalustradeLengthM":0.8}'::jsonb, true, false, 40),
+  ('winder', 'winder', 'Лестница с забежными ступенями', '{"treadSheetFactor":0.24,"riserSheetFactor":0.10,"platformSheetFactor":0}'::jsonb, '{"shoesPerStep":1,"nosingPerStepM":1.08,"endTrimPerOpenSideM":0.70}'::jsonb, 16, 1.28, '{"enabled":true,"topBalustradeLengthM":1.0}'::jsonb, true, false, 50),
+  ('concrete', 'concrete', 'Бетонное основание', '{"treadSheetFactor":0.16,"riserSheetFactor":0.08,"platformSheetFactor":0.80}'::jsonb, '{"shoesPerStep":0,"nosingPerStepM":1,"endTrimPerOpenSideM":0.50}'::jsonb, 11, 1.08, '{"enabled":true,"topBalustradeLengthM":0}'::jsonb, true, false, 60),
+  ('metal_frame', 'metal_frame', 'Металлический каркас', '{"treadSheetFactor":0.20,"riserSheetFactor":0.08,"platformSheetFactor":0.90}'::jsonb, '{"shoesPerStep":1,"nosingPerStepM":1,"endTrimPerOpenSideM":0.60}'::jsonb, 13, 1.15, '{"enabled":true,"topBalustradeLengthM":0}'::jsonb, true, false, 70)
 on conflict (type) do update set
+  internal_key = excluded.internal_key,
+  display_name = excluded.display_name,
   mdf_sheet_norms = excluded.mdf_sheet_norms,
   addons = excluded.addons,
   waste_percent = excluded.waste_percent,

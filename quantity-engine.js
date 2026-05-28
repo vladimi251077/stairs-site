@@ -1,3 +1,17 @@
+// Quantity Engine intentionally contains:
+// - quantities
+// - material normalization
+// - consumables
+// - pricing skeleton
+//
+// It MUST NOT contain:
+// - UI logic
+// - DOM access
+// - calculator rendering
+// - visual configuration
+// - regional markup logic
+// - install/fit labor subtotals
+
 const MATERIAL_CATEGORIES = [
   'MDF',
   'дуб',
@@ -38,6 +52,8 @@ export const railingTypes = [
 export const configurationPresets = {
   straight: createPreset({
     type: 'straight',
+    internalKey: 'straight',
+    displayName: 'Прямая лестница',
     mdfSheetNorms: { treadSheetFactor: 0.18, riserSheetFactor: 0.08, platformSheetFactor: 0 },
     addons: { shoesPerStep: 1, nosingPerStepM: 1, endTrimPerOpenSideM: 0.45 },
     wastePercent: 10,
@@ -46,6 +62,8 @@ export const configurationPresets = {
   }),
   L: createPreset({
     type: 'L',
+    internalKey: 'L',
+    displayName: 'Г-образная лестница',
     mdfSheetNorms: { treadSheetFactor: 0.2, riserSheetFactor: 0.09, platformSheetFactor: 0.8 },
     addons: { shoesPerStep: 1, nosingPerStepM: 1, endTrimPerOpenSideM: 0.55 },
     wastePercent: 12,
@@ -54,6 +72,8 @@ export const configurationPresets = {
   }),
   U: createPreset({
     type: 'U',
+    internalKey: 'U',
+    displayName: 'П-образная лестница',
     mdfSheetNorms: { treadSheetFactor: 0.22, riserSheetFactor: 0.1, platformSheetFactor: 1.2 },
     addons: { shoesPerStep: 1, nosingPerStepM: 1, endTrimPerOpenSideM: 0.65 },
     wastePercent: 14,
@@ -62,6 +82,8 @@ export const configurationPresets = {
   }),
   platform: createPreset({
     type: 'platform',
+    internalKey: 'platform',
+    displayName: 'Лестница с площадкой',
     mdfSheetNorms: { treadSheetFactor: 0.18, riserSheetFactor: 0.08, platformSheetFactor: 1 },
     addons: { shoesPerStep: 1, nosingPerStepM: 1, endTrimPerOpenSideM: 0.6 },
     wastePercent: 12,
@@ -70,6 +92,8 @@ export const configurationPresets = {
   }),
   winder: createPreset({
     type: 'winder',
+    internalKey: 'winder',
+    displayName: 'Лестница с забежными ступенями',
     mdfSheetNorms: { treadSheetFactor: 0.24, riserSheetFactor: 0.1, platformSheetFactor: 0 },
     addons: { shoesPerStep: 1, nosingPerStepM: 1.08, endTrimPerOpenSideM: 0.7 },
     wastePercent: 16,
@@ -78,6 +102,8 @@ export const configurationPresets = {
   }),
   concrete: createPreset({
     type: 'concrete',
+    internalKey: 'concrete',
+    displayName: 'Бетонное основание',
     mdfSheetNorms: { treadSheetFactor: 0.16, riserSheetFactor: 0.08, platformSheetFactor: 0.8 },
     addons: { shoesPerStep: 0, nosingPerStepM: 1, endTrimPerOpenSideM: 0.5 },
     wastePercent: 11,
@@ -86,6 +112,8 @@ export const configurationPresets = {
   }),
   metal_frame: createPreset({
     type: 'metal_frame',
+    internalKey: 'metal_frame',
+    displayName: 'Металлический каркас',
     mdfSheetNorms: { treadSheetFactor: 0.2, riserSheetFactor: 0.08, platformSheetFactor: 0.9 },
     addons: { shoesPerStep: 1, nosingPerStepM: 1, endTrimPerOpenSideM: 0.6 },
     wastePercent: 13,
@@ -151,8 +179,8 @@ function createRailingType({ id, name, pricePerMeter, description, active = true
   return { id, name, pricePerMeter, description, active, visibleToClient, sortOrder };
 }
 
-function createPreset({ type, mdfSheetNorms, addons, wastePercent, complexityFactor, railingDefaults = {} }) {
-  return { type, mdfSheetNorms, addons, wastePercent, complexityFactor, railingDefaults };
+function createPreset({ type, internalKey = type, displayName, mdfSheetNorms, addons, wastePercent, complexityFactor, railingDefaults = {} }) {
+  return { type, internalKey, displayName, mdfSheetNorms, addons, wastePercent, complexityFactor, railingDefaults };
 }
 
 function resolvePreset(type, diagnostics) {
@@ -300,7 +328,10 @@ function calculatePricing({ materials, consumables, railing, turnkeyCoefficient 
     sumRows(materials) + sumRows(consumables) + numberValue(railing.materialSubtotal),
     2
   );
-  const safeTurnkeyCoefficient = numberValue(turnkeyCoefficient, DEFAULT_TURNKEY_COEFFICIENT);
+  const safeTurnkeyCoefficient = Math.max(
+    numberValue(turnkeyCoefficient, DEFAULT_TURNKEY_COEFFICIENT),
+    1
+  );
 
   return {
     materialAndConsumablesSubtotal,
