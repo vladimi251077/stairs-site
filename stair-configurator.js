@@ -1,5 +1,11 @@
 import { calculateReadyFrameGeometry, calculateStairGeometry } from './stair-geometry-engine.js';
 import { calculateQuantityFromCalculator } from './quantity-engine-calculator-adapter.js';
+import {
+  buildQuantityEngineRuntimeOptions,
+  normalizeQuantityEngineSettings,
+  normalizeSupabaseMaterialsCatalog,
+  normalizeSupabaseRailingTypes
+} from './quantity-engine-supabase-runtime.js';
 
 const STORAGE_KEY = 'tekstura_stair_calc_payload';
 
@@ -68,7 +74,13 @@ const state = {
     defaults: createDefaultPricingDefaults(),
     materialRules: [],
     regions: createDefaultPricingRegions(),
-    scenarioRateRows: createDefaultScenarioRateRows()
+    scenarioRateRows: createDefaultScenarioRateRows(),
+    quantityEngineRuntime: {
+      settings: null,
+      materialsCatalog: [],
+      railingTypes: [],
+      loadedFromSupabase: false
+    }
   }
 };
 
@@ -1381,7 +1393,8 @@ function buildCalculationPayload(config, geometry, materials = state.materials, 
     ? {
         input: materials?.metrics?.quantityEngineInput || state.quantityEngine?.quantityEngineInput || null,
         result: materials?.metrics?.quantityEngineResult || state.quantityEngine?.quantityEngineResult || null,
-        diagnostics: materials?.metrics?.quantityEngineDiagnostics || state.quantityEngine?.diagnostics || []
+        diagnostics: materials?.metrics?.quantityEngineDiagnostics || state.quantityEngine?.diagnostics || [],
+        runtime_source: state.dictionaries.quantityEngineRuntime?.loadedFromSupabase ? 'supabase' : 'built_in'
       }
     : null;
 
@@ -1633,9 +1646,8 @@ function runConfigurator() {
     return;
   }
 
-  const quantityEngine = calculateQuantityFromCalculator(config, geometry, {
-    turnkeyCoefficient: config.turnkeyCoefficient
-  });
+  const runtimeOptions = buildQuantityEngineRuntimeOptions(state.dictionaries.quantityEngineRuntime);
+  const quantityEngine = calculateQuantityFromCalculator(config, geometry, runtimeOptions);
   state.quantityEngine = quantityEngine;
 
   const materials = buildMaterialsFromQuantityEngine(quantityEngine);
@@ -1668,7 +1680,15 @@ async function loadSupabaseDictionaries() {
       window.SUPABASE_CONFIG.anonKey
     );
 
-    const [defaultsRes, rulesRes, regionsRes, scenarioRatesRes] = await Promise.all([
+    const [
+      defaultsRes,
+      rulesRes,
+      regionsRes,
+      scenarioRatesRes,
+      quantityEngineSettingsRes,
+      materialsCatalogRes,
+      railingTypesRes
+    ] = await Promise.all([
       client
         .from('stair_defaults')
         .select('*')
@@ -1687,6 +1707,21 @@ async function loadSupabaseDictionaries() {
         .order('sort_order', { ascending: true }),
       client
         .from('stair_scenario_rates')
+        .select('*')
+        .eq('active', true)
+        .order('sort_order', { ascending: true }),
+      client
+        .from('quantity_engine_settings')
+        .select('*')
+        .eq('id', 'default')
+        .maybeSingle(),
+      client
+        .from('materials_catalog')
+        .select('*')
+        .eq('active', true)
+        .order('sort_order', { ascending: true }),
+      client
+        .from('railing_types')
         .select('*')
         .eq('active', true)
         .order('sort_order', { ascending: true })
@@ -1709,6 +1744,29 @@ async function loadSupabaseDictionaries() {
       console.warn('stair_scenario_rates load failed', scenarioRatesRes.error);
     } else if (Array.isArray(scenarioRatesRes.data) && scenarioRatesRes.data.length) {
       state.dictionaries.scenarioRateRows = scenarioRatesRes.data.map((row, index) => normalizeScenarioRateRow(row, index));
+    }
+
+    const quantityEngineLoadErrors = [
+      ['quantity_engine_settings', quantityEngineSettingsRes.error],
+      ['materials_catalog', materialsCatalogRes.error],
+      ['railing_types', railingTypesRes.error]
+    ].filter(([, error]) => error);
+
+    if (quantityEngineLoadErrors.length > 0) {
+      console.warn('Quantity Engine runtime dictionaries load failed; built-in defaults will be used.', quantityEngineLoadErrors);
+      state.dictionaries.quantityEngineRuntime = {
+        settings: null,
+        materialsCatalog: [],
+        railingTypes: [],
+        loadedFromSupabase: false
+      };
+    } else {
+      state.dictionaries.quantityEngineRuntime = {
+        settings: normalizeQuantityEngineSettings(quantityEngineSettingsRes.data),
+        materialsCatalog: normalizeSupabaseMaterialsCatalog(materialsCatalogRes.data),
+        railingTypes: normalizeSupabaseRailingTypes(railingTypesRes.data),
+        loadedFromSupabase: true
+      };
     }
 
     renderScenarioRateSelects(state.config || getConfigFromForm());
