@@ -1,4 +1,5 @@
 import { calculateReadyFrameGeometry, calculateStairGeometry } from './stair-geometry-engine.js';
+import { calculateQuantityFromCalculator } from './quantity-engine-calculator-adapter.js';
 import {
   calculateMetalMaterials,
   calculateWoodMaterials,
@@ -68,6 +69,7 @@ const state = {
   geometry: null,
   materials: null,
   price: null,
+  quantityEngine: null,
   payload: null,
   dictionaries: {
     defaults: createDefaultPricingDefaults(),
@@ -398,8 +400,10 @@ function showStep(step) {
   $(`step${step}`)?.classList.add('active');
 }
 
-window.nextStep = showStep;
-window.prevStep = showStep;
+if (typeof window !== 'undefined') {
+  window.nextStep = showStep;
+  window.prevStep = showStep;
+}
 globalThis.nextStep = showStep;
 globalThis.prevStep = showStep;
 
@@ -1259,6 +1263,143 @@ function renderMaterials(materials) {
   `;
 }
 
+function formatQuantityEngineNumber(value, digits = 2) {
+  const numericValue = Number(value || 0);
+  return new Intl.NumberFormat('ru-RU', {
+    maximumFractionDigits: digits,
+    minimumFractionDigits: 0
+  }).format(Number.isFinite(numericValue) ? numericValue : 0);
+}
+
+function formatQuantityEngineArea(value) {
+  return `${formatQuantityEngineNumber(value)} м²`;
+}
+
+function formatQuantityEngineLength(value) {
+  return `${formatQuantityEngineNumber(value)} м`;
+}
+
+function formatQuantityEngineQuantity(value, unit = '') {
+  const suffix = unit ? ` ${unit}` : '';
+  return `${formatQuantityEngineNumber(value, 3)}${suffix}`;
+}
+
+function summarizeRowsSubtotal(rows = []) {
+  return rows.reduce((sum, row) => sum + Number(row.subtotal || 0), 0);
+}
+
+function getQuantityEngineDiagnosticsText(diagnostics = []) {
+  if (!diagnostics.length) return 'Quantity Engine не вернул подробную диагностику.';
+  return diagnostics
+    .map((diagnostic) => diagnostic.message || diagnostic.code || 'Требуется инженерная проверка')
+    .join('; ');
+}
+
+function buildQuantityEngineWarningMaterials(quantityAdapterResult) {
+  return {
+    valid: false,
+    type: 'quantity_engine',
+    reason: `Расчёт Quantity Engine требует проверки: ${getQuantityEngineDiagnosticsText(quantityAdapterResult?.diagnostics)}`,
+    metrics: {
+      quantityEngineInput: quantityAdapterResult?.quantityEngineInput || null,
+      quantityEngineResult: null,
+      quantityEngineDiagnostics: quantityAdapterResult?.diagnostics || []
+    }
+  };
+}
+
+export function buildMaterialsFromQuantityEngine(quantityAdapterResult) {
+  if (!quantityAdapterResult?.valid || !quantityAdapterResult.quantityEngineResult) {
+    return buildQuantityEngineWarningMaterials(quantityAdapterResult);
+  }
+
+  const result = quantityAdapterResult.quantityEngineResult;
+  const quantities = result.quantities || {};
+  const mdfSheets = quantities.mdfSheets || {};
+  const pricing = result.pricing || {};
+  const primer = quantities.primer || {};
+  const enamel = quantities.enamel || {};
+  const lacquer = quantities.lacquer || {};
+  const consumablesSubtotal = summarizeRowsSubtotal(result.consumables || []);
+  const materialsSubtotal = summarizeRowsSubtotal(result.materials || []);
+  const railingSubtotal = Number(result.railing?.materialSubtotal || 0);
+
+  return {
+    valid: true,
+    type: 'quantity_engine',
+    items: [
+      {
+        label: 'Ступени',
+        value: `${formatQuantityEngineQuantity(quantities.treads?.count ?? quantities.stepCount, 'шт')} · ${formatQuantityEngineArea(quantities.treads?.areaM2 ?? quantities.treadAreaM2)}`
+      },
+      {
+        label: 'Подступенки',
+        value: `${formatQuantityEngineQuantity(quantities.risers?.count ?? quantities.riserCount, 'шт')} · ${formatQuantityEngineArea(quantities.risers?.areaM2 ?? quantities.riserAreaM2)}`
+      },
+      {
+        label: 'Площадки',
+        value: `${formatQuantityEngineQuantity(quantities.platforms?.count ?? quantities.platformCount, 'шт')} · ${formatQuantityEngineArea(quantities.platforms?.areaM2 ?? quantities.platformAreaM2)}`
+      },
+      {
+        label: 'MDF 36 листы',
+        value: `${formatQuantityEngineQuantity(mdfSheets.treadsAndPlatforms?.sheets || 0, 'лист.')}`
+      },
+      {
+        label: 'MDF 10 листы',
+        value: `${formatQuantityEngineQuantity(mdfSheets.risers?.sheets || 0, 'лист.')}`
+      },
+      {
+        label: 'Покрытия: грунт / эмаль / лак',
+        value: `${formatQuantityEngineQuantity(primer.liters || 0, 'л')} / ${formatQuantityEngineQuantity(enamel.liters || 0, 'л')} / ${formatQuantityEngineQuantity(lacquer.liters || 0, 'л')}`
+      },
+      {
+        label: 'Расходники',
+        value: `${money(consumablesSubtotal)} · крепёж ${formatQuantityEngineQuantity(quantities.consumables?.fasteners?.sets || 0, 'компл.')}, клей ${formatQuantityEngineQuantity(quantities.consumables?.adhesive?.kg || 0, 'кг')}, герметик ${formatQuantityEngineQuantity(quantities.consumables?.sealant?.tubes || 0, 'туб')}`
+      },
+      {
+        label: 'Ограждение',
+        value: result.railing?.enabled
+          ? `${result.railing.name || 'Ограждение'} · ${formatQuantityEngineLength(result.railing.totalLengthM)} · ${money(railingSubtotal)}`
+          : 'Не требуется · 0 ₽'
+      },
+      {
+        label: 'Итог материалов и расходников',
+        value: `${money(pricing.materialAndConsumablesSubtotal)} (материалы ${money(materialsSubtotal)}, расходники ${money(consumablesSubtotal)}, ограждение ${money(railingSubtotal)})`
+      }
+    ],
+    metrics: {
+      quantityEngineInput: quantityAdapterResult.quantityEngineInput,
+      quantityEngineResult: result,
+      quantityEngineDiagnostics: quantityAdapterResult.diagnostics || []
+    }
+  };
+}
+
+export function buildPriceFromQuantityEngine(quantityAdapterResult) {
+  if (!quantityAdapterResult?.valid || !quantityAdapterResult.quantityEngineResult?.pricing) return null;
+
+  const pricing = quantityAdapterResult.quantityEngineResult.pricing;
+  const total = Number(pricing.clientPrice || 0);
+  const materialAndConsumablesSubtotal = Number(pricing.materialAndConsumablesSubtotal || 0);
+
+  return {
+    total,
+    min: total,
+    max: total,
+    subtotalBeforeRegion: materialAndConsumablesSubtotal,
+    regionalAdjustment: 0,
+    regionalCoef: 1,
+    pricingRegion: {
+      code: 'no_region_coefficient',
+      name: 'Без регионального коэффициента'
+    },
+    baseLabor: 0,
+    materialCost: materialAndConsumablesSubtotal,
+    pricingModel: 'quantity_engine_turnkey_coefficient',
+    turnkeyCoefficient: Number(pricing.turnkeyCoefficient || 1)
+  };
+}
+
 function calculatePrice(config, geometry, materials) {
   if (!geometry.valid || !materials.valid) return null;
 
@@ -1339,6 +1480,16 @@ function renderPrice(price) {
     return;
   }
 
+  if (price.pricingModel === 'quantity_engine_turnkey_coefficient') {
+    root.innerHTML = `
+      <div class="price-main">${money(price.total)}</div>
+      <div class="muted">Материалы и расходники: ${money(price.materialCost)}</div>
+      <div class="muted">Коэффициент turnkey: ${formatQuantityEngineNumber(price.turnkeyCoefficient, 2)}</div>
+      <div class="muted">Модель: материалы и расходники × коэффициент</div>
+    `;
+    return;
+  }
+
   const isInspection = isInspectionScenario(state.config?.base_condition);
   root.innerHTML = `
     ${isInspection ? '<div class="muted">Предварительная стоимость отделки</div>' : ''}
@@ -1386,6 +1537,13 @@ function buildCalculationPayload(config, geometry, materials = state.materials, 
   const compactGeometry = compactGeometryForPayload(geometry);
   const warnings = geometry.status === 'invalid' ? geometry.blockers || [] : geometry.warnings || [];
   const region = getPricingRegion(config.pricing_region_code);
+  const quantityEnginePayload = materials?.metrics?.quantityEngineInput || state.quantityEngine?.quantityEngineInput
+    ? {
+        input: materials?.metrics?.quantityEngineInput || state.quantityEngine?.quantityEngineInput || null,
+        result: materials?.metrics?.quantityEngineResult || state.quantityEngine?.quantityEngineResult || null,
+        diagnostics: materials?.metrics?.quantityEngineDiagnostics || state.quantityEngine?.diagnostics || []
+      }
+    : null;
 
   return {
     schema: 'tekstura.stair.phase1',
@@ -1455,27 +1613,50 @@ function buildCalculationPayload(config, geometry, materials = state.materials, 
       price_coef: Number(region.price_coef || 1)
     },
     pricing_breakdown: price
-      ? {
-          subtotal_before_region: Math.round(price.subtotalBeforeRegion || 0),
-          regional_adjustment: Math.round(price.regionalAdjustment || 0),
-          regional_coef: Number(price.regionalCoef || 1),
-          total: Math.round(price.total || 0),
-          min: Math.round(price.min || 0),
-          max: Math.round(price.max || 0)
-        }
+      ? price.pricingModel === 'quantity_engine_turnkey_coefficient'
+        ? {
+            pricing_model: price.pricingModel,
+            material_and_consumables_subtotal: Math.round(price.subtotalBeforeRegion || 0),
+            turnkey_coefficient: Number(price.turnkeyCoefficient || 1),
+            client_price: Math.round(price.total || 0),
+            total: Math.round(price.total || 0),
+            min: Math.round(price.min || 0),
+            max: Math.round(price.max || 0),
+            subtotal_before_region: Math.round(price.subtotalBeforeRegion || 0),
+            regional_adjustment: 0,
+            regional_coef: 1
+          }
+        : {
+            subtotal_before_region: Math.round(price.subtotalBeforeRegion || 0),
+            regional_adjustment: Math.round(price.regionalAdjustment || 0),
+            regional_coef: Number(price.regionalCoef || 1),
+            total: Math.round(price.total || 0),
+            min: Math.round(price.min || 0),
+            max: Math.round(price.max || 0)
+          }
       : null,
     preliminary_price_min: price?.min ? Math.round(price.min) : 0,
     preliminary_price_max: price?.max ? Math.round(price.max) : 0,
     pricing_snapshot: price
-      ? {
-          defaults: state.dictionaries.defaults,
-          scenario_rates: price.scenarioRatesUsed || getScenarioRates(),
-          region: {
-            code: region.code,
-            name: region.name,
-            price_coef: Number(region.price_coef || 1)
+      ? price.pricingModel === 'quantity_engine_turnkey_coefficient'
+        ? {
+            pricing_model: price.pricingModel,
+            turnkey_coefficient: Number(price.turnkeyCoefficient || 1),
+            region: {
+              code: 'no_region_coefficient',
+              name: 'Без регионального коэффициента',
+              price_coef: 1
+            }
           }
-        }
+        : {
+            defaults: state.dictionaries.defaults,
+            scenario_rates: price.scenarioRatesUsed || getScenarioRates(),
+            region: {
+              code: region.code,
+              name: region.name,
+              price_coef: Number(region.price_coef || 1)
+            }
+          }
       : null,
     scenario_details: {
       project_scenario: config.project_scenario,
@@ -1515,6 +1696,7 @@ function buildCalculationPayload(config, geometry, materials = state.materials, 
       railing_option: config.railing_option,
       lighting_option: config.lighting_option
     },
+    quantity_engine: quantityEnginePayload,
     materials: materials?.valid
       ? {
           type: materials.type,
@@ -1584,6 +1766,7 @@ function runGeometryCalculation() {
   state.geometry = geometry;
   state.materials = null;
   state.price = null;
+  state.quantityEngine = null;
 
   const payload = buildCalculationPayload(config, geometry, null, null);
   saveCalculationPayload(payload);
@@ -1599,6 +1782,7 @@ function runConfigurator() {
   state.geometry = geometry;
   state.materials = null;
   state.price = null;
+  state.quantityEngine = null;
   renderGeometry(geometry);
 
   if (!geometry.valid || geometry.allow_continue === false) {
@@ -1609,11 +1793,16 @@ function runConfigurator() {
     return;
   }
 
-  const materials = calculateMaterials(config, geometry);
+  const quantityEngine = calculateQuantityFromCalculator(config, geometry, {
+    turnkeyCoefficient: config.turnkeyCoefficient
+  });
+  state.quantityEngine = quantityEngine;
+
+  const materials = buildMaterialsFromQuantityEngine(quantityEngine);
   state.materials = materials;
   renderMaterials(materials);
 
-  state.price = calculatePrice(config, geometry, materials);
+  state.price = buildPriceFromQuantityEngine(quantityEngine);
   renderPrice(state.price);
 
   const payload = buildCalculationPayload(config, geometry, materials, state.price);
@@ -1622,8 +1811,10 @@ function runConfigurator() {
   showStep(4);
 }
 
-window.runGeometryCalculation = runGeometryCalculation;
-window.runConfigurator = runConfigurator;
+if (typeof window !== 'undefined') {
+  window.runGeometryCalculation = runGeometryCalculation;
+  window.runConfigurator = runConfigurator;
+}
 globalThis.runGeometryCalculation = runGeometryCalculation;
 globalThis.runConfigurator = runConfigurator;
 
@@ -1726,4 +1917,6 @@ function init() {
   loadSupabaseDictionaries();
 }
 
-init();
+if (typeof document !== 'undefined') {
+  init();
+}
