@@ -27,6 +27,7 @@ const MATERIAL_CATEGORIES = [
 
 export const materialsCatalog = [
   createMaterial({ id: 'mat_mdf_18', code: 'MDF_18_SHEET', name: 'MDF 18 мм, лист', unit: 'sheet', category: 'MDF', baseCost: 2500, wastePercent: 12, sortOrder: 10 }),
+  createMaterial({ id: 'mat_mdf_36', code: 'MDF_36_SHEET', name: 'MDF 36 мм, лист', unit: 'sheet', category: 'MDF', baseCost: 5000, wastePercent: 12, sortOrder: 15 }),
   createMaterial({ id: 'mat_mdf_10', code: 'MDF_10_SHEET', name: 'MDF 10 мм, лист', unit: 'sheet', category: 'MDF', baseCost: 1700, wastePercent: 12, sortOrder: 20 }),
   createMaterial({ id: 'mat_oak_tread', code: 'OAK_TREAD_BLANK', name: 'Дуб, заготовка ступени', unit: 'm2', category: 'дуб', baseCost: 18500, wastePercent: 15, sortOrder: 30 }),
   createMaterial({ id: 'mat_ash_tread', code: 'ASH_TREAD_BLANK', name: 'Ясень, заготовка ступени', unit: 'm2', category: 'ясень', baseCost: 14500, wastePercent: 15, sortOrder: 40 }),
@@ -311,36 +312,51 @@ function buildQuantities({ geometry, preset, railing }) {
 
 function calculateMdfSheets(geometry, wastePercent) {
   const sheetAreaM2 = MDF_SHEET_SPECS.standard.areaM2;
-  const treads = mdfSheetQuantity(geometry.treadAreaM2, wastePercent, sheetAreaM2);
-  const risers = mdfSheetQuantity(geometry.riserAreaM2, wastePercent, sheetAreaM2);
-  const platforms = mdfSheetQuantity(geometry.platformAreaM2, wastePercent, sheetAreaM2);
+  const treads = mdfAreaQuantity(geometry.treadAreaM2, wastePercent, sheetAreaM2, 'MDF_36_SHEET');
+  const platforms = mdfAreaQuantity(geometry.platformAreaM2, wastePercent, sheetAreaM2, 'MDF_36_SHEET');
+  const treadsAndPlatforms = mdfSheetQuantity(
+    geometry.treadAreaM2 + geometry.platformAreaM2,
+    wastePercent,
+    sheetAreaM2,
+    'MDF_36_SHEET'
+  );
+  const risers = mdfSheetQuantity(geometry.riserAreaM2, wastePercent, sheetAreaM2, 'MDF_10_SHEET');
 
   return {
     treads,
     risers,
     platforms,
+    treadsAndPlatforms,
     total: {
-      areaM2: roundTo(treads.areaM2 + risers.areaM2 + platforms.areaM2, 2),
-      areaWithWasteM2: roundTo(treads.areaWithWasteM2 + risers.areaWithWasteM2 + platforms.areaWithWasteM2, 2),
-      sheets: treads.sheets + risers.sheets + platforms.sheets,
+      areaM2: roundTo(treadsAndPlatforms.areaM2 + risers.areaM2, 2),
+      areaWithWasteM2: roundTo(treadsAndPlatforms.areaWithWasteM2 + risers.areaWithWasteM2, 2),
+      sheets: treadsAndPlatforms.sheets + risers.sheets,
       sheetAreaM2,
       wastePercent
     },
-    count: treads.sheets + risers.sheets + platforms.sheets,
+    count: treadsAndPlatforms.sheets + risers.sheets,
     wastePercent
   };
 }
 
-function mdfSheetQuantity(areaM2, wastePercent, sheetAreaM2) {
+function mdfAreaQuantity(areaM2, wastePercent, sheetAreaM2, materialCode) {
   const safeAreaM2 = roundTo(areaM2, 2);
-  const areaWithWasteM2 = roundTo(safeAreaM2 * (1 + wastePercent / 100), 2);
 
   return {
     areaM2: safeAreaM2,
-    areaWithWasteM2,
-    sheets: areaWithWasteM2 > 0 ? Math.ceil(areaWithWasteM2 / sheetAreaM2) : 0,
+    areaWithWasteM2: roundTo(safeAreaM2 * (1 + wastePercent / 100), 2),
     sheetAreaM2,
-    wastePercent
+    wastePercent,
+    materialCode
+  };
+}
+
+function mdfSheetQuantity(areaM2, wastePercent, sheetAreaM2, materialCode) {
+  const quantity = mdfAreaQuantity(areaM2, wastePercent, sheetAreaM2, materialCode);
+
+  return {
+    ...quantity,
+    sheets: quantity.areaWithWasteM2 > 0 ? Math.ceil(quantity.areaWithWasteM2 / sheetAreaM2) : 0
   };
 }
 
@@ -402,9 +418,8 @@ function buildMaterialRows({ catalog, geometry, preset }) {
   const quantities = buildQuantities({ geometry, preset, railing: { totalLengthM: 0, topBalustradeLengthM: 0, typeId: null } });
 
   return [
-    materialLine(catalog, 'MDF_18_SHEET', quantities.mdfSheets.treads.sheets, { name: 'MDF 18 мм, лист — ступени', quantityKind: 'mdfTreads', wastePercent: preset.wastePercent, applyWaste: false }),
+    materialLine(catalog, 'MDF_36_SHEET', quantities.mdfSheets.treadsAndPlatforms.sheets, { name: 'MDF 36 мм, лист — ступени и площадки', quantityKind: 'mdfTreadsAndPlatforms', wastePercent: preset.wastePercent, applyWaste: false }),
     materialLine(catalog, 'MDF_10_SHEET', quantities.mdfSheets.risers.sheets, { name: 'MDF 10 мм, лист — подступенки', quantityKind: 'mdfRisers', wastePercent: preset.wastePercent, applyWaste: false }),
-    materialLine(catalog, 'MDF_18_SHEET', quantities.mdfSheets.platforms.sheets, { name: 'MDF 18 мм, лист — площадки', quantityKind: 'mdfPlatforms', wastePercent: preset.wastePercent, applyWaste: false }),
     materialLine(catalog, 'ADDONS_TRIMS', quantities.nosingStrips.lengthM, { name: 'Доборы и планки — передняя кромка', quantityKind: 'nosingStrips' }),
     materialLine(catalog, 'ADDONS_TRIMS', quantities.endTrims.lengthM, { name: 'Доборы и планки — торцевые планки', quantityKind: 'endTrims' }),
     materialLine(catalog, 'ADDONS_TRIMS', quantities.coverStrips.lengthM, { name: 'Доборы и планки — нащельники', quantityKind: 'coverStrips' }),

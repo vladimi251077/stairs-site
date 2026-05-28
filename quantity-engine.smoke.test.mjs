@@ -7,19 +7,33 @@ function warningCodes(result) {
 
 const mdfResult = calculateQuantityEngine({
   configurationType: 'straight',
-  stepCount: 18,
-  riserCount: 18,
+  stepCount: 10,
+  riserCount: 1,
+  platformCount: 1,
   marchWidth: 1000,
-  treadDepth: 300,
+  treadDepth: 250,
   riserHeight: 170,
+  platformWidth: 1000,
+  platformDepth: 2500,
   openSideCount: 1,
   railingLengthM: 0
 });
-assert.equal(mdfResult.quantities.treadAreaM2, 5.4);
-assert.equal(mdfResult.quantities.riserAreaM2, 3.06);
-assert.equal(mdfResult.quantities.mdfSheets.treads.sheets, 2);
+const mdf36Row = mdfResult.materials.find((row) => row.code === 'MDF_36_SHEET');
+const mdf10Row = mdfResult.materials.find((row) => row.code === 'MDF_10_SHEET');
+assert.equal(mdfResult.quantities.treadAreaM2, 2.5);
+assert.equal(mdfResult.quantities.platformAreaM2, 2.5);
+assert.equal(mdfResult.quantities.riserAreaM2, 0.17);
+assert.equal(mdfResult.quantities.mdfSheets.treads.materialCode, 'MDF_36_SHEET');
+assert.equal(mdfResult.quantities.mdfSheets.platforms.materialCode, 'MDF_36_SHEET');
+assert.equal(mdfResult.quantities.mdfSheets.risers.materialCode, 'MDF_10_SHEET');
+assert.equal(mdfResult.quantities.mdfSheets.treadsAndPlatforms.sheets, 1);
 assert.equal(mdfResult.quantities.mdfSheets.risers.sheets, 1);
-assert.equal(mdfResult.quantities.mdfSheets.total.sheets, 3);
+assert.equal(mdfResult.quantities.mdfSheets.total.sheets, 2);
+assert.equal(mdf36Row.name, 'MDF 36 мм, лист — ступени и площадки');
+assert.equal(mdf36Row.quantity, 1);
+assert.equal(mdf10Row.name, 'MDF 10 мм, лист — подступенки');
+assert.equal(mdf10Row.quantity, 1);
+assert.equal(mdfResult.materials.filter((row) => row.code === 'MDF_18_SHEET').length, 0);
 
 const coatingResult = calculateQuantityEngine({
   configurationType: 'straight',
@@ -100,5 +114,14 @@ const suspiciousCoefficientResult = calculateQuantityEngine({
   turnkeyCoefficient: 6
 });
 assert.ok(warningCodes(suspiciousCoefficientResult).includes('SUSPICIOUS_TURNKEY_COEFFICIENT'));
+assert.deepEqual(Object.keys(suspiciousCoefficientResult.pricing), [
+  'materialAndConsumablesSubtotal',
+  'turnkeyCoefficient',
+  'clientPrice'
+]);
+assert.equal(
+  suspiciousCoefficientResult.pricing.clientPrice,
+  Math.round(suspiciousCoefficientResult.pricing.materialAndConsumablesSubtotal * suspiciousCoefficientResult.pricing.turnkeyCoefficient * 100) / 100
+);
 
 console.log('quantity-engine smoke tests passed');
