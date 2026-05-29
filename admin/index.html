@@ -596,8 +596,9 @@
         <details class="pricing-admin-section" open>
           <summary>
             <div>
-              <h3>Quantity Engine / Цена под ключ</h3>
+              <h3>Новый расчёт / Цена под ключ</h3>
               <p>Основные справочники и внутренний коэффициент текущего расчёта.</p>
+              <p class="small">Служебный модуль: Quantity Engine</p>
             </div>
             <span class="pricing-admin-section-label">Основной блок</span>
           </summary>
@@ -618,7 +619,7 @@
 
             <section class="pricing-current-block">
               <h3>Материалы и расходники</h3>
-              <p class="admin-warning">Новые материалы появятся в справочнике. Чтобы они начали участвовать в автоматической формуле калькулятора, их код должен использоваться Quantity Engine или быть подключён отдельным правилом расчёта.</p>
+              <p class="admin-warning">Новые материалы появятся в справочнике. Чтобы они начали участвовать в автоматической формуле калькулятора, их код должен использоваться движком расчёта или быть подключён отдельным правилом.</p>
               <div id="materialsCatalogAdmin"></div>
               <div class="row">
                 <button id="addMaterialCatalogRow" class="btn btn-secondary">Добавить материал</button>
@@ -627,7 +628,7 @@
 
             <section class="pricing-current-block">
               <h3>Ограждения</h3>
-              <p class="admin-warning">Новые виды ограждений можно хранить в справочнике. Для появления в клиентском выборе и расчёте может потребоваться mapping в калькуляторе.</p>
+              <p class="admin-warning">Новые виды ограждений можно хранить в справочнике. Чтобы они появились в клиентском выборе и участвовали в расчёте, может потребоваться сопоставление в калькуляторе.</p>
               <div id="railingTypesAdmin"></div>
               <div class="row">
                 <button id="addRailingTypeRow" class="btn btn-secondary">Добавить ограждение</button>
@@ -2798,15 +2799,15 @@
       row.dataset.code = item.code || '';
       row.dataset.isNew = isNew ? 'true' : 'false';
       row.innerHTML = `
-        <label>code<input data-k="code" value="${escapeHtml(item.code || '')}" placeholder="MDF_40_SHEET" ${isNew ? '' : 'readonly'} /></label>
-        <label class="qe-card-span-2">name<input data-k="name" value="${escapeHtml(item.name || '')}" placeholder="MDF 40 мм, лист" /></label>
-        <label>unit<input data-k="unit" value="${escapeHtml(item.unit || '')}" placeholder="sheet" /></label>
-        <label>category<input data-k="category" value="${escapeHtml(item.category || '')}" placeholder="MDF" /></label>
-        <label>base_cost<input data-k="base_cost" type="number" min="0" step="0.01" value="${Number(item.base_cost || 0)}" /></label>
-        <label>waste_percent<input data-k="waste_percent" type="number" min="0" step="0.01" value="${Number(item.waste_percent || 0)}" /></label>
-        <label>sort_order<input data-k="sort_order" type="number" step="1" value="${Number(item.sort_order || 100)}" /></label>
-        <label>active<input data-k="active" type="checkbox" ${item.active !== false ? 'checked' : ''} /></label>
-        <label>visible_to_client<input data-k="visible_to_client" type="checkbox" ${item.visible_to_client ? 'checked' : ''} /></label>
+        <label>Код материала<input data-k="code" value="${escapeHtml(item.code || '')}" placeholder="MDF_40_SHEET" ${isNew ? '' : 'readonly'} /></label>
+        <label class="qe-card-span-2">Название<input data-k="name" value="${escapeHtml(item.name || '')}" placeholder="MDF 40 мм, лист" /></label>
+        <label>Ед. изм.<input data-k="unit" value="${escapeHtml(item.unit || '')}" placeholder="sheet" /></label>
+        <label>Категория<input data-k="category" value="${escapeHtml(item.category || '')}" placeholder="MDF" /></label>
+        <label>Цена<input data-k="base_cost" type="number" min="0" step="0.01" value="${Number(item.base_cost || 0)}" /></label>
+        <label>Отходы, %<input data-k="waste_percent" type="number" min="0" step="0.01" value="${Number(item.waste_percent || 0)}" /></label>
+        <label>Порядок<input data-k="sort_order" type="number" step="1" value="${Number(item.sort_order || 100)}" /></label>
+        <label>Активен<input data-k="active" type="checkbox" ${item.active !== false ? 'checked' : ''} /></label>
+        <label>Показывать клиенту<input data-k="visible_to_client" type="checkbox" ${item.visible_to_client ? 'checked' : ''} /></label>
         <div class="qe-actions qe-card-actions">
           <button class="btn" type="button" data-act="save">Сохранить</button>
           <button class="btn btn-secondary" type="button" data-act="hide">Скрыть</button>
@@ -2835,12 +2836,12 @@
       row.dataset.name = item.name || '';
       row.dataset.isNew = isNew ? 'true' : 'false';
       row.innerHTML = `
-        <label>name<input data-k="name" value="${escapeHtml(item.name || '')}" placeholder="стекло" /></label>
-        <label>price_per_meter<input data-k="price_per_meter" type="number" min="0" step="0.01" value="${Number(item.price_per_meter || 0)}" /></label>
-        <label>sort_order<input data-k="sort_order" type="number" step="1" value="${Number(item.sort_order || 100)}" /></label>
-        <label>active<input data-k="active" type="checkbox" ${item.active !== false ? 'checked' : ''} /></label>
-        <label class="qe-card-span-2">description<textarea data-k="description" placeholder="Описание">${escapeHtml(item.description || '')}</textarea></label>
-        <label>visible_to_client<input data-k="visible_to_client" type="checkbox" ${item.visible_to_client !== false ? 'checked' : ''} /></label>
+        <label>Название<input data-k="name" value="${escapeHtml(item.name || '')}" placeholder="стекло" /></label>
+        <label>Цена за метр<input data-k="price_per_meter" type="number" min="0" step="0.01" value="${Number(item.price_per_meter || 0)}" /></label>
+        <label>Порядок<input data-k="sort_order" type="number" step="1" value="${Number(item.sort_order || 100)}" /></label>
+        <label>Активно<input data-k="active" type="checkbox" ${item.active !== false ? 'checked' : ''} /></label>
+        <label class="qe-card-span-2">Описание<textarea data-k="description" placeholder="Описание">${escapeHtml(item.description || '')}</textarea></label>
+        <label>Показывать клиенту<input data-k="visible_to_client" type="checkbox" ${item.visible_to_client !== false ? 'checked' : ''} /></label>
         <div class="qe-actions qe-card-actions">
           <button class="btn" type="button" data-act="save">Сохранить</button>
           <button class="btn btn-secondary" type="button" data-act="hide">Скрыть</button>
