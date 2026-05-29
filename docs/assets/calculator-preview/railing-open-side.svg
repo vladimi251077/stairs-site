@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 150" role="img" aria-labelledby="title desc">
+  <title id="title">Ограждение по открытой стороне</title>
+  <desc id="desc">Ограждение показано золотой линией по открытой стороне марша.</desc>
+  <rect width="240" height="150" rx="18" fill="#070a10"/>
+  <path d="M42 112h156" fill="none" stroke="#d9e4f2" stroke-linecap="round" stroke-width="2"/>
+  <path d="M56 98l36-14 36-14 36-14" fill="none" stroke="#d9e4f2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+  <path d="M50 84l36-14 36-14 36-14" fill="none" stroke="#d9a85b" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"/>
+  <circle cx="50" cy="84" r="4" fill="#d9a85b"/>
+  <circle cx="158" cy="42" r="4" fill="#d9a85b"/>
+  <text x="42" y="30" fill="#f7f2ea" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="800">Открытая сторона</text>
+  <text x="42" y="132" fill="#a9adba" font-family="Inter, Arial, sans-serif" font-size="11">марш + верхняя балюстрада</text>
+</svg>

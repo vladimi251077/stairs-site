@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 150" role="img" aria-labelledby="title desc">
+  <title id="title">Измерение длины L</title>
+  <desc id="desc">Доступное место по полу для лестницы.</desc>
+  <rect width="240" height="150" rx="18" fill="#070a10"/>
+  <path d="M42 106h158" fill="none" stroke="#d9e4f2" stroke-linecap="round" stroke-width="2"/>
+  <path d="M62 94l35-14 35-14 35-14" fill="none" stroke="#d9e4f2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+  <path d="M62 124h105" fill="none" stroke="#d9a85b" stroke-linecap="round" stroke-width="3"/>
+  <path d="M74 114l-12 10 12 10M155 114l12 10-12 10" fill="none" stroke="#d9a85b" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>
+  <text x="107" y="103" fill="#f7f2ea" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="800">L</text>
+  <text x="52" y="32" fill="#a9adba" font-family="Inter, Arial, sans-serif" font-size="11">доступное место по полу</text>
+</svg>
