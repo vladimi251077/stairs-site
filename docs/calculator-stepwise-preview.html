@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Preview: поэтапный калькулятор Tekstura</title>
+  <link rel="stylesheet" href="./calculator-stepwise-preview.css">
+</head>
+<body>
+  <main class="preview-shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Static UX preview</p>
+        <h1>Калькулятор по шагам</h1>
+        <p class="hero__text">Макет показывает будущую структуру клиентского сценария: меньше полей сразу, больше понятных подсказок и схем измерения.</p>
+      </div>
+      <p class="notice">Это не рабочий расчёт. Здесь нет Supabase, формул, коэффициентов и подключения к текущему калькулятору.</p>
+    </header>
+
+    <nav class="steps" aria-label="Шаги будущего калькулятора">
+      <span class="step-pill is-active"><strong>1</strong>Ситуация</span>
+      <span class="step-pill"><strong>2</strong>Тип</span>
+      <span class="step-pill"><strong>3</strong>Размеры</span>
+      <span class="step-pill"><strong>4</strong>Ограничения</span>
+      <span class="step-pill"><strong>5</strong>Материал</span>
+      <span class="step-pill"><strong>6</strong>Ограждение</span>
+      <span class="step-pill"><strong>7</strong>Итог</span>
+    </nav>
+
+    <div class="preview-grid">
+      <section class="panel panel--wide" aria-labelledby="scenario-title">
+        <h2 id="scenario-title">Шаг 1. Что у вас сейчас?</h2>
+        <p class="panel__lead">Клиент начинает с простой ситуации на объекте, а не с инженерных настроек.</p>
+        <div class="card-grid card-grid--five">
+          <article class="choice-card is-selected">
+            <div class="choice-card__icon">⬚</div>
+            <h3>Пустой проём</h3>
+            <p>Нужно подобрать новую лестницу.</p>
+          </article>
+          <article class="choice-card">
+            <div class="choice-card__icon">▰</div>
+            <h3>Металлокаркас</h3>
+            <p>Основание уже стоит.</p>
+          </article>
+          <article class="choice-card">
+            <div class="choice-card__icon">▣</div>
+            <h3>Бетон</h3>
+            <p>Нужна отделка основания.</p>
+          </article>
+          <article class="choice-card">
+            <div class="choice-card__icon">↻</div>
+            <h3>Старая лестница</h3>
+            <p>Нужна обшивка или замена.</p>
+          </article>
+          <article class="choice-card">
+            <div class="choice-card__icon">?</div>
+            <h3>Не знаю</h3>
+            <p>Нужна консультация.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="type-title">
+        <h2 id="type-title">Шаг 2. Тип лестницы</h2>
+        <p class="panel__lead">Форму лучше выбрать карточкой и схемой сверху.</p>
+        <div class="card-grid">
+          <article class="choice-card is-selected">
+            <svg viewBox="0 0 220 90" role="img" aria-label="Прямая лестница">
+              <path class="diagram-line" d="M30 65 H190"/>
+              <path class="diagram-accent" d="M50 65 H170"/>
+              <text class="diagram-label" x="30" y="30">Прямая</text>
+            </svg>
+          </article>
+          <article class="choice-card">
+            <svg viewBox="0 0 220 90" role="img" aria-label="Г-образная лестница с площадкой">
+              <path class="diagram-line" d="M35 65 H115 V25 H185"/>
+              <rect class="diagram-soft" x="98" y="48" width="34" height="34" rx="4"/>
+              <text class="diagram-label" x="30" y="22">Г + площадка</text>
+            </svg>
+          </article>
+          <article class="choice-card">
+            <svg viewBox="0 0 220 90" role="img" aria-label="П-образная лестница с забежными ступенями">
+              <path class="diagram-line" d="M42 70 H95 V24 H155 V70 H190"/>
+              <path class="diagram-accent" d="M95 70 L155 24 M95 24 L155 70"/>
+              <text class="diagram-label" x="30" y="18">П + забежные</text>
+            </svg>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="sizes-title">
+        <h2 id="sizes-title">Шаг 3. Основные размеры</h2>
+        <p class="panel__lead">Только базовые размеры. Если клиент не знает — уточняем на замере.</p>
+        <div class="form-grid">
+          <div class="field">
+            <label for="height-h">Высота H</label>
+            <div class="input-row"><input id="height-h" value="3000" aria-label="Высота H"><span class="unit">мм</span></div>
+          </div>
+          <div class="field">
+            <label for="width-w">Ширина марша W</label>
+            <div class="input-row"><input id="width-w" value="1000" aria-label="Ширина марша W"><span class="unit">мм</span></div>
+          </div>
+          <div class="field">
+            <label for="length-l">Длина по полу L</label>
+            <div class="input-row"><input id="length-l" value="4200" aria-label="Длина по полу L"><span class="unit">мм</span></div>
+          </div>
+          <div class="field">
+            <label for="step-count">Ступеней, если известно</label>
+            <div class="input-row"><input id="step-count" value="Не знаю" aria-label="Примерное количество ступеней"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel panel--wide" aria-labelledby="hints-title">
+        <h2 id="hints-title">Визуальные подсказки</h2>
+        <p class="panel__lead">Светлые технические схемы на тёмном фоне: без 3D, без сложных терминов.</p>
+        <div class="hint-grid">
+          <figure class="scheme">
+            <svg viewBox="0 0 240 160" role="img" aria-label="Проём сверху">
+              <rect class="diagram-soft" x="42" y="34" width="156" height="92" rx="6"/>
+              <path class="diagram-accent" d="M42 134 H198 M34 34 V126"/>
+              <text class="diagram-label" x="74" y="24">Проём сверху</text>
+              <text class="diagram-muted" x="95" y="152">длина × ширина</text>
+            </svg>
+            <figcaption class="scheme-title">Проём сверху</figcaption>
+          </figure>
+
+          <figure class="scheme">
+            <svg viewBox="0 0 240 160" role="img" aria-label="Высота H">
+              <path class="diagram-line" d="M52 128 H190 M52 36 H190"/>
+              <path class="diagram-accent" d="M88 128 V36 M78 44 L88 34 L98 44 M78 120 L88 130 L98 120"/>
+              <text class="diagram-label" x="108" y="86">H</text>
+              <text class="diagram-muted" x="46" y="24">чистый пол → чистый пол</text>
+            </svg>
+            <figcaption class="scheme-title">Высота H</figcaption>
+          </figure>
+
+          <figure class="scheme">
+            <svg viewBox="0 0 240 160" role="img" aria-label="Ширина марша W">
+              <rect class="diagram-soft" x="52" y="48" width="136" height="62" rx="5"/>
+              <path class="diagram-accent" d="M52 126 H188 M62 118 L52 126 L62 134 M178 118 L188 126 L178 134"/>
+              <text class="diagram-label" x="112" y="94">W</text>
+              <text class="diagram-muted" x="50" y="30">полезная ширина лестницы</text>
+            </svg>
+            <figcaption class="scheme-title">Ширина марша W</figcaption>
+          </figure>
+
+          <figure class="scheme">
+            <svg viewBox="0 0 240 160" role="img" aria-label="Длина по полу L">
+              <path class="diagram-line" d="M38 116 H202"/>
+              <path class="diagram-line" d="M54 104 L90 88 L126 72 L162 56"/>
+              <path class="diagram-accent" d="M54 134 H162 M64 126 L54 134 L64 142 M152 126 L162 134 L152 142"/>
+              <text class="diagram-label" x="102" y="126">L</text>
+              <text class="diagram-muted" x="56" y="34">место по полу</text>
+            </svg>
+            <figcaption class="scheme-title">Длина по полу L</figcaption>
+          </figure>
+
+          <figure class="scheme">
+            <svg viewBox="0 0 240 160" role="img" aria-label="Площадка">
+              <path class="diagram-line" d="M32 122 H96 V64 H154 V34 H208"/>
+              <rect class="diagram-soft" x="96" y="64" width="58" height="58" rx="5"/>
+              <text class="diagram-label" x="86" y="34">Площадка</text>
+            </svg>
+            <figcaption class="scheme-title">Площадка</figcaption>
+          </figure>
+
+          <figure class="scheme">
+            <svg viewBox="0 0 240 160" role="img" aria-label="Забежные ступени">
+              <rect class="diagram-soft" x="48" y="82" width="48" height="34"/>
+              <path class="diagram-soft" d="M96 116 L156 116 L96 82 Z"/>
+              <path class="diagram-soft" d="M96 82 L156 116 L156 58 Z"/>
+              <rect class="diagram-soft" x="156" y="58" width="42" height="34"/>
+              <text class="diagram-label" x="42" y="36">Забежные</text>
+            </svg>
+            <figcaption class="scheme-title">Забежные ступени</figcaption>
+          </figure>
+
+          <figure class="scheme">
+            <svg viewBox="0 0 240 160" role="img" aria-label="Ограждение по открытой стороне">
+              <path class="diagram-line" d="M46 118 H188"/>
+              <path class="diagram-line" d="M66 106 L96 92 L126 78 L156 64"/>
+              <path class="diagram-accent" d="M58 96 L90 82 L120 68 L150 54"/>
+              <circle cx="58" cy="96" r="5" fill="#72d6a3"/>
+              <circle cx="150" cy="54" r="5" fill="#72d6a3"/>
+              <text class="diagram-label" x="58" y="34">Открытая сторона</text>
+            </svg>
+            <figcaption class="scheme-title">Ограждение</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="rail-title">
+        <h2 id="rail-title">Шаг 6. Ограждение</h2>
+        <p class="panel__lead">Сначала понятный тип, потом уточнение по открытой стороне.</p>
+        <div class="card-grid">
+          <article class="choice-card"><h3>Без ограждения</h3><p>Если оно не требуется.</p></article>
+          <article class="choice-card is-selected"><h3>Металл</h3><p>Простой надёжный вариант.</p></article>
+          <article class="choice-card"><h3>Стекло</h3><p>Лёгкий визуальный вид.</p></article>
+          <article class="choice-card"><h3>Дерево</h3><p>Тёплая отделка.</p></article>
+        </div>
+        <p class="rail-note">Ограждение считается по длине марша и верхней балюстраде, если она нужна.</p>
+      </section>
+
+      <section class="panel" aria-labelledby="result-title">
+        <h2 id="result-title">Шаг 7. Итог</h2>
+        <div class="total-card">
+          <span>Предварительно под ключ</span>
+          <strong>от 430 000 ₽</strong>
+          <p class="result-note">Финальная смета уточняется после проверки размеров.</p>
+        </div>
+        <ul class="clean-list" aria-label="Состав предварительного расчёта">
+          <li>Ступени и подступенки</li>
+          <li>Площадки и покрытие</li>
+          <li>Расходники</li>
+          <li>Ограждение</li>
+        </ul>
+        <button class="cta" type="button">Оставить заявку</button>
+      </section>
+    </div>
+
+    <footer class="preview-footer">
+      <p>Preview специально не содержит JavaScript, реального расчёта, Supabase-подключения, коэффициентов или внутренней формулы цены.</p>
+    </footer>
+  </main>
+</body>
+</html>
