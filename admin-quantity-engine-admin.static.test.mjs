@@ -12,9 +12,26 @@ for (const needle of [
   'Добавить ограждение',
   'active: false',
   'confirm(\'Удалить материал окончательно?',
-  'confirm(\'Удалить ограждение окончательно?'
+  'confirm(\'Удалить ограждение окончательно?',
+  'width:min(100%, 1440px)',
+  'qe-admin-card-list',
+  'qe-admin-card',
+  'qe-card-actions',
+  'flex-wrap:wrap',
+  'white-space:normal',
+  'aria-label="Материалы и расходники"',
+  'aria-label="Ограждения"'
 ]) {
   assert.ok(adminHtml.includes(needle), `admin/index.html should include ${needle}`);
+}
+
+for (const forbidden of [
+  'min-width:920px',
+  "document.createElement(\'tr\')",
+  '<table class="qe-admin-table"',
+  "querySelector('tbody')"
+]) {
+  assert.equal(adminHtml.includes(forbidden), false, `admin/index.html should not include ${forbidden}`);
 }
 
 for (const [path, text] of clientFiles) {
