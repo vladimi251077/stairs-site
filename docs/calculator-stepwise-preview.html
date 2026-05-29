@@ -63,28 +63,40 @@
       <section class="panel" aria-labelledby="type-title">
         <h2 id="type-title">Шаг 2. Тип лестницы</h2>
         <p class="panel__lead">Форму лучше выбрать карточкой и схемой сверху.</p>
-        <div class="card-grid">
-          <article class="choice-card is-selected">
-            <svg viewBox="0 0 220 90" role="img" aria-label="Прямая лестница">
-              <path class="diagram-line" d="M30 65 H190"/>
-              <path class="diagram-accent" d="M50 65 H170"/>
-              <text class="diagram-label" x="30" y="30">Прямая</text>
-            </svg>
+        <div class="card-grid card-grid--four">
+          <article class="choice-card stair-type-card is-selected">
+            <img class="stair-card-img" src="./assets/calculator-preview/stair-straight-top.svg" alt="Прямая лестница: один прямой марш, вид сверху">
+            <h3>Прямая</h3>
           </article>
-          <article class="choice-card">
-            <svg viewBox="0 0 220 90" role="img" aria-label="Г-образная лестница с площадкой">
-              <path class="diagram-line" d="M35 65 H115 V25 H185"/>
-              <rect class="diagram-soft" x="98" y="48" width="34" height="34" rx="4"/>
-              <text class="diagram-label" x="30" y="22">Г + площадка</text>
-            </svg>
+          <article class="choice-card stair-type-card">
+            <img class="stair-card-img" src="./assets/calculator-preview/stair-turn-90-top.svg" alt="Поворот 90 градусов: Г-образная лестница, вид сверху">
+            <h3>Поворот 90°</h3>
+            <p>Г-образная</p>
           </article>
-          <article class="choice-card">
-            <svg viewBox="0 0 220 90" role="img" aria-label="П-образная лестница с забежными ступенями">
-              <path class="diagram-line" d="M42 70 H95 V24 H155 V70 H190"/>
-              <path class="diagram-accent" d="M95 70 L155 24 M95 24 L155 70"/>
-              <text class="diagram-label" x="30" y="18">П + забежные</text>
-            </svg>
+          <article class="choice-card stair-type-card">
+            <img class="stair-card-img" src="./assets/calculator-preview/stair-turn-180-top.svg" alt="Поворот 180 градусов: П-образная лестница, вид сверху">
+            <h3>Поворот 180°</h3>
+            <p>П-образная</p>
           </article>
+          <article class="choice-card stair-type-card">
+            <img class="stair-card-img" src="./assets/calculator-preview/unknown-consultation.svg" alt="Пока не знаю: нужна консультация">
+            <h3>Пока не знаю</h3>
+            <p>Поможем выбрать форму.</p>
+          </article>
+        </div>
+
+        <div class="turn-method" aria-labelledby="turn-method-title">
+          <h3 id="turn-method-title">Если есть поворот, как он выполнен?</h3>
+          <div class="card-grid card-grid--two">
+            <article class="choice-card stair-type-card">
+              <img class="stair-card-img" src="./assets/calculator-preview/stair-landing-turn-top.svg" alt="Поворот с площадкой: два марша и прямоугольная площадка, вид сверху">
+              <h3>С площадкой</h3>
+            </article>
+            <article class="choice-card stair-type-card">
+              <img class="stair-card-img" src="./assets/calculator-preview/stair-winder-turn-top.svg" alt="Поворот забежными ступенями: клиновидные ступени в повороте, вид сверху">
+              <h3>Забежными ступенями</h3>
+            </article>
+          </div>
         </div>
       </section>
 
