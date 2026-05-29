@@ -27,16 +27,24 @@ for (const needle of [
   'Новые виды ограждений можно хранить в справочнике. Чтобы они появились в клиентском выборе и участвовали в расчёте, может потребоваться сопоставление в калькуляторе.',
   '<label>Код материала<input data-k="code"',
   '<label class="qe-card-span-2">Название<input data-k="name"',
-  '<label>Ед. изм.<input data-k="unit"',
+  'priceLabelForUnit(unit)',
+  'Цена за лист',
+  'Цена за м²',
+  'Цена за литр',
+  'Цена за кг',
+  'Цена за комплект',
+  'Цена за тубу',
+  'Цена за единицу',
+  '<label>Единица расчёта<input data-k="unit"',
   '<label>Категория<input data-k="category"',
-  '<label>Цена<input data-k="base_cost"',
+  'data-k="base_cost"',
   '<label>Отходы, %<input data-k="waste_percent"',
   '<label>Цена за метр<input data-k="price_per_meter"',
   '<label class="qe-card-span-2">Описание<textarea data-k="description"',
   '<label>Активен<input data-k="active"',
   '<label>Активно<input data-k="active"',
   '<label>Показывать клиенту<input data-k="visible_to_client"',
-  '<label>Порядок<input data-k="sort_order"'
+  'Порядок отображения<input data-k="sort_order"'
 ]) {
   assert.ok(adminHtml.includes(needle), `admin/index.html should include ${needle}`);
 }

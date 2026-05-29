@@ -2793,6 +2793,19 @@
       turnkeyCoefficientInput.value = Number(settings?.turnkey_coefficient || 2.35);
     }
 
+    function priceLabelForUnit(unit) {
+      const labels = {
+        sheet: 'Цена за лист',
+        m2: 'Цена за м²',
+        m: 'Цена за метр',
+        l: 'Цена за литр',
+        kg: 'Цена за кг',
+        set: 'Цена за комплект',
+        tube: 'Цена за тубу'
+      };
+      return labels[String(unit || '').trim().toLowerCase()] || 'Цена за единицу';
+    }
+
     function materialAdminItem(item = {}, isNew = false) {
       const row = document.createElement('div');
       row.className = 'qe-admin-card';
@@ -2801,11 +2814,11 @@
       row.innerHTML = `
         <label>Код материала<input data-k="code" value="${escapeHtml(item.code || '')}" placeholder="MDF_40_SHEET" ${isNew ? '' : 'readonly'} /></label>
         <label class="qe-card-span-2">Название<input data-k="name" value="${escapeHtml(item.name || '')}" placeholder="MDF 40 мм, лист" /></label>
-        <label>Ед. изм.<input data-k="unit" value="${escapeHtml(item.unit || '')}" placeholder="sheet" /></label>
+        <label>Единица расчёта<input data-k="unit" value="${escapeHtml(item.unit || '')}" placeholder="sheet" /></label>
         <label>Категория<input data-k="category" value="${escapeHtml(item.category || '')}" placeholder="MDF" /></label>
-        <label>Цена<input data-k="base_cost" type="number" min="0" step="0.01" value="${Number(item.base_cost || 0)}" /></label>
+        <label><span data-price-label>${priceLabelForUnit(item.unit)}</span><input data-k="base_cost" type="number" min="0" step="0.01" value="${Number(item.base_cost || 0)}" /></label>
         <label>Отходы, %<input data-k="waste_percent" type="number" min="0" step="0.01" value="${Number(item.waste_percent || 0)}" /></label>
-        <label>Порядок<input data-k="sort_order" type="number" step="1" value="${Number(item.sort_order || 100)}" /></label>
+        <label>Порядок отображения<input data-k="sort_order" type="number" step="1" value="${Number(item.sort_order || 100)}" /></label>
         <label>Активен<input data-k="active" type="checkbox" ${item.active !== false ? 'checked' : ''} /></label>
         <label>Показывать клиенту<input data-k="visible_to_client" type="checkbox" ${item.visible_to_client ? 'checked' : ''} /></label>
         <div class="qe-actions qe-card-actions">
@@ -2814,6 +2827,9 @@
           <button class="btn btn-secondary" type="button" data-act="restore">Восстановить</button>
           <button class="btn btn-danger" type="button" data-act="delete">Удалить окончательно</button>
         </div>`;
+      row.querySelector('[data-k="unit"]').addEventListener('input', (event) => {
+        row.querySelector('[data-price-label]').textContent = priceLabelForUnit(event.target.value);
+      });
       row.querySelector('[data-act="save"]').onclick = async () => {
         try {
           const payload = readMaterialCatalogRow(row);
@@ -2838,7 +2854,7 @@
       row.innerHTML = `
         <label>Название<input data-k="name" value="${escapeHtml(item.name || '')}" placeholder="стекло" /></label>
         <label>Цена за метр<input data-k="price_per_meter" type="number" min="0" step="0.01" value="${Number(item.price_per_meter || 0)}" /></label>
-        <label>Порядок<input data-k="sort_order" type="number" step="1" value="${Number(item.sort_order || 100)}" /></label>
+        <label>Порядок отображения<input data-k="sort_order" type="number" step="1" value="${Number(item.sort_order || 100)}" /></label>
         <label>Активно<input data-k="active" type="checkbox" ${item.active !== false ? 'checked' : ''} /></label>
         <label class="qe-card-span-2">Описание<textarea data-k="description" placeholder="Описание">${escapeHtml(item.description || '')}</textarea></label>
         <label>Показывать клиенту<input data-k="visible_to_client" type="checkbox" ${item.visible_to_client !== false ? 'checked' : ''} /></label>
