@@ -3,233 +3,131 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Preview: поэтапный калькулятор Tekstura</title>
+  <title>Tekstura: premium quiz calculator preview</title>
   <link rel="stylesheet" href="./calculator-stepwise-preview.css">
 </head>
 <body>
-  <main class="preview-shell">
-    <aside class="brand-panel" aria-label="Tekstura preview intro">
-      <div class="brand-panel__content">
-        <p class="eyebrow">Tekstura preview</p>
-        <h1>Калькулятор лестницы</h1>
-        <p class="brand-panel__subtitle">Поэтапный расчёт без перегруза: клиент выбирает понятные сценарии, видит схемы и отправляет заявку на проверку.</p>
-        <ul class="benefit-list" aria-label="Преимущества будущего интерфейса">
-          <li><span>01</span>Просто</li>
-          <li><span>02</span>Наглядно</li>
-          <li><span>03</span>Точно</li>
-          <li><span>04</span>Быстро</li>
-        </ul>
-        <div class="brand-stair" aria-hidden="true">
-          <span></span><span></span><span></span><span></span><span></span>
-        </div>
+  <main class="quiz-landing">
+    <section class="hero-panel" aria-label="Tekstura calculator intro">
+      <div class="brand-lockup">
+        <span>TEKSTURA</span>
+        <small>лестницы под ключ</small>
       </div>
-    </aside>
 
-    <section class="wizard-preview" aria-labelledby="preview-title">
-      <header class="wizard-header">
-        <div>
-          <p class="eyebrow">Static UX mockup</p>
-          <h2 id="preview-title">Поэтапный расчёт</h2>
-          <p>Премиальный dark preview: без реального расчёта, Supabase, формул и коэффициентов.</p>
+      <div class="hero-copy">
+        <p class="eyebrow">Квиз-калькулятор</p>
+        <h1><span>Рассчитайте</span><span>лестницу</span><span>за 2 минуты</span></h1>
+        <p>Ответьте на несколько простых вопросов, а инженер Tekstura проверит размеры и подготовит предварительную стоимость под ключ.</p>
+      </div>
+
+      <ul class="hero-benefits" aria-label="Преимущества">
+        <li><b>01</b><span>Без сложных терминов</span></li>
+        <li><b>02</b><span>Схемы вместо догадок</span></li>
+        <li><b>03</b><span>Только важные вопросы</span></li>
+      </ul>
+    </section>
+
+    <section class="quiz-stage" aria-labelledby="quiz-title">
+      <header class="quiz-header">
+        <div class="quiz-heading">
+          <p class="eyebrow">Шаг 2 из 7</p>
+          <h2 id="quiz-title">Как будет идти лестница?</h2>
+          <span>Выберите форму. Если не уверены — оставьте консультацию.</span>
         </div>
-        <span class="status-badge">Preview-only</span>
+        <div class="progress-widget" aria-label="Прогресс квиза">
+          <strong>29%</strong>
+          <span><i></i></span>
+        </div>
       </header>
 
-      <nav class="stepper" aria-label="Шаги будущего калькулятора">
-        <ol>
-          <li class="is-complete"><span>1</span>Ситуация</li>
-          <li class="is-active"><span>2</span>Тип</li>
-          <li><span>3</span>Размеры</li>
-          <li><span>4</span>Ограничения</li>
-          <li><span>5</span>Материал</li>
-          <li><span>6</span>Ограждение</li>
-          <li><span>7</span>Итог</li>
-        </ol>
-      </nav>
+      <ol class="step-pills" aria-label="Этапы квиза">
+        <li class="is-done">1. Основание</li>
+        <li class="is-active">2. Форма</li>
+        <li>3. Размеры</li>
+        <li>4. Ограничения</li>
+        <li>5. Материал</li>
+        <li>6. Ограждение</li>
+        <li>7. Итог</li>
+      </ol>
 
-      <div class="wizard-stack">
-        <section class="panel" aria-labelledby="scenario-title">
-          <div class="section-heading">
-            <p class="step-kicker">Шаг 1</p>
-            <h3 id="scenario-title">Что у вас сейчас?</h3>
-            <p>Начинаем с ситуации на объекте, а не с инженерных настроек.</p>
-          </div>
-          <div class="scenario-grid">
-            <article class="choice-card is-selected">
-              <span class="choice-icon">□</span>
-              <h4>Пустой проём</h4>
-              <p>Нужно подобрать новую лестницу.</p>
-            </article>
-            <article class="choice-card">
-              <span class="choice-icon">▰</span>
-              <h4>Металлокаркас</h4>
-              <p>Основание уже стоит.</p>
-            </article>
-            <article class="choice-card">
-              <span class="choice-icon">▣</span>
-              <h4>Бетон</h4>
-              <p>Нужна отделка основания.</p>
-            </article>
-            <article class="choice-card">
-              <span class="choice-icon">↻</span>
-              <h4>Старая лестница</h4>
-              <p>Обшивка или замена.</p>
-            </article>
-            <article class="choice-card">
-              <span class="choice-icon">?</span>
-              <h4>Не знаю</h4>
-              <p>Нужна консультация.</p>
-            </article>
-          </div>
-        </section>
-
-        <section class="panel panel--hero" aria-labelledby="type-title">
-          <div class="section-heading section-heading--split">
-            <div>
-              <p class="step-kicker">Шаг 2</p>
-              <h3 id="type-title">Как будет идти лестница?</h3>
-              <p>Ключевой экран выбора формы: только вид сверху, понятные повороты и без 3D.</p>
-            </div>
-            <span class="gold-chip">Выберите форму</span>
-          </div>
-
-          <div class="stair-type-grid">
-            <article class="choice-card stair-type-card is-selected">
-              <img class="stair-card-img" src="./assets/calculator-preview/stair-straight-top.svg" alt="Прямая лестница: один прямой марш, вид сверху">
-              <h4>Прямая</h4>
-              <p>Один марш без поворотов.</p>
-            </article>
-            <article class="choice-card stair-type-card">
-              <img class="stair-card-img" src="./assets/calculator-preview/stair-turn-90-top.svg" alt="Поворот 90 градусов: Г-образная лестница, вид сверху">
-              <h4>Поворот 90°</h4>
-              <p>Г-образная лестница.</p>
-            </article>
-            <article class="choice-card stair-type-card">
-              <img class="stair-card-img" src="./assets/calculator-preview/stair-turn-180-top.svg" alt="Поворот 180 градусов: П-образная лестница, вид сверху">
-              <h4>Поворот 180°</h4>
-              <p>П-образная лестница.</p>
-            </article>
-            <article class="choice-card stair-type-card">
-              <img class="stair-card-img" src="./assets/calculator-preview/unknown-consultation.svg" alt="Пока не знаю: нужна консультация">
-              <h4>Пока не знаю</h4>
-              <p>Инженер поможет выбрать.</p>
-            </article>
-          </div>
-
-          <div class="turn-method" aria-labelledby="turn-method-title">
-            <div class="turn-method__title">
-              <h4 id="turn-method-title">Если есть поворот, как он выполнен?</h4>
-              <p>Отличаем ровную площадку от клиновидных забежных ступеней.</p>
-            </div>
-            <div class="turn-method-grid">
-              <article class="choice-card stair-type-card">
-                <img class="stair-card-img" src="./assets/calculator-preview/stair-landing-turn-top.svg" alt="Поворот с площадкой: два марша и прямоугольная площадка, вид сверху">
-                <h4>С площадкой</h4>
-                <p>Ровный прямоугольник между маршами.</p>
-              </article>
-              <article class="choice-card stair-type-card">
-                <img class="stair-card-img" src="./assets/calculator-preview/stair-winder-turn-top.svg" alt="Поворот забежными ступенями: клиновидные ступени в повороте, вид сверху">
-                <h4>Забежными ступенями</h4>
-                <p>Клиновидные ступени в зоне поворота.</p>
-              </article>
-            </div>
-          </div>
-        </section>
-
-        <section class="panel" aria-labelledby="sizes-title">
-          <div class="section-heading section-heading--split">
-            <div>
-              <p class="step-kicker">Шаг 3</p>
-              <h3 id="sizes-title">Основные размеры</h3>
-              <p>Просим только H, W и L. Если размер неизвестен — уточним на замере.</p>
-            </div>
-            <span class="gold-chip">Как правильно измерить?</span>
-          </div>
-          <div class="measure-layout">
-            <div class="measure-fields">
-              <label class="measure-field">Высота H <span>3000 мм</span></label>
-              <label class="measure-field">Ширина W <span>1000 мм</span></label>
-              <label class="measure-field">Длина L <span>4200 мм</span></label>
-            </div>
-            <div class="measure-cards">
-              <img src="./assets/calculator-preview/measure-height.svg" alt="Высота H от чистого пола первого этажа до чистого пола второго">
-              <img src="./assets/calculator-preview/measure-width.svg" alt="Ширина W — полезная ширина лестницы">
-              <img src="./assets/calculator-preview/measure-length.svg" alt="Длина L — доступное место по полу">
-            </div>
-          </div>
-        </section>
-
-        <section class="panel compact-panel" aria-labelledby="constraints-title">
-          <div class="section-heading">
-            <p class="step-kicker">Шаг 4</p>
-            <h3 id="constraints-title">Площадка, забежные и ограничения</h3>
-            <p>Показывается только для выбранного сценария: стены, окно, дверь рядом или размер площадки.</p>
-          </div>
-          <div class="pill-row">
-            <span>Есть площадка</span>
-            <span>Есть стены сбоку</span>
-            <span>Окно/дверь рядом</span>
-            <span>Уточнить на замере</span>
-          </div>
-        </section>
-
-        <section class="panel" aria-labelledby="materials-title">
-          <div class="section-heading">
-            <p class="step-kicker">Шаг 5</p>
-            <h3 id="materials-title">Материал и отделка</h3>
-            <p>Внешние понятные варианты без внутренних rate keys и настроек каталога.</p>
-          </div>
-          <div class="option-grid option-grid--four">
-            <article class="choice-card is-selected"><h4>MDF под покраску</h4><p>Ровная база под цвет интерьера.</p></article>
-            <article class="choice-card"><h4>Дерево</h4><p>Тёплая натуральная отделка.</p></article>
-            <article class="choice-card"><h4>Комбинированный</h4><p>Сочетание материалов.</p></article>
-            <article class="choice-card"><h4>Консультация</h4><p>Подберём после фото.</p></article>
-          </div>
-        </section>
-
-        <section class="panel" aria-labelledby="railing-title">
-          <div class="section-heading section-heading--split">
-            <div>
-              <p class="step-kicker">Шаг 6</p>
-              <h3 id="railing-title">Ограждение</h3>
-              <p>Ограждение считается по длине марша и верхней балюстраде, если она нужна.</p>
-            </div>
-            <img class="railing-scheme" src="./assets/calculator-preview/railing-open-side.svg" alt="Ограждение по открытой стороне лестницы">
-          </div>
-          <div class="option-grid option-grid--five">
-            <article class="choice-card"><h4>Без ограждения</h4><p>Если не требуется.</p></article>
-            <article class="choice-card is-selected"><h4>Металл</h4><p>Лаконично и надёжно.</p></article>
-            <article class="choice-card"><h4>Стекло</h4><p>Лёгкий визуальный вид.</p></article>
-            <article class="choice-card"><h4>Дерево</h4><p>Тёплый акцент.</p></article>
-            <article class="choice-card"><h4>Комбинированное</h4><p>Под интерьер.</p></article>
-          </div>
-        </section>
-
-        <section class="summary-panel" aria-labelledby="result-title">
-          <div class="summary-panel__main">
-            <p class="step-kicker">Шаг 7</p>
-            <h3 id="result-title">Предварительная стоимость под ключ</h3>
-            <strong>от 430 000 ₽</strong>
-            <p>Финальная смета уточняется после проверки размеров и замера.</p>
-            <button class="primary-cta" type="button">Оставить заявку</button>
-          </div>
-          <div class="summary-panel__list">
-            <h4>Что входит в расчёт</h4>
-            <ul>
-              <li>Ступени и подступенки</li>
-              <li>Площадки и покрытие</li>
-              <li>Расходники</li>
-              <li>Ограждение</li>
-            </ul>
-          </div>
-        </section>
+      <div class="choice-grid">
+        <article class="quiz-choice is-selected">
+          <img src="./assets/calculator-preview/stair-straight-card.webp" alt="Прямая лестница: один марш">
+          <b>Прямая</b>
+          <small>Один марш без поворота</small>
+        </article>
+        <article class="quiz-choice">
+          <img src="./assets/calculator-preview/stair-turn-90-card.webp" alt="Лестница с поворотом 90 градусов">
+          <b>Поворот 90°</b>
+          <small>Г-образная лестница</small>
+        </article>
+        <article class="quiz-choice">
+          <img src="./assets/calculator-preview/stair-turn-180-card.webp" alt="Лестница с поворотом 180 градусов">
+          <b>Поворот 180°</b>
+          <small>П-образная лестница</small>
+        </article>
+        <article class="quiz-choice">
+          <img src="./assets/calculator-preview/unknown-consultation-card.webp" alt="Пока не знаю">
+          <b>Пока не знаю</b>
+          <small>Инженер поможет выбрать</small>
+        </article>
       </div>
 
-      <div class="wizard-actions" aria-label="Навигация preview">
-        <button class="secondary-button" type="button">Назад</button>
-        <button class="primary-button" type="button">Далее</button>
+      <section class="turn-box" aria-labelledby="turn-title">
+        <div>
+          <p class="eyebrow">Уточнение</p>
+          <h3 id="turn-title">Если есть поворот, как он выполнен?</h3>
+        </div>
+        <div class="turn-grid">
+          <article class="turn-choice is-selected">
+            <img src="./assets/calculator-preview/stair-landing-card.webp" alt="Поворот с прямоугольной площадкой">
+            <b>С площадкой</b>
+            <small>Ровный участок между маршами</small>
+          </article>
+          <article class="turn-choice">
+            <img src="./assets/calculator-preview/stair-winder-card.webp" alt="Поворот с клиновидными забежными ступенями">
+            <b>Забежными ступенями</b>
+            <small>Клиновидные ступени в повороте</small>
+          </article>
+        </div>
+      </section>
+
+      <div class="quiz-actions">
+        <button class="secondary-button" type="button">← Назад</button>
+        <p>Осталось 5 коротких шагов</p>
+        <button class="primary-button" type="button">Далее →</button>
       </div>
     </section>
+
+    <aside class="lead-panel" aria-label="Preview результата">
+      <section class="mini-result">
+        <p class="eyebrow">Предварительный итог</p>
+        <div class="estimate-card" aria-hidden="true">
+          <span>₽</span>
+        </div>
+        <strong>от 430 000 ₽</strong>
+        <span>Стоимость под ключ после проверки размеров</span>
+      </section>
+
+      <section class="quick-steps" aria-label="Что будет дальше">
+        <h2>Что будет дальше?</h2>
+        <ol>
+          <li><b>1</b><span>Вы выбираете текущее состояние проёма</span></li>
+          <li class="is-current"><b>2</b><span>Уточняете форму лестницы</span></li>
+          <li><b>3</b><span>Вводите H / W / L по подсказкам</span></li>
+          <li><b>4</b><span>Получаете предварительный расчёт</span></li>
+        </ol>
+      </section>
+
+      <section class="lead-note">
+        <h2>Почему это удобно?</h2>
+        <ul>
+          <li>визуальные ответы вместо длинной формы;</li>
+          <li>прогресс виден на каждом шаге;</li>
+          <li>контакт просим только после расчёта.</li>
+        </ul>
+      </section>
+    </aside>
   </main>
 </body>
 </html>
