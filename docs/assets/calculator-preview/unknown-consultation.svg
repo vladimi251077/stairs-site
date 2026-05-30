@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 150" role="img" aria-labelledby="title desc">
-  <title id="title">Не знаю, нужна консультация</title>
-  <desc id="desc">Нейтральная иконка вопроса без лестничной схемы.</desc>
-  <rect width="240" height="150" rx="18" fill="#07101f"/>
-  <circle cx="120" cy="66" r="38" fill="rgba(217,168,91,0.12)" stroke="#d9a85b" stroke-width="2.5"/>
-  <path d="M108 54c2-10 10-16 22-13 10 3 15 12 12 21-2 7-7 11-14 15-5 3-7 6-7 12" fill="none" stroke="#f5f7fb" stroke-linecap="round" stroke-width="6"/>
-  <circle cx="121" cy="103" r="4" fill="#f5f7fb"/>
-  <text x="54" y="130" fill="#aebbd0" font-family="Inter, Arial, sans-serif" font-size="12">можно оставить на консультацию</text>
-</svg>

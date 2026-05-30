@@ -1,11 +1,29 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 150" role="img" aria-labelledby="title desc">
-  <title id="title">Измерение длины L</title>
-  <desc id="desc">Доступное место по полу для лестницы.</desc>
-  <rect width="240" height="150" rx="18" fill="#070a10"/>
-  <path d="M42 106h158" fill="none" stroke="#d9e4f2" stroke-linecap="round" stroke-width="2"/>
-  <path d="M62 94l35-14 35-14 35-14" fill="none" stroke="#d9e4f2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
-  <path d="M62 124h105" fill="none" stroke="#d9a85b" stroke-linecap="round" stroke-width="3"/>
-  <path d="M74 114l-12 10 12 10M155 114l12 10-12 10" fill="none" stroke="#d9a85b" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"/>
-  <text x="107" y="103" fill="#f7f2ea" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="800">L</text>
-  <text x="52" y="32" fill="#a9adba" font-family="Inter, Arial, sans-serif" font-size="11">доступное место по полу</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="220" viewBox="0 0 360 220" role="img">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0d131c"/>
+      <stop offset="1" stop-color="#121b25"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#f0c96a"/>
+    </marker>
+  </defs>
+  <rect width="100%" height="100%" rx="22" fill="url(#bg)"/>
+  <rect x="10" y="10" width="340" height="200" rx="18" fill="none" stroke="#263342" stroke-width="1.5"/>
+  <rect x="58" y="82" width="23" height="58" fill="none" stroke="#d8dde5" stroke-width="2"/>
+<rect x="81" y="82" width="23" height="58" fill="none" stroke="#d8dde5" stroke-width="2"/>
+<rect x="104" y="82" width="23" height="58" fill="none" stroke="#d8dde5" stroke-width="2"/>
+<rect x="127" y="82" width="23" height="58" fill="none" stroke="#d8dde5" stroke-width="2"/>
+<rect x="150" y="82" width="23" height="58" fill="none" stroke="#d8dde5" stroke-width="2"/>
+<rect x="173" y="82" width="23" height="58" fill="none" stroke="#d8dde5" stroke-width="2"/>
+<rect x="196" y="82" width="23" height="58" fill="none" stroke="#d8dde5" stroke-width="2"/>
+<rect x="219" y="82" width="23" height="58" fill="none" stroke="#d8dde5" stroke-width="2"/>
+<rect x="242" y="82" width="23" height="58" fill="none" stroke="#d8dde5" stroke-width="2"/>
+<rect x="265" y="82" width="23" height="58" fill="none" stroke="#d8dde5" stroke-width="2"/>
+<line x1="58" y1="178" x2="288" y2="178" stroke="#f0c96a" stroke-width="4" marker-end="url(#arrow)" marker-start="url(#arrow)" filter="url(#glow)"/>
+<text x="160" y="225" fill="#f0c96a" font-family="Arial, sans-serif" font-weight="700" font-size="42">L</text>
 </svg>
