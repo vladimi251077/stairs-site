@@ -372,7 +372,7 @@ button {
   align-content: center;
   display: grid;
   justify-items: center;
-  min-height: 108px;
+  min-height: 78px;
   padding: 8px;
   text-align: center;
 }
@@ -388,112 +388,6 @@ button {
 .shape-card b {
   font-size: 0.66rem;
   line-height: 1.25;
-}
-
-
-.visual-thumb,
-.turn-thumb {
-  background: #0b121a;
-  border: 1px solid rgba(183, 199, 219, 0.12);
-  border-radius: 7px;
-  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.22);
-  display: block;
-  object-fit: cover;
-}
-
-.visual-thumb {
-  aspect-ratio: 16 / 9;
-  margin-bottom: 7px;
-  width: min(100%, 118px);
-}
-
-.turn-thumb {
-  aspect-ratio: 16 / 9;
-  margin: 0;
-  width: 74px;
-}
-
-
-.option-card b,
-.shape-card b,
-.turn-choice b,
-.turn-choice small {
-  overflow-wrap: anywhere;
-}
-
-.step-one .foundation-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.step-one .option-card {
-  min-height: 96px;
-  overflow: visible;
-  padding: 7px 6px;
-}
-
-.step-one .option-card b {
-  font-size: 0.62rem;
-  line-height: 1.15;
-  max-width: 100%;
-}
-
-.step-one .visual-thumb {
-  margin-bottom: 6px;
-  width: min(100%, 96px);
-}
-
-.step-two .shape-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.step-two .shape-card {
-  min-height: 100px;
-  padding: 7px 6px;
-}
-
-.step-two .visual-thumb {
-  margin-bottom: 6px;
-  width: min(100%, 100px);
-}
-
-.step-two .consultation {
-  align-content: center;
-  grid-column: auto;
-  grid-template-columns: 1fr;
-  justify-items: center;
-  min-height: 100px;
-  text-align: center;
-}
-
-.step-two .consultation .visual-thumb {
-  width: min(100%, 92px);
-}
-
-.step-two .turn-options {
-  grid-template-columns: 1fr;
-}
-
-.step-two .turn-choice {
-  gap: 10px;
-  grid-template-columns: 94px minmax(0, 1fr);
-  min-height: 70px;
-  overflow: visible;
-  padding: 8px 10px;
-}
-
-.step-two .turn-thumb {
-  width: 94px;
-}
-
-.step-two .turn-choice b {
-  font-size: 0.66rem;
-  line-height: 1.12;
-}
-
-.step-two .turn-choice small {
-  font-size: 0.6rem;
-  line-height: 1.2;
-  margin-top: 3px;
 }
 
 .line-icon {
@@ -573,7 +467,7 @@ button {
 }
 
 .shape-card {
-  min-height: 118px;
+  min-height: 96px;
 }
 
 .shape-icon,
@@ -668,8 +562,8 @@ button {
   align-items: center;
   display: grid;
   gap: 8px;
-  grid-template-columns: 74px minmax(0, 1fr);
-  min-height: 72px;
+  grid-template-columns: 54px minmax(0, 1fr);
+  min-height: 58px;
   padding: 7px 9px;
 }
 
@@ -762,7 +656,6 @@ button {
   gap: 7px;
   margin: 0;
 }
-
 
 .field-list label {
   color: var(--muted);
@@ -1052,78 +945,6 @@ button {
   margin-top: 5px;
 }
 
-
-/* Local image cards for the calculator preview replace CSS-only doodles. */
-.measure-diagram,
-.stair-outline,
-.railing-diagram {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.01));
-  display: grid;
-  gap: 8px;
-  overflow: hidden;
-  padding: 8px;
-}
-
-.measure-diagram {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.measure-diagram::before,
-.railing-diagram::before {
-  content: none;
-}
-
-.measure-diagram img,
-.stair-outline img,
-.railing-diagram img {
-  border-radius: 5px;
-  height: 100%;
-  min-height: 0;
-  object-fit: contain;
-  width: 100%;
-}
-
-.measure-diagram span,
-.stair-outline small {
-  display: none;
-}
-
-.stair-outline,
-.railing-diagram {
-  grid-template-columns: 1fr;
-}
-
-
-
-.step-three .measure-diagram {
-  align-content: stretch;
-  grid-template-columns: 1fr;
-  grid-template-rows: repeat(3, minmax(0, 1fr));
-}
-
-.step-three .measure-diagram img {
-  height: 100%;
-  object-fit: contain;
-}
-
-.step-four .constraints-layout {
-  grid-template-columns: 1fr;
-}
-
-.step-four .toggle-list span {
-  font-size: 0.56rem;
-  gap: 4px;
-  grid-template-columns: minmax(0, 1fr) 38px 38px;
-}
-
-.step-four .toggle-list b {
-  padding: 4px 3px;
-}
-
-.step-four .stair-outline {
-  min-height: 108px;
-}
-
 @media (min-width: 1280px) {
   .dashboard-preview {
     grid-template-columns: 360px minmax(0, 1fr);
@@ -1192,38 +1013,11 @@ button {
   }
 
   .option-card {
-    min-height: 88px;
+    min-height: 62px;
   }
 
   .shape-card {
-    min-height: 96px;
-  }
-
-  .step-one .option-card {
-    min-height: 86px;
-  }
-
-  .step-one .visual-thumb {
-    width: min(100%, 88px);
-  }
-
-  .step-two .shape-card,
-  .step-two .consultation {
-    min-height: 86px;
-  }
-
-  .step-two .visual-thumb {
-    width: min(100%, 90px);
-  }
-
-  .step-two .turn-choice {
-    grid-template-columns: 86px minmax(0, 1fr);
-    min-height: 62px;
-    padding: 7px 9px;
-  }
-
-  .step-two .turn-thumb {
-    width: 86px;
+    min-height: 78px;
   }
 
   .line-icon {
@@ -1239,7 +1033,7 @@ button {
   }
 
   .turn-choice {
-    min-height: 64px;
+    min-height: 50px;
   }
 
   .measure-diagram,
@@ -1342,7 +1136,7 @@ button {
 
   .option-card,
   .shape-card {
-    min-height: 92px;
+    min-height: 76px;
   }
 
   .shape-card {
@@ -1365,25 +1159,5 @@ button {
   .railing-diagram,
   .result-photo {
     min-height: 170px;
-  }
-
-  .measure-diagram {
-    grid-template-columns: 1fr;
-  }
-
-  .visual-thumb {
-    width: min(100%, 132px);
-  }
-
-  .step-two .shape-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .step-two .turn-choice {
-    grid-template-columns: 1fr;
-  }
-
-  .step-two .turn-thumb {
-    width: min(100%, 180px);
   }
 }
