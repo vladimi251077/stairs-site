@@ -294,3 +294,11 @@ Preview-файл: [`docs/calculator-stepwise-preview.html`](./calculator-stepwis
 - redesign страниц.
 
 Этот план предлагает новый минимальный клиентский wizard поверх уже принятой архитектуры, а не возврат к экспериментальному редизайну.
+
+## Инвентаризация image requirements
+
+После исследования требований preview опирается на полный набор локальных карточек и технических схем. В набор входят hero, пять карточек формы/поворота, пять карточек состояния объекта, три размерные схемы `H/W/L` и схема ограждения по открытой стороне.
+
+Добавленные foundation-карточки закрывают первый шаг калькулятора: `opening-empty-card.svg`, `ready-metal-frame-card.svg`, `concrete-base-card.svg` и `old-stair-remodel-card.svg`. Для точных подсказок размеров используются локальные SVG `measure-height.svg`, `measure-width.svg`, `measure-length.svg`, где стрелки показывают соответственно высоту этажа, ширину марша и длину проёма. Схема `railing-open-side.svg` фиксирует важное правило: ограждение показано только с одной открытой стороны.
+
+Полные требования и prompt baseline вынесены в [`calculator-image-requirements.md`](./calculator-image-requirements.md).

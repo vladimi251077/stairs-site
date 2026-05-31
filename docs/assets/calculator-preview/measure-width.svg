@@ -1,27 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="360" height="220" viewBox="0 0 360 220" role="img">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#0d131c"/>
-      <stop offset="1" stop-color="#121b25"/>
-    </linearGradient>
-    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="3" result="blur"/>
-      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-    </filter>
-    <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M0 0L10 5L0 10Z" fill="#f0c96a"/>
-    </marker>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#070b10"/><stop offset="1" stop-color="#121b25"/></linearGradient>
+    <linearGradient id="wood" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b9823f"/><stop offset="1" stop-color="#4b260f"/></linearGradient>
+    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9aa4b1"/><stop offset="1" stop-color="#2b3440"/></linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#f0c96a"/></marker>
   </defs>
-  <rect width="100%" height="100%" rx="22" fill="url(#bg)"/>
+  <rect width="360" height="220" rx="22" fill="url(#bg)"/>
   <rect x="10" y="10" width="340" height="200" rx="18" fill="none" stroke="#263342" stroke-width="1.5"/>
-  <rect x="72" y="76" width="20" height="72" fill="none" stroke="#d8dde5" stroke-width="2"/>
-<rect x="92" y="76" width="20" height="72" fill="none" stroke="#d8dde5" stroke-width="2"/>
-<rect x="112" y="76" width="20" height="72" fill="none" stroke="#d8dde5" stroke-width="2"/>
-<rect x="132" y="76" width="20" height="72" fill="none" stroke="#d8dde5" stroke-width="2"/>
-<rect x="152" y="76" width="20" height="72" fill="none" stroke="#d8dde5" stroke-width="2"/>
-<rect x="172" y="76" width="20" height="72" fill="none" stroke="#d8dde5" stroke-width="2"/>
-<rect x="192" y="76" width="20" height="72" fill="none" stroke="#d8dde5" stroke-width="2"/>
-<rect x="212" y="76" width="20" height="72" fill="none" stroke="#d8dde5" stroke-width="2"/>
-<line x1="268" y1="76" x2="268" y2="148" stroke="#f0c96a" stroke-width="4" marker-end="url(#arrow)" marker-start="url(#arrow)" filter="url(#glow)"/>
-<text x="287" y="124" fill="#f0c96a" font-family="Arial, sans-serif" font-weight="700" font-size="42">W</text>
+  <circle cx="286" cy="48" r="64" fill="#f0c96a" opacity=".07"/>
+  <g transform="translate(54 42)">
+    <rect x="54" y="32" width="142" height="96" fill="#0b121a" stroke="#d8dde5" stroke-width="2"/>
+    <g stroke="#d8dde5" stroke-width="1.5" opacity=".85"><path d="M54 44h142M54 56h142M54 68h142M54 80h142M54 92h142M54 104h142M54 116h142"/></g>
+    <line x1="54" y1="152" x2="196" y2="152" stroke="#f0c96a" stroke-width="4" marker-end="url(#arrow)" marker-start="url(#arrow)" filter="url(#glow)"/>
+    <text x="112" y="146" fill="#f0c96a" font-family="Arial, sans-serif" font-weight="700" font-size="38">W</text>
+    <path d="M54 132v32M196 132v32" stroke="#7d8794" stroke-width="2"/>
+  </g>
 </svg>

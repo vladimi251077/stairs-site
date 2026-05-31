@@ -39,11 +39,11 @@
         <h2 id="step-one-title">Что у вас сейчас?</h2>
         <p>Выберите, что лучше всего описывает вашу ситуацию</p>
         <div class="foundation-grid">
-          <div class="option-card selected"><span class="line-icon opening-icon" aria-hidden="true"></span><b>Пустой проём</b></div>
-          <div class="option-card"><span class="line-icon frame-icon" aria-hidden="true"></span><b>Готовый металлокаркас</b></div>
-          <div class="option-card"><span class="line-icon concrete-icon" aria-hidden="true"></span><b>Бетонное основание</b></div>
-          <div class="option-card"><span class="line-icon old-stair-icon" aria-hidden="true"></span><b>Старая лестница / нужна обшивка</b></div>
-          <div class="option-card"><span class="line-icon unknown-icon" aria-hidden="true"></span><b>Не знаю, нужна консультация</b></div>
+          <div class="option-card selected"><img class="visual-thumb" src="./assets/calculator-preview/opening-empty-card.svg" alt=""><b>Пустой проём</b></div>
+          <div class="option-card"><img class="visual-thumb" src="./assets/calculator-preview/ready-metal-frame-card.svg" alt=""><b>Металло-<br>каркас</b></div>
+          <div class="option-card"><img class="visual-thumb" src="./assets/calculator-preview/concrete-base-card.svg" alt=""><b>Бетонное основание</b></div>
+          <div class="option-card"><img class="visual-thumb" src="./assets/calculator-preview/old-stair-remodel-card.svg" alt=""><b>Старая лестница / нужна обшивка</b></div>
+          <div class="option-card"><img class="visual-thumb" src="./assets/calculator-preview/unknown-consultation-card.webp" alt=""><b>Не знаю, нужна консультация</b></div>
         </div>
         <div class="hint-row"><span>⚲</span>От этого зависит способ монтажа и стоимость работ.</div>
         <div class="card-actions"><button type="button">← Назад</button><button type="button">Далее →</button></div>
@@ -55,16 +55,16 @@
         <h2 id="step-two-title">Как будет идти лестница?</h2>
         <p>Выберите форму лестницы</p>
         <div class="shape-grid">
-          <div class="shape-card selected"><span class="shape-icon straight-icon" aria-hidden="true"></span><b>Прямая</b></div>
-          <div class="shape-card"><span class="shape-icon turn90-icon" aria-hidden="true"></span><b>Поворот 90°<small>(Г-образная)</small></b></div>
-          <div class="shape-card"><span class="shape-icon turn180-icon" aria-hidden="true"></span><b>Поворот 180°<small>(П-образная)</small></b></div>
-          <div class="shape-card consultation"><span class="line-icon unknown-icon" aria-hidden="true"></span><b>Пока не знаю<small>Помогите подобрать вариант</small></b></div>
+          <div class="shape-card selected"><img class="visual-thumb" src="./assets/calculator-preview/stair-straight-card.webp" alt=""><b>Прямая</b></div>
+          <div class="shape-card"><img class="visual-thumb" src="./assets/calculator-preview/stair-turn-90-card.webp" alt=""><b>Поворот 90°<small>(Г-образная)</small></b></div>
+          <div class="shape-card"><img class="visual-thumb" src="./assets/calculator-preview/stair-turn-180-card.webp" alt=""><b>Поворот 180°<small>(П-образная)</small></b></div>
+          <div class="shape-card consultation"><img class="visual-thumb" src="./assets/calculator-preview/unknown-consultation-card.webp" alt=""><b>Пока не знаю<small>Помогите подобрать вариант</small></b></div>
         </div>
         <div class="turn-question">
           <h3>Если есть поворот, как он выполнен?</h3>
           <div class="turn-options">
-            <div class="turn-choice selected"><span class="turn-icon landing-icon" aria-hidden="true"></span><b>С площадкой</b><small>Удобнее ходить, требует больше места</small></div>
-            <div class="turn-choice"><span class="turn-icon winder-icon" aria-hidden="true"></span><b>Забежными ступенями</b><small>Экономит место, сложнее по форме</small></div>
+            <div class="turn-choice selected"><img class="turn-thumb" src="./assets/calculator-preview/stair-landing-card.webp" alt=""><b>С площадкой</b><small>Удобнее ходить, требует больше места</small></div>
+            <div class="turn-choice"><img class="turn-thumb" src="./assets/calculator-preview/stair-winder-card.webp" alt=""><b>Забежными ступенями</b><small>Экономит место, сложнее по форме</small></div>
           </div>
         </div>
         <div class="card-actions"><button type="button">← Назад</button><button type="button">Далее →</button></div>
@@ -84,7 +84,7 @@
             <label>Примерное количество ступеней<span>16 шт</span></label>
             <a href="#">Как правильно измерить?</a>
           </div>
-          <div class="measure-diagram" aria-hidden="true"><span class="dim-h">H</span><span class="dim-w">W</span><span class="dim-l">L</span></div>
+          <div class="measure-diagram" aria-hidden="true"><img src="./assets/calculator-preview/measure-height.svg" alt=""><img src="./assets/calculator-preview/measure-width.svg" alt=""><img src="./assets/calculator-preview/measure-length.svg" alt=""></div>
         </div>
         <div class="card-actions"><button type="button">← Назад</button><button type="button">Далее →</button></div>
       </article>
@@ -96,13 +96,13 @@
         <p>Уточните особенности вашей лестницы</p>
         <div class="constraints-layout">
           <div class="toggle-list">
-            <span>Есть ли площадка?<b>Да</b><b>Нет</b></span>
-            <span>Размер площадки (примерно)<b>1000 мм</b><b>1000 мм</b></span>
-            <span>Есть ли забежные ступени?<b>Да</b><b>Нет</b></span>
-            <span>Есть ли стены сбоку?<b>Да</b><b>Нет</b></span>
-            <span>Есть ли окно или дверь рядом?<b>Да</b><b>Нет</b></span>
+            <span>Площадка?<b>Да</b><b>Нет</b></span>
+            <span>Размер площадки<b>1000 мм</b><b>1000 мм</b></span>
+            <span>Забежные ступени?<b>Да</b><b>Нет</b></span>
+            <span>Стены сбоку?<b>Да</b><b>Нет</b></span>
+            <span>Окно или дверь рядом?<b>Да</b><b>Нет</b></span>
           </div>
-          <div class="stair-outline" aria-hidden="true"><small>размер площадки</small></div>
+          <div class="stair-outline" aria-hidden="true"><img src="./assets/calculator-preview/stair-landing-card.webp" alt=""></div>
         </div>
         <div class="card-actions"><button type="button">← Назад</button><button type="button">Далее →</button></div>
       </article>
@@ -134,7 +134,7 @@
             <div><span class="rail-thumb wood-rail"></span><b>Дерево<small>Деревянные балясины и поручень</small></b></div>
             <div><span class="rail-thumb combo-rail"></span><b>Комбинированное<small>Сочетание материалов</small></b></div>
           </div>
-          <div class="railing-diagram" aria-hidden="true"></div>
+          <div class="railing-diagram" aria-hidden="true"><img src="./assets/calculator-preview/railing-open-side.svg" alt=""></div>
         </div>
         <div class="card-actions"><button type="button">← Назад</button><button type="button">Далее →</button></div>
       </article>
