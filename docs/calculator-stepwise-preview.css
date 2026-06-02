@@ -511,6 +511,7 @@ button {
   display: block;
   height: 58px;
   margin-bottom: 7px;
+  max-width: 100%;
   object-fit: contain;
   width: 96px;
 }
@@ -521,31 +522,6 @@ button {
   width: 62px;
 }
 
-
-.step-two .shape-card {
-  overflow: hidden;
-  padding: 7px 6px;
-}
-
-.step-two .shape-preview {
-  height: 48px;
-  max-width: 72px;
-  width: 100%;
-}
-
-.step-two .shape-card b {
-  font-size: 0.6rem;
-}
-
-.step-two .turn-choice {
-  gap: 7px;
-  grid-template-columns: 42px minmax(0, 1fr);
-}
-
-.step-two .turn-preview {
-  height: 38px;
-  width: 42px;
-}
 
 .shape-card small {
   display: block;
@@ -798,16 +774,15 @@ button {
   display: grid;
   font-size: 0.6rem;
   gap: 6px;
-  grid-template-columns: minmax(0, 1fr) minmax(48px, auto) minmax(48px, auto);
+  grid-template-columns: minmax(0, 1fr) 42px 42px;
 }
 
 .toggle-list b {
   border: 1px solid var(--border-soft);
   border-radius: 5px;
   color: var(--muted);
-  font-size: 0.56rem;
   font-weight: 700;
-  padding: 5px 4px;
+  padding: 5px;
   text-align: center;
 }
 
@@ -823,14 +798,6 @@ button {
     linear-gradient(23deg, transparent 46%, rgba(201, 184, 156, 0.26) 46.4% 47%, transparent 47.5%);
 }
 
-
-.step-four .constraints-layout {
-  grid-template-columns: 1fr;
-}
-
-.step-four .stair-outline {
-  min-height: 128px;
-}
 
 .stair-outline small {
   bottom: 35px;
@@ -1256,6 +1223,23 @@ button {
   }
 }
 
-.step-two .turn-options {
-  grid-template-columns: 1fr;
+@media (min-width: 1280px) {
+  .step-two .turn-options,
+  .step-four .constraints-layout,
+  .step-six .railing-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .step-four .constraints-layout,
+  .step-six .railing-layout {
+    gap: 8px;
+  }
+
+  .step-four .stair-outline {
+    min-height: 92px;
+  }
+
+  .step-six .railing-diagram {
+    min-height: 102px;
+  }
 }
