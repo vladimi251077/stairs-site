@@ -806,39 +806,40 @@ button {
 
 .stair-outline {
   background:
-    radial-gradient(circle at 72% 22%, rgba(201, 164, 92, 0.1), transparent 7rem),
+    radial-gradient(circle at 62% 35%, rgba(201, 164, 92, 0.1), transparent 5rem),
     linear-gradient(145deg, rgba(18, 15, 11, 0.94), rgba(5, 5, 4, 0.98));
+  box-shadow: inset 0 0 0 1px rgba(201, 164, 92, 0.16);
   overflow: hidden;
 }
 
 .stair-outline::before {
-  border-bottom: 2px solid rgba(209, 199, 184, 0.74);
-  border-left: 2px solid rgba(209, 199, 184, 0.74);
-  border-top: 2px solid rgba(209, 199, 184, 0.58);
-  bottom: 28px;
-  content: "";
-  height: 46px;
-  left: 19%;
-  position: absolute;
-  transform: skewX(-22deg);
-  width: 52%;
-}
-
-.stair-outline::after {
   background:
-    linear-gradient(90deg, rgba(226, 173, 73, 0.95), rgba(226, 173, 73, 0.72)),
-    linear-gradient(90deg, rgba(209, 199, 184, 0.52), rgba(209, 199, 184, 0.12));
-  background-position: 23% 66%, 23% 43%;
+    linear-gradient(90deg, rgba(209, 199, 184, 0.72), rgba(209, 199, 184, 0.72)),
+    linear-gradient(0deg, rgba(209, 199, 184, 0.72), rgba(209, 199, 184, 0.72)),
+    linear-gradient(90deg, rgba(209, 199, 184, 0.42), rgba(209, 199, 184, 0.42)),
+    linear-gradient(0deg, rgba(226, 173, 73, 0.95), rgba(226, 173, 73, 0.95));
+  background-position: 26% 66%, 26% 38%, 26% 38%, 55% 38%;
   background-repeat: no-repeat;
-  background-size: 54% 3px, 45% 1px;
+  background-size: 58% 2px, 2px 28%, 30% 2px, 2px 28%;
   content: "";
   inset: 0;
   position: absolute;
-  transform: skewY(-14deg);
+}
+
+.stair-outline::after {
+  background: rgba(226, 173, 73, 0.16);
+  border: 2px solid rgba(226, 173, 73, 0.86);
+  border-radius: 3px;
+  content: "";
+  height: 30px;
+  left: 48%;
+  position: absolute;
+  top: 24%;
+  width: 34px;
 }
 
 .stair-outline small {
-  bottom: 32px;
+  bottom: 22px;
   color: var(--muted);
   font-size: 0.58rem;
   position: absolute;
@@ -905,35 +906,39 @@ button {
 
 .railing-diagram {
   background:
-    radial-gradient(circle at 82% 24%, rgba(201, 164, 92, 0.12), transparent 7rem),
+    radial-gradient(circle at 78% 25%, rgba(201, 164, 92, 0.12), transparent 6rem),
     linear-gradient(145deg, rgba(18, 15, 11, 0.94), rgba(5, 5, 4, 0.98));
+  box-shadow: inset 0 0 0 1px rgba(201, 164, 92, 0.16);
   overflow: hidden;
 }
 
 .railing-diagram::before {
-  border-bottom: 2px solid rgba(209, 199, 184, 0.72);
-  border-left: 2px solid rgba(209, 199, 184, 0.72);
-  bottom: 34px;
+  background:
+    linear-gradient(90deg, rgba(209, 199, 184, 0.68), rgba(209, 199, 184, 0.68)),
+    linear-gradient(90deg, rgba(209, 199, 184, 0.58), rgba(209, 199, 184, 0.58)),
+    linear-gradient(90deg, rgba(209, 199, 184, 0.48), rgba(209, 199, 184, 0.48)),
+    linear-gradient(90deg, rgba(209, 199, 184, 0.4), rgba(209, 199, 184, 0.4)),
+    linear-gradient(90deg, rgba(209, 199, 184, 0.32), rgba(209, 199, 184, 0.32));
+  background-position: 18% 74%, 24% 66%, 30% 58%, 36% 50%, 42% 42%;
+  background-repeat: no-repeat;
+  background-size: 58% 2px, 52% 2px, 46% 2px, 40% 2px, 34% 2px;
   content: "";
-  height: 48px;
-  left: 18%;
+  inset: 0;
   position: absolute;
-  transform: skewX(-24deg);
-  width: 62%;
 }
 
 .railing-diagram::after {
   background:
-    linear-gradient(90deg, rgba(226, 173, 73, 0.98), rgba(226, 173, 73, 0.72)),
-    linear-gradient(90deg, rgba(209, 199, 184, 0.5), rgba(209, 199, 184, 0.16)),
-    linear-gradient(90deg, rgba(209, 199, 184, 0.4), rgba(209, 199, 184, 0.12));
-  background-position: 22% 50%, 22% 68%, 22% 82%;
+    linear-gradient(90deg, rgba(226, 173, 73, 0.96), rgba(226, 173, 73, 0.96)),
+    linear-gradient(0deg, rgba(226, 173, 73, 0.7), rgba(226, 173, 73, 0.7)),
+    linear-gradient(0deg, rgba(226, 173, 73, 0.7), rgba(226, 173, 73, 0.7)),
+    linear-gradient(0deg, rgba(226, 173, 73, 0.7), rgba(226, 173, 73, 0.7));
+  background-position: 18% 36%, 28% 36%, 46% 36%, 64% 36%;
   background-repeat: no-repeat;
-  background-size: 64% 3px, 54% 1px, 44% 1px;
+  background-size: 58% 3px, 2px 38%, 2px 38%, 2px 38%;
   content: "";
   inset: 0;
   position: absolute;
-  transform: skewY(-16deg);
 }
 
 .summary-layout dl {
@@ -965,7 +970,7 @@ button {
 
 .result-photo {
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(5, 4, 3, 0.28)),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.34), rgba(5, 4, 3, 0.72)),
     url("./assets/calculator-preview/hero-staircase.webp") center / cover no-repeat;
   border-radius: 6px;
   min-height: 130px;
