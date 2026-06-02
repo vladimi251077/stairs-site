@@ -1,0 +1,10 @@
+<svg class="tekstura-preview-card" viewBox="0 0 1100 760" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="stair-turn-90-card">
+  <defs>
+    <linearGradient id="card-bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#17120d"/><stop offset="1" stop-color="#26201a"/></linearGradient>
+  </defs>
+  <style>
+    .tekstura-preview-card{background:#17120d}.frame{fill:url(#card-bg);stroke:#6f5a3f;stroke-width:2}.zone{fill:#2f2419;stroke:#ddb786;stroke-width:4;vector-effect:non-scaling-stroke}.turn{fill:#3a2d1d}.tread{stroke:#f1d3a5;stroke-width:2.2;vector-effect:non-scaling-stroke}.winder-envelope{fill:#332617;stroke:#ddb786;stroke-width:4;vector-effect:non-scaling-stroke}.winder-step{fill:#4a351f;stroke:#f1d3a5;stroke-width:2.4;vector-effect:non-scaling-stroke}
+  </style>
+  <rect class="frame" x="12" y="12" width="1076" height="736" rx="34"/>
+  <g><rect class="zone" data-zone="flight1" x="658.53" y="261.6" width="167.73" height="414.4"/><rect class="zone turn" data-zone="turn" x="648.67" y="84" width="177.6" height="177.6"/><rect class="zone" data-zone="flight2" x="273.73" y="84" width="374.93" height="167.73"/><line class="tread" x1="658.53" y1="313.4" x2="826.27" y2="313.4"/><line class="tread" x1="658.53" y1="365.2" x2="826.27" y2="365.2"/><line class="tread" x1="658.53" y1="417" x2="826.27" y2="417"/><line class="tread" x1="658.53" y1="468.8" x2="826.27" y2="468.8"/><line class="tread" x1="658.53" y1="520.6" x2="826.27" y2="520.6"/><line class="tread" x1="658.53" y1="572.4" x2="826.27" y2="572.4"/><line class="tread" x1="658.53" y1="624.2" x2="826.27" y2="624.2"/><line class="tread" x1="327.3" y1="84" x2="327.3" y2="251.73"/><line class="tread" x1="380.86" y1="84" x2="380.86" y2="251.73"/><line class="tread" x1="434.42" y1="84" x2="434.42" y2="251.73"/><line class="tread" x1="487.98" y1="84" x2="487.98" y2="251.73"/><line class="tread" x1="541.54" y1="84" x2="541.54" y2="251.73"/><line class="tread" x1="595.1" y1="84" x2="595.1" y2="251.73"/></g>
+</svg>

@@ -467,7 +467,7 @@ button {
 }
 
 .shape-card {
-  min-height: 96px;
+  min-height: 126px;
 }
 
 .shape-icon,
@@ -476,6 +476,24 @@ button {
   height: 52px;
   margin-bottom: 7px;
   width: 76px;
+}
+
+.shape-preview,
+.turn-preview {
+  background: rgba(10, 8, 6, 0.42);
+  border: 1px solid rgba(226, 173, 73, 0.2);
+  border-radius: 7px;
+  display: block;
+  height: 58px;
+  margin-bottom: 7px;
+  object-fit: cover;
+  width: 96px;
+}
+
+.turn-preview {
+  height: 44px;
+  margin: 0;
+  width: 62px;
 }
 
 .shape-card small {
@@ -1017,7 +1035,7 @@ button {
   }
 
   .shape-card {
-    min-height: 78px;
+    min-height: 96px;
   }
 
   .line-icon {
@@ -1030,6 +1048,17 @@ button {
     height: 40px;
     margin-bottom: 4px;
     transform: scale(0.78);
+  }
+
+  .shape-preview {
+    height: 44px;
+    margin-bottom: 4px;
+    width: 78px;
+  }
+
+  .turn-preview {
+    height: 38px;
+    width: 54px;
   }
 
   .turn-choice {
@@ -1141,12 +1170,16 @@ button {
 
   .shape-card {
     align-items: center;
-    grid-template-columns: 76px minmax(0, 1fr);
+    grid-template-columns: 96px minmax(0, 1fr);
     justify-items: start;
     text-align: left;
   }
 
   .shape-icon {
+    margin: 0;
+  }
+
+  .shape-preview {
     margin: 0;
   }
 
