@@ -3,14 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Tekstura calculator preview — design direction</title>
+  <title>Tekstura calculator style board</title>
   <style>
     :root { color-scheme: dark; }
     * { box-sizing: border-box; }
     body {
       margin: 0;
       min-height: 100vh;
-      background: #050505;
+      background:
+        radial-gradient(circle at 15% 0%, rgba(201, 164, 92, 0.14), transparent 28%),
+        linear-gradient(135deg, #050505, #0b0907 55%, #030303);
       color: #f4eadc;
       font-family: Arial, sans-serif;
     }
@@ -18,15 +20,28 @@
       display: grid;
       gap: 18px;
       margin: 0 auto;
-      max-width: 1840px;
+      max-width: 1648px;
       padding: 24px;
     }
-    h1 { font-size: clamp(28px, 4vw, 54px); margin: 0; }
-    p { color: #c9bba8; font-size: 18px; line-height: 1.55; margin: 0; max-width: 960px; }
+    h1 {
+      color: #e9bd73;
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: clamp(32px, 4.6vw, 68px);
+      font-weight: 500;
+      line-height: 1;
+      margin: 0;
+    }
+    p {
+      color: #c9bba8;
+      font-size: 18px;
+      line-height: 1.55;
+      margin: 0;
+      max-width: 1040px;
+    }
     img {
-      border: 1px solid rgba(201, 164, 92, 0.28);
-      border-radius: 20px;
-      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(201, 164, 92, 0.36);
+      border-radius: 18px;
+      box-shadow: 0 28px 80px rgba(0, 0, 0, 0.55);
       display: block;
       height: auto;
       width: 100%;
@@ -36,10 +51,10 @@
 </head>
 <body>
   <main>
-    <h1>Tekstura calculator preview — design direction</h1>
-    <p>Это картинка-направление для PR #157: premium dark dashboard, image-based hints для Step 1 / Step 4 / Step 6 / Step 7, без синих glow, CSS-заборов, repeating-linear-gradient и случайных диагональных схем.</p>
-    <img src="./assets/calculator-preview/tekstura-dashboard-design-direction.png" alt="Premium dark dashboard design direction for Tekstura calculator preview">
-    <p>Открывать можно как обычную страницу: <code>docs/calculator-preview-design-direction.html</code>.</p>
+    <h1>Стиль калькулятора Tekstura</h1>
+    <p>Обновлённая картинка-направление в стиле приложенного референса: тёмный интерьерный moodboard, крупные лестничные фото/визуалы, тонкие золотые рамки, заметки справа и палитра снизу. Это ориентир для PR #157: премиально, чисто, без CSS-заборов, синего glow и случайных диагональных схем.</p>
+    <img src="./assets/calculator-preview/tekstura-dashboard-design-direction.png" alt="Стиль калькулятора Tekstura: premium dark moodboard with warm gold staircase visuals">
+    <p>Открывать можно как обычную страницу: <code>docs/calculator-preview-design-direction.html</code>. Сам PNG: <code>docs/assets/calculator-preview/tekstura-dashboard-design-direction.png</code>.</p>
   </main>
 </body>
 </html>
