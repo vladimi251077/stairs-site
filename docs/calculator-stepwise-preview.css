@@ -503,6 +503,18 @@ button {
   width: 76px;
 }
 
+.state-preview {
+  background: rgba(10, 8, 6, 0.42);
+  border: 1px solid rgba(226, 173, 73, 0.2);
+  border-radius: 7px;
+  display: block;
+  height: 38px;
+  margin-bottom: 7px;
+  max-width: 100%;
+  object-fit: contain;
+  width: 54px;
+}
+
 .shape-preview,
 .turn-preview {
   background: rgba(10, 8, 6, 0.42);
@@ -1315,4 +1327,42 @@ button {
   .step-six .railing-diagram {
     min-height: 102px;
   }
+}
+
+/* Image-based hints for steps 4 and 6. Keep these as asset containers instead of CSS-drawn diagrams. */
+.stair-outline,
+.railing-diagram {
+  align-items: center;
+  background: rgba(10, 10, 10, 0.72);
+  border: 1px solid rgba(201, 164, 92, 0.28);
+  border-radius: 10px;
+  display: grid;
+  min-height: auto;
+  overflow: hidden;
+  padding: 8px;
+}
+
+.stair-outline::before,
+.stair-outline::after,
+.railing-diagram::before,
+.railing-diagram::after {
+  content: none;
+}
+
+.stair-outline img,
+.railing-diagram img {
+  aspect-ratio: 16 / 9;
+  display: block;
+  height: auto;
+  object-fit: contain;
+  width: 100%;
+}
+
+.stair-outline small {
+  color: var(--muted);
+  font-size: 0.58rem;
+  justify-self: end;
+  margin: -20px 14px 6px 0;
+  position: relative;
+  z-index: 1;
 }
