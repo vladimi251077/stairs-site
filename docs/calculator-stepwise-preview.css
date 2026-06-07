@@ -1000,16 +1000,19 @@ button {
   border: 1px solid rgba(201, 164, 92, 0.28);
   border-radius: 6px;
   display: grid;
-  min-height: 130px;
+  aspect-ratio: 16 / 10;
+  max-height: 190px;
+  min-height: 132px;
+  min-width: 130px;
   overflow: hidden;
-  padding: 6px;
+  width: 100%;
 }
 
 .result-photo img {
-  aspect-ratio: 16 / 9;
   display: block;
-  height: auto;
-  object-fit: contain;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
   width: 100%;
 }
 
@@ -1101,6 +1104,10 @@ button {
   .preview-board {
     grid-template-columns: repeat(4, minmax(0, 1fr));
     grid-template-rows: minmax(350px, 1fr) minmax(350px, 1fr);
+  }
+
+  .step-seven .summary-layout {
+    grid-template-columns: 1fr;
   }
 
   .wide-card {
@@ -1337,6 +1344,11 @@ button {
 
   .step-six .railing-diagram {
     min-height: 102px;
+  }
+
+  .step-seven .result-photo {
+    max-height: 142px;
+    min-height: 116px;
   }
 }
 
