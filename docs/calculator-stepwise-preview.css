@@ -995,11 +995,22 @@ button {
 }
 
 .result-photo {
-  background:
-    linear-gradient(180deg, rgba(0, 0, 0, 0.34), rgba(5, 4, 3, 0.72)),
-    url("./assets/calculator-preview/hero-staircase.webp") center / cover no-repeat;
+  align-items: center;
+  background: rgba(10, 10, 10, 0.72);
+  border: 1px solid rgba(201, 164, 92, 0.28);
   border-radius: 6px;
+  display: grid;
   min-height: 130px;
+  overflow: hidden;
+  padding: 6px;
+}
+
+.result-photo img {
+  aspect-ratio: 16 / 9;
+  display: block;
+  height: auto;
+  object-fit: contain;
+  width: 100%;
 }
 
 .price-box {
