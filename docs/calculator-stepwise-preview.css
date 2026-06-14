@@ -1,19 +1,19 @@
 :root {
   color-scheme: dark;
-  --bg: #05080b;
-  --panel: #081018;
-  --panel-soft: #0d151e;
-  --panel-glass: rgba(11, 18, 26, 0.82);
-  --border: rgba(183, 199, 219, 0.18);
-  --border-soft: rgba(183, 199, 219, 0.11);
+  --bg: #040302;
+  --panel: #0c0b09;
+  --panel-soft: #15120e;
+  --panel-glass: rgba(10, 10, 10, 0.82);
+  --border: rgba(201, 164, 92, 0.34);
+  --border-soft: rgba(201, 164, 92, 0.22);
   --gold: #e2ad49;
   --gold-strong: #f0c35d;
   --gold-soft: rgba(226, 173, 73, 0.14);
   --text: #fbf7ef;
-  --muted: #aab2bd;
-  --muted-soft: #727c88;
+  --muted: #b4aba0;
+  --muted-soft: #756c5f;
   --radius: 10px;
-  --shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
+  --shadow: 0 26px 84px rgba(0, 0, 0, 0.62), 0 0 34px rgba(201, 164, 92, 0.08);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
@@ -29,11 +29,34 @@ body {
   margin: 0;
   min-height: 100vh;
   overflow-x: hidden;
-  background:
-    radial-gradient(circle at 10% 3%, rgba(226, 173, 73, 0.12), transparent 24rem),
-    radial-gradient(circle at 84% 0%, rgba(78, 93, 110, 0.18), transparent 30rem),
-    linear-gradient(135deg, #030507 0%, #081018 52%, #05080b 100%);
+  background: var(--bg);
   color: var(--text);
+  isolation: isolate;
+  position: relative;
+}
+
+body::before,
+body::after {
+  content: "";
+  inset: 0;
+  pointer-events: none;
+  position: fixed;
+}
+
+body::before {
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.58) 0%, rgba(0, 0, 0, 0.48) 46%, rgba(0, 0, 0, 0.68) 100%),
+    url("./assets/calculator-preview/calculator-premium-bg.webp") center / cover no-repeat,
+    linear-gradient(135deg, #030302 0%, #11100d 54%, #050403 100%);
+  z-index: -2;
+}
+
+body::after {
+  background:
+    radial-gradient(ellipse at 50% 50%, transparent 0%, transparent 48%, rgba(0, 0, 0, 0.48) 100%),
+    radial-gradient(circle at 16% 92%, rgba(201, 164, 92, 0.16), transparent 28rem),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.26));
+  z-index: -1;
 }
 
 button {
@@ -60,9 +83,8 @@ button {
 .step-card,
 .bottom-benefits {
   background:
-    radial-gradient(circle at 16% 0%, rgba(255, 255, 255, 0.06), transparent 17rem),
-    linear-gradient(145deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.012)),
-    var(--panel-glass);
+    linear-gradient(145deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.01)),
+    rgba(10, 10, 10, 0.82);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
@@ -70,10 +92,11 @@ button {
 
 .hero-panel {
   background:
-    linear-gradient(180deg, rgba(4, 8, 12, 0.55) 0%, rgba(4, 8, 12, 0.68) 42%, rgba(4, 8, 12, 0.97) 100%),
-    linear-gradient(90deg, rgba(4, 8, 12, 0.96) 0%, rgba(4, 8, 12, 0.62) 100%),
+    radial-gradient(circle at 24% 86%, rgba(201, 164, 92, 0.12), transparent 20rem),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.62) 0%, rgba(0, 0, 0, 0.74) 48%, rgba(0, 0, 0, 0.92) 100%),
+    linear-gradient(90deg, rgba(6, 5, 4, 0.97) 0%, rgba(10, 9, 7, 0.76) 100%),
     url("./assets/calculator-preview/hero-staircase.webp") center / cover no-repeat,
-    #070c11;
+    #080706;
   display: grid;
   min-height: 640px;
   overflow: hidden;
@@ -82,7 +105,9 @@ button {
 }
 
 .hero-panel::after {
-  background: radial-gradient(circle at 66% 52%, rgba(226, 173, 73, 0.18), transparent 19rem);
+  background:
+    radial-gradient(ellipse at 50% 50%, transparent 0%, transparent 52%, rgba(0, 0, 0, 0.52) 100%),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.18), transparent 44%);
   content: "";
   inset: 0;
   pointer-events: none;
@@ -252,7 +277,7 @@ button {
 
 .estimate-note {
   align-self: end;
-  background: rgba(255, 255, 255, 0.035);
+  background: rgba(10, 10, 10, 0.62);
   border: 1px solid var(--border);
   border-radius: 8px;
   margin-top: 34px;
@@ -362,7 +387,7 @@ button {
 .material-list > div,
 .railing-list > div,
 .hint-row {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.015));
+  background: linear-gradient(145deg, rgba(24, 20, 14, 0.82), rgba(9, 9, 8, 0.76));
   border: 1px solid var(--border-soft);
   border-radius: 6px;
 }
@@ -398,7 +423,7 @@ button {
 }
 
 .opening-icon::before {
-  border: 1px solid #87919d;
+  border: 1px solid #9a9288;
   height: 30px;
   left: 8px;
   top: 3px;
@@ -406,8 +431,8 @@ button {
 }
 
 .opening-icon::after {
-  border-left: 1px solid #87919d;
-  border-top: 1px solid #87919d;
+  border-left: 1px solid #9a9288;
+  border-top: 1px solid #9a9288;
   height: 16px;
   left: 21px;
   top: 11px;
@@ -417,8 +442,8 @@ button {
 .frame-icon::before,
 .concrete-icon::before,
 .old-stair-icon::before {
-  border-bottom: 2px solid #87919d;
-  border-left: 2px solid #87919d;
+  border-bottom: 2px solid #9a9288;
+  border-left: 2px solid #9a9288;
   height: 23px;
   left: 12px;
   top: 5px;
@@ -429,7 +454,7 @@ button {
 .frame-icon::after,
 .concrete-icon::after,
 .old-stair-icon::after {
-  background: repeating-linear-gradient(0deg, #87919d 0 1px, transparent 1px 7px);
+  background: repeating-linear-gradient(0deg, #9a9288 0 1px, transparent 1px 7px);
   height: 28px;
   right: 6px;
   top: 1px;
@@ -442,9 +467,9 @@ button {
 }
 
 .unknown-icon::before {
-  border: 2px solid #c7d0dc;
+  border: 2px solid #d1c7b8;
   border-radius: 999px;
-  color: #c7d0dc;
+  color: #d1c7b8;
   content: "?";
   font-size: 1.35rem;
   height: 34px;
@@ -478,6 +503,18 @@ button {
   width: 76px;
 }
 
+.state-preview {
+  background: rgba(10, 8, 6, 0.42);
+  border: 1px solid rgba(226, 173, 73, 0.2);
+  border-radius: 7px;
+  display: block;
+  height: 38px;
+  margin-bottom: 7px;
+  max-width: 100%;
+  object-fit: contain;
+  width: 54px;
+}
+
 .shape-preview,
 .turn-preview {
   background: rgba(10, 8, 6, 0.42);
@@ -486,7 +523,8 @@ button {
   display: block;
   height: 58px;
   margin-bottom: 7px;
-  object-fit: cover;
+  max-width: 100%;
+  object-fit: contain;
   width: 96px;
 }
 
@@ -495,6 +533,7 @@ button {
   margin: 0;
   width: 62px;
 }
+
 
 .shape-card small {
   display: block;
@@ -520,8 +559,8 @@ button {
 
 .turn90-icon::before,
 .turn180-icon::before {
-  border-left: 2px solid #c7d0dc;
-  border-top: 2px solid #c7d0dc;
+  border-left: 2px solid #d1c7b8;
+  border-top: 2px solid #d1c7b8;
   height: 39px;
   left: 15px;
   top: 8px;
@@ -530,7 +569,7 @@ button {
 
 .turn90-icon::after,
 .turn180-icon::after {
-  background: repeating-linear-gradient(90deg, #c7d0dc 0 1px, transparent 1px 6px), repeating-linear-gradient(0deg, #c7d0dc 0 1px, transparent 1px 6px);
+  background: repeating-linear-gradient(90deg, #d1c7b8 0 1px, transparent 1px 6px), repeating-linear-gradient(0deg, #d1c7b8 0 1px, transparent 1px 6px);
   height: 38px;
   left: 18px;
   opacity: 0.75;
@@ -539,7 +578,7 @@ button {
 }
 
 .turn180-icon::before {
-  border-right: 2px solid #c7d0dc;
+  border-right: 2px solid #d1c7b8;
   width: 50px;
 }
 
@@ -601,7 +640,7 @@ button {
 }
 
 .landing-icon::before {
-  border: 1px solid #c7d0dc;
+  border: 1px solid #d1c7b8;
   height: 33px;
   left: 12px;
   top: 5px;
@@ -645,7 +684,7 @@ button {
 }
 
 .card-actions button:first-child {
-  background: rgba(255, 255, 255, 0.035);
+  background: rgba(10, 10, 10, 0.62);
   border: 1px solid var(--border);
   color: var(--text);
 }
@@ -714,22 +753,35 @@ button {
 
 .measure-diagram {
   background:
-    linear-gradient(135deg, transparent 24%, rgba(199, 208, 220, 0.34) 24.3% 24.8%, transparent 25%),
-    linear-gradient(90deg, transparent 10%, rgba(226, 173, 73, 0.95) 10.3% 10.8%, transparent 11%),
-    linear-gradient(0deg, transparent 79%, rgba(226, 173, 73, 0.95) 79.3% 80%, transparent 80.2%),
-    repeating-linear-gradient(0deg, transparent 0 15px, rgba(199, 208, 220, 0.25) 16px 17px),
-    repeating-linear-gradient(90deg, transparent 0 15px, rgba(199, 208, 220, 0.18) 16px 17px);
+    radial-gradient(circle at 78% 20%, rgba(201, 164, 92, 0.1), transparent 8rem),
+    linear-gradient(145deg, rgba(18, 16, 12, 0.94), rgba(5, 5, 4, 0.98));
+  overflow: hidden;
 }
 
 .measure-diagram::before {
-  background: repeating-linear-gradient(0deg, transparent 0 9px, #c7d0dc 10px 11px), linear-gradient(135deg, transparent 35%, rgba(199, 208, 220, 0.45) 36% 37%, transparent 38%);
-  bottom: 18px;
+  background: none;
+  border-bottom: 2px solid rgba(209, 199, 184, 0.76);
+  border-left: 2px solid rgba(209, 199, 184, 0.76);
+  bottom: 30px;
   content: "";
-  height: 62px;
-  left: 42%;
+  height: 54px;
+  left: 44%;
   position: absolute;
-  transform: skewX(-18deg);
-  width: 78px;
+  transform: skewX(-24deg);
+  width: 86px;
+}
+
+.measure-diagram::after {
+  background:
+    linear-gradient(90deg, rgba(226, 173, 73, 0.95), rgba(226, 173, 73, 0.95)),
+    linear-gradient(0deg, rgba(226, 173, 73, 0.95), rgba(226, 173, 73, 0.95));
+  background-position: 11% 79%, 11% 20%;
+  background-repeat: no-repeat;
+  background-size: 80% 2px, 2px 68%;
+  content: "";
+  inset: 0;
+  opacity: 0.95;
+  position: absolute;
 }
 
 .measure-diagram span {
@@ -766,18 +818,52 @@ button {
 
 .stair-outline {
   background:
-    linear-gradient(155deg, transparent 43%, rgba(226, 173, 73, 0.8) 43.5% 44.4%, transparent 45%),
-    repeating-linear-gradient(153deg, transparent 0 15px, #808b97 15px 17px, transparent 17px 29px),
-    linear-gradient(23deg, transparent 46%, rgba(199, 208, 220, 0.5) 46.4% 47%, transparent 47.5%);
+    radial-gradient(circle at 62% 35%, rgba(201, 164, 92, 0.1), transparent 5rem),
+    linear-gradient(145deg, rgba(18, 15, 11, 0.94), rgba(5, 5, 4, 0.98));
+  box-shadow: inset 0 0 0 1px rgba(201, 164, 92, 0.16);
+  overflow: hidden;
+}
+
+.stair-outline::before {
+  background:
+    linear-gradient(90deg, rgba(209, 199, 184, 0.74), rgba(209, 199, 184, 0.74)),
+    linear-gradient(0deg, rgba(209, 199, 184, 0.74), rgba(209, 199, 184, 0.74)),
+    linear-gradient(90deg, rgba(209, 199, 184, 0.46), rgba(209, 199, 184, 0.46)),
+    linear-gradient(0deg, rgba(209, 199, 184, 0.46), rgba(209, 199, 184, 0.46));
+  background-position: 30px 62px, 30px 28px, 30px 28px, 92px 28px;
+  background-repeat: no-repeat;
+  background-size: 128px 2px, 2px 34px, 64px 2px, 2px 34px;
+  content: "";
+  height: 90px;
+  left: 50%;
+  position: absolute;
+  top: 14px;
+  transform: translateX(-50%);
+  width: 190px;
+}
+
+.stair-outline::after {
+  background: rgba(226, 173, 73, 0.16);
+  border: 2px solid rgba(226, 173, 73, 0.86);
+  border-radius: 3px;
+  content: "";
+  height: 30px;
+  left: 50%;
+  position: absolute;
+  top: 27px;
+  transform: translateX(12px);
+  width: 34px;
 }
 
 .stair-outline small {
-  bottom: 35px;
+  bottom: 18px;
   color: var(--muted);
   font-size: 0.58rem;
+  left: 50%;
   position: absolute;
-  right: 28px;
-  width: 52px;
+  transform: translateX(12px);
+  width: 72px;
+  z-index: 1;
 }
 
 .material-list > div,
@@ -812,17 +898,17 @@ button {
 
 .paint { background: linear-gradient(135deg, #e4ded4, #928b82); }
 .wood { background: linear-gradient(135deg, #8b5a2c, #3d2210); }
-.combo { background: linear-gradient(135deg, #9b6a35 0 50%, #2b3340 50% 100%); }
+.combo { background: linear-gradient(135deg, #9b6a35 0 50%, #211f1b 50% 100%); }
 .consult-row .line-icon { height: 36px; margin: 0; width: 36px; }
 
 .rail-thumb {
-  background: #121a23;
+  background: #12100d;
   border: 1px solid var(--border-soft);
 }
 
 .rail-thumb::before {
-  border-bottom: 1px solid #87919d;
-  border-left: 1px solid #87919d;
+  border-bottom: 1px solid #9a9288;
+  border-left: 1px solid #9a9288;
   height: 20px;
   left: 7px;
   top: 8px;
@@ -831,27 +917,54 @@ button {
 }
 
 .no-rail::before { border-color: rgba(226, 173, 73, 0.5); }
-.metal::before { border-color: #87919d; }
-.glass::before { background: rgba(199, 208, 220, 0.3); }
+.metal::before { border-color: #9a9288; }
+.glass::before { background: rgba(201, 184, 156, 0.24); }
 .wood-rail::before { border-color: #b47b35; }
 .combo-rail::before { border-color: var(--gold-strong); }
 
 .railing-diagram {
   background:
-    linear-gradient(145deg, transparent 48%, rgba(226, 173, 73, 0.88) 48.3% 49%, transparent 49.4%),
-    repeating-linear-gradient(153deg, transparent 0 16px, #79838f 16px 18px, transparent 18px 31px);
+    radial-gradient(circle at 78% 25%, rgba(201, 164, 92, 0.12), transparent 6rem),
+    linear-gradient(145deg, rgba(18, 15, 11, 0.94), rgba(5, 5, 4, 0.98));
+  box-shadow: inset 0 0 0 1px rgba(201, 164, 92, 0.16);
+  overflow: hidden;
 }
 
 .railing-diagram::before {
-  border-left: 1px solid rgba(226, 173, 73, 0.8);
-  border-top: 1px solid rgba(226, 173, 73, 0.8);
+  background:
+    linear-gradient(90deg, rgba(209, 199, 184, 0.68), rgba(209, 199, 184, 0.68)),
+    linear-gradient(90deg, rgba(209, 199, 184, 0.58), rgba(209, 199, 184, 0.58)),
+    linear-gradient(90deg, rgba(209, 199, 184, 0.48), rgba(209, 199, 184, 0.48)),
+    linear-gradient(90deg, rgba(209, 199, 184, 0.4), rgba(209, 199, 184, 0.4)),
+    linear-gradient(90deg, rgba(209, 199, 184, 0.32), rgba(209, 199, 184, 0.32));
+  background-position: 26px 70px, 40px 62px, 54px 54px, 68px 46px, 82px 38px;
+  background-repeat: no-repeat;
+  background-size: 140px 2px, 126px 2px, 112px 2px, 98px 2px, 84px 2px;
   content: "";
-  height: 85px;
-  left: 27%;
+  height: 94px;
+  left: 50%;
   position: absolute;
-  top: 36px;
-  transform: skewY(-22deg);
-  width: 110px;
+  top: 12px;
+  transform: translateX(-50%);
+  width: 200px;
+}
+
+.railing-diagram::after {
+  background:
+    linear-gradient(90deg, rgba(226, 173, 73, 0.96), rgba(226, 173, 73, 0.96)),
+    linear-gradient(0deg, rgba(226, 173, 73, 0.7), rgba(226, 173, 73, 0.7)),
+    linear-gradient(0deg, rgba(226, 173, 73, 0.7), rgba(226, 173, 73, 0.7)),
+    linear-gradient(0deg, rgba(226, 173, 73, 0.7), rgba(226, 173, 73, 0.7));
+  background-position: 26px 28px, 56px 28px, 102px 28px, 148px 28px;
+  background-repeat: no-repeat;
+  background-size: 140px 3px, 2px 46px, 2px 46px, 2px 46px;
+  content: "";
+  height: 94px;
+  left: 50%;
+  position: absolute;
+  top: 12px;
+  transform: translateX(-50%);
+  width: 200px;
 }
 
 .summary-layout dl {
@@ -882,11 +995,25 @@ button {
 }
 
 .result-photo {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(5, 8, 11, 0.12)),
-    url("./assets/calculator-preview/hero-staircase.webp") center / cover no-repeat;
+  align-items: center;
+  background: rgba(10, 10, 10, 0.72);
+  border: 1px solid rgba(201, 164, 92, 0.28);
   border-radius: 6px;
-  min-height: 130px;
+  display: grid;
+  aspect-ratio: 16 / 10;
+  max-height: 190px;
+  min-height: 132px;
+  min-width: 130px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.result-photo img {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  width: 100%;
 }
 
 .price-box {
@@ -947,7 +1074,7 @@ button {
 }
 
 .bottom-benefits aside {
-  background: rgba(255, 255, 255, 0.035);
+  background: rgba(10, 10, 10, 0.62);
   border: 1px solid var(--border-soft);
   border-radius: 7px;
   color: var(--gold-strong);
@@ -977,6 +1104,10 @@ button {
   .preview-board {
     grid-template-columns: repeat(4, minmax(0, 1fr));
     grid-template-rows: minmax(350px, 1fr) minmax(350px, 1fr);
+  }
+
+  .step-seven .summary-layout {
+    grid-template-columns: 1fr;
   }
 
   .wide-card {
@@ -1192,5 +1323,198 @@ button {
   .railing-diagram,
   .result-photo {
     min-height: 170px;
+  }
+
+  .step-card h2 {
+    font-kerning: normal;
+    letter-spacing: 0;
+    overflow-wrap: break-word;
+    text-rendering: optimizeLegibility;
+    white-space: normal;
+    word-break: normal;
+    word-spacing: normal;
+  }
+
+  .step-seven .card-actions button:last-child {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    min-height: 48px;
+    white-space: nowrap;
+    width: 100%;
+  }
+}
+
+@media (min-width: 1280px) {
+  .step-two .turn-options,
+  .step-four .constraints-layout,
+  .step-six .railing-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .step-four .constraints-layout,
+  .step-six .railing-layout {
+    gap: 8px;
+  }
+
+  .step-four .stair-outline {
+    min-height: 92px;
+  }
+
+  .step-six .railing-diagram {
+    min-height: 102px;
+  }
+
+  .step-seven .result-photo {
+    max-height: 142px;
+    min-height: 116px;
+  }
+}
+
+/* Image-based hints for steps 4 and 6. Keep these as asset containers instead of CSS-drawn diagrams. */
+.stair-outline,
+.railing-diagram {
+  align-items: center;
+  background: rgba(10, 10, 10, 0.72);
+  border: 1px solid rgba(201, 164, 92, 0.28);
+  border-radius: 10px;
+  display: grid;
+  min-height: auto;
+  overflow: hidden;
+  padding: 8px;
+}
+
+.stair-outline::before,
+.stair-outline::after,
+.railing-diagram::before,
+.railing-diagram::after {
+  content: none;
+}
+
+.stair-outline img,
+.railing-diagram img {
+  aspect-ratio: 16 / 9;
+  display: block;
+  height: auto;
+  object-fit: contain;
+  width: 100%;
+}
+
+.stair-outline small {
+  color: var(--muted);
+  font-size: 0.58rem;
+  justify-self: end;
+  margin: -20px 14px 6px 0;
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 760px) {
+  .dashboard-preview {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .hero-panel {
+    order: 1;
+  }
+
+  .preview-board {
+    order: 2;
+  }
+
+  .bottom-benefits {
+    order: 3;
+  }
+
+  .preview-board,
+  .bottom-benefits {
+    width: 100%;
+  }
+
+  .wide-card,
+  .step-seven {
+    grid-column: auto;
+  }
+
+  .step-card,
+  .foundation-grid,
+  .shape-grid,
+  .turn-options,
+  .measure-layout,
+  .constraints-layout,
+  .railing-layout,
+  .summary-layout,
+  .bottom-benefits {
+    min-width: 0;
+  }
+
+  .step-card h2,
+  .hero-copy h1,
+  .bottom-benefits h2,
+  .option-card b,
+  .shape-card b,
+  .turn-choice b,
+  .material-list b,
+  .railing-list b {
+    line-height: 1.15;
+    word-break: normal;
+    overflow-wrap: normal;
+    word-spacing: normal;
+    hyphens: none;
+  }
+
+  .constraints-layout,
+  .railing-layout,
+  .summary-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .stair-outline,
+  .railing-diagram,
+  .result-photo {
+    width: 100%;
+    max-height: none;
+    min-width: 0;
+  }
+
+  .stair-outline img,
+  .railing-diagram img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
+
+  .result-photo {
+    aspect-ratio: 16 / 10;
+    min-height: 210px;
+  }
+
+  .result-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .card-actions {
+    align-items: stretch;
+    flex-wrap: wrap;
+  }
+
+  .card-actions button {
+    white-space: nowrap;
+  }
+
+  .card-actions button:last-child {
+    min-width: 160px;
+  }
+
+  .bottom-benefits {
+    grid-template-columns: 1fr;
+  }
+
+  .bottom-benefits h2,
+  .bottom-benefits aside {
+    grid-column: auto;
   }
 }
