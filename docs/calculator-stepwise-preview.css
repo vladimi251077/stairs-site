@@ -1324,6 +1324,25 @@ button {
   .result-photo {
     min-height: 170px;
   }
+
+  .step-card h2 {
+    font-kerning: normal;
+    letter-spacing: 0;
+    overflow-wrap: break-word;
+    text-rendering: optimizeLegibility;
+    white-space: normal;
+    word-break: normal;
+    word-spacing: normal;
+  }
+
+  .step-seven .card-actions button:last-child {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    min-height: 48px;
+    white-space: nowrap;
+    width: 100%;
+  }
 }
 
 @media (min-width: 1280px) {
