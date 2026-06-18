@@ -5,11 +5,70 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Конфигуратор лестницы — Tekstura</title>
   <link rel="stylesheet" href="/stair-configurator.css?v=20260427-7">
+  <script src="/calculator-mode.js"></script>
+  <script>
+    (function () {
+      const allowedModes = new Set(['production', 'maintenance', 'preview']);
+      const configuredMode = window.TEKSTURA_CALCULATOR_CONFIG?.mode;
+      let mode = allowedModes.has(configuredMode) ? configuredMode : 'production';
+
+      if (mode === 'preview') {
+        let previewAccess = false;
+        try {
+          previewAccess = window.sessionStorage.getItem('tekstura_calculator_preview_access') === 'enabled';
+        } catch (error) {
+          previewAccess = false;
+        }
+        mode = previewAccess ? 'preview' : 'production';
+      }
+
+      document.documentElement.dataset.calculatorMode = mode;
+      window.TEKSTURA_CALCULATOR_MODE = mode;
+    })();
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/supabase-config.js"></script>
 </head>
 <body>
-  <main class="wrap">
+  <main class="maintenance-wrap" aria-labelledby="maintenanceTitle">
+    <section class="maintenance-card">
+      <a class="maintenance-brand" href="/" aria-label="Tekstura — на главную">TEKSTURA</a>
+      <p class="maintenance-eyebrow">Инженерный калькулятор</p>
+      <h1 id="maintenanceTitle">Калькулятор временно обновляется</h1>
+      <p class="maintenance-copy">Мы дорабатываем расчёт, чтобы он был точнее и понятнее. Вы можете получить расчёт вручную — отправьте размеры проёма и фото объекта.</p>
+      <div class="maintenance-actions" aria-label="Способы связаться с Tekstura">
+        <a class="maintenance-button maintenance-button--primary" data-maintenance-contact="request" href="/request.html">Оставить заявку</a>
+      </div>
+      <p class="maintenance-note">Для расчёта достаточно примерных размеров — инженер поможет уточнить детали.</p>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      const contacts = window.TEKSTURA_CALCULATOR_CONFIG?.contacts || {};
+      const actions = document.querySelector('.maintenance-actions');
+      const requestButton = actions.querySelector('[data-maintenance-contact="request"]');
+      requestButton.href = contacts.requestUrl || '/request.html';
+
+      [
+        ['whatsappUrl', 'WhatsApp'],
+        ['telegramUrl', 'Telegram']
+      ].forEach(function ([configKey, label]) {
+        const url = typeof contacts[configKey] === 'string' ? contacts[configKey].trim() : '';
+        if (!url) return;
+
+        const button = document.createElement('a');
+        button.className = 'maintenance-button';
+        button.href = url;
+        button.target = '_blank';
+        button.rel = 'noopener';
+        button.textContent = 'Написать в ' + label;
+        actions.appendChild(button);
+      });
+    })();
+  </script>
+
+  <main class="wrap calculator-app">
     <div class="top">
       <div>
         <h1>Инженерный конфигуратор лестницы</h1>
