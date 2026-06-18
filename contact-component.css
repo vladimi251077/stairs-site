@@ -1,0 +1,207 @@
+.site-header__inner {
+  position: relative;
+}
+
+.tekstura-header-contact {
+  position: absolute;
+  top: 12px;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 2;
+}
+
+.tekstura-header-contact a {
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.tekstura-header-contact__phone {
+  padding: 0 4px;
+  color: #f4e7d4;
+}
+
+.tekstura-header-contact__cta {
+  padding: 0 14px;
+  color: #1a120e;
+  background: #e8c8a2;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22);
+}
+
+.site-header--with-contact .site-nav {
+  margin-top: 36px;
+}
+
+.tekstura-header-contact a:focus-visible,
+.tekstura-mobile-contact summary:focus-visible,
+.tekstura-mobile-contact__link:focus-visible,
+.calculator-contact-help__link:focus-visible {
+  outline: 3px solid rgba(240, 215, 183, 0.92);
+  outline-offset: 3px;
+}
+
+.tekstura-mobile-contact {
+  display: none;
+}
+
+.tekstura-contact-ready .floating-contact-menu {
+  display: none !important;
+}
+
+.calculator-contact-help {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin: -8px 0 18px;
+  padding: 15px 18px;
+  border: 1px solid rgba(240, 215, 183, 0.18);
+  border-radius: 16px;
+  background: rgba(240, 215, 183, 0.045);
+}
+
+.calculator-contact-help h2 {
+  margin: 0 0 4px;
+  font-size: 18px;
+}
+
+.calculator-contact-help p {
+  margin: 0;
+  color: #a99b8a;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.calculator-contact-help__actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.calculator-contact-help__link {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 13px;
+  border: 1px solid rgba(240, 215, 183, 0.22);
+  border-radius: 10px;
+  color: #f0d7b7;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+@media (max-width: 1100px) {
+  .tekstura-header-contact {
+    display: none;
+  }
+
+  .site-header--with-contact .site-nav {
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 760px) {
+  body.tekstura-contact-ready {
+    padding-bottom: calc(82px + env(safe-area-inset-bottom));
+  }
+
+  .tekstura-mobile-contact {
+    position: fixed;
+    right: max(14px, env(safe-area-inset-right));
+    bottom: calc(14px + env(safe-area-inset-bottom));
+    z-index: 1000;
+    display: block;
+  }
+
+  .tekstura-mobile-contact summary {
+    min-width: 150px;
+    min-height: 52px;
+    height: 52px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 18px;
+    border: 1px solid rgba(240, 215, 183, 0.5);
+    border-radius: 14px;
+    color: #1a120e;
+    background: #e8c8a2;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.42);
+    font-weight: 800;
+    list-style: none;
+    cursor: pointer;
+  }
+
+  .tekstura-mobile-contact summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .tekstura-mobile-contact__panel {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + 10px);
+    width: min(260px, calc(100vw - 28px));
+    display: grid;
+    gap: 8px;
+    padding: 10px;
+    border: 1px solid rgba(240, 215, 183, 0.2);
+    border-radius: 16px;
+    background: rgba(25, 19, 15, 0.98);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  }
+
+  .tekstura-mobile-contact__link {
+    min-height: 46px;
+    display: flex;
+    align-items: center;
+    padding: 10px 13px;
+    border: 1px solid rgba(240, 215, 183, 0.16);
+    border-radius: 10px;
+    color: #f4e7d4;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .tekstura-mobile-contact__link--primary {
+    color: #1a120e;
+    background: #e8c8a2;
+  }
+
+  .calculator-contact-help {
+    align-items: flex-start;
+    flex-direction: column;
+    margin-top: -4px;
+    padding: 15px;
+  }
+
+  .calculator-contact-help__actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .calculator-contact-help__link {
+    min-width: 0;
+    padding-inline: 8px;
+  }
+}
+
+@media (max-width: 390px) {
+  .calculator-contact-help__actions {
+    grid-template-columns: 1fr;
+  }
+}
