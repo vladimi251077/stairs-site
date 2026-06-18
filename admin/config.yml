@@ -16,15 +16,6 @@ collections:
         file: "content/site.json"
         format: "json"
         fields:
-          - label: "Режим калькулятора"
-            name: "calculator_mode"
-            widget: "select"
-            default: "production"
-            options:
-              - { label: "Рабочий", value: "production" }
-              - { label: "На доработке", value: "maintenance" }
-              - { label: "Preview / тестовый", value: "preview" }
-            hint: "Preview доступен только пользователям с разрешением в sessionStorage."
           - { label: "Бейдж", name: "badge", widget: "string" }
           - { label: "Главный заголовок", name: "heroTitle", widget: "string" }
           - { label: "Подзаголовок", name: "heroLead", widget: "text" }

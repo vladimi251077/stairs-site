@@ -54,10 +54,10 @@
       display:block;
       margin-bottom:6px;
     }
-    input,textarea,button{
+    input,textarea,select,button{
       font:inherit;
     }
-    input,textarea{
+    input,textarea,select{
       width:100%;
       padding:10px 12px;
       border-radius:10px;
@@ -550,6 +550,24 @@
         </div>
         <div id="contactsStatus" class="status small" aria-live="polite"></div>
         <div id="effectiveNotifyEmail" class="status small" aria-live="polite"></div>
+      </section>
+
+      <section class="panel">
+        <h2>Калькулятор</h2>
+        <div class="grid">
+          <div>
+            <label for="calculatorMode">Режим калькулятора</label>
+            <select id="calculatorMode">
+              <option value="production">Рабочий / production</option>
+              <option value="maintenance">На доработке / maintenance</option>
+              <option value="preview">Preview / тестовый / preview</option>
+            </select>
+          </div>
+        </div>
+        <p class="small muted">Preview доступен только в браузере с разрешением в sessionStorage. Для остальных посетителей калькулятор остаётся рабочим.</p>
+        <div class="row" style="margin-top:12px">
+          <button id="saveCalculatorMode" class="btn">Сохранить режим</button>
+        </div>
       </section>
 
       <section class="panel">
@@ -2136,6 +2154,7 @@
     const telegramInput = document.getElementById('telegram');
     const notifyEmailInput = document.getElementById('notifyEmail');
     const maxInput = document.getElementById('max');
+    const calculatorModeInput = document.getElementById('calculatorMode');
 
     const heroTitleInput = document.getElementById('heroTitle');
     const heroSubtitleInput = document.getElementById('heroSubtitle');
@@ -2375,6 +2394,9 @@
         telegram: row?.telegram ?? '',
         notifyEmail: row?.notify_email ?? row?.notifyEmail ?? '',
         max: row?.max ?? '',
+        calculatorMode: ['production', 'maintenance', 'preview'].includes(row?.calculator_mode)
+          ? row.calculator_mode
+          : 'production',
         heroTitle: row?.heroTitle ?? row?.herotitle ?? '',
         heroSubtitle: row?.heroSubtitle ?? row?.herosubtitle ?? '',
         heroImage: row?.heroImage ?? row?.heroimage ?? '',
@@ -2390,6 +2412,7 @@
       telegramInput.value = settings.telegram || '';
       notifyEmailInput.value = settings.notifyEmail || '';
       maxInput.value = settings.max || '';
+      calculatorModeInput.value = settings.calculatorMode || 'production';
       heroTitleInput.value = settings.heroTitle || '';
       heroSubtitleInput.value = settings.heroSubtitle || '';
       heroImageInput.value = settings.heroImage || '';
@@ -3314,6 +3337,27 @@
 
     heroImageInput.addEventListener('input', () => showPreview(heroImagePreview, heroImageInput.value.trim()));
     logoInput.addEventListener('input', () => showPreview(logoPreview, logoInput.value.trim()));
+
+    document.getElementById('saveCalculatorMode').onclick = async () => {
+      try {
+        const calculatorMode = calculatorModeInput.value;
+        if (!['production', 'maintenance', 'preview'].includes(calculatorMode)) {
+          throw new Error('Недопустимый режим калькулятора');
+        }
+
+        const modeRes = await client.from('settings').upsert({
+          id: 1,
+          calculator_mode: calculatorMode,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'id' });
+        throwIfSupabaseError(modeRes, 'Не удалось сохранить режим калькулятора');
+
+        setStatus('Режим калькулятора сохранён');
+        await loadSettings();
+      } catch (err) {
+        setStatus('Ошибка сохранения режима калькулятора: ' + explainError(err), true);
+      }
+    };
 
     document.getElementById('saveContacts').onclick = async () => {
       try {
