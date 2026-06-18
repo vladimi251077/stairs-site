@@ -9,21 +9,26 @@
   <script>
     (function () {
       const allowedModes = new Set(['production', 'maintenance', 'preview']);
-      const configuredMode = window.TEKSTURA_CALCULATOR_CONFIG?.mode;
-      let mode = allowedModes.has(configuredMode) ? configuredMode : 'production';
+      function applyCalculatorMode(config) {
+        const configuredMode = config?.mode;
+        let mode = allowedModes.has(configuredMode) ? configuredMode : 'production';
 
-      if (mode === 'preview') {
-        let previewAccess = false;
-        try {
-          previewAccess = window.sessionStorage.getItem('tekstura_calculator_preview_access') === 'enabled';
-        } catch (error) {
-          previewAccess = false;
+        if (mode === 'preview') {
+          let previewAccess = false;
+          try {
+            previewAccess = window.sessionStorage.getItem('tekstura_calculator_preview_access') === 'enabled';
+          } catch (error) {
+            previewAccess = false;
+          }
+          mode = previewAccess ? 'preview' : 'production';
         }
-        mode = previewAccess ? 'preview' : 'production';
+
+        document.documentElement.dataset.calculatorMode = mode;
+        window.TEKSTURA_CALCULATOR_MODE = mode;
       }
 
-      document.documentElement.dataset.calculatorMode = mode;
-      window.TEKSTURA_CALCULATOR_MODE = mode;
+      applyCalculatorMode(window.TEKSTURA_CALCULATOR_CONFIG);
+      window.TEKSTURA_CALCULATOR_CONFIG_READY?.then(applyCalculatorMode);
     })();
   </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
