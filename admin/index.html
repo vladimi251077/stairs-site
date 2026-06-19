@@ -465,6 +465,104 @@
       margin:0;
       white-space:normal;
     }
+    .admin-shell{
+      display:grid;
+      grid-template-columns:260px minmax(0,1fr);
+      gap:20px;
+      align-items:start;
+    }
+    .admin-sidebar{
+      position:sticky;
+      top:18px;
+      display:flex;
+      flex-direction:column;
+      min-height:calc(100vh - 36px);
+      padding:14px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:#191512;
+    }
+    .admin-sidebar__title{
+      margin:2px 8px 12px;
+      color:var(--muted);
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:.1em;
+      text-transform:uppercase;
+    }
+    .admin-nav{
+      display:grid;
+      gap:6px;
+    }
+    .admin-nav__item{
+      width:100%;
+      padding:11px 12px;
+      border:1px solid transparent;
+      border-radius:10px;
+      background:transparent;
+      color:var(--muted);
+      text-align:left;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .admin-nav__item:hover,
+    .admin-nav__item:focus-visible{
+      border-color:var(--line);
+      color:var(--text);
+      outline:none;
+    }
+    .admin-nav__item.is-active{
+      border-color:rgba(232,200,162,.5);
+      background:rgba(232,200,162,.12);
+      color:var(--accent);
+    }
+    .admin-sidebar__logout{
+      margin-top:auto;
+      width:100%;
+    }
+    .admin-content{
+      width:100%;
+      max-width:1160px;
+      min-width:0;
+    }
+    .admin-section[hidden]{display:none !important}
+    .admin-section-heading{
+      margin-bottom:14px;
+    }
+    .admin-section-heading h2{margin-bottom:4px}
+    .admin-section-heading p{margin:0}
+    .overview-grid{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:12px;
+      margin-bottom:16px;
+    }
+    .overview-card{
+      min-width:0;
+      padding:16px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:#171310;
+    }
+    .overview-card span{
+      display:block;
+      color:var(--muted);
+      font-size:12px;
+    }
+    .overview-card strong{
+      display:block;
+      margin-top:6px;
+      font-size:21px;
+      overflow-wrap:anywhere;
+    }
+    .overview-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+    .overview-actions a{text-decoration:none}
+    .admin-menu-toggle{display:none}
+    .admin-sidebar-backdrop{display:none}
     .leads-summary{
       display:grid;
       grid-template-columns:repeat(5,minmax(0,1fr));
@@ -567,7 +665,40 @@
       .qe-card-span-2,
       .qe-card-actions{grid-column:1/-1}
       .qe-actions .btn{flex:1 1 calc(50% - 6px)}
-      .topbar{align-items:flex-start;flex-direction:column}
+      .topbar{align-items:flex-start;flex-direction:row}
+      .topbar h1{font-size:23px}
+      .topbar p{margin-bottom:0}
+      .admin-menu-toggle{display:inline-flex;flex:0 0 auto}
+      .admin-shell{display:block}
+      .admin-content{max-width:none}
+      .admin-sidebar{
+        position:fixed;
+        z-index:50;
+        top:0;
+        left:0;
+        width:min(82vw,280px);
+        height:100dvh;
+        min-height:0;
+        border-radius:0 16px 16px 0;
+        transform:translateX(-105%);
+        transition:transform .2s ease;
+        box-shadow:16px 0 40px rgba(0,0,0,.4);
+      }
+      body.admin-sidebar-open{overflow:hidden}
+      body.admin-sidebar-open .admin-sidebar{transform:translateX(0)}
+      .admin-sidebar-backdrop{
+        position:fixed;
+        z-index:40;
+        inset:0;
+        width:100%;
+        height:100%;
+        border:0;
+        background:rgba(0,0,0,.58);
+      }
+      body.admin-sidebar-open .admin-sidebar-backdrop{display:block}
+      .overview-grid{grid-template-columns:minmax(0,1fr)}
+      .overview-actions{display:grid}
+      .overview-actions .btn{width:100%;text-align:center}
       .gallery-meta{grid-template-columns:1fr}
       .pricing-groups-grid{grid-template-columns:minmax(0,1fr)}
       .pricing-admin-section > summary{flex-direction:column}
@@ -621,7 +752,7 @@
         <p class="muted">Авторизация через Supabase Auth. Данные и изображения сохраняются в Supabase.</p>
       </div>
       <div class="row">
-        <button id="logoutBtn" class="btn btn-secondary hidden">Выйти</button>
+        <button id="adminMenuToggle" class="btn btn-secondary admin-menu-toggle hidden" type="button" aria-controls="adminSidebar" aria-expanded="false">Разделы</button>
       </div>
     </div>
 
@@ -644,10 +775,48 @@
     </section>
 
     <section id="adminApp" class="hidden">
+      <div class="admin-shell">
+        <aside id="adminSidebar" class="admin-sidebar" aria-label="Разделы админки">
+          <div class="admin-sidebar__title">Разделы</div>
+          <nav class="admin-nav">
+            <button class="admin-nav__item" type="button" data-admin-nav="overview">Обзор</button>
+            <button class="admin-nav__item" type="button" data-admin-nav="leads">Заявки и источники</button>
+            <button class="admin-nav__item" type="button" data-admin-nav="projects">Проекты</button>
+            <button class="admin-nav__item" type="button" data-admin-nav="hero">Главный экран</button>
+            <button class="admin-nav__item" type="button" data-admin-nav="contacts">Контакты</button>
+            <button class="admin-nav__item" type="button" data-admin-nav="calculator">Калькулятор</button>
+            <button class="admin-nav__item" type="button" data-admin-nav="settings">Настройки</button>
+          </nav>
+          <button id="logoutBtn" class="btn btn-secondary admin-sidebar__logout hidden" type="button">Выйти</button>
+        </aside>
+        <button id="adminSidebarBackdrop" class="admin-sidebar-backdrop" type="button" aria-label="Закрыть меню разделов"></button>
+
+        <main class="admin-content">
+          <section class="admin-section" data-admin-section="overview">
+            <div class="admin-section-heading">
+              <h2>Обзор</h2>
+              <p class="muted">Ключевые состояния сайта и быстрый переход к основным задачам.</p>
+            </div>
+            <div class="panel">
+              <div class="overview-grid">
+                <div class="overview-card"><span>Статус сайта</span><strong id="overviewSiteStatus">Работает</strong></div>
+                <div class="overview-card"><span>Режим калькулятора</span><strong id="overviewCalculatorMode">—</strong></div>
+                <div class="overview-card"><span>Всего заявок</span><strong id="overviewLeadsCount">—</strong></div>
+              </div>
+              <div class="overview-actions">
+                <button class="btn" type="button" data-admin-target="leads">Открыть заявки</button>
+                <button class="btn btn-secondary" type="button" data-admin-target="projects">Открыть проекты</button>
+                <a class="btn btn-secondary" href="/calculator.html" target="_blank" rel="noopener">Открыть калькулятор</a>
+                <a class="btn btn-secondary" href="/" target="_blank" rel="noopener">Открыть сайт</a>
+              </div>
+            </div>
+          </section>
+
+          <section class="admin-section" data-admin-section="leads" hidden>
+            <div class="admin-section-heading"><h2 id="leadsTitle">Заявки и источники</h2><p class="muted">Заявки, UTM-метки и события конверсии.</p></div>
       <section class="panel" aria-labelledby="leadsTitle">
         <div class="row" style="justify-content:space-between;align-items:flex-start">
           <div>
-            <h2 id="leadsTitle">Заявки и источники</h2>
             <p class="small muted">Последние 100 заявок из calculator_requests. Персональные данные доступны только после входа.</p>
           </div>
           <button id="refreshLeads" class="btn btn-secondary" type="button">Обновить</button>
@@ -663,9 +832,11 @@
         <div id="leadsStatus" class="status small" aria-live="polite"></div>
         <div id="leadsList"></div>
       </section>
+          </section>
 
+          <section class="admin-section" data-admin-section="contacts" hidden>
+            <div class="admin-section-heading"><h2>Контакты</h2><p class="muted">Каналы связи и адрес для уведомлений о заявках.</p></div>
       <section class="panel">
-        <h2>Контакты</h2>
         <div class="grid">
           <div>
             <label for="phone">Телефон</label>
@@ -694,9 +865,11 @@
         <div id="contactsStatus" class="status small" aria-live="polite"></div>
         <div id="effectiveNotifyEmail" class="status small" aria-live="polite"></div>
       </section>
+          </section>
 
+          <section class="admin-section" data-admin-section="calculator" hidden>
+            <div class="admin-section-heading"><h2>Калькулятор</h2><p class="muted">Управление текущим режимом публичного калькулятора.</p></div>
       <section class="panel">
-        <h2>Калькулятор</h2>
         <div class="grid">
           <div>
             <label for="calculatorMode">Режим калькулятора</label>
@@ -712,9 +885,11 @@
           <button id="saveCalculatorMode" class="btn">Сохранить режим</button>
         </div>
       </section>
+          </section>
 
+          <section class="admin-section" data-admin-section="hero" hidden>
+            <div class="admin-section-heading"><h2>Главный экран</h2><p class="muted">Заголовок, изображение и логотип главной страницы.</p></div>
       <section class="panel">
-        <h2>Главный экран</h2>
         <div class="grid">
           <div class="full">
             <label for="heroTitle">Заголовок</label>
@@ -751,7 +926,10 @@
           <button id="saveHero" class="btn">Сохранить главный экран</button>
         </div>
       </section>
+          </section>
 
+          <section class="admin-section" data-admin-section="settings" hidden>
+            <div class="admin-section-heading"><h2>Настройки</h2><p class="muted">Тарифные справочники, внутренние параметры и услуги.</p></div>
       <section class="panel pricing-admin-panel">
         <h2>Калькулятор / Цены</h2>
         <details class="pricing-admin-section" open>
@@ -2258,17 +2436,22 @@
           <button id="saveServices" class="btn">Сохранить услуги</button>
         </div>
       </section>
+          </section>
 
+          <section class="admin-section" data-admin-section="projects" hidden>
+            <div class="admin-section-heading"><h2>Проекты</h2><p class="muted">Карточки проектов, изображения и порядок показа.</p></div>
       <section class="panel">
-        <h2>Проекты</h2>
         <div id="projectsList"></div>
         <div class="row">
           <button id="addProject" class="btn btn-secondary">Добавить проект</button>
           <button id="saveProjects" class="btn">Сохранить проекты</button>
         </div>
       </section>
+          </section>
 
-      <p id="status" class="status"></p>
+          <p id="status" class="status"></p>
+        </main>
+      </div>
     </section>
   </div>
 
@@ -2291,6 +2474,12 @@
     const contactsStatusBox = document.getElementById('contactsStatus');
     const effectiveNotifyEmailBox = document.getElementById('effectiveNotifyEmail');
     const logoutBtn = document.getElementById('logoutBtn');
+    const adminMenuToggle = document.getElementById('adminMenuToggle');
+    const adminSidebarBackdrop = document.getElementById('adminSidebarBackdrop');
+    const adminSections = [...document.querySelectorAll('[data-admin-section]')];
+    const adminNavItems = [...document.querySelectorAll('[data-admin-nav]')];
+    const overviewCalculatorMode = document.getElementById('overviewCalculatorMode');
+    const overviewLeadsCount = document.getElementById('overviewLeadsCount');
     const leadsSummary = document.getElementById('leadsSummary');
     const leadsList = document.getElementById('leadsList');
     const leadsStatus = document.getElementById('leadsStatus');
@@ -2347,6 +2536,52 @@
       leadsTotal: 0,
       leadsLastSevenDays: 0,
     };
+
+    const ADMIN_SECTION_STORAGE_KEY = 'tekstura_admin_section';
+    const ADMIN_SECTION_NAMES = new Set(['overview', 'leads', 'projects', 'hero', 'contacts', 'calculator', 'settings']);
+
+    function readStoredAdminSection() {
+      try { return localStorage.getItem(ADMIN_SECTION_STORAGE_KEY) || ''; }
+      catch (error) { return ''; }
+    }
+
+    function storeAdminSection(section) {
+      try { localStorage.setItem(ADMIN_SECTION_STORAGE_KEY, section); }
+      catch (error) { /* Navigation remains usable without storage. */ }
+    }
+
+    function closeAdminSidebar() {
+      document.body.classList.remove('admin-sidebar-open');
+      adminMenuToggle.setAttribute('aria-expanded', 'false');
+    }
+
+    function activateAdminSection(section, options = {}) {
+      const resolved = ADMIN_SECTION_NAMES.has(section) ? section : 'overview';
+      adminSections.forEach((node) => { node.hidden = node.dataset.adminSection !== resolved; });
+      adminNavItems.forEach((item) => {
+        const active = item.dataset.adminNav === resolved;
+        item.classList.toggle('is-active', active);
+        if (active) item.setAttribute('aria-current', 'page');
+        else item.removeAttribute('aria-current');
+      });
+      storeAdminSection(resolved);
+      if (options.syncHash !== false && window.location.hash !== `#${resolved}`) {
+        history.replaceState(null, '', `#${resolved}`);
+      }
+      closeAdminSidebar();
+      return resolved;
+    }
+
+    function restoreAdminSection() {
+      const hashSection = decodeURIComponent(window.location.hash.slice(1));
+      return activateAdminSection(hashSection ? hashSection : readStoredAdminSection());
+    }
+
+    function updateOverview() {
+      const modes = { production: 'Рабочий', maintenance: 'На доработке', preview: 'Preview' };
+      overviewCalculatorMode.textContent = modes[state.settings?.calculatorMode] || state.settings?.calculatorMode || '—';
+      overviewLeadsCount.textContent = Number.isFinite(Number(state.leadsTotal)) ? String(state.leadsTotal) : '—';
+    }
 
     function setStatus(msg, isError = false) {
       statusBox.textContent = msg || '';
@@ -3413,12 +3648,14 @@
         renderLeadFilterOptions();
         renderLeadsSummary();
         renderLeads();
+        updateOverview();
       } catch (error) {
         console.error('calculator_requests load failed', error);
         state.leads = [];
         state.leadsTotal = 0;
         state.leadsLastSevenDays = 0;
         renderLeadsSummary();
+        updateOverview();
         leadsStatus.textContent = 'Не удалось загрузить заявки: ' + explainError(error);
         leadsList.innerHTML = '<div class="leads-empty">Раздел заявок временно недоступен. Остальные разделы админки продолжают работать.</div>';
       }
@@ -3435,6 +3672,7 @@
       const settings = normalizeSettings(data || {});
       state.settings = settings;
       fillSettingsForm(settings);
+      updateOverview();
     }
 
     async function loadPricingDefaults() {
@@ -3633,6 +3871,8 @@
         authBox.classList.add('hidden');
         adminApp.classList.remove('hidden');
         logoutBtn.classList.remove('hidden');
+        adminMenuToggle.classList.remove('hidden');
+        restoreAdminSection();
         setAuthStatus(`Вход выполнен: ${session.user.email}`);
         await loadAllData();
         wireRealtime();
@@ -3640,6 +3880,8 @@
         authBox.classList.remove('hidden');
         adminApp.classList.add('hidden');
         logoutBtn.classList.add('hidden');
+        adminMenuToggle.classList.add('hidden');
+        closeAdminSidebar();
         setAuthStatus('Выполните вход для доступа к управлению контентом.');
       }
     }
@@ -3665,6 +3907,26 @@
         setStatus('Ошибка выхода: ' + explainError(err), true);
       }
     };
+
+    adminNavItems.forEach((item) => {
+      item.addEventListener('click', () => activateAdminSection(item.dataset.adminNav));
+    });
+    document.querySelectorAll('[data-admin-target]').forEach((item) => {
+      item.addEventListener('click', () => activateAdminSection(item.dataset.adminTarget));
+    });
+    adminMenuToggle.onclick = () => {
+      const open = !document.body.classList.contains('admin-sidebar-open');
+      document.body.classList.toggle('admin-sidebar-open', open);
+      adminMenuToggle.setAttribute('aria-expanded', String(open));
+    };
+    adminSidebarBackdrop.onclick = closeAdminSidebar;
+    window.addEventListener('hashchange', () => {
+      const section = decodeURIComponent(window.location.hash.slice(1));
+      activateAdminSection(section, { syncHash: ADMIN_SECTION_NAMES.has(section) ? false : true });
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') closeAdminSidebar();
+    });
 
     [leadsStatusFilter, leadsSourceFilter, leadsPeriodFilter].forEach((control) => {
       control.addEventListener('change', renderLeads);
