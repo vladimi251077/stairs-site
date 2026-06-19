@@ -13,6 +13,8 @@ create table if not exists public.settings (
   logo text,
   badge text,
   "baseRate" int default 5000,
+  calculator_mode text not null default 'production'
+    check (calculator_mode in ('production', 'maintenance', 'preview')),
   updated_at timestamptz default now()
 );
 
