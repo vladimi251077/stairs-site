@@ -448,6 +448,39 @@ body.projects-page::after {
   border-color: rgba(255, 236, 204, 0.12);
 }
 
+.projects-estimate {
+  padding: 0 0 38px;
+  background: #120d09;
+}
+
+.projects-estimate__panel {
+  display: grid;
+  grid-template-columns: minmax(240px, .85fr) minmax(320px, 1.3fr) auto;
+  gap: 28px;
+  align-items: center;
+  padding: clamp(24px, 3vw, 38px);
+  border: 1px solid rgba(231, 199, 158, .2);
+  border-radius: 24px;
+  background: radial-gradient(circle at 8% 0%, rgba(194, 139, 72, .16), transparent 38%), rgba(255, 255, 255, .035);
+}
+
+.projects-estimate__panel h2 {
+  margin: 0;
+  font-size: clamp(25px, 2.7vw, 38px);
+  line-height: 1.08;
+}
+
+.projects-estimate__panel p {
+  margin: 0;
+  color: #b9aa97;
+  line-height: 1.65;
+}
+
+.projects-estimate__panel .projects-button {
+  margin: 0;
+  white-space: nowrap;
+}
+
 @media (max-width: 1080px) {
   .projects-page .brand {
     width: 260px;
@@ -638,6 +671,17 @@ body.projects-page::after {
 
   .projects-cta {
     padding-bottom: 58px;
+  }
+
+  .projects-estimate__panel {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 24px 20px;
+  }
+
+  .projects-estimate__panel .projects-button {
+    width: 100%;
+    white-space: normal;
   }
 }
 
