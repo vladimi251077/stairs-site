@@ -14,6 +14,7 @@
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/supabase-config.js"></script>
+  <script defer src="/lead-tracker.js"></script>
   <link rel="stylesheet" href="/styles.css">
   <style>
     :root{--bg:#0f0c0a;--panel:#19130f;--line:#3d332b;--text:#f4e7d4;--muted:#baa894;--accent:#e8c8a2;--ok:#9ddcb0;--err:#ff9e9e}
@@ -85,8 +86,18 @@
         <div><input id="messenger" placeholder="WhatsApp/Telegram (если удобнее)"></div>
         <div><input id="city" placeholder="Город и район объекта"></div>
         <div class="full"><textarea id="comment" placeholder="Кратко о задаче: тип дома, этап ремонта, пожелания по стилю и срокам"></textarea></div>
+        <input type="hidden" name="lead_page">
+        <input type="hidden" name="lead_referrer">
+        <input type="hidden" name="lead_utm_source">
+        <input type="hidden" name="lead_utm_medium">
+        <input type="hidden" name="lead_utm_campaign">
+        <input type="hidden" name="lead_utm_content">
+        <input type="hidden" name="lead_utm_term">
+        <input type="hidden" name="lead_first_page">
+        <input type="hidden" name="lead_first_referrer">
+        <input type="hidden" name="lead_clicked_event">
       </div>
-      <button class="btn" id="sendBtn" onclick="sendRequest()">Отправить данные на инженерную проверку</button>
+      <button class="btn" id="sendBtn" onclick="sendRequest()" data-lead-event="form_submit" data-lead-source="request_form" data-lead-location="request">Отправить данные на инженерную проверку</button>
       <div id="status" style="margin-top:10px"></div>
       <div id="successState" hidden class="success-card">Спасибо за обращение в Tekstura. Заявка сохранена, инженер уже получил уведомление.</div>
     </div>
@@ -416,6 +427,7 @@ async function sendRequest() {
 
   const isCalculatorLead = Boolean(calcPayload && (calcPayload.staircaseType || calcPayload.total || calcPayload.base_condition || calcPayload.chosen_geometry_result));
   const leadId = makeLeadId();
+  const trackingData = window.LeadTracker?.getTrackingData() || {};
 
   const payload = {
     id: leadId,
@@ -452,7 +464,8 @@ async function sendRequest() {
       meta: {
         request_source: isCalculatorLead ? 'calculator' : 'manual',
         has_calc_payload: isCalculatorLead,
-        submitted_at: new Date().toISOString()
+        submitted_at: new Date().toISOString(),
+        lead_tracking: trackingData
       }
     },
     calculated_price: Number(calcPayload?.total || 0)

@@ -23,7 +23,7 @@ body{margin:0;background:#0f0c0a;color:#f4e7d4;font-family:Inter,Arial,sans-seri
 .muted{font-size:13px;color:#ad9e8d}.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.86);display:none;align-items:center;justify-content:center;z-index:100}.lightbox.open{display:flex}.lightbox img{max-width:92vw;max-height:92vh;border-radius:12px}
 .project-back-link{display:inline-flex;margin-bottom:14px;color:#e8c8a2}.project-detail-page .site-header .site-nav a[aria-current="page"]{color:var(--gold-1,#efd2ac)}
 @media(max-width:760px){.project-detail-hero{display:block}.project-detail-hero .btn{width:100%;text-align:center;box-sizing:border-box}.project-facts dl,.config-grid{grid-template-columns:1fr}.project-actions{display:grid}.project-actions .btn{width:100%;box-sizing:border-box;text-align:center}.wrap{padding-left:14px;padding-right:14px;padding-bottom:96px}}
-</style>  <script defer src="/contact-component.js"></script>
+</style>  <script defer src="/lead-tracker.js"></script><script defer src="/contact-component.js"></script>
 </head><body class="project-detail-page">
 <header class="site-header">
   <div class="container site-header__inner">
@@ -32,7 +32,7 @@ body{margin:0;background:#0f0c0a;color:#f4e7d4;font-family:Inter,Arial,sans-seri
   </div>
 </header>
 <main class="wrap">
-<a class="project-back-link" href="/projects.html">← Назад к проектам</a><div class="project-detail-hero"><div><div class="project-eyebrow">Выполненный проект Tekstura</div><h1 id="title">Загрузка...</h1><p id="subtitle"></p></div><a class="btn" href="/request.html">Хочу похожую лестницу</a></div>
+<a class="project-back-link" href="/projects.html">← Назад к проектам</a><div class="project-detail-hero"><div><div class="project-eyebrow">Выполненный проект Tekstura</div><h1 id="title">Загрузка...</h1><p id="subtitle"></p></div><a class="btn" href="/request.html" data-lead-event="request_cta_click" data-lead-source="project" data-lead-location="project_hero">Хочу похожую лестницу</a></div>
 <div class="story"><b>Идея проекта</b><p id="storyText">Этот кейс показывает подход Tekstura: сначала инженерная логика и эргономика, затем эстетика, материалы и точная подгонка узлов под архитектуру объекта.</p><p class="muted">Производство Tekstura: Казань, Оренбургский тракт, 340. Финальный монтаж выполняет штатная бригада.</p></div>
 <img id="mainImage" class="gallery-main" src="/assets/design/home-showcase.jpg" alt="Проект"><div class="thumbs" id="thumbs"></div>
 <div id="price" class="price"></div><p id="description"></p>
@@ -47,11 +47,11 @@ body{margin:0;background:#0f0c0a;color:#f4e7d4;font-family:Inter,Arial,sans-seri
 <div><label>Покраска/покрытие</label><select id="cfgCoating"><option value="0">Базовое</option><option value="1">Премиум</option></select></div>
 </div>
 <p id="cfgBase" class="muted"></p><p id="cfgDelta" class="muted"></p><p id="cfgTotal" class="price"></p>
-<a id="cfgRequest" class="btn" href="/request.html">Отправить запрос по изменениям</a>
+<a id="cfgRequest" class="btn" href="/request.html" data-lead-event="request_cta_click" data-lead-source="project_configurator" data-lead-location="project_configurator">Отправить запрос по изменениям</a>
 </div>
 <section class="project-price-note"><h2>Почему цена уточняется после замера</h2><p>На итоговую стоимость влияют размеры проёма и высота, основание, конструкция, материал ступеней, ограждение и отделка. После замера расчёт опирается на реальные условия объекта.</p></section>
 <div class="trust"><b>Что дальше после заявки:</b><p>Инженер Tekstura уточнит размеры, задачи и пожелания по материалам, затем предложит подходящую конфигурацию для вашего проёма.</p><p class="muted">Вы общаетесь напрямую с командой производства в Казани, без посредников: Оренбургский тракт, 340.</p></div>
-<div class="project-actions"><a class="btn" href="/request.html">Оставить заявку по проекту</a><a class="btn project-secondary" href="/projects.html">Смотреть другие проекты</a></div></main>
+<div class="project-actions"><a class="btn" href="/request.html" data-lead-event="request_cta_click" data-lead-source="project" data-lead-location="project_footer">Оставить заявку по проекту</a><a class="btn project-secondary" href="/projects.html">Смотреть другие проекты</a></div></main>
 <div id="lightbox" class="lightbox"><img id="lightboxImage" src="" alt="Просмотр"></div>
 <script>
 const SITE_URL = 'https://tekstura.shop';

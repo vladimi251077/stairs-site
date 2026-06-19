@@ -1,0 +1,45 @@
+# Lead tracking
+
+В проекте используется лёгкий внутренний tracking layer из `lead-tracker.js`. Внешние системы аналитики не подключены.
+
+## События
+
+- `phone_click`, `whatsapp_click`, `telegram_click` — переход к соответствующему каналу связи;
+- `calculator_open` — переход в калькулятор;
+- `request_cta_click` — CTA «Получить расчёт», «Оставить заявку» и проектные CTA;
+- `form_submit` — нажатие кнопки отправки заявки.
+
+Источник и позиция CTA передаются через `data-lead-source` и `data-lead-location`. Последнее событие сохраняется в `sessionStorage`. На localhost события дополнительно выводятся через `console.debug`; в production вывод отключён. Для будущих интеграций документ отправляет DOM-событие `lead:track`.
+
+## First-touch и last-touch
+
+- `tekstura_lead_first_touch` в `localStorage` хранит первую страницу, referrer, UTM-метки и время первого визита;
+- `tekstura_lead_last_touch` в `sessionStorage` хранит текущую страницу/referrer и последние непустые UTM-метки текущей сессии;
+- `tekstura_lead_clicked_event` в `sessionStorage` хранит последнее lead-событие.
+
+Читаются `utm_source`, `utm_medium`, `utm_campaign`, `utm_content` и `utm_term`. Работа со storage обёрнута в безопасный fallback: блокировка storage не должна мешать навигации или заявке.
+
+## Поля заявки
+
+На `request.html` подготовлены hidden fields:
+
+- `lead_page`, `lead_referrer`;
+- `lead_utm_source`, `lead_utm_medium`, `lead_utm_campaign`, `lead_utm_content`, `lead_utm_term`;
+- `lead_first_page`, `lead_first_referrer`;
+- `lead_clicked_event`.
+
+Текущая отправка Supabase не меняет схему таблиц: tracking добавляется в существующий `options_json.meta.lead_tracking`. Миграция не требуется. Если эти значения понадобятся как отдельные колонки для SQL-отчётов, это следует сделать отдельной миграцией.
+
+## WhatsApp и Telegram
+
+Для ссылок `wa.me` без готового текста при клике добавляется короткое сообщение со страницей: «Здравствуйте, хочу расчёт лестницы. Страница: …». Существующий `text` не перезаписывается. Telegram URL не модифицируется, потому что профильные ссылки `t.me` не поддерживают безопасное добавление текста сообщения.
+
+## Подключение внешней аналитики позже
+
+После отдельного согласования Яндекс Метрику или Google Analytics можно подключить адаптером к событию `lead:track`, сопоставив `event.detail.event`, `source` и `location` с целями выбранной системы. `lead-tracker.js` и текущие CTA при этом менять не требуется. Сейчас сетевые запросы к внешней аналитике отсутствуют.
+
+## Проверка UTM
+
+1. Открыть `/request.html?utm_source=test&utm_medium=chatgpt&utm_campaign=lead_tracking`.
+2. В консоли выполнить `window.LeadTracker.getTrackingData()`.
+3. Убедиться, что возвращены `test`, `chatgpt`, `lead_tracking`, а hidden fields получили те же значения.

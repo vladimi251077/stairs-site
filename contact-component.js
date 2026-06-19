@@ -40,11 +40,16 @@
     return digits ? 'https://t.me/+' + digits : '';
   }
 
-  function createLink(label, href, className, external) {
+  function createLink(label, href, className, external, tracking) {
     const link = document.createElement('a');
     link.className = className;
     link.href = href;
     link.textContent = label;
+    if (tracking) {
+      link.dataset.leadEvent = tracking.event;
+      link.dataset.leadSource = tracking.source;
+      link.dataset.leadLocation = tracking.location;
+    }
     if (external) {
       link.target = '_blank';
       link.rel = 'noopener';
@@ -75,8 +80,8 @@
     const actions = document.createElement('div');
     actions.className = 'tekstura-header-contact';
     actions.setAttribute('aria-label', 'Быстрые контакты Tekstura');
-    actions.appendChild(createLink(contacts.phoneLabel, contacts.phoneUrl, 'tekstura-header-contact__phone', false));
-    actions.appendChild(createLink('Получить расчёт', contacts.requestUrl, 'tekstura-header-contact__cta', false));
+    actions.appendChild(createLink(contacts.phoneLabel, contacts.phoneUrl, 'tekstura-header-contact__phone', false, { event: 'phone_click', source: 'phone', location: 'header' }));
+    actions.appendChild(createLink('Получить расчёт', contacts.requestUrl, 'tekstura-header-contact__cta', false, { event: 'request_cta_click', source: 'request', location: 'header' }));
     headerInner.appendChild(actions);
     header.classList.add('site-header--with-contact');
   }
@@ -93,10 +98,10 @@
     const panel = document.createElement('div');
     panel.className = 'tekstura-mobile-contact__panel';
     panel.setAttribute('aria-label', 'Способы связи');
-    if (contacts.phoneUrl) panel.appendChild(createLink('Позвонить', contacts.phoneUrl, 'tekstura-mobile-contact__link', false));
-    if (contacts.whatsappUrl) panel.appendChild(createLink('WhatsApp', contacts.whatsappUrl, 'tekstura-mobile-contact__link', true));
-    if (contacts.telegramUrl) panel.appendChild(createLink('Telegram', contacts.telegramUrl, 'tekstura-mobile-contact__link', true));
-    panel.appendChild(createLink('Получить расчёт', contacts.requestUrl, 'tekstura-mobile-contact__link tekstura-mobile-contact__link--primary', false));
+    if (contacts.phoneUrl) panel.appendChild(createLink('Позвонить', contacts.phoneUrl, 'tekstura-mobile-contact__link', false, { event: 'phone_click', source: 'phone', location: 'mobile_contact' }));
+    if (contacts.whatsappUrl) panel.appendChild(createLink('WhatsApp', contacts.whatsappUrl, 'tekstura-mobile-contact__link', true, { event: 'whatsapp_click', source: 'whatsapp', location: 'mobile_contact' }));
+    if (contacts.telegramUrl) panel.appendChild(createLink('Telegram', contacts.telegramUrl, 'tekstura-mobile-contact__link', true, { event: 'telegram_click', source: 'telegram', location: 'mobile_contact' }));
+    panel.appendChild(createLink('Получить расчёт', contacts.requestUrl, 'tekstura-mobile-contact__link tekstura-mobile-contact__link--primary', false, { event: 'request_cta_click', source: 'request', location: 'mobile_contact' }));
     details.appendChild(panel);
     document.body.appendChild(details);
   }
@@ -121,9 +126,9 @@
 
     const actions = document.createElement('div');
     actions.className = 'calculator-contact-help__actions';
-    if (contacts.phoneUrl) actions.appendChild(createLink('Позвонить', contacts.phoneUrl, 'calculator-contact-help__link', false));
-    if (contacts.whatsappUrl) actions.appendChild(createLink('WhatsApp', contacts.whatsappUrl, 'calculator-contact-help__link', true));
-    if (contacts.telegramUrl) actions.appendChild(createLink('Telegram', contacts.telegramUrl, 'calculator-contact-help__link', true));
+    if (contacts.phoneUrl) actions.appendChild(createLink('Позвонить', contacts.phoneUrl, 'calculator-contact-help__link', false, { event: 'phone_click', source: 'phone', location: 'calculator_contact' }));
+    if (contacts.whatsappUrl) actions.appendChild(createLink('WhatsApp', contacts.whatsappUrl, 'calculator-contact-help__link', true, { event: 'whatsapp_click', source: 'whatsapp', location: 'calculator_contact' }));
+    if (contacts.telegramUrl) actions.appendChild(createLink('Telegram', contacts.telegramUrl, 'calculator-contact-help__link', true, { event: 'telegram_click', source: 'telegram', location: 'calculator_contact' }));
     section.appendChild(actions);
     calculatorTop.insertAdjacentElement('afterend', section);
   }

@@ -17,6 +17,7 @@
   <link rel="stylesheet" href="/homepage-polish.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/supabase-config.js"></script>
+  <script defer src="/lead-tracker.js"></script>
   <script defer src="/contact-component.js"></script>
 </head>
 <body>
@@ -64,7 +65,7 @@
           </p>
 
           <div class="hero-premium__actions">
-            <a class="btn btn-primary" href="/calculator.html">Рассчитать стоимость</a>
+            <a class="btn btn-primary" href="/calculator.html" data-lead-event="calculator_open" data-lead-source="calculator" data-lead-location="home_hero">Рассчитать стоимость</a>
             <a class="btn btn-secondary" href="/projects.html">Смотреть проекты</a>
           </div>
 
@@ -242,8 +243,8 @@
             <p>Перейдите в инженерный калькулятор, чтобы получить расчёт геометрии, материалов и ориентировочную стоимость проекта.</p>
           </div>
           <div class="cta-box__actions">
-            <a class="btn btn-primary" href="/calculator.html">Перейти к калькулятору</a>
-            <a class="btn btn-secondary" href="/request.html">Оставить заявку</a>
+            <a class="btn btn-primary" href="/calculator.html" data-lead-event="calculator_open" data-lead-source="calculator" data-lead-location="home_cta">Перейти к калькулятору</a>
+            <a class="btn btn-secondary" href="/request.html" data-lead-event="request_cta_click" data-lead-source="request" data-lead-location="home_cta">Оставить заявку</a>
           </div>
         </div>
       </div>
@@ -471,14 +472,14 @@
       const footerBrand = document.getElementById('footerBrand');
       if (s.logo) { logoImg.src = s.logo; logoImg.style.display = 'block'; logoText.style.display = 'none'; footerBrand.textContent = 'TEKSTURA'; } else { logoImg.style.display = 'none'; logoText.style.display = 'inline'; footerBrand.textContent = 'TEKSTURA'; }
       const contacts = buildContacts(s);
-      document.getElementById('contactLinks').innerHTML = contacts.map(c => `<a href="${escapeHtml(c.href)}" ${c.key === 'phone' ? '' : 'target="_blank" rel="noopener"'}>${escapeHtml(c.label)}: ${escapeHtml(c.text)}</a>`).join('');
-      document.getElementById('premiumContactsGrid').innerHTML = contacts.length ? contacts.map(c => `<article class="contact-premium-card"><div class="contact-premium-card__icon">${c.icon}</div><div class="contact-premium-card__content"><div class="contact-premium-card__label">${escapeHtml(c.label)}</div><a href="${escapeHtml(c.href)}" class="contact-premium-card__value" aria-label="Открыть ${escapeHtml(c.label)}" ${c.key === 'phone' ? '' : 'target="_blank" rel="noopener"'}>Открыть</a></div></article>`).join('') : '<article class="contact-premium-card contact-premium-card--empty"><div class="contact-premium-card__label">Контакты скоро будут добавлены</div></article>';
+      document.getElementById('contactLinks').innerHTML = contacts.map(c => `<a href="${escapeHtml(c.href)}" data-lead-event="${escapeHtml(c.key)}_click" data-lead-source="${escapeHtml(c.key)}" data-lead-location="home_footer" ${c.key === 'phone' ? '' : 'target="_blank" rel="noopener"'}>${escapeHtml(c.label)}: ${escapeHtml(c.text)}</a>`).join('');
+      document.getElementById('premiumContactsGrid').innerHTML = contacts.length ? contacts.map(c => `<article class="contact-premium-card"><div class="contact-premium-card__icon">${c.icon}</div><div class="contact-premium-card__content"><div class="contact-premium-card__label">${escapeHtml(c.label)}</div><a href="${escapeHtml(c.href)}" class="contact-premium-card__value" aria-label="Открыть ${escapeHtml(c.label)}" data-lead-event="${escapeHtml(c.key)}_click" data-lead-source="${escapeHtml(c.key)}" data-lead-location="home_contacts" ${c.key === 'phone' ? '' : 'target="_blank" rel="noopener"'}>Открыть</a></div></article>`).join('') : '<article class="contact-premium-card contact-premium-card--empty"><div class="contact-premium-card__label">Контакты скоро будут добавлены</div></article>';
       const floatingContacts = document.getElementById('floatingContacts');
       const floatingContactsList = document.getElementById('floatingContactsList');
       const floatingContactsToggle = document.getElementById('floatingContactsToggle');
       if (contacts.length) {
         floatingContacts.style.display = '';
-        floatingContactsList.innerHTML = contacts.map(c => `<a href="${escapeHtml(c.href)}" class="floating-contact-menu__btn floating-contact-menu__btn--${escapeHtml(c.key)}" aria-label="${escapeHtml(c.label)}" title="${escapeHtml(c.label)}" data-tooltip="${escapeHtml(c.label)}" ${c.key === 'phone' ? '' : 'target="_blank" rel="noopener"'}>${c.icon}</a>`).join('');
+        floatingContactsList.innerHTML = contacts.map(c => `<a href="${escapeHtml(c.href)}" class="floating-contact-menu__btn floating-contact-menu__btn--${escapeHtml(c.key)}" aria-label="${escapeHtml(c.label)}" title="${escapeHtml(c.label)}" data-tooltip="${escapeHtml(c.label)}" data-lead-event="${escapeHtml(c.key)}_click" data-lead-source="${escapeHtml(c.key)}" data-lead-location="home_floating" ${c.key === 'phone' ? '' : 'target="_blank" rel="noopener"'}>${c.icon}</a>`).join('');
       } else {
         floatingContacts.style.display = 'none'; floatingContactsList.innerHTML = ''; floatingContactsToggle.setAttribute('aria-expanded', 'false'); floatingContacts.classList.remove('is-open'); floatingContactsList.hidden = true;
       }
