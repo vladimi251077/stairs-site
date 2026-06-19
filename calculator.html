@@ -33,6 +33,7 @@
     })();
   </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="/lead-tracker.js"></script>
   <script defer src="/contact-component.js"></script>
 </head>
 <body>
@@ -43,7 +44,7 @@
       <h1 id="maintenanceTitle">Калькулятор временно обновляется</h1>
       <p class="maintenance-copy">Мы дорабатываем расчёт, чтобы он был точнее и понятнее. Вы можете получить расчёт вручную — отправьте размеры проёма и фото объекта.</p>
       <div class="maintenance-actions" aria-label="Способы связаться с Tekstura">
-        <a class="maintenance-button maintenance-button--primary" data-maintenance-contact="request" href="/request.html">Оставить заявку</a>
+        <a class="maintenance-button maintenance-button--primary" data-maintenance-contact="request" href="/request.html" data-lead-event="request_cta_click" data-lead-source="calculator_maintenance" data-lead-location="calculator_maintenance">Оставить заявку</a>
       </div>
       <p class="maintenance-note">Для расчёта достаточно примерных размеров — инженер поможет уточнить детали.</p>
     </section>
@@ -69,6 +70,9 @@
         button.target = '_blank';
         button.rel = 'noopener';
         button.textContent = 'Написать в ' + label;
+        button.dataset.leadEvent = label.toLowerCase() + '_click';
+        button.dataset.leadSource = label.toLowerCase();
+        button.dataset.leadLocation = 'calculator_maintenance';
         actions.appendChild(button);
       });
     })();
@@ -424,7 +428,7 @@
         <div class="actions">
           <button class="btn-secondary" type="button" data-prev-step="2" onclick="document.querySelectorAll('.step').forEach(function(node){node.classList.remove('active');});document.getElementById('step2').classList.add('active');">Назад</button>
           <button class="btn-primary" id="calculateBtn" type="button" onclick="window.runConfigurator && window.runConfigurator()">Перейти к материалам и цене</button>
-          <a class="btn-review hidden" id="engineerReviewLink" href="/request.html">Отправить размеры на инженерную проверку</a>
+          <a class="btn-review hidden" id="engineerReviewLink" href="/request.html" data-lead-event="request_cta_click" data-lead-source="calculator" data-lead-location="calculator_geometry">Отправить размеры на инженерную проверку</a>
         </div>
       </section>
 
@@ -451,7 +455,7 @@
 
         <div class="actions">
           <button class="btn-secondary" type="button" data-prev-step="3" onclick="document.querySelectorAll('.step').forEach(function(node){node.classList.remove('active');});document.getElementById('step3').classList.add('active');">Назад</button>
-          <a class="back-link" id="requestLink" href="/request.html">Отправить расчёт на инженерную проверку</a>
+          <a class="back-link" id="requestLink" href="/request.html" data-lead-event="request_cta_click" data-lead-source="calculator" data-lead-location="calculator_result">Отправить расчёт на инженерную проверку</a>
         </div>
       </section>
     </div>
