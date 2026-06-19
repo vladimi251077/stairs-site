@@ -46,19 +46,19 @@
       <div class="container projects-hero__inner">
         <div class="projects-hero__content">
           <div class="projects-hero__eyebrow">Портфолио Tekstura</div>
-          <h1 id="projectsHeroTitle">Реальные лестницы в частных интерьерах</h1>
-          <p>Собираем здесь реализованные объекты и близкие по стилю решения: конструкция, материалы, сроки и ценовой ориентир. Каждый проект начинается с проверки проёма, инженерной логики и спокойной премиальной эстетики.</p>
+          <h1 id="projectsHeroTitle">Выполненные лестницы Tekstura</h1>
+          <p>Показываем фотографии с объектов и детали реализованных решений. Каждая лестница рассчитывается индивидуально — под геометрию проёма, основание, материалы и условия монтажа.</p>
           <div class="projects-hero__actions">
-            <a class="btn btn-primary" href="/request.html">Обсудить похожую лестницу</a>
+            <a class="btn btn-primary" href="/request.html">Хочу такую лестницу</a>
             <a class="btn btn-secondary" href="/calculator.html">Рассчитать стоимость</a>
           </div>
         </div>
         <aside class="projects-hero__panel" aria-label="Принципы отбора проектов">
           <div class="projects-hero__panel-title">Что показываем в проектах</div>
           <ul>
-            <li>реальные параметры и понятный ценовой ориентир;</li>
-            <li>материалы: дерево, металл, стекло, тёплая бронза;</li>
-            <li>решения, которые можно адаптировать под ваш дом.</li>
+            <li>фотографии с выполненных объектов;</li>
+            <li>тип лестницы и материалы, если они указаны в карточке;</li>
+            <li>состав выполненных работ без выдуманных деталей.</li>
           </ul>
         </aside>
       </div>
@@ -82,12 +82,26 @@
           <button class="projects-filter" type="button" data-filter="monostringer">Монокосоур</button>
           <button class="projects-filter" type="button" data-filter="wood-glass">Дерево + стекло</button>
           <button class="projects-filter" type="button" data-filter="steps-details">Ступени / детали</button>
+          <button class="projects-filter" type="button" data-filter="other">Другие проекты</button>
         </div>
 
         <div id="projectsRoot" class="projects-grid" aria-live="polite">
           <div class="loading-skeleton"></div>
           <div class="loading-skeleton"></div>
           <div class="loading-skeleton"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="projects-estimate" aria-labelledby="projectsEstimateTitle">
+      <div class="container">
+        <div class="projects-estimate__panel">
+          <div>
+            <div class="section-eyebrow">Расчёт под объект</div>
+            <h2 id="projectsEstimateTitle">Почему цена уточняется после замера</h2>
+          </div>
+          <p>Даже похожие лестницы отличаются проёмом, высотой, основанием, материалом ступеней, ограждением и отделкой. После замера инженер видит реальные условия и рассчитывает комплектацию точнее.</p>
+          <a class="btn btn-primary" href="/request.html">Записаться на замер</a>
         </div>
       </div>
     </section>
@@ -150,12 +164,10 @@ const client = (cfg?.url && cfg?.anonKey && window.supabase)
   : null;
 const fallbackProjectImage = '/assets/design/home-showcase.jpg';
 const esc = (s='') => String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'", '&#039;');
-const getPrice = (project) => project.price ? `${new Intl.NumberFormat('ru-RU').format(project.price)} ₽` : (project.price_from ? `от ${new Intl.NumberFormat('ru-RU').format(project.price_from)} ₽` : 'по запросу');
 const tagsFor = (project) => {
   const tags = [];
   if (project.category) tags.push(project.category);
   if (project.staircase_type) tags.push(project.staircase_type);
-  if (project.lead_time) tags.push(`Срок: ${project.lead_time}`);
   return tags.slice(0, 3);
 };
 
@@ -178,44 +190,38 @@ const classifyProject = (project = {}) => {
   if ((/металл|металлокаркас/.test(hay) && /дерев|дуб|ясен/.test(hay))) return 'metal-wood';
   if ((/дерев|дуб|ясен/.test(hay) && /стекл/.test(hay))) return 'wood-glass';
   if (/ступен|детал|подступен|площадк/.test(hay)) return 'steps-details';
-  return 'metal-wood';
+  return 'other';
+};
+
+const deriveMaterial = (project = {}) => {
+  if (project.materials) return String(project.materials);
+  const source = normalizeText([project.title, project.description, project.short_description].filter(Boolean).join(' '));
+  const values = [];
+  if (/дуб/.test(source)) values.push('дуб');
+  if (/ясен/.test(source)) values.push('ясень');
+  if (/мдф/.test(source)) values.push('МДФ');
+  if (/металл|металлокаркас/.test(source)) values.push('металл');
+  if (/стекл/.test(source)) values.push('стекло');
+  if (!values.length && /дерев/.test(source)) values.push('дерево');
+  return values.length ? values.join(' + ') : 'подбирается под проект';
+};
+
+const deriveType = (project = {}) => {
+  if (project.staircase_type) return String(project.staircase_type);
+  const source = normalizeText([project.title, project.description].filter(Boolean).join(' '));
+  if (/бетон/.test(source)) return 'Облицовка бетонного основания';
+  if (/косоур/.test(source)) return 'Лестница на косоурах';
+  if (/трехэтаж|3.?этаж/.test(source)) return 'Многоуровневая лестница';
+  return 'Индивидуальная лестница';
 };
 
 const deriveCaseMeta = (project = {}) => {
-  const group = classifyProject(project);
-  const map = {
-    'concrete-cladding': {
-      type: 'Обшивка бетонной лестницы',
-      material: 'Дерево + инженерная подготовка',
-      format: 'Отделка и монтаж под ключ',
-      done: 'Подготовили основание, изготовили облицовку и собрали чистовой контур.'
-    },
-    'metal-wood': {
-      type: 'Металлокаркас + дерево',
-      material: 'Металл, дуб или ясень',
-      format: 'Производство и монтаж под ключ',
-      done: 'Собрали каркас, установили ступени и настроили финальные примыкания.'
-    },
-    'monostringer': {
-      type: 'Монокосоур',
-      material: 'Металл + массив дерева',
-      format: 'Индивидуальное проектирование',
-      done: 'Реализовали лёгкий силуэт и жёсткость конструкции под интерьер.'
-    },
-    'wood-glass': {
-      type: 'Дерево + стекло',
-      material: 'Дуб/ясень, закалённое стекло',
-      format: 'Премиальная чистовая комплектация',
-      done: 'Согласовали прозрачное ограждение и безопасные узлы крепления.'
-    },
-    'steps-details': {
-      type: 'Ступени и детали',
-      material: 'Массив дерева, защитные покрытия',
-      format: 'Изготовление элементов и установка',
-      done: 'Изготовили комплект ступеней и деталей с точной посадкой по месту.'
-    }
+  return {
+    type: deriveType(project),
+    material: deriveMaterial(project),
+    object: project.location || project.city || project.object || 'Индивидуальный объект',
+    done: project.work_format || project.work_type || project.description || 'Изготовление по размерам объекта.'
   };
-  return map[group] || map['metal-wood'];
 };
 
 const matchesFilter = (project, filter) => filter === 'all' || classifyProject(project) === filter;
@@ -226,45 +232,11 @@ const resolveProjectImage = (project) => {
   return raw;
 };
 
-const staticFallbackCases = [
-  {
-    id: 'static-oak-u-shape',
-    title: 'П-образная лестница из дуба с подсветкой ступеней',
-    short_description: 'Частный дом, два марша с разворотной площадкой, интегрированная LED-подсветка и скрытые крепления.',
-    category: 'Премиум',
-    staircase_type: 'П-образная',
-    lead_time: '7 недель',
-    price_from: 985000,
-    cover_image: fallbackProjectImage,
-    isStatic: true,
-  },
-  {
-    id: 'static-metal-glass-console',
-    title: 'Консольная лестница металл + стекло',
-    short_description: 'Минималистичный интерьер: консольные ступени на металлокаркасе, стеклянное ограждение и точный монтаж в чистовой отделке.',
-    category: 'Современная',
-    staircase_type: 'Консольная',
-    lead_time: '6 недель',
-    price_from: 1120000,
-    cover_image: fallbackProjectImage,
-    isStatic: true,
-  },
-  {
-    id: 'static-ash-open-riser',
-    title: 'Открытая лестница из ясеня на центральном косоуре',
-    short_description: 'Лёгкий визуальный силуэт, тёплая текстура массива и инженерная жёсткость для ежедневной эксплуатации.',
-    category: 'Сканди',
-    staircase_type: 'На косоуре',
-    lead_time: '5 недель',
-    price_from: 760000,
-    cover_image: fallbackProjectImage,
-    isStatic: true,
-  }
-];
-
-const renderFallbackCases = (mode='fallback') => {
-  projectsCount.textContent = mode === 'static' ? 'Показаны базовые кейсы' : 'Показаны fallback-кейсы';
-  render(staticFallbackCases);
+const renderUnavailableState = () => {
+  currentItems = [];
+  projectsCount.textContent = 'Коллекция обновляется';
+  projectsRoot.classList.remove('projects-grid--curated');
+  projectsRoot.innerHTML = '<div class="projects-empty">Каталог временно недоступен. Мы не подставляем вымышленные кейсы: оставьте заявку, и инженер покажет подходящие выполненные объекты из актуального портфолио.</div>';
 };
 
 const render = (items=[]) => {
@@ -284,7 +256,7 @@ const render = (items=[]) => {
     const image = resolveProjectImage(p);
     const tags = tagsFor(p);
     const caseMeta = deriveCaseMeta(p);
-    const href = p.isStatic ? '/calculator.html' : `/project.html?id=${encodeURIComponent(p.id)}`;
+    const href = `/project.html?id=${encodeURIComponent(p.id)}`;
     return `<a class="project-card" href="${href}" aria-label="Смотреть проект ${esc(title)}">
       <figure class="project-card__media">
         <img src="${esc(image)}" alt="${esc(title)}" loading="lazy" onerror="this.onerror=null;this.src='${fallbackProjectImage}';">
@@ -294,14 +266,14 @@ const render = (items=[]) => {
         <p>${esc(shortDescription)}</p>
         ${tags.length ? `<div class="project-tags">${tags.map((tag)=>`<span class="project-tag">${esc(tag)}</span>`).join('')}</div>` : ''}
         <div class="project-case-meta">
-          <div><span>Тип проекта:</span> ${esc(caseMeta.type)}</div>
+          <div><span>Тип лестницы:</span> ${esc(caseMeta.type)}</div>
           <div><span>Материал:</span> ${esc(caseMeta.material)}</div>
-          <div><span>Формат работ:</span> ${esc(caseMeta.format)}</div>
+          <div><span>Объект:</span> ${esc(caseMeta.object)}</div>
           <div><span>Что сделано:</span> ${esc(caseMeta.done)}</div>
         </div>
-        <div class="project-card__note">Инженерная реализация и монтаж штатной бригадой Tekstura.</div>
+        <div class="project-card__note">Каждая комплектация рассчитывается под параметры конкретного объекта.</div>
         <div class="project-card__footer">
-          <div class="project-card__price">${esc(getPrice(p))}</div>
+          <div class="project-card__price">Расчёт после замера</div>
           <span class="project-card__link">Смотреть проект</span>
         </div>
       </div>
@@ -320,20 +292,20 @@ projectsFilters?.addEventListener('click', (event) => {
 (async function load(){
   try {
     if (!client) {
-      renderFallbackCases('static');
+      renderUnavailableState();
       return;
     }
     const { data, error } = await client.from('projects').select('*').order('created_at', { ascending: false });
     if (error) throw error;
     const items = data || [];
-    if (!items.length) return renderFallbackCases();
+    if (!items.length) return renderUnavailableState();
     const { data: images } = await client.from('project_images').select('project_id,image_url,is_cover,sort_order').in('project_id', items.map((i)=>i.id)).order('sort_order', { ascending: true });
     const coverMap = new Map();
     (images||[]).forEach((img)=>{ if(!coverMap.has(img.project_id) || img.is_cover) coverMap.set(img.project_id, img.image_url); });
     render(items.map((p)=>({ ...p, cover_image: coverMap.get(p.id) || p.cover_image })));
   } catch (err) {
     console.error(err);
-    renderFallbackCases();
+    renderUnavailableState();
   }
 })();
 </script>

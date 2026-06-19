@@ -15,13 +15,14 @@ body{margin:0;background:#0f0c0a;color:#f4e7d4;font-family:Inter,Arial,sans-seri
 .story b{display:block;color:#e7cfb1;margin-bottom:6px}
 .gallery-main{width:100%;border-radius:14px;margin:18px 0;background:#201b18;object-fit:cover;max-height:560px;cursor:pointer}
 .thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:10px;margin-bottom:16px}.thumbs img{width:100%;height:72px;object-fit:cover;border-radius:10px;border:1px solid rgba(255,255,255,.15);cursor:pointer}.thumbs img.active{border-color:#e8c8a2}
-.price{font-size:22px;color:#f0d7b7;font-weight:bold;margin:10px 0}.meta,.config,.trust{margin-top:18px;padding:18px;border:1px solid rgba(255,255,255,.08);border-radius:16px;background:rgba(255,255,255,.02)}
-.meta p{margin:8px 0}.meta p.is-empty{display:none}.meta.is-empty{display:none}
+.price{font-size:22px;color:#f0d7b7;font-weight:bold;margin:10px 0}.config,.trust,.project-price-note{margin-top:18px;padding:18px;border:1px solid rgba(255,255,255,.08);border-radius:16px;background:rgba(255,255,255,.02)}
 .btn{display:inline-block;margin-top:18px;padding:14px 20px;border-radius:12px;background:#e8c8a2;color:#1a120e;font-weight:700}
+.project-detail-hero{display:flex;gap:24px;align-items:flex-end;justify-content:space-between;margin-bottom:14px}.project-detail-hero .btn{flex:0 0 auto;margin:0}.project-eyebrow{margin-bottom:8px;color:#c99b65;font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
+.project-facts{margin-top:18px;padding:22px;border:1px solid rgba(232,200,162,.18);border-radius:18px;background:linear-gradient(145deg,rgba(232,200,162,.07),rgba(255,255,255,.015))}.project-facts h2,.project-price-note h2{margin:0 0 14px;font-size:22px}.project-facts dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0}.project-facts dl div{padding:14px;border-radius:12px;background:rgba(0,0,0,.18)}.project-facts dt{color:#9f8f7d;font-size:12px;text-transform:uppercase;letter-spacing:.08em}.project-facts dd{margin:6px 0 0;color:#f4e7d4;line-height:1.45}.project-price-note p{margin:0}.project-actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center}.project-actions .project-secondary{background:transparent;color:#e8c8a2;border:1px solid rgba(232,200,162,.35)}
 .config-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.config select,.config input{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.15);background:#171310;color:#f4e7d4}
 .muted{font-size:13px;color:#ad9e8d}.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.86);display:none;align-items:center;justify-content:center;z-index:100}.lightbox.open{display:flex}.lightbox img{max-width:92vw;max-height:92vh;border-radius:12px}
 .project-back-link{display:inline-flex;margin-bottom:14px;color:#e8c8a2}.project-detail-page .site-header .site-nav a[aria-current="page"]{color:var(--gold-1,#efd2ac)}
-@media(max-width:760px){.config-grid{grid-template-columns:1fr}.wrap{padding-left:14px;padding-right:14px;padding-bottom:34px}}
+@media(max-width:760px){.project-detail-hero{display:block}.project-detail-hero .btn{width:100%;text-align:center;box-sizing:border-box}.project-facts dl,.config-grid{grid-template-columns:1fr}.project-actions{display:grid}.project-actions .btn{width:100%;box-sizing:border-box;text-align:center}.wrap{padding-left:14px;padding-right:14px;padding-bottom:96px}}
 </style>  <script defer src="/contact-component.js"></script>
 </head><body class="project-detail-page">
 <header class="site-header">
@@ -31,12 +32,12 @@ body{margin:0;background:#0f0c0a;color:#f4e7d4;font-family:Inter,Arial,sans-seri
   </div>
 </header>
 <main class="wrap">
-<a class="project-back-link" href="/projects.html">← Назад к проектам</a><h1 id="title">Загрузка...</h1><p id="subtitle"></p>
+<a class="project-back-link" href="/projects.html">← Назад к проектам</a><div class="project-detail-hero"><div><div class="project-eyebrow">Выполненный проект Tekstura</div><h1 id="title">Загрузка...</h1><p id="subtitle"></p></div><a class="btn" href="/request.html">Хочу похожую лестницу</a></div>
 <div class="story"><b>Идея проекта</b><p id="storyText">Этот кейс показывает подход Tekstura: сначала инженерная логика и эргономика, затем эстетика, материалы и точная подгонка узлов под архитектуру объекта.</p><p class="muted">Производство Tekstura: Казань, Оренбургский тракт, 340. Финальный монтаж выполняет штатная бригада.</p></div>
 <img id="mainImage" class="gallery-main" src="/assets/design/home-showcase.jpg" alt="Проект"><div class="thumbs" id="thumbs"></div>
 <div id="price" class="price"></div><p id="description"></p>
-<div class="meta" id="metaBox"><p id="materials"></p><p id="type"></p><p id="category"></p><p id="leadTime"></p></div>
-<div class="config"><h3>Мини-конфигуратор проекта</h3><p class="muted">Мягкий апселл: можно быстро посмотреть, как изменится ориентировочная стоимость при других материалах и опциях. Финальная смета подтверждается инженером.</p>
+<section class="project-facts"><h2>Что реализовано</h2><dl><div><dt>Тип лестницы</dt><dd id="caseType">Уточняется по проекту</dd></div><div><dt>Материалы</dt><dd id="caseMaterials">Подбираются под интерьер и конструкцию</dd></div><div><dt>Объект</dt><dd id="caseObject">Индивидуальный объект</dd></div><div><dt>Что входило в работу</dt><dd id="caseWork">Проектирование, изготовление и монтаж</dd></div></dl></section>
+<div class="config"><h3>Варианты комплектации</h3><p class="muted">Сравните материалы и опции для похожей лестницы. Итоговую комплектацию и смету инженер подтвердит после замера.</p>
 <div class="config-grid">
 <div><label>Ограждение</label><select id="cfgRailing"></select></div>
 <div><label>Облицовка</label><select id="cfgCladding"></select></div>
@@ -48,8 +49,9 @@ body{margin:0;background:#0f0c0a;color:#f4e7d4;font-family:Inter,Arial,sans-seri
 <p id="cfgBase" class="muted"></p><p id="cfgDelta" class="muted"></p><p id="cfgTotal" class="price"></p>
 <a id="cfgRequest" class="btn" href="/request.html">Отправить запрос по изменениям</a>
 </div>
-<div class="trust"><b>Что дальше после заявки:</b><p>Вам ответит инженер Tekstura, уточнит размеры и предложит 1–2 оптимальные конфигурации под ваш проём. Обычно связываемся в течение рабочего дня.</p><p class="muted">Вы общаетесь напрямую с командой производства в Казани, без посредников: Оренбургский тракт, 340.</p></div>
-<a class="btn" href="/request.html">Оставить заявку по проекту</a></main>
+<section class="project-price-note"><h2>Почему цена уточняется после замера</h2><p>На итоговую стоимость влияют размеры проёма и высота, основание, конструкция, материал ступеней, ограждение и отделка. После замера расчёт опирается на реальные условия объекта.</p></section>
+<div class="trust"><b>Что дальше после заявки:</b><p>Инженер Tekstura уточнит размеры, задачи и пожелания по материалам, затем предложит подходящую конфигурацию для вашего проёма.</p><p class="muted">Вы общаетесь напрямую с командой производства в Казани, без посредников: Оренбургский тракт, 340.</p></div>
+<div class="project-actions"><a class="btn" href="/request.html">Оставить заявку по проекту</a><a class="btn project-secondary" href="/projects.html">Смотреть другие проекты</a></div></main>
 <div id="lightbox" class="lightbox"><img id="lightboxImage" src="" alt="Просмотр"></div>
 <script>
 const SITE_URL = 'https://tekstura.shop';
@@ -73,17 +75,10 @@ function recalc(){const picks=['cfgRailing','cfgCladding','cfgFrame','cfgFinish'
 const payload={staircaseType:project?.title||'Проект',total,selectedExtras:[...picks.map((o)=>({label:o.textContent})),{label:Number(document.getElementById('cfgLighting').value)?'Подсветка':'Без подсветки'},{label:Number(document.getElementById('cfgCoating').value)?'Премиум покрытие':'Базовое покрытие'}],materialsSummary:{railing:picks[0].textContent,cladding:picks[1].textContent,frame:picks[2].textContent,finish:picks[3].textContent},priceBreakdown:{base:basePrice,delta},dimensions:{project_id:project?.id,project_title:project?.title}};
 const encoded = encodeURIComponent(JSON.stringify(payload)); try{sessionStorage.setItem('tekstura_calc_payload', encoded);}catch(e){console.error('cache payload failed', e);}
 document.getElementById('cfgRequest').href='/request.html?calc='+encoded;}
-function setMetaLine(id, value, prefix){
-  const node = document.getElementById(id);
-  const hasValue = Boolean(value);
-  node.textContent = hasValue ? `${prefix}${value}` : '';
-  node.classList.toggle('is-empty', !hasValue);
-}
-function syncMetaVisibility() {
-  const metaBox = document.getElementById('metaBox');
-  const hasRows = [...metaBox.querySelectorAll('p')].some((item) => !item.classList.contains('is-empty'));
-  metaBox.classList.toggle('is-empty', !hasRows);
-}
+function projectText(data){return [data.title,data.short_description,data.full_description,data.description].filter(Boolean).join(' ').toLowerCase();}
+function deriveProjectType(data){const text=projectText(data);if(data.staircase_type)return data.staircase_type;if(/винтов/.test(text))return 'Винтовая';if(/п-образ|п образ/.test(text))return 'П-образная';if(/г-образ|г образ/.test(text))return 'Г-образная';if(/тр[её]хмарш|3[- ]?марш/.test(text))return 'Трёхмаршевая';if(/двухмарш|2[- ]?марш/.test(text))return 'Двухмаршевая';if(/прям/.test(text))return 'Прямая';return 'Индивидуальная конструкция';}
+function deriveProjectMaterials(data){if(data.materials)return data.materials;const text=projectText(data);const found=[];if(/дуб/.test(text))found.push('дуб');if(/ясен/.test(text))found.push('ясень');if(/мдф/.test(text))found.push('МДФ');if(/дерев/.test(text)&&!found.some((item)=>item==='дуб'||item==='ясень'))found.push('дерево');if(/металл|труб|каркас/.test(text))found.push('металл');if(/стекл/.test(text))found.push('стекло');return found.length?[...new Set(found)].join(', '):'Подбираются под интерьер и конструкцию';}
+function fillProjectFacts(data){document.getElementById('caseType').textContent=deriveProjectType(data);document.getElementById('caseMaterials').textContent=deriveProjectMaterials(data);document.getElementById('caseObject').textContent=data.location||data.city||data.object_name||'Индивидуальный объект';document.getElementById('caseWork').textContent=data.work_format||data.work_type||data.description||'Проектирование, изготовление и монтаж';}
 async function loadProject(){try{if(!client){document.getElementById('title').textContent='Каталог временно недоступен';document.getElementById('description').textContent='Сервис проектов временно недоступен. Оставьте заявку, и мы подберём решение.';return;}
 const {data,error}=await client.from('projects').select('*').eq('id',id).single();if(error||!data){document.getElementById('title').textContent='Проект не найден';document.getElementById('description').textContent='Этот кейс недоступен. Вернитесь к списку проектов.';return;}project=data;basePrice=Number(data.price||data.price_from||0)||0;
 const {data:imgData}=await client.from('project_images').select('*').eq('project_id',id).order('sort_order',{ascending:true});
@@ -95,12 +90,8 @@ const opts=data.custom_options || {}; fillSelect('cfgRailing',opts.railing||defa
 ['cfgRailing','cfgCladding','cfgFrame','cfgFinish','cfgLighting','cfgCoating'].forEach((id)=>document.getElementById(id).addEventListener('change',recalc)); recalc();
 
 document.getElementById('title').innerText=data.title||'Проект лестницы Tekstura';document.getElementById('subtitle').innerText=data.short_description||'';document.getElementById('description').innerText=data.full_description||data.description||'';
-document.getElementById('price').innerText=basePrice?('Цена: '+new Intl.NumberFormat('ru-RU').format(basePrice)+' ₽'):'Цена: по запросу';
-setMetaLine('materials', data.materials, 'Материалы: ');
-setMetaLine('type', data.staircase_type, 'Тип: ');
-setMetaLine('category', data.category, 'Категория: ');
-setMetaLine('leadTime', data.lead_time, 'Срок: ');
-syncMetaVisibility();
+document.getElementById('price').innerText=basePrice?('Ориентир реализованного проекта: '+new Intl.NumberFormat('ru-RU').format(basePrice)+' ₽'):'Стоимость рассчитывается после замера';
+fillProjectFacts(data);
 updateSeoMeta(data.title,data.short_description||data.description||data.full_description||'');
 }catch(err){console.error(err);document.getElementById('title').textContent='Ошибка загрузки';document.getElementById('description').textContent='Не удалось загрузить проект. Попробуйте позже.';}}
 
