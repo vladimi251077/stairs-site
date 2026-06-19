@@ -465,6 +465,96 @@
       margin:0;
       white-space:normal;
     }
+    .leads-summary{
+      display:grid;
+      grid-template-columns:repeat(5,minmax(0,1fr));
+      gap:10px;
+      margin-bottom:14px;
+    }
+    .leads-summary-card{
+      min-width:0;
+      padding:12px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:#171310;
+    }
+    .leads-summary-card span{
+      display:block;
+      color:var(--muted);
+      font-size:12px;
+    }
+    .leads-summary-card strong{
+      display:block;
+      margin-top:5px;
+      font-size:20px;
+      overflow-wrap:anywhere;
+    }
+    .leads-filters{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr)) auto;
+      gap:10px;
+      align-items:end;
+      margin-bottom:14px;
+    }
+    .leads-filters label{margin:0}
+    .leads-table-wrap{
+      max-width:100%;
+      overflow-x:auto;
+      border:1px solid var(--line);
+      border-radius:12px;
+    }
+    .leads-table{
+      width:100%;
+      min-width:1220px;
+      border-collapse:collapse;
+      table-layout:fixed;
+      background:#171310;
+    }
+    .leads-table th,
+    .leads-table td{
+      padding:10px;
+      border-bottom:1px solid var(--line);
+      text-align:left;
+      vertical-align:top;
+      overflow-wrap:anywhere;
+    }
+    .leads-table th:nth-child(1){width:100px}
+    .leads-table th:nth-child(2){width:130px}
+    .leads-table th:nth-child(3){width:90px}
+    .leads-table th:nth-child(4){width:90px}
+    .leads-table th:nth-child(5){width:90px}
+    .leads-table th:nth-child(6){width:130px}
+    .leads-table th:nth-child(7){width:110px}
+    .leads-table th:nth-child(8){width:260px}
+    .leads-table th:nth-child(9){width:140px}
+    .leads-table th:nth-child(10){width:90px}
+    .leads-table th{
+      color:var(--muted);
+      font-size:12px;
+      white-space:nowrap;
+    }
+    .leads-table tr:last-child td{border-bottom:0}
+    .lead-primary{font-weight:700}
+    .lead-secondary{
+      display:block;
+      margin-top:3px;
+      color:var(--muted);
+      font-size:12px;
+      overflow-wrap:anywhere;
+    }
+    .lead-source-missing{
+      display:block;
+      max-width:240px;
+      color:var(--muted);
+      font-size:12px;
+    }
+    .leads-empty{
+      padding:22px;
+      border:1px dashed var(--line);
+      border-radius:12px;
+      color:var(--muted);
+      text-align:center;
+    }
 
     @media (max-width:760px){
       .wrap{padding:14px}
@@ -487,6 +577,39 @@
       .pricing-group-toggle{padding:10px}
       .pricing-group-summary{flex-direction:column}
       .pricing-group-status{align-self:flex-start}
+      .leads-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .leads-filters{grid-template-columns:minmax(0,1fr)}
+      .leads-filters .btn{width:100%}
+      .leads-table-wrap{overflow:visible;border:0}
+      .leads-table,
+      .leads-table tbody,
+      .leads-table tr,
+      .leads-table td{display:block;width:100%;min-width:0}
+      .leads-table thead{display:none}
+      .leads-table{background:transparent}
+      .leads-table tr{
+        margin-bottom:10px;
+        padding:12px;
+        border:1px solid var(--line);
+        border-radius:12px;
+        background:#171310;
+      }
+      .leads-table td{
+        display:grid;
+        grid-template-columns:minmax(92px,.8fr) minmax(0,1.6fr);
+        gap:10px;
+        padding:7px 0;
+        border-bottom:1px solid var(--line);
+        overflow-wrap:anywhere;
+      }
+      .leads-table td::before{
+        content:attr(data-label);
+        color:var(--muted);
+        font-size:12px;
+        font-weight:700;
+      }
+      .leads-table tr:last-child td,
+      .leads-table td:last-child{border-bottom:0}
     }
   </style>
 </head>
@@ -521,6 +644,26 @@
     </section>
 
     <section id="adminApp" class="hidden">
+      <section class="panel" aria-labelledby="leadsTitle">
+        <div class="row" style="justify-content:space-between;align-items:flex-start">
+          <div>
+            <h2 id="leadsTitle">Заявки и источники</h2>
+            <p class="small muted">Последние 100 заявок из calculator_requests. Персональные данные доступны только после входа.</p>
+          </div>
+          <button id="refreshLeads" class="btn btn-secondary" type="button">Обновить</button>
+        </div>
+        <div id="leadsSummary" class="leads-summary" aria-label="Сводка по заявкам"></div>
+        <div class="leads-filters">
+          <label>Статус<select id="leadsStatusFilter"><option value="">Все статусы</option></select></label>
+          <label>Источник<select id="leadsSourceFilter"><option value="">Все источники</option></select></label>
+          <label>Период<select id="leadsPeriodFilter"><option value="today">Сегодня</option><option value="7">7 дней</option><option value="30">30 дней</option><option value="all" selected>Всё</option></select></label>
+          <label>Поиск<input id="leadsSearch" type="search" placeholder="Имя или телефон" autocomplete="off" /></label>
+          <button id="resetLeadsFilters" class="btn btn-secondary" type="button">Сбросить</button>
+        </div>
+        <div id="leadsStatus" class="status small" aria-live="polite"></div>
+        <div id="leadsList"></div>
+      </section>
+
       <section class="panel">
         <h2>Контакты</h2>
         <div class="grid">
@@ -2148,6 +2291,13 @@
     const contactsStatusBox = document.getElementById('contactsStatus');
     const effectiveNotifyEmailBox = document.getElementById('effectiveNotifyEmail');
     const logoutBtn = document.getElementById('logoutBtn');
+    const leadsSummary = document.getElementById('leadsSummary');
+    const leadsList = document.getElementById('leadsList');
+    const leadsStatus = document.getElementById('leadsStatus');
+    const leadsStatusFilter = document.getElementById('leadsStatusFilter');
+    const leadsSourceFilter = document.getElementById('leadsSourceFilter');
+    const leadsPeriodFilter = document.getElementById('leadsPeriodFilter');
+    const leadsSearch = document.getElementById('leadsSearch');
 
     const phoneInput = document.getElementById('phone');
     const whatsappInput = document.getElementById('whatsapp');
@@ -2193,6 +2343,9 @@
       railingTypeRows: [],
       services: [],
       projects: [],
+      leads: [],
+      leadsTotal: 0,
+      leadsLastSevenDays: 0,
     };
 
     function setStatus(msg, isError = false) {
@@ -3101,6 +3254,176 @@
         .replaceAll("'", '&#039;');
     }
 
+    function leadValue(value) {
+      const text = String(value ?? '').trim();
+      return text || '—';
+    }
+
+    function leadOptions(value) {
+      if (value && typeof value === 'object') return value;
+      if (typeof value !== 'string' || !value.trim()) return {};
+      try { return JSON.parse(value); } catch (error) { return {}; }
+    }
+
+    function firstLeadTrackingValue(tracking, keys) {
+      for (const key of keys) {
+        const value = tracking?.[key];
+        if (value !== undefined && value !== null && String(value).trim()) return String(value).trim();
+      }
+      return '';
+    }
+
+    function normalizeLead(row = {}) {
+      const options = leadOptions(row.options_json);
+      const meta = options?.meta && typeof options.meta === 'object' ? options.meta : {};
+      const tracking = meta?.lead_tracking && typeof meta.lead_tracking === 'object' ? meta.lead_tracking : {};
+      const clickedEvent = firstLeadTrackingValue(tracking, ['clicked_event', 'last_event', 'lead_clicked_event']);
+      const requestSource = String(meta.request_source || '').trim().toLowerCase();
+      const utmSource = firstLeadTrackingValue(tracking, ['utm_source', 'lead_utm_source']);
+      let channel = 'unknown';
+      if (/whatsapp|telegram|phone/.test(clickedEvent)) channel = 'contacts';
+      else if (requestSource === 'calculator' || /calculator/.test(clickedEvent)) channel = 'calculator';
+      else if (requestSource === 'manual' || Object.keys(tracking).length) channel = 'form';
+      return {
+        ...row,
+        tracking,
+        hasTracking: Object.keys(tracking).length > 0,
+        page: firstLeadTrackingValue(tracking, ['current_page', 'page', 'lead_page']),
+        referrer: firstLeadTrackingValue(tracking, ['referrer', 'lead_referrer']),
+        utmSource,
+        utmMedium: firstLeadTrackingValue(tracking, ['utm_medium', 'lead_utm_medium']),
+        utmCampaign: firstLeadTrackingValue(tracking, ['utm_campaign', 'lead_utm_campaign']),
+        utmContent: firstLeadTrackingValue(tracking, ['utm_content', 'lead_utm_content']),
+        utmTerm: firstLeadTrackingValue(tracking, ['utm_term', 'lead_utm_term']),
+        firstPage: firstLeadTrackingValue(tracking, ['first_page', 'lead_first_page']),
+        firstReferrer: firstLeadTrackingValue(tracking, ['first_referrer', 'lead_first_referrer']),
+        clickedEvent,
+        requestSource,
+        channel,
+        sourceLabel: utmSource || (channel === 'unknown' ? '' : channel)
+      };
+    }
+
+    function formatLeadDate(value) {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return '—';
+      return new Intl.DateTimeFormat('ru-RU', { dateStyle: 'short', timeStyle: 'short' }).format(date);
+    }
+
+    function formatLeadPrice(value) {
+      const amount = Number(value || 0);
+      return amount > 0 ? `${new Intl.NumberFormat('ru-RU').format(amount)} ₽` : '—';
+    }
+
+    function leadsSince(days) {
+      const now = new Date();
+      if (days === 'today') {
+        now.setHours(0, 0, 0, 0);
+        return now.getTime();
+      }
+      return Date.now() - Number(days) * 24 * 60 * 60 * 1000;
+    }
+
+    function renderLeadFilterOptions() {
+      const selectedStatus = leadsStatusFilter.value;
+      const selectedSource = leadsSourceFilter.value;
+      const statuses = [...new Set(state.leads.map((lead) => String(lead.status || '').trim()).filter(Boolean))].sort();
+      const sources = [...new Set(state.leads.map((lead) => lead.utmSource).filter(Boolean))].sort();
+      leadsStatusFilter.innerHTML = '<option value="">Все статусы</option>' + statuses.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join('');
+      leadsSourceFilter.innerHTML = '<option value="">Все источники</option><option value="__none__">Без UTM</option>' + sources.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join('');
+      if ([...leadsStatusFilter.options].some((option) => option.value === selectedStatus)) leadsStatusFilter.value = selectedStatus;
+      if ([...leadsSourceFilter.options].some((option) => option.value === selectedSource)) leadsSourceFilter.value = selectedSource;
+    }
+
+    function renderLeadsSummary() {
+      const sourceCounts = new Map();
+      state.leads.forEach((lead) => {
+        const source = lead.sourceLabel || 'Без источника';
+        sourceCounts.set(source, (sourceCounts.get(source) || 0) + 1);
+      });
+      const topSource = [...sourceCounts.entries()].sort((a, b) => b[1] - a[1])[0];
+      const noUtm = state.leads.filter((lead) => !lead.utmSource).length;
+      const channels = ['calculator', 'form', 'contacts'].map((channel) => `${channel}: ${state.leads.filter((lead) => lead.channel === channel).length}`).join(' · ');
+      const cards = [
+        ['Всего заявок', state.leadsTotal],
+        ['За 7 дней', state.leadsLastSevenDays],
+        ['Топ источник', topSource ? `${topSource[0]} (${topSource[1]})` : '—'],
+        ['Без UTM', noUtm],
+        ['Каналы (из 100)', channels]
+      ];
+      leadsSummary.innerHTML = cards.map(([label, value]) => `<div class="leads-summary-card"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`).join('');
+    }
+
+    function filteredLeads() {
+      const status = leadsStatusFilter.value;
+      const source = leadsSourceFilter.value;
+      const period = leadsPeriodFilter.value;
+      const search = leadsSearch.value.trim().toLowerCase();
+      const since = period === 'all' ? 0 : leadsSince(period);
+      return state.leads.filter((lead) => {
+        if (status && String(lead.status || '') !== status) return false;
+        if (source === '__none__' && lead.utmSource) return false;
+        if (source && source !== '__none__' && lead.utmSource !== source) return false;
+        if (since && new Date(lead.created_at).getTime() < since) return false;
+        if (search && !`${lead.name || ''} ${lead.phone || ''}`.toLowerCase().includes(search)) return false;
+        return true;
+      });
+    }
+
+    function renderLeads() {
+      const rows = filteredLeads();
+      leadsStatus.textContent = `Показано ${rows.length} из ${state.leads.length} загруженных заявок.`;
+      if (!rows.length) {
+        leadsList.innerHTML = '<div class="leads-empty">Заявок по выбранным фильтрам нет.</div>';
+        return;
+      }
+      leadsList.innerHTML = `<div class="leads-table-wrap"><table class="leads-table"><thead><tr><th>Дата</th><th>Клиент</th><th>Город</th><th>Лестница</th><th>Сумма</th><th>Источник</th><th>Кампания</th><th>Страница заявки</th><th>Последнее событие</th><th>Статус</th></tr></thead><tbody>${rows.map((lead) => {
+        const source = lead.sourceLabel || '—';
+        const trackingHint = lead.hasTracking ? '' : '<span class="lead-source-missing">Источник не записан, заявка создана до внедрения tracking</span>';
+        const utmDetails = [lead.utmMedium, lead.utmContent, lead.utmTerm].filter(Boolean).join(' · ');
+        return `<tr>
+          <td data-label="Дата">${escapeHtml(formatLeadDate(lead.created_at))}</td>
+          <td data-label="Клиент"><span class="lead-primary">${escapeHtml(leadValue(lead.name))}</span><span class="lead-secondary">${escapeHtml(leadValue(lead.phone))}</span>${lead.messenger ? `<span class="lead-secondary">${escapeHtml(lead.messenger)}</span>` : ''}</td>
+          <td data-label="Город">${escapeHtml(leadValue(lead.city))}</td>
+          <td data-label="Лестница">${escapeHtml(leadValue(lead.staircase_type))}</td>
+          <td data-label="Сумма">${escapeHtml(formatLeadPrice(lead.calculated_price))}</td>
+          <td data-label="Источник"><span class="lead-primary">${escapeHtml(source)}</span>${utmDetails ? `<span class="lead-secondary">${escapeHtml(utmDetails)}</span>` : ''}${trackingHint}</td>
+          <td data-label="Кампания">${escapeHtml(leadValue(lead.utmCampaign))}</td>
+          <td data-label="Страница"><span class="lead-primary">${escapeHtml(leadValue(lead.page))}</span>${lead.referrer ? `<span class="lead-secondary">ref: ${escapeHtml(lead.referrer)}</span>` : ''}${lead.firstPage ? `<span class="lead-secondary">first: ${escapeHtml(lead.firstPage)}</span>` : ''}</td>
+          <td data-label="Событие">${escapeHtml(leadValue(lead.clickedEvent))}</td>
+          <td data-label="Статус">${escapeHtml(leadValue(lead.status))}</td>
+        </tr>`;
+      }).join('')}</tbody></table></div>`;
+    }
+
+    async function loadLeads() {
+      leadsStatus.textContent = 'Загрузка заявок...';
+      try {
+        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+        const fields = 'id,name,phone,messenger,city,comment,staircase_type,calculated_price,status,created_at,options_json';
+        const [rowsResult, sevenDaysResult] = await Promise.all([
+          client.from('calculator_requests').select(fields, { count: 'exact' }).order('created_at', { ascending: false }).limit(100),
+          client.from('calculator_requests').select('id', { count: 'exact', head: true }).gte('created_at', sevenDaysAgo)
+        ]);
+        throwIfSupabaseError(rowsResult, 'Не удалось загрузить calculator_requests');
+        throwIfSupabaseError(sevenDaysResult, 'Не удалось получить сводку calculator_requests');
+        state.leads = (rowsResult.data || []).map(normalizeLead);
+        state.leadsTotal = rowsResult.count ?? state.leads.length;
+        state.leadsLastSevenDays = sevenDaysResult.count ?? state.leads.filter((lead) => new Date(lead.created_at).getTime() >= Date.now() - 7 * 24 * 60 * 60 * 1000).length;
+        renderLeadFilterOptions();
+        renderLeadsSummary();
+        renderLeads();
+      } catch (error) {
+        console.error('calculator_requests load failed', error);
+        state.leads = [];
+        state.leadsTotal = 0;
+        state.leadsLastSevenDays = 0;
+        renderLeadsSummary();
+        leadsStatus.textContent = 'Не удалось загрузить заявки: ' + explainError(error);
+        leadsList.innerHTML = '<div class="leads-empty">Раздел заявок временно недоступен. Остальные разделы админки продолжают работать.</div>';
+      }
+    }
+
     async function loadSettings() {
       const { data, error } = await client
         .from('settings')
@@ -3204,7 +3527,8 @@
         loadPricingRegions(),
         loadPricingRules(),
         loadServices(),
-        loadProjects()
+        loadProjects(),
+        loadLeads()
       ]);
       setStatus('Данные загружены');
     }
@@ -3272,6 +3596,13 @@
           try { await loadProjects(); } catch (e) { console.error('projects realtime failed', e); }
         })
         .subscribe();
+
+      client
+        .channel('admin-calculator-requests')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'calculator_requests' }, async () => {
+          await loadLeads();
+        })
+        .subscribe();
     }
 
     function explainError(err) {
@@ -3333,6 +3664,19 @@
       } catch (err) {
         setStatus('Ошибка выхода: ' + explainError(err), true);
       }
+    };
+
+    [leadsStatusFilter, leadsSourceFilter, leadsPeriodFilter].forEach((control) => {
+      control.addEventListener('change', renderLeads);
+    });
+    leadsSearch.addEventListener('input', renderLeads);
+    document.getElementById('refreshLeads').onclick = loadLeads;
+    document.getElementById('resetLeadsFilters').onclick = () => {
+      leadsStatusFilter.value = '';
+      leadsSourceFilter.value = '';
+      leadsPeriodFilter.value = 'all';
+      leadsSearch.value = '';
+      renderLeads();
     };
 
     heroImageInput.addEventListener('input', () => showPreview(heroImagePreview, heroImageInput.value.trim()));
