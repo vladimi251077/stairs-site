@@ -1173,3 +1173,54 @@ a {
     grid-template-columns: 1fr;
   }
 }
+
+/* visual-readability-premium-polish */
+.section-heading h2 {
+  line-height: 1.08;
+  letter-spacing: -0.018em;
+  text-wrap: balance;
+}
+
+.section-heading p,
+.info-section p,
+.feature-card p,
+.process-card p,
+.content-card__body p,
+.cta-box__content p {
+  color: #dfcfba;
+  line-height: 1.68;
+}
+
+.info-section,
+.feature-card,
+.process-card,
+.content-card,
+.cta-box,
+.contact-premium-card {
+  border-color: rgba(255, 236, 204, 0.13);
+}
+
+.btn {
+  min-height: 56px;
+}
+
+.btn-secondary {
+  border-color: rgba(255, 255, 255, 0.18);
+  color: #efe2d0;
+}
+
+@media (max-width: 760px) {
+  .section-heading h2 {
+    line-height: 1.12;
+  }
+
+  .section-heading p,
+  .info-section p,
+  .feature-card p,
+  .process-card p,
+  .content-card__body p,
+  .cta-box__content p {
+    font-size: 15px;
+    line-height: 1.62;
+  }
+}

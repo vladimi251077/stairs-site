@@ -750,3 +750,26 @@ body.projects-page::after {
   color: #f0d7b7;
   font-weight: 700;
 }
+
+/* visual-readability-premium-polish */
+.projects-toolbar p {
+  color: #e0ceb8;
+  line-height: 1.72;
+}
+
+.project-card__body h3 {
+  line-height: 1.15;
+}
+
+.project-card__body p {
+  color: #d7c5ad;
+  line-height: 1.68;
+}
+
+.project-card__note {
+  color: #cbb59b;
+}
+
+.projects-empty {
+  color: #e0ceb8;
+}
