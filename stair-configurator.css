@@ -203,3 +203,45 @@ button:disabled { cursor:not-allowed; opacity:.5; }
 .quick-mode-note h3 { margin: 0 0 8px; font-size: 18px; }
 .quick-mode-note ul { margin: 0; padding-left: 18px; color: #d7c7b0; display: grid; gap: 5px; }
 .post-submit-info ul { margin: 8px 0 0; padding-left: 18px; color: #d7c7b0; display: grid; gap: 5px; }
+
+/* hero-type-scale-lock */
+.top h1 {
+  font-size: clamp(36px, 4.8vw, 56px);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  margin: 0 0 12px;
+}
+
+.step h2 {
+  font-size: clamp(28px, 3.2vw, 40px);
+  line-height: 1.08;
+  letter-spacing: -0.012em;
+  margin: 0 0 14px;
+}
+
+label {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.field-help {
+  font-size: 14px;
+  line-height: 1.58;
+  color: #c0ae97;
+}
+
+.result-heading h3 {
+  font-size: clamp(24px, 2.4vw, 34px);
+  line-height: 1.1;
+}
+
+.eyebrow {
+  font-size: 12px;
+  letter-spacing: .06em;
+}
+
+@media (max-width: 760px) {
+  .top h1 { font-size: clamp(30px, 8.5vw, 40px); }
+  .step h2 { font-size: clamp(24px, 7vw, 32px); }
+  .field-help { font-size: 13.5px; }
+}

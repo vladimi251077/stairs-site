@@ -663,3 +663,31 @@ main > section {
   text-transform: uppercase;
   font-weight: 700;
 }
+
+/* hero-type-scale-lock */
+.hero-premium__title::before,
+.hero-premium__title::after {
+  font-size: clamp(58px, 6.9vw, 94px);
+  line-height: 0.9;
+}
+
+.projects-scroll-hint {
+  font-size: 13px;
+  letter-spacing: .08em;
+  font-weight: 700;
+}
+
+.project-preview-card__body h3 {
+  font-size: clamp(24px, 2.2vw, 32px);
+  line-height: 1.12;
+}
+
+.project-preview-card__body p {
+  font-size: clamp(15px, 1.1vw, 18px);
+  line-height: 1.64;
+}
+
+.project-preview-card__cta {
+  font-size: 12px;
+  letter-spacing: .1em;
+}
