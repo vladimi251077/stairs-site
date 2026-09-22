@@ -1,0 +1,7 @@
+FROM nginx:stable-alpine
+COPY . /usr/share/nginx/html
+COPY deployment/seo/nginx.conf /etc/nginx/conf.d/default.conf
+RUN rm -rf /usr/share/nginx/html/api /usr/share/nginx/html/netlify \
+    /usr/share/nginx/html/supabase /usr/share/nginx/html/deployment \
+    /usr/share/nginx/html/Dockerfile /usr/share/nginx/html/node_modules
+EXPOSE 80

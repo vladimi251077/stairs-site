@@ -1,0 +1,6 @@
+.git
+.env
+.env.*
+**/seo.env
+node_modules
+*.test.mjs
