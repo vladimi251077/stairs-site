@@ -181,7 +181,7 @@ export function calculateQuantityEngine(rawInput = {}, options = {}) {
   const materialRows = buildMaterialRows({ catalog, quantities, preset });
   const consumableRows = buildConsumableRows({ catalog, quantities });
   const workshopBudget = quantities.mdfSheets.cladding?.laminatedWhite
-    ? addWorkshopBudget(materialRows, rawInput.workshopBudget)
+    ? addWorkshopBudget(materialRows, consumableRows, rawInput.workshopBudget)
     : null;
   const pricing = calculatePricing({
     materials: materialRows,
@@ -482,9 +482,9 @@ function buildConsumableRows({ catalog, quantities }) {
   ].filter(Boolean);
 }
 
-function addWorkshopBudget(rows, budget) {
-  const { shoeSheetCost, trimMdfCost, paintMin, paintMax } = budget || {};
-  if (![shoeSheetCost, trimMdfCost, paintMin, paintMax].every((value) => Number.isFinite(value) && value > 0)
+function addWorkshopBudget(rows, consumables, budget) {
+  const { shoeSheetCost, trimMdfCost, paintMin, paintMax, fastenerCost } = budget || {};
+  if (![shoeSheetCost, trimMdfCost, paintMin, paintMax, fastenerCost].every((value) => Number.isFinite(value) && value > 0)
       || paintMax < paintMin) return null;
   for (let index = rows.length - 1; index >= 0; index--) {
     if (['primer', 'enamel', 'lacquer', 'coverStrips'].includes(rows[index].quantityKind)) rows.splice(index, 1);
@@ -497,7 +497,14 @@ function addWorkshopBudget(rows, budget) {
   ]) {
     rows.push(materialLine([{ ...item, active: true, wastePercent: 0 }], item.code, 1));
   }
-  return { paintMin, paintMax, paintMidpoint };
+  const fastenerIndex = consumables.findIndex((row) => row.quantityKind === 'fasteners');
+  if (fastenerIndex !== -1) consumables.splice(fastenerIndex, 1);
+  const fastenerItem = {
+    code: 'WORKSHOP_FASTENER_BUDGET', name: 'Крепёж — типовой расход на лестницу',
+    unit: 'set', baseCost: fastenerCost, active: true, wastePercent: 0
+  };
+  consumables.unshift(materialLine([fastenerItem], fastenerItem.code, 1, { quantityKind: 'fasteners' }));
+  return { paintMin, paintMax, paintMidpoint, fastenerCost };
 }
 
 function buildRailing(rawInput, preset, selectedRailingType) {

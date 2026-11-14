@@ -1291,7 +1291,7 @@ export function buildMaterialsFromQuantityEngine(quantityAdapterResult) {
       ] : []),
       {
         label: 'Расходники',
-        value: `крепёж ${formatQuantityEngineQuantity(quantities.consumables?.fasteners?.sets || 0, 'компл.')}, клей ${formatQuantityEngineQuantity(quantities.consumables?.adhesive?.kg || 0, 'кг')}, герметик ${formatQuantityEngineQuantity(quantities.consumables?.sealant?.tubes || 0, 'туб')}`
+        value: `крепёж ${result.pricing.workshopBudget ? 'учтён по ориентиру' : formatQuantityEngineQuantity(quantities.consumables?.fasteners?.sets || 0, 'компл.')}, клей ${formatQuantityEngineQuantity(quantities.consumables?.adhesive?.kg || 0, 'кг')}, герметик ${formatQuantityEngineQuantity(quantities.consumables?.sealant?.tubes || 0, 'туб')}`
       },
       {
         label: 'Ограждение',

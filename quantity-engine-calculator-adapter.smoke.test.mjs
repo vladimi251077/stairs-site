@@ -173,6 +173,12 @@ assert.ok(workshop.materials.every(({ quantityKind }) => quantityKind !== 'cover
 assert.equal(workshop.materials.find(({ code }) => code === 'WORKSHOP_PAINT_BUDGET').subtotal, 17500);
 assert.ok(workshop.materials.every(({ quantityKind }) => !['primer', 'enamel', 'lacquer'].includes(quantityKind)));
 assert.equal(workshop.pricing.clientPriceMax - workshop.pricing.clientPriceMin, 13500);
+assert.deepEqual(
+  workshop.consumables.filter(({ quantityKind }) => quantityKind === 'fasteners')
+    .map(({ code, subtotal }) => [code, subtotal]),
+  [['WORKSHOP_FASTENER_BUDGET', 20000]]
+);
+assert.equal(tat.consumables.find(({ quantityKind }) => quantityKind === 'fasteners').code, 'FASTENERS_BASIC');
 
 const pricedResult = calculateQuantityFromCalculator(
   baseConfig({ turnkeyCoefficient: 2.8 }),

@@ -58,7 +58,9 @@ export function buildQuantityEngineInput(config = {}, geometry = {}, options = {
         input.claddingSheets.estimatedUnitCost = getStepwiseCladdingSheetCost(widthMm, heightMm);
         input.claddingSheets.enamelTreadSheetCost = enamelTreadMdfSheetCost;
         if (config.preview_workshop_budget) {
-          input.workshopBudget = { shoeSheetCost: shoeMdfHalfSheetCost, trimMdfCost, paintMin: 15000, paintMax: 20000 };
+          input.workshopBudget = {
+            shoeSheetCost: shoeMdfHalfSheetCost, trimMdfCost, paintMin: 15000, paintMax: 20000, fastenerCost: 20000
+          };
         }
       }
     }
