@@ -1,4 +1,22 @@
-import { readStepwisePricingSettings, saveStepwisePricingSettings } from './calculator-preview-pricing.js';
+import { readStepwisePricingSettings, saveStepwisePricingSettings, useSharedStepwisePricingSettings } from './calculator-preview-pricing.js';
+import { loadSharedPricing } from './calculator-pricing-store.js';
+
+const supabaseConfig = window.SUPABASE_CONFIG;
+const sharedPricingConfigured = Boolean(supabaseConfig?.url && supabaseConfig?.anonKey);
+const previewClient = sharedPricingConfigured && window.supabase
+  ? window.supabase.createClient(supabaseConfig.url, supabaseConfig.anonKey, {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+    })
+  : null;
+let sharedPricingAvailable = false;
+if (previewClient) {
+  try {
+    useSharedStepwisePricingSettings((await loadSharedPricing(previewClient)).settings);
+    sharedPricingAvailable = true;
+  } catch {
+    // A configured shared source must be reachable before generating a quote.
+  }
+}
 
 const byId = (id) => document.getElementById(id);
 const app = document.querySelector('.calculator-app');
@@ -202,7 +220,13 @@ function refreshRegions(regions) {
 refreshRegions(readStepwisePricingSettings().regions);
 previewRegionField.append(regionLabel, regionSelect);
 pricingInputs.append(previewRegionField);
-materials.append(buildPricingSettings());
+if (!sharedPricingConfigured) materials.append(buildPricingSettings());
+if (sharedPricingConfigured && !sharedPricingAvailable) {
+  const notice = document.createElement('p');
+  notice.setAttribute('role', 'status');
+  notice.textContent = 'Цены с сервера недоступны. Обновите страницу перед расчётом.';
+  materials.append(notice);
+}
 materials.append(pricingInputs, serviceOptions);
 
 function buildPricingSettings() {
@@ -298,6 +322,7 @@ navigation(shape, () => show(scenario), () => show(dimensions));
 navigation(dimensions, () => show(shape), () => show(isReadyBase() ? details : materials));
 navigation(details, () => show(dimensions), () => show(materials));
 navigation(materials, () => show(isReadyBase() ? details : dimensions), () => {
+  if (sharedPricingConfigured && !sharedPricingAvailable) return;
   const required = !sheetFields.hidden && (workshopBudget.checked || sheetInputs.some((input) => input.value !== ''));
   for (const input of sheetInputs) input.required = required;
   if (sheetInputs.every((input) => input.reportValidity())) show(railing);

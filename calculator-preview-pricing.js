@@ -5,11 +5,11 @@ const defaultRegions = [
 const defaults = { otherExpensesPercent: 15.924, regions: defaultRegions };
 const storageKey = 'tekstura_stepwise_pricing_v1';
 
-function validateSettings(settings) {
+export function validateSettings(settings) {
   const { otherExpensesPercent, regions } = settings || {};
   if (!Number.isFinite(otherExpensesPercent) || otherExpensesPercent < 0 || otherExpensesPercent > 100
-      || !Array.isArray(regions) || regions.length === 0
-      || regions.some((region) => !region || typeof region.code !== 'string' || !/^[a-z0-9_-]+$/.test(region.code)
+      || !Array.isArray(regions) || regions.length === 0 || regions.length > 100
+      || regions.some((region) => !region || typeof region.code !== 'string' || !/^[a-z0-9_-]{1,80}$/.test(region.code)
         || typeof region.name !== 'string' || !region.name.trim() || region.name.length > 80
         || !Number.isFinite(region.turnkeyCoefficient) || region.turnkeyCoefficient < 1 || region.turnkeyCoefficient > 20)
       || new Set(regions.map((region) => region.code)).size !== regions.length
@@ -22,11 +22,17 @@ function validateSettings(settings) {
 }
 
 export function readStepwisePricingSettings() {
+  if (sharedSettings) return validateSettings(sharedSettings);
   try {
     return validateSettings(JSON.parse(globalThis.localStorage?.getItem(storageKey)));
   } catch {
     return validateSettings(defaults);
   }
+}
+
+let sharedSettings;
+export function useSharedStepwisePricingSettings(settings) {
+  sharedSettings = validateSettings(settings);
 }
 
 export function saveStepwisePricingSettings(settings) {
