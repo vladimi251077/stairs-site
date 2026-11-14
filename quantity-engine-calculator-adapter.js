@@ -6,6 +6,12 @@ const READY_BASE_CONDITIONS = new Set(['existing_metal_frame', 'ready_frame']);
 const CONCRETE_BASE_CONDITIONS = new Set(['existing_concrete_base']);
 const DEFAULT_RAILING_TYPE_ID = 'rail_tubes_16';
 
+export function requiresRailingQuote(config) {
+  return config.preview_pricing && config.finish_scope === 'full_cladding'
+    && (READY_BASE_CONDITIONS.has(config.base_condition) || CONCRETE_BASE_CONDITIONS.has(config.base_condition))
+    && !['none', 'metal'].includes(config.railing_option);
+}
+
 export function mapCalculatorConfigurationType(config = {}, geometry = {}) {
   if (READY_BASE_CONDITIONS.has(config.base_condition)) return 'metal_frame';
   if (CONCRETE_BASE_CONDITIONS.has(config.base_condition)) return 'concrete';
@@ -76,7 +82,7 @@ export function buildQuantityEngineInput(config = {}, geometry = {}, options = {
         }
       }
     }
-    if (config.preview_pricing && !explicitSheets && configurationType === 'metal_frame' && config.railing_option === 'metal') {
+    if (config.preview_pricing && config.railing_option === 'metal') {
       input.railingMaterialCostPerMeter = referenceTubeRailingCostPerMeter;
     }
   }

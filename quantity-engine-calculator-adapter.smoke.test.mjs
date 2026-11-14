@@ -4,7 +4,8 @@ import {
   buildQuantityEngineInput,
   calculateQuantityFromCalculator,
   mapCalculatorConfigurationType,
-  mapCalculatorRailingToQuantityEngine
+  mapCalculatorRailingToQuantityEngine,
+  requiresRailingQuote
 } from './quantity-engine-calculator-adapter.js';
 
 function baseConfig(overrides = {}) {
@@ -152,6 +153,12 @@ assert.equal(withoutCladding.quantityEngineInput.claddingSheets, undefined);
 
 const previewGeometry = baseGeometry({ service_metrics: { railingLengthM: 7, additionalRailingLengthM: 1 } });
 const previewConfig = { ...claddingConfig, preview_pricing: true };
+assert.equal(requiresRailingQuote({ ...previewConfig, railing_option: 'wood' }), true);
+assert.equal(requiresRailingQuote({ ...previewConfig, railing_option: 'glass' }), true);
+assert.equal(requiresRailingQuote({ ...previewConfig, railing_option: 'metal' }), false);
+assert.equal(requiresRailingQuote({ ...previewConfig, railing_option: 'none' }), false);
+assert.equal(Boolean(requiresRailingQuote({ ...claddingConfig, railing_option: 'wood' })), false);
+
 const tat = calculateQuantityFromCalculator(previewConfig, previewGeometry, getStepwisePricingRegion('tatarstan')).quantityEngineResult;
 const msk = calculateQuantityFromCalculator(previewConfig, previewGeometry, getStepwisePricingRegion('moscow')).quantityEngineResult;
 assert.equal(tat.pricing.turnkeyCoefficient, 2.7);

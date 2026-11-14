@@ -1,5 +1,5 @@
 import { calculateReadyFrameGeometry, calculateStairGeometry } from './stair-geometry-engine.js';
-import { calculateQuantityFromCalculator } from './quantity-engine-calculator-adapter.js';
+import { calculateQuantityFromCalculator, requiresRailingQuote } from './quantity-engine-calculator-adapter.js';
 import { getStepwisePricingRegion } from './calculator-preview-pricing.js';
 import {
   buildQuantityEngineRuntimeOptions,
@@ -375,7 +375,11 @@ function renderScenarioRateOptions(group, preferredValue = null) {
   const currentValue = preferredValue || select.value || config.fallback;
 
   select.innerHTML = options
-    .map((row) => `<option value="${escapeHtml(row.rate_key)}">${escapeHtml(row.label)}</option>`)
+    .map((row) => {
+      const tubeLabel = select.id === 'railingOption' && row.rate_key === 'metal' && $('stepwisePricingRegion')
+        && $('baseCondition')?.value === 'ready_base' && $('finishScope')?.value === 'full_cladding';
+      return `<option value="${escapeHtml(row.rate_key)}">${escapeHtml(tubeLabel ? 'Металлические трубки' : row.label)}</option>`;
+    })
     .join('');
 
   const nextValue = options.some((row) => row.rate_key === currentValue)
@@ -1684,6 +1688,14 @@ function runConfigurator() {
 
   const runtimeOptions = buildQuantityEngineRuntimeOptions(state.dictionaries.quantityEngineRuntime);
   const previewRegion = config.preview_pricing ? getStepwisePricingRegion(config.pricing_region_code) : null;
+  if (requiresRailingQuote(config)) {
+    const payload = buildCalculationPayload(config, geometry, null, null, 'engineer_review');
+    saveCalculationPayload(payload);
+    updateRequestLinks(payload);
+    $('priceResult').textContent = 'Цену ограждения уточнит инженер. Размеры и выбранные материалы можно передать на проверку.';
+    showStep(4);
+    return;
+  }
   if (previewRegion) {
     runtimeOptions.turnkeyCoefficient = previewRegion.turnkeyCoefficient;
     runtimeOptions.otherExpensesPercent = previewRegion.otherExpensesPercent;

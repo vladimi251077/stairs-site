@@ -178,6 +178,9 @@ serviceOptions.append(doorLabel);
 const railingGrid = makeGrid(railing);
 moveField('railingOption', railingGrid);
 const railingLength = byId('readyFrameStraightRailingLength').closest('.field');
+railingLength.querySelector('label').textContent = 'Дополнительное ограждение, м';
+railingLength.querySelector('input').placeholder = 'Например, 1';
+railingLength.querySelector('p').textContent = 'Укажите длину ограждения на этаже или площадке. Длина вдоль ступеней считается автоматически.';
 railingGrid.append(railingLength);
 const pricingInputs = byId('pricingInputGroup');
 const currentRegionField = byId('pricingRegion').closest('.field');
@@ -273,6 +276,8 @@ function syncReadyBaseFields() {
   doorLabel.hidden = !isReadyBase() || finishScopeSelect.value !== 'full_cladding';
   underStairDoor.disabled = doorLabel.hidden;
   if (doorLabel.hidden) underStairDoor.checked = false;
+  const metal = railingGrid.querySelector('#railingOption option[value="metal"]');
+  if (metal) metal.textContent = doorLabel.hidden ? 'Металл' : 'Металлические трубки';
 }
 byId('baseCondition').addEventListener('change', syncReadyBaseFields);
 finishScopeSelect.addEventListener('change', syncReadyBaseFields);
@@ -301,6 +306,13 @@ navigation(materials, () => show(isReadyBase() ? details : dimensions), () => {
 });
 editBackLink(review, () => show(railing));
 editBackLink(result, () => show(review));
+const quoteDetails = document.createElement('details');
+quoteDetails.className = 'stepwise-pricing-settings';
+const quoteSummary = document.createElement('summary');
+quoteSummary.textContent = 'Что вошло в расчёт';
+const quoteValues = document.createElement('p');
+quoteDetails.append(quoteSummary, quoteValues);
+byId('priceResult').after(quoteDetails);
 for (const id of ['engineerReviewLink', 'requestLink']) {
   byId(id).addEventListener('click', (event) => {
     if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
@@ -374,6 +386,26 @@ function syncProgress() {
   const index = available.findIndex((sections) => sections.includes(active));
   if (index === -1) return;
   progress.textContent = `Шаг ${index + 1} из ${available.length}`;
+  if (active === result) {
+    try {
+      const payload = JSON.parse(new URL(byId('requestLink').href).searchParams.get('calc'));
+      const d = payload.scenario_details || {};
+      const dims = payload.input_dimensions || {};
+      const parts = [
+        payload.staircaseType,
+        d.ready_frame_step_count ? `${d.ready_frame_step_count} ступ. · ${d.ready_frame_march_width} × ${d.ready_frame_tread_depth} мм · подступенок ${d.ready_frame_riser_height} мм` : '',
+        !d.ready_frame_step_count && dims.floor_to_floor_height ? `высота ${dims.floor_to_floor_height} мм` : '',
+        d.finish_scope_label,
+        byId('railingOption').selectedOptions[0]?.textContent,
+        d.railing_length_m ? `ограждение ${d.railing_length_m} м` : '',
+        d.under_stair_door ? 'дверка под лестницей' : '',
+        payload.pricing_region?.name
+      ];
+      quoteValues.textContent = parts.filter(Boolean).join(' · ');
+    } catch {
+      quoteValues.textContent = '';
+    }
+  }
   if (lastActive) heading(active).focus();
   lastActive = active;
 }
