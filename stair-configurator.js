@@ -1285,7 +1285,10 @@ export function buildMaterialsFromQuantityEngine(quantityAdapterResult) {
           ? 'Покрасочные материалы учтены по ориентиру'
           : `${formatQuantityEngineQuantity(primer.liters || 0, 'л')} / ${formatQuantityEngineQuantity(enamel.liters || 0, 'л')} / ${formatQuantityEngineQuantity(lacquer.liters || 0, 'л')}`
       },
-      ...(result.pricing.workshopBudget ? [{ label: 'Сапожки', value: '1 лист МДФ 16 мм · 1035 × 2800 мм' }] : []),
+      ...(result.pricing.workshopBudget ? [
+        { label: 'Сапожки', value: '1 лист МДФ 16 мм · 1035 × 2800 мм' },
+        { label: 'Нащельники', value: '15 полос МДФ 4 мм · 40 × 2800 мм' }
+      ] : []),
       {
         label: 'Расходники',
         value: `крепёж ${formatQuantityEngineQuantity(quantities.consumables?.fasteners?.sets || 0, 'компл.')}, клей ${formatQuantityEngineQuantity(quantities.consumables?.adhesive?.kg || 0, 'кг')}, герметик ${formatQuantityEngineQuantity(quantities.consumables?.sealant?.tubes || 0, 'туб')}`

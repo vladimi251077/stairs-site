@@ -483,15 +483,16 @@ function buildConsumableRows({ catalog, quantities }) {
 }
 
 function addWorkshopBudget(rows, budget) {
-  const { shoeSheetCost, paintMin, paintMax } = budget || {};
-  if (![shoeSheetCost, paintMin, paintMax].every((value) => Number.isFinite(value) && value > 0)
+  const { shoeSheetCost, trimMdfCost, paintMin, paintMax } = budget || {};
+  if (![shoeSheetCost, trimMdfCost, paintMin, paintMax].every((value) => Number.isFinite(value) && value > 0)
       || paintMax < paintMin) return null;
   for (let index = rows.length - 1; index >= 0; index--) {
-    if (['primer', 'enamel', 'lacquer'].includes(rows[index].quantityKind)) rows.splice(index, 1);
+    if (['primer', 'enamel', 'lacquer', 'coverStrips'].includes(rows[index].quantityKind)) rows.splice(index, 1);
   }
   const paintMidpoint = (paintMin + paintMax) / 2;
   for (const item of [
     { code: 'MDF_16_SHOE_HALF_SHEET', name: 'МДФ 16 мм — сапожки 1035 × 2800 мм', unit: 'sheet', baseCost: shoeSheetCost },
+    { code: 'MDF_4_TRIM_SET', name: 'МДФ 4 мм — 15 нащельников 40 × 2800 мм', unit: 'set', baseCost: trimMdfCost },
     { code: 'WORKSHOP_PAINT_BUDGET', name: 'Покрасочные материалы', unit: 'set', baseCost: paintMidpoint }
   ]) {
     rows.push(materialLine([{ ...item, active: true, wastePercent: 0 }], item.code, 1));

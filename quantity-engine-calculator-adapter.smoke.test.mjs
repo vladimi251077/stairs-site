@@ -168,6 +168,8 @@ const workshop = calculateQuantityFromCalculator(
   { ...previewConfig, preview_workshop_budget: true }, previewGeometry, getStepwisePricingRegion('tatarstan')
 ).quantityEngineResult;
 assert.equal(workshop.materials.find(({ code }) => code === 'MDF_16_SHOE_HALF_SHEET').subtotal, 1640);
+assert.equal(workshop.materials.find(({ code }) => code === 'MDF_4_TRIM_SET').subtotal, 386.38);
+assert.ok(workshop.materials.every(({ quantityKind }) => quantityKind !== 'coverStrips'));
 assert.equal(workshop.materials.find(({ code }) => code === 'WORKSHOP_PAINT_BUDGET').subtotal, 17500);
 assert.ok(workshop.materials.every(({ quantityKind }) => !['primer', 'enamel', 'lacquer'].includes(quantityKind)));
 assert.equal(workshop.pricing.clientPriceMax - workshop.pricing.clientPriceMin, 13500);
