@@ -176,20 +176,34 @@ export function calculateQuantityEngine(rawInput = {}, options = {}) {
   const selectedRailingType = railingDisabled
     ? null
     : resolveRailingType(rawInput.railingTypeId ?? rawInput.railingType, options.railingTypes || railingTypes, diagnostics);
-  const materialRows = buildMaterialRows({ catalog, geometry, preset });
-  const consumableRows = buildConsumableRows({ catalog, geometry, preset });
   const railing = buildRailing(rawInput, preset, selectedRailingType);
+  const enamelTreadSheetCost = rawInput.enamelTreadSheetCost
+    ?? (rawInput.claddingSheets?.laminatedWhite ? rawInput.claddingSheets.enamelTreadSheetCost : undefined);
+  const enamelTreads = Number.isFinite(enamelTreadSheetCost) && enamelTreadSheetCost > 0;
+  const quantities = buildQuantities({ geometry, preset, railing, claddingSheets: rawInput.claddingSheets, enamelTreads });
+  const materialRows = buildMaterialRows({ catalog, quantities, preset, enamelTreadSheetCost });
+  for (const item of rawInput.additionalMaterials ?? []) {
+    materialRows.push(materialLine([{ ...item, active: true }], item.code, item.quantity, {
+      quantityKind: 'underStairDoor', applyWaste: false, wastePercent: 0
+    }));
+  }
+  const consumableRows = buildConsumableRows({ catalog, quantities });
+  const workshopBudget = quantities.mdfSheets.cladding?.laminatedWhite
+    ? addWorkshopBudget(materialRows, consumableRows, rawInput.workshopBudget)
+    : null;
   const pricing = calculatePricing({
     materials: materialRows,
     consumables: consumableRows,
     railing,
     turnkeyCoefficient: rawInput.turnkeyCoefficient ?? options.turnkeyCoefficient,
+    otherExpensesPercent: rawInput.otherExpensesPercent,
+    workshopBudget,
     diagnostics
   });
 
   return {
     geometry,
-    quantities: buildQuantities({ geometry, preset, railing }),
+    quantities,
     materials: materialRows,
     consumables: consumableRows,
     railing,
@@ -284,11 +298,15 @@ function normalizeGeometry(rawInput, preset, diagnostics = []) {
   };
 }
 
-function buildQuantities({ geometry, preset, railing }) {
+function buildQuantities({ geometry, preset, railing, claddingSheets, enamelTreads }) {
   const finishAreaM2 = roundTo(geometry.treadAreaM2 + geometry.riserAreaM2 + geometry.platformAreaM2, 2);
-  const mdfSheets = calculateMdfSheets(geometry, preset.wastePercent);
+  const mdfSheets = calculateMdfSheets(geometry, preset.wastePercent, claddingSheets, enamelTreads);
   const addons = calculateAddons(geometry, preset);
-  const coatings = calculateCoatings(finishAreaM2);
+  const laminated = mdfSheets.cladding?.laminatedWhite === true;
+  const coatings = calculateCoatings(laminated
+    ? roundTo(geometry.treadAreaM2 + geometry.platformAreaM2, 2)
+    : finishAreaM2);
+  if (laminated || enamelTreads) coatings.lacquer = { ...coatings.lacquer, liters: 0 };
   const consumables = calculateConsumables(geometry, finishAreaM2, addons.coverStrips.lengthM);
 
   return {
@@ -313,31 +331,50 @@ function buildQuantities({ geometry, preset, railing }) {
   };
 }
 
-function calculateMdfSheets(geometry, wastePercent) {
+function calculateMdfSheets(geometry, wastePercent, claddingSheets, enamelTreads) {
   const sheetAreaM2 = MDF_SHEET_SPECS.standard.areaM2;
-  const treads = mdfAreaQuantity(geometry.treadAreaM2, wastePercent, sheetAreaM2, 'MDF_36_SHEET');
-  const platforms = mdfAreaQuantity(geometry.platformAreaM2, wastePercent, sheetAreaM2, 'MDF_36_SHEET');
+  const treadCode = enamelTreads ? 'MDF_38_SHEET' : 'MDF_36_SHEET';
+  const treads = mdfAreaQuantity(geometry.treadAreaM2, wastePercent, sheetAreaM2, treadCode);
+  const platforms = mdfAreaQuantity(geometry.platformAreaM2, wastePercent, sheetAreaM2, treadCode);
   const treadsAndPlatforms = mdfSheetQuantity(
     geometry.treadAreaM2 + geometry.platformAreaM2,
     wastePercent,
     sheetAreaM2,
-    'MDF_36_SHEET'
+    treadCode
   );
   const risers = mdfSheetQuantity(geometry.riserAreaM2, wastePercent, sheetAreaM2, 'MDF_10_SHEET');
+  const cladding = [claddingSheets?.sheets, claddingSheets?.widthMm, claddingSheets?.heightMm]
+    .every((value) => Number.isSafeInteger(value) && value > 0)
+    ? {
+        ...claddingSheets,
+        materialCode: 'MDF_10_SHEET',
+        sheetAreaM2: claddingSheets.widthMm * claddingSheets.heightMm / 1_000_000,
+        includesRisers: true
+      }
+    : null;
+  if (cladding) {
+    cladding.purchasedAreaM2 = roundTo(cladding.sheets * cladding.sheetAreaM2, 2);
+    risers.sheets = 0;
+    if (cladding.laminatedWhite) {
+      cladding.materialCode = 'MDF_10_WHITE_LAMINATED_SHEET';
+    }
+  }
+  const sheetCount = treadsAndPlatforms.sheets + (cladding?.sheets ?? risers.sheets);
 
   return {
     treads,
     risers,
+    ...(cladding ? { cladding } : {}),
     platforms,
     treadsAndPlatforms,
     total: {
       areaM2: roundTo(treadsAndPlatforms.areaM2 + risers.areaM2, 2),
       areaWithWasteM2: roundTo(treadsAndPlatforms.areaWithWasteM2 + risers.areaWithWasteM2, 2),
-      sheets: treadsAndPlatforms.sheets + risers.sheets,
+      sheets: sheetCount,
       sheetAreaM2,
       wastePercent
     },
-    count: treadsAndPlatforms.sheets + risers.sheets,
+    count: sheetCount,
     wastePercent
   };
 }
@@ -417,12 +454,26 @@ function calculateConsumables(geometry, finishAreaM2, openSideLengthM) {
   };
 }
 
-function buildMaterialRows({ catalog, geometry, preset }) {
-  const quantities = buildQuantities({ geometry, preset, railing: { totalLengthM: 0, topBalustradeLengthM: 0, typeId: null } });
-
+function buildMaterialRows({ catalog, quantities, preset, enamelTreadSheetCost }) {
+  const { cladding, risers } = quantities.mdfSheets;
+  const treads = quantities.mdfSheets.treadsAndPlatforms;
+  const enamelTreads = treads.materialCode === 'MDF_38_SHEET';
+  const treadCatalog = enamelTreads
+    ? [{ code: 'MDF_38_SHEET', name: 'МДФ 38 мм — ступени и площадки', unit: 'sheet',
+        category: 'MDF', active: true, baseCost: enamelTreadSheetCost }]
+    : catalog;
+  const claddingCatalog = cladding?.laminatedWhite
+    ? [{ code: 'MDF_10_WHITE_LAMINATED_SHEET', name: 'Белый ЛМДФ 10 мм — обшивка с подступенками',
+        unit: 'sheet', category: 'MDF', active: true, baseCost: cladding.estimatedUnitCost }]
+    : catalog;
   return [
-    materialLine(catalog, 'MDF_36_SHEET', quantities.mdfSheets.treadsAndPlatforms.sheets, { name: 'MDF 36 мм, лист — ступени и площадки', quantityKind: 'mdfTreadsAndPlatforms', wastePercent: preset.wastePercent, applyWaste: false }),
-    materialLine(catalog, 'MDF_10_SHEET', quantities.mdfSheets.risers.sheets, { name: 'MDF 10 мм, лист — подступенки', quantityKind: 'mdfRisers', wastePercent: preset.wastePercent, applyWaste: false }),
+    materialLine(treadCatalog, treads.materialCode, treads.sheets, { name: enamelTreads ? undefined : 'MDF 36 мм, лист — ступени и площадки', quantityKind: 'mdfTreadsAndPlatforms', wastePercent: preset.wastePercent, applyWaste: false }),
+    materialLine(claddingCatalog, cladding?.materialCode ?? risers.materialCode, cladding?.sheets ?? risers.sheets, cladding
+      ? {
+          name: cladding.laminatedWhite ? 'Белый ЛМДФ 10 мм — обшивка с подступенками' : 'МДФ 10 мм — обшивка с подступенками',
+          quantityKind: 'mdfCladding', wastePercent: 0, applyWaste: false
+        }
+      : { name: 'MDF 10 мм, лист — подступенки', quantityKind: 'mdfRisers', wastePercent: preset.wastePercent, applyWaste: false }),
     materialLine(catalog, 'ADDONS_TRIMS', quantities.nosingStrips.lengthM, { name: 'Доборы и планки — передняя кромка', quantityKind: 'nosingStrips' }),
     materialLine(catalog, 'ADDONS_TRIMS', quantities.endTrims.lengthM, { name: 'Доборы и планки — торцевые планки', quantityKind: 'endTrims' }),
     materialLine(catalog, 'ADDONS_TRIMS', quantities.coverStrips.lengthM, { name: 'Доборы и планки — нащельники', quantityKind: 'coverStrips' }),
@@ -432,15 +483,38 @@ function buildMaterialRows({ catalog, geometry, preset }) {
   ].filter(Boolean);
 }
 
-function buildConsumableRows({ catalog, geometry, preset }) {
-  const quantities = buildQuantities({ geometry, preset, railing: { totalLengthM: 0, topBalustradeLengthM: 0, typeId: null } });
-
+function buildConsumableRows({ catalog, quantities }) {
   return [
     materialLine(catalog, CONSUMABLE_NORMS.fasteners.code, quantities.consumables.fasteners.sets, { quantityKind: 'fasteners' }),
     materialLine(catalog, CONSUMABLE_NORMS.adhesive.code, quantities.consumables.adhesive.kg, { quantityKind: 'adhesive' }),
     materialLine(catalog, CONSUMABLE_NORMS.sealant.code, quantities.consumables.sealant.tubes, { quantityKind: 'sealant' }),
     materialLine(catalog, CONSUMABLE_NORMS.consumableKit.code, quantities.consumables.consumableKit.sets, { quantityKind: 'consumableKit' })
   ].filter(Boolean);
+}
+
+function addWorkshopBudget(rows, consumables, budget) {
+  const { shoeSheetCost, trimMdfCost, paintMin, paintMax, fastenerCost } = budget || {};
+  if (![shoeSheetCost, trimMdfCost, paintMin, paintMax, fastenerCost].every((value) => Number.isFinite(value) && value > 0)
+      || paintMax < paintMin) return null;
+  for (let index = rows.length - 1; index >= 0; index--) {
+    if (['primer', 'enamel', 'lacquer', 'coverStrips'].includes(rows[index].quantityKind)) rows.splice(index, 1);
+  }
+  const paintMidpoint = (paintMin + paintMax) / 2;
+  for (const item of [
+    { code: 'MDF_16_SHOE_HALF_SHEET', name: 'МДФ 16 мм — сапожки 1035 × 2800 мм', unit: 'sheet', baseCost: shoeSheetCost },
+    { code: 'MDF_4_TRIM_SET', name: 'МДФ 4 мм — 15 нащельников 40 × 2800 мм', unit: 'set', baseCost: trimMdfCost },
+    { code: 'WORKSHOP_PAINT_BUDGET', name: 'Покрасочные материалы', unit: 'set', baseCost: paintMidpoint }
+  ]) {
+    rows.push(materialLine([{ ...item, active: true, wastePercent: 0 }], item.code, 1));
+  }
+  const fastenerIndex = consumables.findIndex((row) => row.quantityKind === 'fasteners');
+  if (fastenerIndex !== -1) consumables.splice(fastenerIndex, 1);
+  const fastenerItem = {
+    code: 'WORKSHOP_FASTENER_BUDGET', name: 'Крепёж — типовой расход на лестницу',
+    unit: 'set', baseCost: fastenerCost, active: true, wastePercent: 0
+  };
+  consumables.unshift(materialLine([fastenerItem], fastenerItem.code, 1, { quantityKind: 'fasteners' }));
+  return { paintMin, paintMax, paintMidpoint, fastenerCost };
 }
 
 function buildRailing(rawInput, preset, selectedRailingType) {
@@ -470,17 +544,24 @@ function buildRailing(rawInput, preset, selectedRailingType) {
     sections: rawInput.railingSections
   });
   const effectiveLengthM = totalLengthM || defaultRailingLength(rawInput);
-  const materialSubtotal = roundTo(effectiveLengthM * selectedRailingType.pricePerMeter, 2);
+  const clientPricePerMeter = numberValue(rawInput.railingClientPricePerMeter);
+  const materialPricePerMeter = Number.isFinite(rawInput.railingMaterialCostPerMeter) && rawInput.railingMaterialCostPerMeter > 0
+    ? rawInput.railingMaterialCostPerMeter : selectedRailingType.pricePerMeter;
+  const pricePerMeter = clientPricePerMeter > 0 ? 0 : materialPricePerMeter;
+  const materialSubtotal = roundTo(effectiveLengthM * pricePerMeter, 2);
 
   return {
     enabled: true,
     typeId: selectedRailingType.id,
     name: selectedRailingType.name,
-    pricePerMeter: selectedRailingType.pricePerMeter,
+    pricePerMeter,
     totalLengthM: effectiveLengthM,
     topBalustradeLengthM,
     upperBalustradeIsSeparateType: false,
-    materialSubtotal
+    materialSubtotal,
+    ...(clientPricePerMeter > 0 ? {
+      clientPricePerMeter, clientPriceMin: roundTo(effectiveLengthM * clientPricePerMeter, 2)
+    } : {})
   };
 }
 
@@ -513,12 +594,19 @@ function resolveRailingType(value, types, diagnostics) {
   return match;
 }
 
-function calculatePricing({ materials, consumables, railing, turnkeyCoefficient, diagnostics = [] }) {
+function calculatePricing({ materials, consumables, railing, turnkeyCoefficient, otherExpensesPercent, workshopBudget, diagnostics = [] }) {
   const materialAndConsumablesSubtotal = roundTo(
     sumRows(materials) + sumRows(consumables) + numberValue(railing.materialSubtotal),
     2
   );
   const safeTurnkeyCoefficient = resolveTurnkeyCoefficient(turnkeyCoefficient, diagnostics);
+  const otherRate = Number.isFinite(otherExpensesPercent) && otherExpensesPercent >= 0 && otherExpensesPercent <= 100
+    ? otherExpensesPercent : 0;
+  const otherExpenses = (subtotal) => roundTo(subtotal * otherRate / 100, 2);
+  const clientPrice = (subtotal) => {
+    const base = roundTo(subtotal, 2);
+    return roundTo((base + otherExpenses(base)) * safeTurnkeyCoefficient + (railing.clientPriceMin || 0), 2);
+  };
 
   if (materialAndConsumablesSubtotal === 0) {
     diagnostics.push({ level: 'warning', code: 'ZERO_MATERIAL_SUBTOTAL', message: 'Material and consumables subtotal is zero.' });
@@ -527,7 +615,16 @@ function calculatePricing({ materials, consumables, railing, turnkeyCoefficient,
   return {
     materialAndConsumablesSubtotal,
     turnkeyCoefficient: safeTurnkeyCoefficient,
-    clientPrice: roundTo(materialAndConsumablesSubtotal * safeTurnkeyCoefficient, 2)
+    clientPrice: clientPrice(materialAndConsumablesSubtotal),
+    ...(otherRate ? {
+      otherExpensesPercent: otherRate,
+      otherExpenses: otherExpenses(materialAndConsumablesSubtotal)
+    } : {}),
+    ...(workshopBudget ? {
+      clientPriceMin: clientPrice(materialAndConsumablesSubtotal - workshopBudget.paintMidpoint + workshopBudget.paintMin),
+      clientPriceMax: clientPrice(materialAndConsumablesSubtotal - workshopBudget.paintMidpoint + workshopBudget.paintMax),
+      workshopBudget
+    } : {})
   };
 }
 

@@ -930,6 +930,19 @@
 
           <section class="admin-section" data-admin-section="settings" hidden>
             <div class="admin-section-heading"><h2>Настройки</h2><p class="muted">Тарифные справочники, внутренние параметры и услуги.</p></div>
+      <section class="panel" id="stepwiseSharedPricing">
+        <h2>Города и прочие расходы</h2>
+        <p class="small">Настройки пошагового калькулятора. Цена с учётом прочих расходов умножается на коэффициент выбранного города.</p>
+        <p role="status" data-pricing-status></p>
+        <form hidden data-pricing-form>
+          <label>Прочие расходы, % <input name="overhead" type="number" min="0" max="100" step="0.001" required></label>
+          <div data-pricing-cities></div>
+          <div class="row">
+            <button class="btn btn-secondary" type="button" data-pricing-add>Добавить город</button>
+            <button class="btn" type="submit">Сохранить для калькулятора</button>
+          </div>
+        </form>
+      </section>
       <section class="panel pricing-admin-panel">
         <h2>Калькулятор / Цены</h2>
         <details class="pricing-admin-section" open>
@@ -3874,6 +3887,11 @@
         adminMenuToggle.classList.remove('hidden');
         restoreAdminSection();
         setAuthStatus(`Вход выполнен: ${session.user.email}`);
+        import('/admin/calculator-pricing.js')
+          .then(({ showPricingEditor }) => showPricingEditor(client, session.user))
+          .catch(() => {
+            document.querySelector('[data-pricing-status]').textContent = 'Настройки пошагового калькулятора недоступны.';
+          });
         await loadAllData();
         wireRealtime();
       } else {

@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
+import { getStepwisePricingRegion } from './calculator-preview-pricing.js';
 import {
   buildQuantityEngineInput,
   calculateQuantityFromCalculator,
   mapCalculatorConfigurationType,
-  mapCalculatorRailingToQuantityEngine
+  mapCalculatorRailingToQuantityEngine,
+  requiresRailingQuote
 } from './quantity-engine-calculator-adapter.js';
 
 function baseConfig(overrides = {}) {
@@ -88,8 +90,25 @@ assert.equal(existingFrameInput.riserCount, 13);
 assert.equal(existingFrameInput.marchWidth, 950);
 assert.equal(existingFrameInput.treadDepth, 280);
 assert.equal(existingFrameInput.riserHeight, 175);
-assert.equal(existingFrameInput.railingLengthM, 4.8);
+assert.ok(Math.abs(existingFrameInput.railingLengthM - 3.6) < 1e-9);
 assert.equal(existingFrameInput.topBalustradeLengthM, 1.2);
+
+for (const baseCondition of ['existing_metal_frame', 'existing_concrete_base']) {
+  const project = calculateQuantityFromCalculator(
+    baseConfig({
+      base_condition: baseCondition,
+      ready_frame_step_count: 15,
+      ready_frame_march_width: 900,
+      ready_frame_tread_depth: 265,
+      ready_frame_riser_height: 180
+    }),
+    baseGeometry({ service_metrics: { railingLengthM: 7, additionalRailingLengthM: 1 } })
+  );
+  assert.equal(project.valid, true);
+  assert.equal(project.quantityEngineInput.railingLengthM, 6);
+  assert.equal(project.quantityEngineResult.railing.topBalustradeLengthM, 1);
+  assert.equal(project.quantityEngineResult.railing.totalLengthM, 7);
+}
 
 const concreteInput = buildQuantityEngineInput(
   baseConfig({
@@ -106,6 +125,107 @@ assert.equal(concreteInput.configurationType, 'concrete');
 assert.equal(concreteInput.stepCount, 9);
 assert.equal(concreteInput.riserCount, 9);
 assert.equal(concreteInput.railingLengthM, 3.6);
+
+const claddingConfig = baseConfig({
+  base_condition: 'existing_metal_frame',
+  ready_frame_step_count: 15,
+  ready_frame_march_width: 900,
+  ready_frame_tread_depth: 265,
+  ready_frame_riser_height: 180,
+  finish_scope: 'full_cladding',
+  cladding_sheet_count: 5,
+  cladding_sheet_width: 1035,
+  cladding_sheet_height: 2800
+});
+const withCladding = calculateQuantityFromCalculator(claddingConfig, baseGeometry());
+const withoutCladding = calculateQuantityFromCalculator(
+  { ...claddingConfig, finish_scope: 'treads_and_risers' }, baseGeometry()
+);
+const claddingResult = withCladding.quantityEngineResult;
+const tenMmRows = claddingResult.materials.filter((row) => row.code === 'MDF_10_SHEET');
+assert.equal(tenMmRows.length, 1);
+assert.equal(tenMmRows[0].quantity, 5);
+assert.equal(tenMmRows[0].quantityWithWaste, 5);
+assert.equal(claddingResult.quantities.mdfSheets.risers.sheets, 0);
+assert.equal(claddingResult.quantities.mdfSheets.cladding.purchasedAreaM2, 14.49);
+assert.equal(withoutCladding.quantityEngineResult.quantities.mdfSheets.risers.sheets, 1);
+assert.equal(withoutCladding.quantityEngineInput.claddingSheets, undefined);
+
+const previewGeometry = baseGeometry({ service_metrics: { railingLengthM: 7, additionalRailingLengthM: 1 } });
+const previewConfig = { ...claddingConfig, preview_pricing: true };
+assert.equal(requiresRailingQuote({ ...previewConfig, railing_option: 'wood' }), true);
+assert.equal(requiresRailingQuote({ ...previewConfig, railing_option: 'glass' }), false);
+assert.equal(requiresRailingQuote({ ...previewConfig, railing_option: 'metal' }), false);
+assert.equal(requiresRailingQuote({ ...previewConfig, railing_option: 'none' }), false);
+assert.equal(Boolean(requiresRailingQuote({ ...claddingConfig, railing_option: 'wood' })), false);
+
+const tat = calculateQuantityFromCalculator(previewConfig, previewGeometry, getStepwisePricingRegion('tatarstan')).quantityEngineResult;
+const msk = calculateQuantityFromCalculator(previewConfig, previewGeometry, getStepwisePricingRegion('moscow')).quantityEngineResult;
+assert.equal(tat.pricing.turnkeyCoefficient, 2.7);
+assert.equal(msk.pricing.turnkeyCoefficient, 3);
+assert.equal(tat.pricing.materialAndConsumablesSubtotal, msk.pricing.materialAndConsumablesSubtotal);
+assert.equal(tat.pricing.otherExpensesPercent, 15.924);
+assert.equal(tat.pricing.otherExpenses, Math.round(tat.pricing.materialAndConsumablesSubtotal * 15.924) / 100);
+assert.equal(tat.pricing.clientPrice, Math.round((tat.pricing.materialAndConsumablesSubtotal + tat.pricing.otherExpenses) * 270) / 100);
+assert.equal(msk.pricing.clientPrice, Math.round((msk.pricing.materialAndConsumablesSubtotal + msk.pricing.otherExpenses) * 300) / 100);
+assert.equal(tat.railing.totalLengthM, 7);
+assert.equal(tat.materials.find(({ code }) => code === 'MDF_10_WHITE_LAMINATED_SHEET').subtotal, 5187.5);
+assert.equal(tat.materials.find(({ code }) => code === 'MDF_38_SHEET').unitCost, 12000);
+assert.equal(tat.quantities.lacquer.liters, 0);
+assert.equal(tat.quantities.enamel.finishAreaM2, tat.quantities.treadAreaM2);
+const workshop = calculateQuantityFromCalculator(
+  { ...previewConfig, preview_workshop_budget: true }, previewGeometry, getStepwisePricingRegion('tatarstan')
+).quantityEngineResult;
+assert.equal(workshop.materials.find(({ code }) => code === 'MDF_16_SHOE_HALF_SHEET').subtotal, 1640);
+assert.equal(workshop.materials.find(({ code }) => code === 'MDF_4_TRIM_SET').subtotal, 386.38);
+assert.ok(workshop.materials.every(({ quantityKind }) => quantityKind !== 'coverStrips'));
+assert.equal(workshop.materials.find(({ code }) => code === 'WORKSHOP_PAINT_BUDGET').subtotal, 17500);
+assert.ok(workshop.materials.every(({ quantityKind }) => !['primer', 'enamel', 'lacquer'].includes(quantityKind)));
+assert.ok(Math.abs(workshop.pricing.clientPriceMax - workshop.pricing.clientPriceMin - 5000 * 1.15924 * 2.7) < 0.04);
+assert.deepEqual(
+  workshop.consumables.filter(({ quantityKind }) => quantityKind === 'fasteners')
+    .map(({ code, subtotal }) => [code, subtotal]),
+  [['WORKSHOP_FASTENER_BUDGET', 20000]]
+);
+assert.equal(tat.consumables.find(({ quantityKind }) => quantityKind === 'fasteners').code, 'FASTENERS_BASIC');
+const withDoor = calculateQuantityFromCalculator(
+  { ...previewConfig, preview_under_stair_door: true }, previewGeometry, getStepwisePricingRegion('tatarstan')
+).quantityEngineResult;
+assert.deepEqual(
+  withDoor.materials.filter(({ quantityKind }) => quantityKind === 'underStairDoor').map(({ subtotal }) => subtotal),
+  [2000, 6500]
+);
+assert.equal(Math.round((withDoor.pricing.materialAndConsumablesSubtotal - tat.pricing.materialAndConsumablesSubtotal) * 100), 850000);
+
+const clientQuote = calculateQuantityFromCalculator({
+  ...previewConfig, has_landing: true, landing_width: 1900, landing_length: 850,
+  cladding_sheet_count: 0, cladding_sheet_width: 0, cladding_sheet_height: 0,
+  preview_under_stair_door: true
+}, previewGeometry, getStepwisePricingRegion('tatarstan')).quantityEngineResult;
+assert.equal(clientQuote.quantities.mdfSheets.cladding.sheets, 5);
+assert.equal(clientQuote.railing.totalLengthM, 7);
+assert.equal(clientQuote.railing.materialSubtotal, 10444);
+assert.ok(clientQuote.pricing.clientPriceMin < 340000 && clientQuote.pricing.clientPriceMax > 340000);
+assert.ok(Math.abs(clientQuote.pricing.clientPrice - 340000) < 2);
+
+const glassQuoteConfig = { ...previewConfig, finish_material: 'mdf_enamel', railing_option: 'glass' };
+for (const region of ['tatarstan', 'moscow']) {
+  const settings = getStepwisePricingRegion(region);
+  const glass = calculateQuantityFromCalculator(glassQuoteConfig, previewGeometry, settings).quantityEngineResult;
+  const withoutGlass = calculateQuantityFromCalculator(
+    { ...glassQuoteConfig, railing_option: 'none' }, previewGeometry, settings
+  ).quantityEngineResult;
+  assert.equal(glass.railing.materialSubtotal, 0);
+  assert.equal(glass.railing.clientPriceMin, 245000);
+  assert.ok(Math.abs(glass.pricing.clientPrice - withoutGlass.pricing.clientPrice - 245000) < 0.01);
+}
+const mdfTreads = calculateQuantityFromCalculator(
+  { ...glassQuoteConfig, finish_scope: 'treads_only', railing_option: 'none' },
+  previewGeometry, getStepwisePricingRegion('tatarstan')
+).quantityEngineResult;
+assert.equal(mdfTreads.quantities.risers.count, 0);
+assert.equal(mdfTreads.quantities.lacquer.liters, 0);
+assert.equal(mdfTreads.materials.find(row => row.code === 'MDF_38_SHEET').unitCost, 12000);
 
 const pricedResult = calculateQuantityFromCalculator(
   baseConfig({ turnkeyCoefficient: 2.8 }),

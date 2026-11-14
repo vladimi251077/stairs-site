@@ -1,8 +1,14 @@
 import { calculateQuantityEngine } from './quantity-engine.js';
+import { enamelTreadMdfSheetCost, estimateStepwiseCladding, getStepwiseCladdingSheetCost, glassRailingClientPricePerMeter, referenceTubeRailingCostPerMeter,
+  shoeMdfHalfSheetCost, trimMdfCost, underStairDoorMaterials } from './calculator-preview-pricing.js';
 
 const READY_BASE_CONDITIONS = new Set(['existing_metal_frame', 'ready_frame']);
 const CONCRETE_BASE_CONDITIONS = new Set(['existing_concrete_base']);
 const DEFAULT_RAILING_TYPE_ID = 'rail_tubes_16';
+
+export function requiresRailingQuote(config) {
+  return Boolean(config.preview_pricing && config.railing_option === 'wood');
+}
 
 export function mapCalculatorConfigurationType(config = {}, geometry = {}) {
   if (READY_BASE_CONDITIONS.has(config.base_condition)) return 'metal_frame';
@@ -40,13 +46,56 @@ export function buildQuantityEngineInput(config = {}, geometry = {}, options = {
     topBalustradeLengthM: numberOrZero(serviceMetrics.additionalRailingLengthM)
   };
 
+  if (config.preview_pricing && config.finish_material === 'mdf_enamel') {
+    input.enamelTreadSheetCost = enamelTreadMdfSheetCost;
+    if (isExistingBase && config.finish_scope === 'treads_only') input.riserCount = 0;
+  }
+  if (config.preview_pricing && config.railing_option === 'metal') {
+    input.railingMaterialCostPerMeter = referenceTubeRailingCostPerMeter;
+  }
+  if (config.preview_pricing && config.railing_option === 'glass') {
+    input.railingClientPricePerMeter = glassRailingClientPricePerMeter;
+  }
+
   if (platformCount !== undefined) {
     input.platformCount = platformCount;
     input.platformWidth = firstPresent(config.landing_width, config.ready_frame_march_width, config.march_width);
     input.platformDepth = firstPresent(config.landing_length, config.ready_frame_march_width, config.march_width);
   }
 
-  const railingLengthM = resolveRailingLengthM({ config, geometry, serviceMetrics, isExistingBase });
+  if (isExistingBase && config.finish_scope === 'full_cladding') {
+    if (config.preview_pricing && config.preview_under_stair_door) {
+      input.additionalMaterials = underStairDoorMaterials;
+    }
+    const [sheets, widthMm, heightMm] = [
+      config.cladding_sheet_count, config.cladding_sheet_width, config.cladding_sheet_height
+    ].map(Number);
+    const explicitSheets = [sheets, widthMm, heightMm].every((value) => Number.isSafeInteger(value) && value > 0)
+      ? { sheets, widthMm, heightMm } : null;
+    const estimatedSheets = config.preview_pricing && estimateStepwiseCladding(
+      Number(input.stepCount), Number(input.marchWidth), Number(input.treadDepth), Number(input.riserHeight)
+    );
+    const cladding = explicitSheets || estimatedSheets;
+    if (cladding) {
+      input.claddingSheets = cladding;
+      if (config.preview_pricing) {
+        input.claddingSheets.laminatedWhite = true;
+        input.claddingSheets.estimatedUnitCost = getStepwiseCladdingSheetCost(cladding.widthMm, cladding.heightMm);
+        input.claddingSheets.enamelTreadSheetCost = enamelTreadMdfSheetCost;
+        if (config.preview_workshop_budget || !explicitSheets) {
+          const scale = Number(input.stepCount) / 15;
+          input.workshopBudget = {
+            shoeSheetCost: shoeMdfHalfSheetCost * scale, trimMdfCost: trimMdfCost * scale,
+            paintMin: 15000 * scale, paintMax: 20000 * scale, fastenerCost: 20000 * scale
+          };
+        }
+      }
+    }
+  }
+
+  const railingLengthM = resolveRailingLengthM({
+    config, geometry, serviceMetrics, isExistingBase, topBalustradeLengthM: input.topBalustradeLengthM
+  });
   if (railingLengthM !== undefined) {
     input.railingLengthM = railingLengthM;
   }
@@ -55,6 +104,7 @@ export function buildQuantityEngineInput(config = {}, geometry = {}, options = {
   if (turnkeyCoefficient !== undefined) {
     input.turnkeyCoefficient = turnkeyCoefficient;
   }
+  if (config.preview_pricing) input.otherExpensesPercent = options.otherExpensesPercent;
 
   return input;
 }
@@ -127,11 +177,17 @@ function buildGeometryInput({ config, geometry, serviceMetrics, isExistingBase }
   };
 }
 
-function resolveRailingLengthM({ config, geometry, serviceMetrics, isExistingBase }) {
+function resolveRailingLengthM({ config, geometry, serviceMetrics, isExistingBase, topBalustradeLengthM }) {
   if (config.railing_option === 'none') return 0;
 
   if (isExistingBase) {
-    return firstPresent(serviceMetrics.railingLengthM, config.ready_frame_straight_railing_length);
+    const totalLengthM = firstPresent(serviceMetrics.railingLengthM);
+    if (totalLengthM !== undefined) {
+      // The service total already includes the straight landing section.
+      // The engine adds that section separately to the march length.
+      return Math.max(0, Number(totalLengthM) - topBalustradeLengthM);
+    }
+    return firstPresent(config.ready_frame_straight_railing_length);
   }
 
   if (geometry.walking_line_length !== undefined && geometry.walking_line_length !== null && geometry.walking_line_length !== '') {

@@ -1,5 +1,6 @@
 import { calculateReadyFrameGeometry, calculateStairGeometry } from './stair-geometry-engine.js';
-import { calculateQuantityFromCalculator } from './quantity-engine-calculator-adapter.js';
+import { calculateQuantityFromCalculator, requiresRailingQuote } from './quantity-engine-calculator-adapter.js';
+import { getStepwisePricingRegion, stepwiseRailingOptions, stepwiseTreadMaterials } from './calculator-preview-pricing.js';
 import {
   buildQuantityEngineRuntimeOptions,
   normalizeQuantityEngineSettings,
@@ -348,6 +349,10 @@ function getScenarioRowsByGroup(group) {
 }
 
 function getScenarioOptionLabel(group, key) {
+  if (typeof document !== 'undefined' && $(SCENARIO_RATE_SELECTS[group]?.id)?.dataset.stepwiseOptions) {
+    const labels = group === 'railingPerM' ? stepwiseRailingOptions : stepwiseTreadMaterials;
+    if (Object.hasOwn(labels, key)) return labels[key];
+  }
   const row = getScenarioRowsByGroup(group).find((item) => item.rate_key === key);
   return row?.label || key || 'Уточняется';
 }
@@ -363,7 +368,7 @@ function getOptionLabel(kind, key) {
 function renderScenarioRateOptions(group, preferredValue = null) {
   const config = SCENARIO_RATE_SELECTS[group];
   const select = config ? $(config.id) : null;
-  if (!select) return;
+  if (!select || select.dataset.stepwiseOptions) return;
 
   const rows = getScenarioRowsByGroup(group);
   const fallbackRows = createDefaultScenarioRateRows()
@@ -588,6 +593,12 @@ function clearIrrelevantScenarioFields() {
   if (!isConcreteBase) resetFieldValue('concreteBaseCondition', 'ready');
 }
 
+function readStepwiseCladdingInput(id) {
+  const input = $(id);
+  if (!input?.closest('.stepwise-app') || input.disabled) return 0;
+  return Number(input.value) || 0;
+}
+
 function getConfigFromForm() {
   const baseConditionRaw = $('baseCondition')?.value || 'empty_opening';
   const baseCondition = normalizeBaseConditionValue(baseConditionRaw);
@@ -620,7 +631,10 @@ function getConfigFromForm() {
     opening_width: Number($('openingWidth')?.value || 0),
     march_width: Number($('marchWidth')?.value || 0),
     frame_material: $('frameMaterial')?.value || 'metal',
-    pricing_region_code: $('pricingRegion')?.value || getActivePricingRegions()[0]?.code || 'primary_region',
+    pricing_region_code: $('stepwisePricingRegion')?.value || $('pricingRegion')?.value || getActivePricingRegions()[0]?.code || 'primary_region',
+    preview_pricing: Boolean($('stepwisePricingRegion')),
+    preview_workshop_budget: Boolean($('stepwiseWorkshopBudget')?.checked && !$('stepwiseWorkshopBudget').disabled),
+    preview_under_stair_door: Boolean($('stepwiseUnderStairDoor')?.checked && !$('stepwiseUnderStairDoor').disabled),
     finish_material: $('finishMaterial')?.value || 'oak',
     railing_option: $('railingOption')?.value || 'metal',
     coating_option: $('coatingOption')?.value || 'standard',
@@ -634,9 +648,9 @@ function getConfigFromForm() {
     ready_frame_straight_railing_length: Number($('readyFrameStraightRailingLength')?.value || 0),
     finish_scope: normalizeFinishScope($('finishScope')?.value),
     clad_risers: normalizeFinishScope($('finishScope')?.value) !== 'treads_only',
-    cladding_sheet_count: 0,
-    cladding_sheet_width: 0,
-    cladding_sheet_height: 0,
+    cladding_sheet_count: readStepwiseCladdingInput('claddingSheetCount'),
+    cladding_sheet_width: readStepwiseCladdingInput('claddingSheetWidth'),
+    cladding_sheet_height: readStepwiseCladdingInput('claddingSheetHeight'),
     has_landing: hasLanding,
     landing_length: Number($('landingLength')?.value || 0),
     landing_width: Number($('landingWidth')?.value || 0),
@@ -800,9 +814,103 @@ function renderSideView(geometry) {
   `;
 }
 
-function renderGeometryDiagram(geometry) {
+function renderClientStairSketch(geometry) {
+  if (!geometry.valid || geometry.allow_continue === false) return '';
+
+  const points = geometry.visualization?.walking_line?.filter((point, index, line) =>
+    index === 0 || point.x !== line[index - 1].x || point.y !== line[index - 1].y
+  );
+  const width = geometry.geometry_summary?.march_width || geometry.input?.march_width;
+  if (!width || !points || points.length < 2 || !geometry.tread_count) return '';
+
+  const segments = points.slice(1).map((end, index) => {
+    const start = points[index];
+    const length = Math.hypot(end.x - start.x, end.y - start.y);
+    return { length, normal: { x: (start.y - end.y) / length, y: (end.x - start.x) / length } };
+  });
+  const edges = points.map((point, index) => {
+    const a = segments[Math.max(0, index - 1)].normal;
+    const b = segments[Math.min(index, segments.length - 1)].normal;
+    // Meet the two flight edges at a corner while keeping the outline compact.
+    const scale = width / (2 * Math.max(0.7, 1 + a.x * b.x + a.y * b.y));
+    const dx = (a.x + b.x) * scale;
+    const dy = (a.y + b.y) * scale;
+    return [{ x: point.x + dx, y: point.y + dy }, { x: point.x - dx, y: point.y - dy }];
+  });
+  const outline = [...edges.map(([left]) => left), ...edges.map(([, right]) => right).reverse()];
+  const padding = width * 0.22;
+  const minX = Math.min(...outline.map(({ x }) => x)) - padding;
+  const minY = Math.min(...outline.map(({ y }) => y)) - padding;
+  const viewWidth = Math.max(...outline.map(({ x }) => x)) + padding - minX;
+  const viewHeight = Math.max(...outline.map(({ y }) => y)) + padding - minY;
+
+  const dividers = [];
+  const addDivider = (segment, ratio) => {
+    const start = points[segment];
+    const end = points[segment + 1];
+    const normal = segments[segment].normal;
+    const x = start.x + ratio * (end.x - start.x);
+    const y = start.y + ratio * (end.y - start.y);
+    const cross = ratio === 0 ? edges[segment] : ratio === 1 ? edges[segment + 1] : [
+      { x: x + normal.x * width / 2, y: y + normal.y * width / 2 },
+      { x: x - normal.x * width / 2, y: y - normal.y * width / 2 }
+    ];
+    dividers.push(svgPolyline(cross));
+  };
+  const addTreadLines = (start, end, count, from = 0, to = 1) => {
+    const length = segments.slice(start, end).reduce((total, segment) => total + segment.length, 0);
+    let segment = start;
+    let distance = 0;
+    for (let step = 1; step < count; step += 1) {
+      const target = length * (from + (to - from) * step / count);
+      while (segment < end - 1 && target > distance + segments[segment].length) {
+        distance += segments[segment].length;
+        segment += 1;
+      }
+      addDivider(segment, (target - distance) / segments[segment].length);
+    }
+  };
+
+  const lastSegment = segments.length - 1;
+  if (geometry.turn_node && lastSegment > 1) {
+    const hasWinders = geometry.turn_node.type === 'winders';
+    const turnSetback = (flight, adjacent) => {
+      const a = segments[flight].normal;
+      const b = segments[adjacent].normal;
+      return Math.abs(a.x * b.x + a.y * b.y) < 0.5
+        ? Math.min(0.45, width / (2 * segments[flight].length))
+        : 0;
+    };
+    const lowerEnd = hasWinders ? 1 : 1 - turnSetback(0, 1);
+    const upperStart = hasWinders ? 0 : turnSetback(lastSegment, lastSegment - 1);
+    addTreadLines(0, 1, geometry.lower_march?.tread_count, 0, lowerEnd);
+    addDivider(0, lowerEnd);
+    if (hasWinders) addTreadLines(1, lastSegment, geometry.turn_node.tread_count);
+    addDivider(lastSegment, upperStart);
+    addTreadLines(lastSegment, segments.length, geometry.upper_march?.tread_count, upperStart);
+  } else {
+    addTreadLines(0, segments.length, geometry.tread_count);
+  }
+
+  return `
+    <details class="stepwise-stair-sketch">
+      <summary>Эскиз лестницы · вид сверху</summary>
+      <svg viewBox="${minX} ${minY} ${viewWidth} ${viewHeight}" role="img" aria-label="Предварительный эскиз лестницы по введённым размерам">
+        <polygon class="stepwise-stair-outline" points="${svgPolyline(outline)}"></polygon>
+        ${dividers.map((line) => `<polyline class="stepwise-stair-tread" points="${line}"></polyline>`).join('')}
+      </svg>
+    </details>
+  `;
+}
+
+function renderGeometryDiagram(geometry, config) {
   const root = $('geometryDiagram');
   if (!root) return;
+
+  if (config.preview_pricing) {
+    root.innerHTML = config.base_condition === 'empty_opening' ? renderClientStairSketch(geometry) : '';
+    return;
+  }
 
   if (!geometry.visualization) {
     root.innerHTML = '';
@@ -1166,7 +1274,7 @@ function renderGeometry(geometry) {
     </table>
   `;
 
-  renderGeometryDiagram(geometry);
+  renderGeometryDiagram(geometry, config);
   renderGeometryAlert(geometry, config);
   updateGeometryActions(geometry);
 }
@@ -1261,20 +1369,30 @@ export function buildMaterialsFromQuantityEngine(quantityAdapterResult) {
         value: `${formatQuantityEngineQuantity(quantities.platforms?.count ?? quantities.platformCount, 'шт')} · ${formatQuantityEngineArea(quantities.platforms?.areaM2 ?? quantities.platformAreaM2)}`
       },
       {
-        label: 'MDF 36 листы',
+        label: mdfSheets.treadsAndPlatforms?.materialCode === 'MDF_38_SHEET' ? 'МДФ 38 мм — ступени и площадки' : 'MDF 36 листы',
         value: `${formatQuantityEngineQuantity(mdfSheets.treadsAndPlatforms?.sheets || 0, 'лист.')}`
       },
       {
-        label: 'MDF 10 листы',
-        value: `${formatQuantityEngineQuantity(mdfSheets.risers?.sheets || 0, 'лист.')}`
+        label: mdfSheets.cladding ? 'МДФ 10 мм — обшивка с подступенками' : 'MDF 10 листы',
+        value: mdfSheets.cladding
+          ? `${mdfSheets.cladding.sheets} лист. · ${mdfSheets.cladding.widthMm} × ${mdfSheets.cladding.heightMm} мм`
+          : formatQuantityEngineQuantity(mdfSheets.risers?.sheets || 0, 'лист.')
       },
       {
         label: 'Покрытия: грунт / эмаль / лак',
-        value: `${formatQuantityEngineQuantity(primer.liters || 0, 'л')} / ${formatQuantityEngineQuantity(enamel.liters || 0, 'л')} / ${formatQuantityEngineQuantity(lacquer.liters || 0, 'л')}`
+        value: result.pricing.workshopBudget
+          ? 'Покрасочные материалы учтены по ориентиру'
+          : `${formatQuantityEngineQuantity(primer.liters || 0, 'л')} / ${formatQuantityEngineQuantity(enamel.liters || 0, 'л')} / ${formatQuantityEngineQuantity(lacquer.liters || 0, 'л')}`
       },
+      ...(result.pricing.workshopBudget ? [
+        { label: 'Сапожки', value: '1 лист МДФ 16 мм · 1035 × 2800 мм' },
+        { label: 'Нащельники', value: '15 полос МДФ 4 мм · 40 × 2800 мм' }
+      ] : []),
+      ...(result.materials.some(({ quantityKind }) => quantityKind === 'underStairDoor')
+        ? [{ label: 'Дверка и каркас', value: 'ЛМДФ 16 мм с кромкой · 13 брусков' }] : []),
       {
         label: 'Расходники',
-        value: `крепёж ${formatQuantityEngineQuantity(quantities.consumables?.fasteners?.sets || 0, 'компл.')}, клей ${formatQuantityEngineQuantity(quantities.consumables?.adhesive?.kg || 0, 'кг')}, герметик ${formatQuantityEngineQuantity(quantities.consumables?.sealant?.tubes || 0, 'туб')}`
+        value: `крепёж ${result.pricing.workshopBudget ? 'учтён по ориентиру' : formatQuantityEngineQuantity(quantities.consumables?.fasteners?.sets || 0, 'компл.')}, клей ${formatQuantityEngineQuantity(quantities.consumables?.adhesive?.kg || 0, 'кг')}, герметик ${formatQuantityEngineQuantity(quantities.consumables?.sealant?.tubes || 0, 'туб')}`
       },
       {
         label: 'Ограждение',
@@ -1295,26 +1413,31 @@ export function buildMaterialsFromQuantityEngine(quantityAdapterResult) {
   };
 }
 
-export function buildPriceFromQuantityEngine(quantityAdapterResult) {
+export function buildPriceFromQuantityEngine(quantityAdapterResult, previewRegion) {
   if (!quantityAdapterResult?.valid || !quantityAdapterResult.quantityEngineResult?.pricing) return null;
 
-  const pricing = quantityAdapterResult.quantityEngineResult.pricing;
-  const total = Number(pricing.clientPrice || 0);
+  const { pricing, railing } = quantityAdapterResult.quantityEngineResult;
+  const startingAt = Boolean(railing?.clientPricePerMeter);
+  const minimum = pricing.clientPriceMin ?? pricing.clientPrice;
+  const total = Number((startingAt ? minimum : pricing.clientPrice) || 0);
   const materialAndConsumablesSubtotal = Number(pricing.materialAndConsumablesSubtotal || 0);
 
   return {
     total,
-    min: total,
-    max: total,
+    min: minimum ?? total,
+    max: startingAt ? null : pricing.clientPriceMax ?? total,
+    startingAt,
     subtotalBeforeRegion: materialAndConsumablesSubtotal,
     regionalAdjustment: 0,
     regionalCoef: 1,
-    pricingRegion: {
+    pricingRegion: previewRegion ? { code: previewRegion.code, name: previewRegion.name } : {
       code: 'no_region_coefficient',
       name: 'Без регионального коэффициента'
     },
     baseLabor: 0,
     materialCost: materialAndConsumablesSubtotal,
+    otherExpensesPercent: pricing.otherExpensesPercent ?? 0,
+    otherExpenses: pricing.otherExpenses ?? 0,
     pricingModel: 'quantity_engine_turnkey_coefficient',
     turnkeyCoefficient: Number(pricing.turnkeyCoefficient || 1)
   };
@@ -1335,8 +1458,9 @@ function renderPrice(price) {
 
   if (price.pricingModel === 'quantity_engine_turnkey_coefficient') {
     root.innerHTML = `
-      <div class="price-main">${money(price.total)}</div>
+      <div class="price-main">${price.startingAt ? `От ${money(price.min)}` : price.min === price.max ? money(price.total) : `${money(price.min)} — ${money(price.max)}`}</div>
       <div class="muted">Предварительная стоимость под ключ</div>
+      ${price.pricingRegion.code !== 'no_region_coefficient' ? `<div class="muted">${escapeHtml(price.pricingRegion.name)}</div>` : ''}
       <div class="muted">Финальная смета уточняется после проверки размеров, основания и выбранной комплектации.</div>
     `;
     return;
@@ -1388,7 +1512,9 @@ function compactGeometryForPayload(geometry) {
 function buildCalculationPayload(config, geometry, materials = state.materials, price = state.price, requestMode = 'calculation') {
   const compactGeometry = compactGeometryForPayload(geometry);
   const warnings = geometry.status === 'invalid' ? geometry.blockers || [] : geometry.warnings || [];
-  const region = getPricingRegion(config.pricing_region_code);
+  const region = config.preview_pricing
+    ? getStepwisePricingRegion(config.pricing_region_code)
+    : getPricingRegion(config.pricing_region_code);
   const quantityEnginePayload = materials?.metrics?.quantityEngineInput || state.quantityEngine?.quantityEngineInput
     ? {
         input: materials?.metrics?.quantityEngineInput || state.quantityEngine?.quantityEngineInput || null,
@@ -1400,6 +1526,7 @@ function buildCalculationPayload(config, geometry, materials = state.materials, 
 
   return {
     schema: 'tekstura.stair.phase1',
+    ...(config.preview_pricing ? { client_stepwise: true } : {}),
     request_mode: requestMode,
     project_scenario: config.project_scenario,
     base_condition: config.base_condition,
@@ -1441,6 +1568,10 @@ function buildCalculationPayload(config, geometry, materials = state.materials, 
       pricing_region_code: config.pricing_region_code,
       finish_material: config.finish_material,
       railing_option: config.railing_option,
+      ...(config.preview_pricing ? {
+        finish_material_label: getOptionLabel('finish_material', config.finish_material),
+        railing_option_label: getOptionLabel('railing', config.railing_option)
+      } : {}),
       coating_option: config.coating_option,
       lighting_option: config.lighting_option,
       turn_direction: config.turn_direction,
@@ -1450,6 +1581,7 @@ function buildCalculationPayload(config, geometry, materials = state.materials, 
       cladding_sheet_count: config.cladding_sheet_count,
       cladding_sheet_width: config.cladding_sheet_width,
       cladding_sheet_height: config.cladding_sheet_height,
+      ...(config.preview_under_stair_door ? { under_stair_door: true } : {}),
       full_cladding_area_m2: compactGeometry.service_metrics?.fullCladdingAreaM2 || 0,
       finish_surface_area_m2: compactGeometry.service_metrics?.finishSurfaceAreaM2 || 0,
       total_finish_area_m2: compactGeometry.service_metrics?.totalFinishAreaM2 || compactGeometry.service_metrics?.finishAreaM2 || 0,
@@ -1470,6 +1602,10 @@ function buildCalculationPayload(config, geometry, materials = state.materials, 
         ? {
             pricing_model: price.pricingModel,
             material_and_consumables_subtotal: Math.round(price.subtotalBeforeRegion || 0),
+            ...(config.preview_pricing ? {
+              other_expenses_percent: price.otherExpensesPercent,
+              other_expenses: price.otherExpenses
+            } : {}),
             turnkey_coefficient: Number(price.turnkeyCoefficient || 1),
             client_price: Math.round(price.total || 0),
             total: Math.round(price.total || 0),
@@ -1488,6 +1624,7 @@ function buildCalculationPayload(config, geometry, materials = state.materials, 
             max: Math.round(price.max || 0)
           }
       : null,
+    ...(price?.startingAt ? { price_starting_at: true } : {}),
     preliminary_price_min: price?.min ? Math.round(price.min) : 0,
     preliminary_price_max: price?.max ? Math.round(price.max) : 0,
     pricing_snapshot: price
@@ -1496,10 +1633,11 @@ function buildCalculationPayload(config, geometry, materials = state.materials, 
             pricing_model: price.pricingModel,
             turnkey_coefficient: Number(price.turnkeyCoefficient || 1),
             region: {
-              code: 'no_region_coefficient',
-              name: 'Без регионального коэффициента',
+              code: price.pricingRegion.code,
+              name: price.pricingRegion.name,
               price_coef: 1
-            }
+            },
+            ...(config.preview_pricing ? { other_expenses_percent: price.otherExpensesPercent } : {})
           }
         : {
             defaults: state.dictionaries.defaults,
@@ -1523,6 +1661,7 @@ function buildCalculationPayload(config, geometry, materials = state.materials, 
       ready_frame_straight_railing_length: config.ready_frame_straight_railing_length,
       ready_frame_additional_railing_length_m: config.ready_frame_straight_railing_length,
       additional_railing_length_m: config.ready_frame_straight_railing_length,
+      ...(config.preview_under_stair_door ? { under_stair_door: true } : {}),
       finish_scope: config.finish_scope,
       finish_scope_label: FINISH_SCOPE_LABELS[config.finish_scope],
       clad_risers: config.clad_risers,
@@ -1650,6 +1789,23 @@ function runConfigurator() {
   }
 
   const runtimeOptions = buildQuantityEngineRuntimeOptions(state.dictionaries.quantityEngineRuntime);
+  const previewRegion = config.preview_pricing ? getStepwisePricingRegion(config.pricing_region_code) : null;
+  const needsTreadQuote = config.preview_pricing && config.finish_material !== 'mdf_enamel';
+  const needsRailingQuote = requiresRailingQuote(config);
+  if (needsTreadQuote || needsRailingQuote) {
+    const payload = buildCalculationPayload(config, geometry, null, null, 'engineer_review');
+    saveCalculationPayload(payload);
+    updateRequestLinks(payload);
+    const item = needsTreadQuote && needsRailingQuote ? 'ступеней и ограждения'
+      : needsTreadQuote ? 'ступеней' : 'ограждения';
+    $('priceResult').textContent = 'Цену ' + item + ' уточнит инженер. Размеры и выбранные материалы можно передать на проверку.';
+    showStep(4);
+    return;
+  }
+  if (previewRegion) {
+    runtimeOptions.turnkeyCoefficient = previewRegion.turnkeyCoefficient;
+    runtimeOptions.otherExpensesPercent = previewRegion.otherExpensesPercent;
+  }
   const quantityEngine = calculateQuantityFromCalculator(config, geometry, runtimeOptions);
   state.quantityEngine = quantityEngine;
 
@@ -1657,7 +1813,7 @@ function runConfigurator() {
   state.materials = materials;
   renderMaterials(materials);
 
-  state.price = buildPriceFromQuantityEngine(quantityEngine);
+  state.price = buildPriceFromQuantityEngine(quantityEngine, previewRegion);
   renderPrice(state.price);
 
   const payload = buildCalculationPayload(config, geometry, materials, state.price);

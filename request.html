@@ -152,6 +152,8 @@ function buildCalcSummary(payload) {
       : [];
     const total = Number(payload.total || pricingBreakdown?.total || 0);
     const payloadPrice = payload.price || {};
+    const finishMaterial = selections.finish_material_label || selections.finish_material;
+    const railingOption = selections.railing_option_label || selections.railing_option;
     const resolvedMin = Number(
       payloadPrice.min
       ?? payload.preliminary_price_min
@@ -182,14 +184,15 @@ function buildCalcSummary(payload) {
       details.ready_frame_march_width ? `Ширина ступени: ${details.ready_frame_march_width} мм` : '',
       details.ready_frame_tread_depth ? `Глубина ступени: ${details.ready_frame_tread_depth} мм` : '',
       details.ready_frame_riser_height ? `Высота подступенка: ${details.ready_frame_riser_height} мм` : '',
-      details.cladding_sheet_count ? `Листы: ${details.cladding_sheet_count} шт (${details.cladding_sheet_width || '-'}×${details.cladding_sheet_height || '-'} мм)` : '',
+      details.cladding_sheet_count && !payload.client_stepwise ? `Листы: ${details.cladding_sheet_count} шт (${details.cladding_sheet_width || '-'}×${details.cladding_sheet_height || '-'} мм)` : '',
+      details.under_stair_door ? 'Дверка под лестницей' : '',
       details.full_cladding_area_m2 ? `Площадь обшивки каркаса: ${details.full_cladding_area_m2} м²` : '',
       details.total_finish_area_m2 ? `Общая площадь отделки: ${details.total_finish_area_m2} м²` : '',
       details.has_landing ? `Площадка: ${details.landing_area || metrics.landingAreaM2 || '-'} м²` : '',
       details.has_winders ? `Забежные ступени: ${details.winder_count || metrics.winderCount || '-'}` : '',
-      selections.finish_material ? `Отделка: ${selections.finish_material}` : '',
+      finishMaterial ? `Отделка: ${finishMaterial}` : '',
       selections.coating_option ? `Покрытие: ${selections.coating_option}` : '',
-      selections.railing_option ? `Ограждение: ${selections.railing_option}` : '',
+      railingOption ? `Ограждение: ${railingOption}` : '',
       selections.lighting_option ? `Подсветка: ${selections.lighting_option}` : '',
       !isReadyBaseScenario && pricingRegion ? `Регион цены: ${pricingRegion.name || pricingRegion.code}` : '',
       !isReadyBaseScenario && pricingBreakdown ? `База до региона: ${Number(pricingBreakdown.subtotal_before_region || 0).toLocaleString('ru-RU')} ₽` : '',
@@ -199,8 +202,10 @@ function buildCalcSummary(payload) {
       geometry.tread_depth ? `Проступь: ${geometry.tread_depth} мм` : '',
       !isReadyBaseScenario && geometry.headroom_min ? `Просвет: ${geometry.headroom_min} мм` : '',
       ...summaryRows,
-      isReadyBaseScenario
-        ? `Предварительная стоимость отделки: от ${inspectionMin.toLocaleString('ru-RU')} до ${inspectionMax.toLocaleString('ru-RU')} ₽`
+      payload.price_starting_at
+        ? 'Предварительная стоимость от ' + inspectionMin.toLocaleString('ru-RU') + ' ₽'
+        : isReadyBaseScenario
+          ? `Предварительная стоимость отделки: от ${inspectionMin.toLocaleString('ru-RU')} до ${inspectionMax.toLocaleString('ru-RU')} ₽`
         : `Ориентир: ${total.toLocaleString('ru-RU')} ₽`,
       isReadyBaseScenario
         ? 'Итоговая стоимость уточняется после проверки состояния основания, размеров ступеней, узлов примыкания и объёма работ на объекте.'
@@ -346,8 +351,16 @@ function readStoredCalcPayload(storage, key) {
 
 function parseCalc(){
   const queryRaw = getRawQueryParam('calc');
-  if (queryRaw) {
-    calcPayload = parseCalcPayloadFromUrl(queryRaw);
+  const stepwiseRef = new URLSearchParams(window.location.search).get('calc_ref');
+  if (queryRaw || stepwiseRef !== null) {
+    if (queryRaw) {
+      calcPayload = parseCalcPayloadFromUrl(queryRaw);
+    } else {
+      const entry = parseCalcPayloadFromStorage(storageGet(window.sessionStorage, 'tekstura_stepwise_request'));
+      if (entry?.ref === stepwiseRef && isFreshTimestamp(entry.savedAt)) {
+        calcPayload = parseCalcPayloadFromStorage(entry.payload);
+      }
+    }
     if (!calcPayload) {
       document.getElementById('calcData').textContent = 'Не удалось прочитать расчёт. Вы можете отправить заявку вручную.';
       return;
@@ -413,6 +426,7 @@ function buildNotifyUiMessage(notifyResult) {
 }
 
 async function sendRequest() {
+  if (window.TEKSTURA_ISOLATED_CALCULATOR === true) return;
   const status = document.getElementById('status');
   const sendBtn = document.getElementById('sendBtn');
   const successState = document.getElementById('successState');
@@ -510,6 +524,13 @@ async function sendRequest() {
 }
 
 parseCalc();
+if (calcPayload?.client_stepwise || new URLSearchParams(window.location.search).get('source') === 'stair_photo') {
+  document.getElementById('comment').closest('.full').hidden = true;
+}
+if (window.TEKSTURA_ISOLATED_CALCULATOR === true) {
+  document.getElementById('sendBtn').disabled = true;
+  document.getElementById('status').textContent = 'Тестовая заявка. Отправка отключена.';
+}
 </script>
 </body>
 </html>
