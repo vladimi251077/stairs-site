@@ -814,9 +814,103 @@ function renderSideView(geometry) {
   `;
 }
 
-function renderGeometryDiagram(geometry) {
+function renderClientStairSketch(geometry) {
+  if (!geometry.valid || geometry.allow_continue === false) return '';
+
+  const points = geometry.visualization?.walking_line?.filter((point, index, line) =>
+    index === 0 || point.x !== line[index - 1].x || point.y !== line[index - 1].y
+  );
+  const width = geometry.geometry_summary?.march_width || geometry.input?.march_width;
+  if (!width || !points || points.length < 2 || !geometry.tread_count) return '';
+
+  const segments = points.slice(1).map((end, index) => {
+    const start = points[index];
+    const length = Math.hypot(end.x - start.x, end.y - start.y);
+    return { length, normal: { x: (start.y - end.y) / length, y: (end.x - start.x) / length } };
+  });
+  const edges = points.map((point, index) => {
+    const a = segments[Math.max(0, index - 1)].normal;
+    const b = segments[Math.min(index, segments.length - 1)].normal;
+    // Meet the two flight edges at a corner while keeping the outline compact.
+    const scale = width / (2 * Math.max(0.7, 1 + a.x * b.x + a.y * b.y));
+    const dx = (a.x + b.x) * scale;
+    const dy = (a.y + b.y) * scale;
+    return [{ x: point.x + dx, y: point.y + dy }, { x: point.x - dx, y: point.y - dy }];
+  });
+  const outline = [...edges.map(([left]) => left), ...edges.map(([, right]) => right).reverse()];
+  const padding = width * 0.22;
+  const minX = Math.min(...outline.map(({ x }) => x)) - padding;
+  const minY = Math.min(...outline.map(({ y }) => y)) - padding;
+  const viewWidth = Math.max(...outline.map(({ x }) => x)) + padding - minX;
+  const viewHeight = Math.max(...outline.map(({ y }) => y)) + padding - minY;
+
+  const dividers = [];
+  const addDivider = (segment, ratio) => {
+    const start = points[segment];
+    const end = points[segment + 1];
+    const normal = segments[segment].normal;
+    const x = start.x + ratio * (end.x - start.x);
+    const y = start.y + ratio * (end.y - start.y);
+    const cross = ratio === 0 ? edges[segment] : ratio === 1 ? edges[segment + 1] : [
+      { x: x + normal.x * width / 2, y: y + normal.y * width / 2 },
+      { x: x - normal.x * width / 2, y: y - normal.y * width / 2 }
+    ];
+    dividers.push(svgPolyline(cross));
+  };
+  const addTreadLines = (start, end, count, from = 0, to = 1) => {
+    const length = segments.slice(start, end).reduce((total, segment) => total + segment.length, 0);
+    let segment = start;
+    let distance = 0;
+    for (let step = 1; step < count; step += 1) {
+      const target = length * (from + (to - from) * step / count);
+      while (segment < end - 1 && target > distance + segments[segment].length) {
+        distance += segments[segment].length;
+        segment += 1;
+      }
+      addDivider(segment, (target - distance) / segments[segment].length);
+    }
+  };
+
+  const lastSegment = segments.length - 1;
+  if (geometry.turn_node && lastSegment > 1) {
+    const hasWinders = geometry.turn_node.type === 'winders';
+    const turnSetback = (flight, adjacent) => {
+      const a = segments[flight].normal;
+      const b = segments[adjacent].normal;
+      return Math.abs(a.x * b.x + a.y * b.y) < 0.5
+        ? Math.min(0.45, width / (2 * segments[flight].length))
+        : 0;
+    };
+    const lowerEnd = hasWinders ? 1 : 1 - turnSetback(0, 1);
+    const upperStart = hasWinders ? 0 : turnSetback(lastSegment, lastSegment - 1);
+    addTreadLines(0, 1, geometry.lower_march?.tread_count, 0, lowerEnd);
+    addDivider(0, lowerEnd);
+    if (hasWinders) addTreadLines(1, lastSegment, geometry.turn_node.tread_count);
+    addDivider(lastSegment, upperStart);
+    addTreadLines(lastSegment, segments.length, geometry.upper_march?.tread_count, upperStart);
+  } else {
+    addTreadLines(0, segments.length, geometry.tread_count);
+  }
+
+  return `
+    <details class="stepwise-stair-sketch">
+      <summary>Эскиз лестницы · вид сверху</summary>
+      <svg viewBox="${minX} ${minY} ${viewWidth} ${viewHeight}" role="img" aria-label="Предварительный эскиз лестницы по введённым размерам">
+        <polygon class="stepwise-stair-outline" points="${svgPolyline(outline)}"></polygon>
+        ${dividers.map((line) => `<polyline class="stepwise-stair-tread" points="${line}"></polyline>`).join('')}
+      </svg>
+    </details>
+  `;
+}
+
+function renderGeometryDiagram(geometry, config) {
   const root = $('geometryDiagram');
   if (!root) return;
+
+  if (config.preview_pricing) {
+    root.innerHTML = config.base_condition === 'empty_opening' ? renderClientStairSketch(geometry) : '';
+    return;
+  }
 
   if (!geometry.visualization) {
     root.innerHTML = '';
@@ -1180,7 +1274,7 @@ function renderGeometry(geometry) {
     </table>
   `;
 
-  renderGeometryDiagram(geometry);
+  renderGeometryDiagram(geometry, config);
   renderGeometryAlert(geometry, config);
   updateGeometryActions(geometry);
 }

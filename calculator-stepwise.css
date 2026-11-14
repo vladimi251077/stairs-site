@@ -117,3 +117,36 @@ body:has(.stepwise-app) .tekstura-mobile-contact {
     text-align: left;
   }
 }
+
+.stepwise-app .stepwise-stair-sketch {
+  padding: 12px;
+  border: 1px solid #745a43;
+  border-radius: 10px;
+}
+
+.stepwise-app .stepwise-stair-sketch summary {
+  cursor: pointer;
+}
+
+.stepwise-app .stepwise-stair-sketch svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 230px;
+  margin-top: 8px;
+}
+
+.stepwise-app .stepwise-stair-outline,
+.stepwise-app .stepwise-stair-tread {
+  vector-effect: non-scaling-stroke;
+  stroke: #daba96;
+  stroke-width: 1.2;
+}
+
+.stepwise-app .stepwise-stair-outline {
+  fill: #433326;
+}
+
+.stepwise-app .stepwise-stair-tread {
+  fill: none;
+}
