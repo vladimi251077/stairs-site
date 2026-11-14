@@ -88,8 +88,25 @@ assert.equal(existingFrameInput.riserCount, 13);
 assert.equal(existingFrameInput.marchWidth, 950);
 assert.equal(existingFrameInput.treadDepth, 280);
 assert.equal(existingFrameInput.riserHeight, 175);
-assert.equal(existingFrameInput.railingLengthM, 4.8);
+assert.ok(Math.abs(existingFrameInput.railingLengthM - 3.6) < 1e-9);
 assert.equal(existingFrameInput.topBalustradeLengthM, 1.2);
+
+for (const baseCondition of ['existing_metal_frame', 'existing_concrete_base']) {
+  const project = calculateQuantityFromCalculator(
+    baseConfig({
+      base_condition: baseCondition,
+      ready_frame_step_count: 15,
+      ready_frame_march_width: 900,
+      ready_frame_tread_depth: 265,
+      ready_frame_riser_height: 180
+    }),
+    baseGeometry({ service_metrics: { railingLengthM: 7, additionalRailingLengthM: 1 } })
+  );
+  assert.equal(project.valid, true);
+  assert.equal(project.quantityEngineInput.railingLengthM, 6);
+  assert.equal(project.quantityEngineResult.railing.topBalustradeLengthM, 1);
+  assert.equal(project.quantityEngineResult.railing.totalLengthM, 7);
+}
 
 const concreteInput = buildQuantityEngineInput(
   baseConfig({

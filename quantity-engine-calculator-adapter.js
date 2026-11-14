@@ -46,7 +46,9 @@ export function buildQuantityEngineInput(config = {}, geometry = {}, options = {
     input.platformDepth = firstPresent(config.landing_length, config.ready_frame_march_width, config.march_width);
   }
 
-  const railingLengthM = resolveRailingLengthM({ config, geometry, serviceMetrics, isExistingBase });
+  const railingLengthM = resolveRailingLengthM({
+    config, geometry, serviceMetrics, isExistingBase, topBalustradeLengthM: input.topBalustradeLengthM
+  });
   if (railingLengthM !== undefined) {
     input.railingLengthM = railingLengthM;
   }
@@ -127,11 +129,17 @@ function buildGeometryInput({ config, geometry, serviceMetrics, isExistingBase }
   };
 }
 
-function resolveRailingLengthM({ config, geometry, serviceMetrics, isExistingBase }) {
+function resolveRailingLengthM({ config, geometry, serviceMetrics, isExistingBase, topBalustradeLengthM }) {
   if (config.railing_option === 'none') return 0;
 
   if (isExistingBase) {
-    return firstPresent(serviceMetrics.railingLengthM, config.ready_frame_straight_railing_length);
+    const totalLengthM = firstPresent(serviceMetrics.railingLengthM);
+    if (totalLengthM !== undefined) {
+      // The service total already includes the straight landing section.
+      // The engine adds that section separately to the march length.
+      return Math.max(0, Number(totalLengthM) - topBalustradeLengthM);
+    }
+    return firstPresent(config.ready_frame_straight_railing_length);
   }
 
   if (geometry.walking_line_length !== undefined && geometry.walking_line_length !== null && geometry.walking_line_length !== '') {
