@@ -942,7 +942,7 @@
             <span class="pricing-admin-section-label">Основной блок</span>
           </summary>
           <div class="pricing-admin-section-body">
-            <section class="pricing-current-block">
+            <section class="pricing-current-block" id="current-turnkey-pricing" tabindex="-1">
               <h3>Коэффициент под ключ</h3>
               <p class="small">Включает работу, монтаж, покраску как труд, накладные, прибыль и организационные расходы. Клиенту не показывается.</p>
               <div class="grid">
@@ -959,13 +959,14 @@
             <section class="pricing-current-block">
               <h3>Материалы и расходники</h3>
               <p class="admin-warning">Новые материалы появятся в справочнике. Чтобы они начали участвовать в автоматической формуле калькулятора, их код должен использоваться движком расчёта или быть подключён отдельным правилом.</p>
+              <p class="small">МДФ 36 мм используется для ступеней и площадок, МДФ 10 мм — для подступенков. Для МДФ 18 мм правило пока не задано. Галочка «Показывать клиенту» сама по себе не добавляет материал в список отделки.</p>
               <div id="materialsCatalogAdmin"></div>
               <div class="row">
                 <button id="addMaterialCatalogRow" class="btn btn-secondary">Добавить материал</button>
               </div>
             </section>
 
-            <section class="pricing-current-block">
+            <section class="pricing-current-block" id="current-railing-pricing" tabindex="-1">
               <h3>Ограждения</h3>
               <p class="admin-warning">Новые виды ограждений можно хранить в справочнике. Чтобы они появились в клиентском выборе и участвовали в расчёте, может потребоваться сопоставление в калькуляторе.</p>
               <div id="railingTypesAdmin"></div>
@@ -1046,19 +1047,19 @@
           <summary>
             <div>
               <h3>Подготовленная структура тарифов</h3>
-              <p>Подготовленные группы будущих настроек цен. Пока это безопасная структура без CRUD и без изменения действующих расчётов.</p>
+              <p>План тарифов и ссылки на действующие настройки.</p>
             </div>
             <span class="pricing-admin-section-label">Свернуто</span>
           </summary>
           <div class="pricing-admin-section-body">
-            <p class="small">Сейчас раздел работает в режиме просмотра. Редактирование тарифов будет добавлено отдельным PR.</p>
+            <p class="small">Карточки с пометкой «План» показывают будущие настройки. Действующие цены ограждений и коэффициент «под ключ» открываются по ссылкам в соответствующих карточках.</p>
         <div class="pricing-groups-grid">
           <article class="pricing-group-card">
             <details class="pricing-group-toggle">
               <summary>
                 <div class="pricing-group-summary">
                   <h3>Материалы ступеней</h3>
-                  <span class="pricing-group-status ready">Подготовлено</span>
+                  <span class="pricing-group-status">План</span>
                 </div>
                 <p class="pricing-group-compact">Массив дерева для ступеней и площадок.</p>
               </summary>
@@ -1067,7 +1068,6 @@
                 <p class="pricing-group-meta">Влияет на: проступи, площадки, забежные ступени.</p>
                 <p class="pricing-group-meta">Не используется: шпон, подступенки, боковая обшивка, финишная обработка.</p>
                 <div class="pricing-group-actions">
-                  <button class="btn btn-secondary" type="button">Настроить группу</button>
                   <button class="btn btn-secondary" type="button" disabled>Добавление будет подключено следующим PR</button>
                   <p class="pricing-group-actions-note">Сохранение будет подключено следующим PR.</p>
                 </div>
@@ -1172,14 +1172,13 @@
               <summary>
                 <div class="pricing-group-summary">
                   <h3>Отделка / облицовка</h3>
-                  <span class="pricing-group-status ready">Подготовлено</span>
+                  <span class="pricing-group-status">План</span>
                 </div>
                 <p class="pricing-group-compact">Облицовка по площади и коммерческим сценариям.</p>
               </summary>
               <div class="pricing-group-details">
                 <p>Подготовительный read-only список материалов облицовки для подступенков, боковой и полной обшивки каркаса.</p>
                 <div class="pricing-group-actions">
-                  <button class="btn btn-secondary" type="button">Настроить группу</button>
                   <button class="btn btn-secondary" type="button" disabled>Добавить вариант</button>
                   <p class="pricing-group-actions-note">Добавление будет подключено следующим PR.</p>
                 </div>
@@ -1299,7 +1298,7 @@
               <summary>
                 <div class="pricing-group-summary">
                   <h3>Объём отделки</h3>
-                  <span class="pricing-group-status ready">Подготовлено</span>
+                  <span class="pricing-group-status">План</span>
                 </div>
                 <p class="pricing-group-compact">Коэффициенты объёма отделочных работ.</p>
               </summary>
@@ -1309,7 +1308,6 @@
                 <p class="pricing-group-meta">Влияет на: какие поверхности участвуют в расчёте отделки.</p>
                 <p class="pricing-group-meta">Не используется: выбор материала, финишная обработка, ограждения, подсветка.</p>
                 <div class="pricing-group-actions">
-                  <button class="btn btn-secondary" type="button">Настроить группу</button>
                   <button class="btn btn-secondary" type="button" disabled>Добавление будет подключено следующим PR</button>
                   <p class="pricing-group-actions-note">Сохранение будет подключено следующим PR.</p>
                 </div>
@@ -1414,7 +1412,7 @@
               <summary>
                 <div class="pricing-group-summary">
                   <h3>Финишная обработка</h3>
-                  <span class="pricing-group-status ready">Подготовлено</span>
+                  <span class="pricing-group-status">План</span>
                 </div>
                 <p class="pricing-group-compact">Покрытия и подбор цвета для дерева.</p>
               </summary>
@@ -1424,7 +1422,6 @@
                 <p class="pricing-group-meta">Влияет на: финишную обработку, защиту, покраску, внешний вид покрытия.</p>
                 <p class="pricing-group-meta">Не используется: материал проступей, облицовка, ограждения, подсветка.</p>
                 <div class="pricing-group-actions">
-                  <button class="btn btn-secondary" type="button">Настроить группу</button>
                   <button class="btn btn-secondary" type="button" disabled>Добавление будет подключено следующим PR</button>
                   <p class="pricing-group-actions-note">Сохранение будет подключено следующим PR.</p>
                 </div>
@@ -1556,7 +1553,7 @@
               <summary>
                 <div class="pricing-group-summary">
                   <h3>Ограждения</h3>
-                  <span class="pricing-group-status ready">Подготовлено</span>
+                  <span class="pricing-group-status ready">Есть настройки</span>
                 </div>
                 <p class="pricing-group-compact">Отдельная коммерческая группа для стоимости ограждений.</p>
               </summary>
@@ -1564,7 +1561,7 @@
                 <p>Варианты ограждений показываются отдельно от материалов ступеней, облицовки и финишной обработки.</p>
                 <p class="pricing-group-meta">Цена подготавливается как будущая ставка, чаще всего за погонный метр.</p>
                 <div class="pricing-group-actions">
-                  <button class="btn btn-secondary" type="button">Настроить группу</button>
+                  <a class="btn btn-secondary" href="#current-railing-pricing" data-pricing-target>Открыть цены ограждений</a>
                   <button class="btn btn-secondary" type="button" disabled>Добавление будет подключено следующим PR</button>
                 </div>
                 <div class="pricing-items-list" aria-label="Варианты группы Ограждения">
@@ -1683,7 +1680,7 @@
               <summary>
                 <div class="pricing-group-summary">
                   <h3>Подсветка</h3>
-                  <span class="pricing-group-status ready">Подготовлено</span>
+                  <span class="pricing-group-status">План</span>
                 </div>
                 <p class="pricing-group-compact">Сценарии подсветки ступеней.</p>
               </summary>
@@ -1691,7 +1688,6 @@
                 <p>Подготовительный read-only/read-edit UI группы подсветки для коммерческих сценариев.</p>
                 <p class="pricing-group-meta">Подсветка считается отдельно от материалов ступеней, облицовки, финишной обработки, ограждений и монтажных работ.</p>
                 <div class="pricing-group-actions">
-                  <button class="btn btn-secondary" type="button">Настроить группу</button>
                   <button class="btn btn-secondary" type="button" disabled>Добавление будет подключено следующим PR</button>
                   <p class="pricing-group-actions-note">Сохранение будет подключено следующим PR.</p>
                 </div>
@@ -1796,7 +1792,7 @@
               <summary>
                 <div class="pricing-group-summary">
                   <h3>Работы и подготовка</h3>
-                  <span class="pricing-group-status ready">Подготовлено</span>
+                  <span class="pricing-group-status">План</span>
                 </div>
                 <p class="pricing-group-compact">Сервисные и монтажные операции.</p>
               </summary>
@@ -1806,7 +1802,6 @@
                 <p class="pricing-group-meta">Проверки готового металлокаркаса и бетонного основания относятся к инженерной проверке и уточнению цены.</p>
                 <p class="pricing-group-meta">Не использовать как geometry fit для пустого проёма.</p>
                 <div class="pricing-group-actions">
-                  <button class="btn btn-secondary" type="button">Настроить группу</button>
                   <button class="btn btn-secondary" type="button" disabled>Добавление будет подключено следующим PR</button>
                 </div>
                 <div class="pricing-items-list" aria-label="Варианты группы Работы и подготовка">
@@ -1970,7 +1965,7 @@
               <summary>
                 <div class="pricing-group-summary">
                   <h3>Регионы</h3>
-                  <span class="pricing-group-status ready">Подготовлено</span>
+                  <span class="pricing-group-status">План</span>
                 </div>
                 <p class="pricing-group-compact">Региональные коэффициенты, логистика и зоны выезда.</p>
               </summary>
@@ -1980,7 +1975,6 @@
                 <p class="pricing-group-meta">Влияет на: региональную корректировку итоговой стоимости, логистику, выезд.</p>
                 <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, ограждения, подсветка.</p>
                 <div class="pricing-group-actions">
-                  <button class="btn btn-secondary" type="button">Настроить группу</button>
                   <button class="btn btn-secondary" type="button" disabled>Добавить вариант</button>
                   <p class="pricing-group-actions-note">Добавление будет подключено следующим PR.</p>
                 </div>
@@ -2070,7 +2064,7 @@
               <summary>
                 <div class="pricing-group-summary">
                   <h3>Коэффициенты</h3>
-                  <span class="pricing-group-status ready">Подготовлено</span>
+                  <span class="pricing-group-status ready">Есть настройки</span>
                 </div>
                 <p class="pricing-group-compact">Подготовленные коэффициенты для внутренней корректировки итоговой стоимости.</p>
               </summary>
@@ -2079,7 +2073,7 @@
                 <p class="pricing-group-meta">Влияет на: внутреннюю корректировку итоговой стоимости</p>
                 <p class="pricing-group-meta">Не используется: материал ступеней, облицовка, финишная обработка, ограждения, подсветка</p>
                 <div class="pricing-group-actions">
-                  <button class="btn btn-secondary" type="button">Настроить группу</button>
+                  <a class="btn btn-secondary" href="#current-turnkey-pricing" data-pricing-target>Открыть коэффициент под ключ</a>
                   <button class="btn btn-secondary" type="button" disabled>Добавление будет подключено следующим PR</button>
                   <p class="pricing-group-actions-note">Сохранение будет подключено следующим PR.</p>
                 </div>
@@ -2244,7 +2238,7 @@
               <summary>
                 <div class="pricing-group-summary">
                   <h3>Тексты и дисклеймеры</h3>
-                  <span class="pricing-group-status ready">Подготовлено</span>
+                  <span class="pricing-group-status">План</span>
                 </div>
                 <p class="pricing-group-compact">Read-only тексты для будущей коммуникации результата калькулятора.</p>
               </summary>
@@ -2253,7 +2247,6 @@
                 <p class="pricing-group-meta">Влияет на: коммуникацию результата калькулятора и заявки.</p>
                 <p class="pricing-group-meta">Не используется: числовой расчёт, материалы, коэффициенты, Supabase.</p>
                 <div class="pricing-group-actions">
-                  <button class="btn btn-secondary" type="button">Настроить группу</button>
                   <button class="btn btn-secondary" type="button" disabled>Добавление будет подключено следующим PR</button>
                   <p class="pricing-group-actions-note">Сохранение, Supabase и подключение к публичному калькулятору не входят в этот этап.</p>
                 </div>
@@ -2476,6 +2469,17 @@
     const logoutBtn = document.getElementById('logoutBtn');
     const adminMenuToggle = document.getElementById('adminMenuToggle');
     const adminSidebarBackdrop = document.getElementById('adminSidebarBackdrop');
+    document.querySelectorAll('[data-pricing-target]').forEach((link) => {
+      link.addEventListener('click', (event) => {
+        const target = document.getElementById(link.hash.slice(1));
+        if (!target) return;
+        event.preventDefault();
+        target.closest('details').open = true;
+        target.scrollIntoView({ block: 'start' });
+        target.focus({ preventScroll: true });
+      });
+    });
+
     const adminSections = [...document.querySelectorAll('[data-admin-section]')];
     const adminNavItems = [...document.querySelectorAll('[data-admin-nav]')];
     const overviewCalculatorMode = document.getElementById('overviewCalculatorMode');
