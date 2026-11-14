@@ -180,11 +180,15 @@ export function calculateQuantityEngine(rawInput = {}, options = {}) {
   const quantities = buildQuantities({ geometry, preset, railing, claddingSheets: rawInput.claddingSheets });
   const materialRows = buildMaterialRows({ catalog, quantities, preset });
   const consumableRows = buildConsumableRows({ catalog, quantities });
+  const workshopBudget = quantities.mdfSheets.cladding?.laminatedWhite
+    ? addWorkshopBudget(materialRows, rawInput.workshopBudget)
+    : null;
   const pricing = calculatePricing({
     materials: materialRows,
     consumables: consumableRows,
     railing,
     turnkeyCoefficient: rawInput.turnkeyCoefficient ?? options.turnkeyCoefficient,
+    workshopBudget,
     diagnostics
   });
 
@@ -478,6 +482,23 @@ function buildConsumableRows({ catalog, quantities }) {
   ].filter(Boolean);
 }
 
+function addWorkshopBudget(rows, budget) {
+  const { shoeSheetCost, paintMin, paintMax } = budget || {};
+  if (![shoeSheetCost, paintMin, paintMax].every((value) => Number.isFinite(value) && value > 0)
+      || paintMax < paintMin) return null;
+  for (let index = rows.length - 1; index >= 0; index--) {
+    if (['primer', 'enamel', 'lacquer'].includes(rows[index].quantityKind)) rows.splice(index, 1);
+  }
+  const paintMidpoint = (paintMin + paintMax) / 2;
+  for (const item of [
+    { code: 'MDF_16_SHOE_HALF_SHEET', name: 'МДФ 16 мм — сапожки 1035 × 2800 мм', unit: 'sheet', baseCost: shoeSheetCost },
+    { code: 'WORKSHOP_PAINT_BUDGET', name: 'Покрасочные материалы', unit: 'set', baseCost: paintMidpoint }
+  ]) {
+    rows.push(materialLine([{ ...item, active: true, wastePercent: 0 }], item.code, 1));
+  }
+  return { paintMin, paintMax, paintMidpoint };
+}
+
 function buildRailing(rawInput, preset, selectedRailingType) {
   if (isRailingDisabled(rawInput)) {
     return {
@@ -548,7 +569,7 @@ function resolveRailingType(value, types, diagnostics) {
   return match;
 }
 
-function calculatePricing({ materials, consumables, railing, turnkeyCoefficient, diagnostics = [] }) {
+function calculatePricing({ materials, consumables, railing, turnkeyCoefficient, workshopBudget, diagnostics = [] }) {
   const materialAndConsumablesSubtotal = roundTo(
     sumRows(materials) + sumRows(consumables) + numberValue(railing.materialSubtotal),
     2
@@ -562,7 +583,12 @@ function calculatePricing({ materials, consumables, railing, turnkeyCoefficient,
   return {
     materialAndConsumablesSubtotal,
     turnkeyCoefficient: safeTurnkeyCoefficient,
-    clientPrice: roundTo(materialAndConsumablesSubtotal * safeTurnkeyCoefficient, 2)
+    clientPrice: roundTo(materialAndConsumablesSubtotal * safeTurnkeyCoefficient, 2),
+    ...(workshopBudget ? {
+      clientPriceMin: roundTo((materialAndConsumablesSubtotal - workshopBudget.paintMidpoint + workshopBudget.paintMin) * safeTurnkeyCoefficient, 2),
+      clientPriceMax: roundTo((materialAndConsumablesSubtotal - workshopBudget.paintMidpoint + workshopBudget.paintMax) * safeTurnkeyCoefficient, 2),
+      workshopBudget
+    } : {})
   };
 }
 

@@ -164,6 +164,13 @@ assert.equal(tat.materials.find(({ code }) => code === 'MDF_10_WHITE_LAMINATED_S
 assert.equal(tat.materials.find(({ code }) => code === 'MDF_38_SHEET').unitCost, 12171);
 assert.equal(tat.quantities.lacquer.liters, 0);
 assert.equal(tat.quantities.enamel.finishAreaM2, tat.quantities.treadAreaM2);
+const workshop = calculateQuantityFromCalculator(
+  { ...previewConfig, preview_workshop_budget: true }, previewGeometry, getStepwisePricingRegion('tatarstan')
+).quantityEngineResult;
+assert.equal(workshop.materials.find(({ code }) => code === 'MDF_16_SHOE_HALF_SHEET').subtotal, 1640);
+assert.equal(workshop.materials.find(({ code }) => code === 'WORKSHOP_PAINT_BUDGET').subtotal, 17500);
+assert.ok(workshop.materials.every(({ quantityKind }) => !['primer', 'enamel', 'lacquer'].includes(quantityKind)));
+assert.equal(workshop.pricing.clientPriceMax - workshop.pricing.clientPriceMin, 13500);
 
 const pricedResult = calculateQuantityFromCalculator(
   baseConfig({ turnkeyCoefficient: 2.8 }),

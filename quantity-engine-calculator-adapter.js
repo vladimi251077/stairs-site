@@ -1,5 +1,5 @@
 import { calculateQuantityEngine } from './quantity-engine.js';
-import { enamelTreadMdfSheetCost, getStepwiseCladdingSheetCost } from './calculator-preview-pricing.js';
+import { enamelTreadMdfSheetCost, getStepwiseCladdingSheetCost, shoeMdfHalfSheetCost } from './calculator-preview-pricing.js';
 
 const READY_BASE_CONDITIONS = new Set(['existing_metal_frame', 'ready_frame']);
 const CONCRETE_BASE_CONDITIONS = new Set(['existing_concrete_base']);
@@ -57,6 +57,9 @@ export function buildQuantityEngineInput(config = {}, geometry = {}, options = {
         input.claddingSheets.laminatedWhite = true;
         input.claddingSheets.estimatedUnitCost = getStepwiseCladdingSheetCost(widthMm, heightMm);
         input.claddingSheets.enamelTreadSheetCost = enamelTreadMdfSheetCost;
+        if (config.preview_workshop_budget) {
+          input.workshopBudget = { shoeSheetCost: shoeMdfHalfSheetCost, paintMin: 15000, paintMax: 20000 };
+        }
       }
     }
   }

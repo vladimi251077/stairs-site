@@ -160,6 +160,18 @@ for (const id of ['sheetCountField', 'sheetSizeField']) {
   field.removeAttribute('id');
   sheetFields.append(field);
 }
+const workshopBudget = document.createElement('input');
+workshopBudget.type = 'checkbox';
+workshopBudget.id = 'stepwiseWorkshopBudget';
+const budgetLabel = document.createElement('label');
+budgetLabel.className = 'stepwise-budget-option';
+budgetLabel.append(workshopBudget, ' Учесть типовой расход на сапожки и эмаль');
+const budgetHelp = document.createElement('p');
+budgetHelp.className = 'field-help';
+budgetHelp.id = 'stepwiseWorkshopBudgetHelp';
+budgetHelp.textContent = 'Для лестницы как в примере: 1 лист МДФ 16 мм (1035 × 2800 мм) и 15–20 тыс. ₽ на покрасочные материалы.';
+workshopBudget.setAttribute('aria-describedby', budgetHelp.id);
+sheetFields.append(budgetLabel, budgetHelp);
 serviceOptions.append(sheetFields);
 const railingGrid = makeGrid(railing);
 moveField('railingOption', railingGrid);
@@ -186,6 +198,8 @@ function syncReadyBaseFields() {
   railingLength.hidden = !isReadyBase();
   sheetFields.hidden = !isReadyBase() || finishScopeSelect.value !== 'full_cladding';
   sheetInputs.forEach((input) => { input.disabled = sheetFields.hidden; });
+  workshopBudget.disabled = sheetFields.hidden;
+  if (sheetFields.hidden) workshopBudget.checked = false;
 }
 byId('baseCondition').addEventListener('change', syncReadyBaseFields);
 finishScopeSelect.addEventListener('change', syncReadyBaseFields);
@@ -209,7 +223,7 @@ navigation(shape, () => show(scenario), () => show(dimensions));
 navigation(dimensions, () => show(shape), () => show(isReadyBase() ? details : materials));
 navigation(details, () => show(dimensions), () => show(materials));
 navigation(materials, () => show(isReadyBase() ? details : dimensions), () => {
-  const required = !sheetFields.hidden && sheetInputs.some((input) => input.value !== '');
+  const required = !sheetFields.hidden && (workshopBudget.checked || sheetInputs.some((input) => input.value !== ''));
   for (const input of sheetInputs) input.required = required;
   if (sheetInputs.every((input) => input.reportValidity())) show(railing);
 });

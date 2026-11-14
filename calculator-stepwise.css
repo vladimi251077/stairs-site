@@ -27,6 +27,17 @@
   padding: 0 6px;
 }
 
+.stepwise-app .stepwise-budget-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.stepwise-app .stepwise-budget-option input {
+  width: auto;
+}
+
 .stepwise-app .stepwise-progress {
   width: fit-content;
   margin: 0 0 12px;

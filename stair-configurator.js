@@ -629,6 +629,7 @@ function getConfigFromForm() {
     frame_material: $('frameMaterial')?.value || 'metal',
     pricing_region_code: $('stepwisePricingRegion')?.value || $('pricingRegion')?.value || getActivePricingRegions()[0]?.code || 'primary_region',
     preview_pricing: Boolean($('stepwisePricingRegion')),
+    preview_workshop_budget: Boolean($('stepwiseWorkshopBudget')?.checked && !$('stepwiseWorkshopBudget').disabled),
     finish_material: $('finishMaterial')?.value || 'oak',
     railing_option: $('railingOption')?.value || 'metal',
     coating_option: $('coatingOption')?.value || 'standard',
@@ -1280,8 +1281,11 @@ export function buildMaterialsFromQuantityEngine(quantityAdapterResult) {
       },
       {
         label: 'Покрытия: грунт / эмаль / лак',
-        value: `${formatQuantityEngineQuantity(primer.liters || 0, 'л')} / ${formatQuantityEngineQuantity(enamel.liters || 0, 'л')} / ${formatQuantityEngineQuantity(lacquer.liters || 0, 'л')}`
+        value: result.pricing.workshopBudget
+          ? 'Покрасочные материалы учтены по ориентиру'
+          : `${formatQuantityEngineQuantity(primer.liters || 0, 'л')} / ${formatQuantityEngineQuantity(enamel.liters || 0, 'л')} / ${formatQuantityEngineQuantity(lacquer.liters || 0, 'л')}`
       },
+      ...(result.pricing.workshopBudget ? [{ label: 'Сапожки', value: '1 лист МДФ 16 мм · 1035 × 2800 мм' }] : []),
       {
         label: 'Расходники',
         value: `крепёж ${formatQuantityEngineQuantity(quantities.consumables?.fasteners?.sets || 0, 'компл.')}, клей ${formatQuantityEngineQuantity(quantities.consumables?.adhesive?.kg || 0, 'кг')}, герметик ${formatQuantityEngineQuantity(quantities.consumables?.sealant?.tubes || 0, 'туб')}`
@@ -1314,8 +1318,8 @@ export function buildPriceFromQuantityEngine(quantityAdapterResult, previewRegio
 
   return {
     total,
-    min: total,
-    max: total,
+    min: pricing.clientPriceMin ?? total,
+    max: pricing.clientPriceMax ?? total,
     subtotalBeforeRegion: materialAndConsumablesSubtotal,
     regionalAdjustment: 0,
     regionalCoef: 1,
@@ -1345,7 +1349,7 @@ function renderPrice(price) {
 
   if (price.pricingModel === 'quantity_engine_turnkey_coefficient') {
     root.innerHTML = `
-      <div class="price-main">${money(price.total)}</div>
+      <div class="price-main">${price.min === price.max ? money(price.total) : `${money(price.min)} — ${money(price.max)}`}</div>
       <div class="muted">Предварительная стоимость под ключ</div>
       ${price.pricingRegion.code !== 'no_region_coefficient' ? `<div class="muted">${escapeHtml(price.pricingRegion.name)}</div>` : ''}
       <div class="muted">Финальная смета уточняется после проверки размеров, основания и выбранной комплектации.</div>
