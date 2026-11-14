@@ -337,7 +337,7 @@ for (const id of ['engineerReviewLink', 'requestLink']) {
     if (!payload) return;
     // Full calculation URLs can exceed the proxy's request-line limit.
     try {
-      const ref = crypto.randomUUID();
+      const ref = Array.from(crypto.getRandomValues(new Uint8Array(16)), (byte) => byte.toString(16).padStart(2, '0')).join('');
       sessionStorage.setItem('tekstura_stepwise_request', JSON.stringify({ ref, payload, savedAt: Date.now() }));
       destination.searchParams.delete('calc');
       destination.searchParams.set('calc_ref', ref);

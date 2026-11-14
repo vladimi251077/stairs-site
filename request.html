@@ -422,6 +422,7 @@ function buildNotifyUiMessage(notifyResult) {
 }
 
 async function sendRequest() {
+  if (window.TEKSTURA_ISOLATED_CALCULATOR === true) return;
   const status = document.getElementById('status');
   const sendBtn = document.getElementById('sendBtn');
   const successState = document.getElementById('successState');
@@ -519,6 +520,10 @@ async function sendRequest() {
 }
 
 parseCalc();
+if (window.TEKSTURA_ISOLATED_CALCULATOR === true) {
+  document.getElementById('sendBtn').disabled = true;
+  document.getElementById('status').textContent = 'Тестовая заявка. Отправка отключена.';
+}
 </script>
 </body>
 </html>
