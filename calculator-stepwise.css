@@ -1,0 +1,70 @@
+.stepwise-app {
+  max-width: 960px;
+}
+
+.stepwise-app .top {
+  padding: clamp(20px, 5vw, 44px);
+  border: 1px solid #67503b;
+  border-radius: 18px;
+  background: linear-gradient(90deg, #18130ff5 15%, #18130f86),
+    url('/docs/assets/calculator-preview/calculator-premium-bg.webp') center / cover;
+}
+
+.stepwise-app [hidden] {
+  display: none !important;
+}
+
+.stepwise-app .stepwise-progress {
+  width: fit-content;
+  margin: 0 0 12px;
+  color: #ebc99d;
+  font-weight: 650;
+}
+
+.stepwise-scenarios {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.stepwise-scenario {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  padding: 9px;
+  min-width: 0;
+  border: 1px solid #745a43;
+  border-radius: 12px;
+}
+
+.stepwise-scenario[aria-pressed='true'] {
+  border: 2px solid #efc28c;
+  padding: 8px;
+  background: #37271d;
+}
+
+.stepwise-scenario img {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  border-radius: 7px;
+}
+
+.stepwise-scenario:focus-visible,
+.stepwise-app .step h2:focus-visible {
+  outline: 2px solid #efc28c;
+  outline-offset: 3px;
+}
+
+@media (max-width: 560px) {
+  .stepwise-scenarios {
+    grid-template-columns: 1fr;
+  }
+
+  .stepwise-scenario {
+    grid-template-columns: minmax(95px, 32%) 1fr;
+    align-items: center;
+    text-align: left;
+  }
+}

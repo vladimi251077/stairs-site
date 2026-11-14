@@ -57,6 +57,7 @@ async function submitTestRequest(href) {
   };
   const context = createContext({
     document,
+    URLSearchParams,
     window: {
       location: new URL(href, 'https://test.invalid'),
       SUPABASE_CONFIG: { url: 'test', anonKey: 'test' },

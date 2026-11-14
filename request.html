@@ -346,8 +346,16 @@ function readStoredCalcPayload(storage, key) {
 
 function parseCalc(){
   const queryRaw = getRawQueryParam('calc');
-  if (queryRaw) {
-    calcPayload = parseCalcPayloadFromUrl(queryRaw);
+  const stepwiseRef = new URLSearchParams(window.location.search).get('calc_ref');
+  if (queryRaw || stepwiseRef !== null) {
+    if (queryRaw) {
+      calcPayload = parseCalcPayloadFromUrl(queryRaw);
+    } else {
+      const entry = parseCalcPayloadFromStorage(storageGet(window.sessionStorage, 'tekstura_stepwise_request'));
+      if (entry?.ref === stepwiseRef && isFreshTimestamp(entry.savedAt)) {
+        calcPayload = parseCalcPayloadFromStorage(entry.payload);
+      }
+    }
     if (!calcPayload) {
       document.getElementById('calcData').textContent = 'Не удалось прочитать расчёт. Вы можете отправить заявку вручную.';
       return;
