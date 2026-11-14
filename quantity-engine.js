@@ -179,6 +179,11 @@ export function calculateQuantityEngine(rawInput = {}, options = {}) {
   const railing = buildRailing(rawInput, preset, selectedRailingType);
   const quantities = buildQuantities({ geometry, preset, railing, claddingSheets: rawInput.claddingSheets });
   const materialRows = buildMaterialRows({ catalog, quantities, preset });
+  for (const item of rawInput.additionalMaterials ?? []) {
+    materialRows.push(materialLine([{ ...item, active: true }], item.code, item.quantity, {
+      quantityKind: 'underStairDoor', applyWaste: false, wastePercent: 0
+    }));
+  }
   const consumableRows = buildConsumableRows({ catalog, quantities });
   const workshopBudget = quantities.mdfSheets.cladding?.laminatedWhite
     ? addWorkshopBudget(materialRows, consumableRows, rawInput.workshopBudget)

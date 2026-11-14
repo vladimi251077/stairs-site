@@ -1,5 +1,5 @@
 import { calculateQuantityEngine } from './quantity-engine.js';
-import { enamelTreadMdfSheetCost, getStepwiseCladdingSheetCost, shoeMdfHalfSheetCost, trimMdfCost } from './calculator-preview-pricing.js';
+import { enamelTreadMdfSheetCost, getStepwiseCladdingSheetCost, shoeMdfHalfSheetCost, trimMdfCost, underStairDoorMaterials } from './calculator-preview-pricing.js';
 
 const READY_BASE_CONDITIONS = new Set(['existing_metal_frame', 'ready_frame']);
 const CONCRETE_BASE_CONDITIONS = new Set(['existing_concrete_base']);
@@ -48,6 +48,9 @@ export function buildQuantityEngineInput(config = {}, geometry = {}, options = {
   }
 
   if (isExistingBase && config.finish_scope === 'full_cladding') {
+    if (config.preview_pricing && config.preview_under_stair_door) {
+      input.additionalMaterials = underStairDoorMaterials;
+    }
     const [sheets, widthMm, heightMm] = [
       config.cladding_sheet_count, config.cladding_sheet_width, config.cladding_sheet_height
     ].map(Number);

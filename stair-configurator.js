@@ -630,6 +630,7 @@ function getConfigFromForm() {
     pricing_region_code: $('stepwisePricingRegion')?.value || $('pricingRegion')?.value || getActivePricingRegions()[0]?.code || 'primary_region',
     preview_pricing: Boolean($('stepwisePricingRegion')),
     preview_workshop_budget: Boolean($('stepwiseWorkshopBudget')?.checked && !$('stepwiseWorkshopBudget').disabled),
+    preview_under_stair_door: Boolean($('stepwiseUnderStairDoor')?.checked && !$('stepwiseUnderStairDoor').disabled),
     finish_material: $('finishMaterial')?.value || 'oak',
     railing_option: $('railingOption')?.value || 'metal',
     coating_option: $('coatingOption')?.value || 'standard',
@@ -1289,6 +1290,8 @@ export function buildMaterialsFromQuantityEngine(quantityAdapterResult) {
         { label: 'Сапожки', value: '1 лист МДФ 16 мм · 1035 × 2800 мм' },
         { label: 'Нащельники', value: '15 полос МДФ 4 мм · 40 × 2800 мм' }
       ] : []),
+      ...(result.materials.some(({ quantityKind }) => quantityKind === 'underStairDoor')
+        ? [{ label: 'Дверка и каркас', value: 'ЛМДФ 16 мм с кромкой · 13 брусков' }] : []),
       {
         label: 'Расходники',
         value: `крепёж ${result.pricing.workshopBudget ? 'учтён по ориентиру' : formatQuantityEngineQuantity(quantities.consumables?.fasteners?.sets || 0, 'компл.')}, клей ${formatQuantityEngineQuantity(quantities.consumables?.adhesive?.kg || 0, 'кг')}, герметик ${formatQuantityEngineQuantity(quantities.consumables?.sealant?.tubes || 0, 'туб')}`
@@ -1470,6 +1473,7 @@ function buildCalculationPayload(config, geometry, materials = state.materials, 
       cladding_sheet_count: config.cladding_sheet_count,
       cladding_sheet_width: config.cladding_sheet_width,
       cladding_sheet_height: config.cladding_sheet_height,
+      ...(config.preview_under_stair_door ? { under_stair_door: true } : {}),
       full_cladding_area_m2: compactGeometry.service_metrics?.fullCladdingAreaM2 || 0,
       finish_surface_area_m2: compactGeometry.service_metrics?.finishSurfaceAreaM2 || 0,
       total_finish_area_m2: compactGeometry.service_metrics?.totalFinishAreaM2 || compactGeometry.service_metrics?.finishAreaM2 || 0,
@@ -1543,6 +1547,7 @@ function buildCalculationPayload(config, geometry, materials = state.materials, 
       ready_frame_straight_railing_length: config.ready_frame_straight_railing_length,
       ready_frame_additional_railing_length_m: config.ready_frame_straight_railing_length,
       additional_railing_length_m: config.ready_frame_straight_railing_length,
+      ...(config.preview_under_stair_door ? { under_stair_door: true } : {}),
       finish_scope: config.finish_scope,
       finish_scope_label: FINISH_SCOPE_LABELS[config.finish_scope],
       clad_risers: config.clad_risers,

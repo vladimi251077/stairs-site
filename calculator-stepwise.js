@@ -172,6 +172,13 @@ budgetHelp.id = 'stepwiseWorkshopBudgetHelp';
 budgetHelp.textContent = 'Для лестницы как в примере: 1 лист МДФ 16 мм на сапожки, 15 полос МДФ 4 мм на нащельники, 15–20 тыс. ₽ на покрасочные материалы и 20 тыс. ₽ на крепёж.';
 workshopBudget.setAttribute('aria-describedby', budgetHelp.id);
 sheetFields.append(budgetLabel, budgetHelp);
+const underStairDoor = document.createElement('input');
+underStairDoor.type = 'checkbox';
+underStairDoor.id = 'stepwiseUnderStairDoor';
+const doorLabel = document.createElement('label');
+doorLabel.className = 'stepwise-budget-option';
+doorLabel.append(underStairDoor, ' Добавить дверку 1350 × 680 мм и каркас из 13 брусков');
+sheetFields.append(doorLabel);
 serviceOptions.append(sheetFields);
 const railingGrid = makeGrid(railing);
 moveField('railingOption', railingGrid);
@@ -200,6 +207,8 @@ function syncReadyBaseFields() {
   sheetInputs.forEach((input) => { input.disabled = sheetFields.hidden; });
   workshopBudget.disabled = sheetFields.hidden;
   if (sheetFields.hidden) workshopBudget.checked = false;
+  underStairDoor.disabled = sheetFields.hidden;
+  if (sheetFields.hidden) underStairDoor.checked = false;
 }
 byId('baseCondition').addEventListener('change', syncReadyBaseFields);
 finishScopeSelect.addEventListener('change', syncReadyBaseFields);

@@ -183,6 +183,7 @@ function buildCalcSummary(payload) {
       details.ready_frame_tread_depth ? `Глубина ступени: ${details.ready_frame_tread_depth} мм` : '',
       details.ready_frame_riser_height ? `Высота подступенка: ${details.ready_frame_riser_height} мм` : '',
       details.cladding_sheet_count ? `Листы: ${details.cladding_sheet_count} шт (${details.cladding_sheet_width || '-'}×${details.cladding_sheet_height || '-'} мм)` : '',
+      details.under_stair_door ? 'Дверка 1350 × 680 мм с кромкой и каркас из 13 брусков' : '',
       details.full_cladding_area_m2 ? `Площадь обшивки каркаса: ${details.full_cladding_area_m2} м²` : '',
       details.total_finish_area_m2 ? `Общая площадь отделки: ${details.total_finish_area_m2} м²` : '',
       details.has_landing ? `Площадка: ${details.landing_area || metrics.landingAreaM2 || '-'} м²` : '',

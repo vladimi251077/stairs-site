@@ -179,6 +179,14 @@ assert.deepEqual(
   [['WORKSHOP_FASTENER_BUDGET', 20000]]
 );
 assert.equal(tat.consumables.find(({ quantityKind }) => quantityKind === 'fasteners').code, 'FASTENERS_BASIC');
+const withDoor = calculateQuantityFromCalculator(
+  { ...previewConfig, preview_under_stair_door: true }, previewGeometry, getStepwisePricingRegion('tatarstan')
+).quantityEngineResult;
+assert.deepEqual(
+  withDoor.materials.filter(({ quantityKind }) => quantityKind === 'underStairDoor').map(({ subtotal }) => subtotal),
+  [839.44, 138, 6500]
+);
+assert.equal(Math.round((withDoor.pricing.materialAndConsumablesSubtotal - tat.pricing.materialAndConsumablesSubtotal) * 100), 747744);
 
 const pricedResult = calculateQuantityFromCalculator(
   baseConfig({ turnkeyCoefficient: 2.8 }),
