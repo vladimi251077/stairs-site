@@ -360,7 +360,11 @@ function parseCalc(){
   }
 
   if (calcPayload) {
-    document.getElementById('calcData').textContent = buildCalcSummary(calcPayload).join('\n');
+    const summary = buildCalcSummary(calcPayload);
+    if (calcPayload.request_mode === 'engineer_review') {
+      summary.unshift('Тип заявки: инженерная проверка');
+    }
+    document.getElementById('calcData').textContent = summary.join('\n');
   }
 }
 
@@ -463,6 +467,9 @@ async function sendRequest() {
       pricing_snapshot: calcPayload?.pricing_snapshot || null,
       meta: {
         request_source: isCalculatorLead ? 'calculator' : 'manual',
+        ...(isCalculatorLead && calcPayload.request_mode === 'engineer_review'
+          ? { request_mode: 'engineer_review' }
+          : {}),
         has_calc_payload: isCalculatorLead,
         submitted_at: new Date().toISOString(),
         lead_tracking: trackingData

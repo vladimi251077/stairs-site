@@ -1580,7 +1580,10 @@ function updateRequestLinks(payload) {
   const requestLink = $('requestLink');
   const reviewLink = $('engineerReviewLink');
 
-  if (requestLink) requestLink.href = buildRequestUrl(payload, 'calculation');
+  if (requestLink) {
+    const mode = isInspectionScenario(payload.base_condition) ? 'engineer_review' : 'calculation';
+    requestLink.href = buildRequestUrl(payload, mode);
+  }
   if (reviewLink) reviewLink.href = buildRequestUrl(payload, 'engineer_review');
 }
 
