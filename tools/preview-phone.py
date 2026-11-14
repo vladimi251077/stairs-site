@@ -16,6 +16,7 @@ class Preview(SimpleHTTPRequestHandler):
         '/quantity-engine-supabase-runtime.js', '/supabase-config.js', '/lead-tracker.js',
         '/contact-component.css', '/contact-component.js', '/site-unified.css',
         '/styles.css', '/site-unify.css',
+        '/assets/design/home-hero.jpg', '/assets/design/tekstura-header-logo.png',
     }
     pricing_url = ''
     def end_headers(self):
