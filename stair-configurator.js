@@ -1335,6 +1335,8 @@ export function buildPriceFromQuantityEngine(quantityAdapterResult, previewRegio
     },
     baseLabor: 0,
     materialCost: materialAndConsumablesSubtotal,
+    otherExpensesPercent: pricing.otherExpensesPercent ?? 0,
+    otherExpenses: pricing.otherExpenses ?? 0,
     pricingModel: 'quantity_engine_turnkey_coefficient',
     turnkeyCoefficient: Number(pricing.turnkeyCoefficient || 1)
   };
@@ -1494,6 +1496,10 @@ function buildCalculationPayload(config, geometry, materials = state.materials, 
         ? {
             pricing_model: price.pricingModel,
             material_and_consumables_subtotal: Math.round(price.subtotalBeforeRegion || 0),
+            ...(config.preview_pricing ? {
+              other_expenses_percent: price.otherExpensesPercent,
+              other_expenses: price.otherExpenses
+            } : {}),
             turnkey_coefficient: Number(price.turnkeyCoefficient || 1),
             client_price: Math.round(price.total || 0),
             total: Math.round(price.total || 0),
@@ -1523,7 +1529,8 @@ function buildCalculationPayload(config, geometry, materials = state.materials, 
               code: price.pricingRegion.code,
               name: price.pricingRegion.name,
               price_coef: 1
-            }
+            },
+            ...(config.preview_pricing ? { other_expenses_percent: price.otherExpensesPercent } : {})
           }
         : {
             defaults: state.dictionaries.defaults,
@@ -1676,7 +1683,10 @@ function runConfigurator() {
 
   const runtimeOptions = buildQuantityEngineRuntimeOptions(state.dictionaries.quantityEngineRuntime);
   const previewRegion = config.preview_pricing ? getStepwisePricingRegion(config.pricing_region_code) : null;
-  if (previewRegion) runtimeOptions.turnkeyCoefficient = previewRegion.turnkeyCoefficient;
+  if (previewRegion) {
+    runtimeOptions.turnkeyCoefficient = previewRegion.turnkeyCoefficient;
+    runtimeOptions.otherExpensesPercent = previewRegion.otherExpensesPercent;
+  }
   const quantityEngine = calculateQuantityFromCalculator(config, geometry, runtimeOptions);
   state.quantityEngine = quantityEngine;
 

@@ -80,6 +80,7 @@ export function buildQuantityEngineInput(config = {}, geometry = {}, options = {
   if (turnkeyCoefficient !== undefined) {
     input.turnkeyCoefficient = turnkeyCoefficient;
   }
+  if (config.preview_pricing) input.otherExpensesPercent = options.otherExpensesPercent;
 
   return input;
 }

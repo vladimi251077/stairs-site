@@ -193,6 +193,7 @@ export function calculateQuantityEngine(rawInput = {}, options = {}) {
     consumables: consumableRows,
     railing,
     turnkeyCoefficient: rawInput.turnkeyCoefficient ?? options.turnkeyCoefficient,
+    otherExpensesPercent: rawInput.otherExpensesPercent,
     workshopBudget,
     diagnostics
   });
@@ -582,12 +583,19 @@ function resolveRailingType(value, types, diagnostics) {
   return match;
 }
 
-function calculatePricing({ materials, consumables, railing, turnkeyCoefficient, workshopBudget, diagnostics = [] }) {
+function calculatePricing({ materials, consumables, railing, turnkeyCoefficient, otherExpensesPercent, workshopBudget, diagnostics = [] }) {
   const materialAndConsumablesSubtotal = roundTo(
     sumRows(materials) + sumRows(consumables) + numberValue(railing.materialSubtotal),
     2
   );
   const safeTurnkeyCoefficient = resolveTurnkeyCoefficient(turnkeyCoefficient, diagnostics);
+  const otherRate = Number.isFinite(otherExpensesPercent) && otherExpensesPercent >= 0 && otherExpensesPercent <= 100
+    ? otherExpensesPercent : 0;
+  const otherExpenses = (subtotal) => roundTo(subtotal * otherRate / 100, 2);
+  const clientPrice = (subtotal) => {
+    const base = roundTo(subtotal, 2);
+    return roundTo((base + otherExpenses(base)) * safeTurnkeyCoefficient, 2);
+  };
 
   if (materialAndConsumablesSubtotal === 0) {
     diagnostics.push({ level: 'warning', code: 'ZERO_MATERIAL_SUBTOTAL', message: 'Material and consumables subtotal is zero.' });
@@ -596,10 +604,14 @@ function calculatePricing({ materials, consumables, railing, turnkeyCoefficient,
   return {
     materialAndConsumablesSubtotal,
     turnkeyCoefficient: safeTurnkeyCoefficient,
-    clientPrice: roundTo(materialAndConsumablesSubtotal * safeTurnkeyCoefficient, 2),
+    clientPrice: clientPrice(materialAndConsumablesSubtotal),
+    ...(otherRate ? {
+      otherExpensesPercent: otherRate,
+      otherExpenses: otherExpenses(materialAndConsumablesSubtotal)
+    } : {}),
     ...(workshopBudget ? {
-      clientPriceMin: roundTo((materialAndConsumablesSubtotal - workshopBudget.paintMidpoint + workshopBudget.paintMin) * safeTurnkeyCoefficient, 2),
-      clientPriceMax: roundTo((materialAndConsumablesSubtotal - workshopBudget.paintMidpoint + workshopBudget.paintMax) * safeTurnkeyCoefficient, 2),
+      clientPriceMin: clientPrice(materialAndConsumablesSubtotal - workshopBudget.paintMidpoint + workshopBudget.paintMin),
+      clientPriceMax: clientPrice(materialAndConsumablesSubtotal - workshopBudget.paintMidpoint + workshopBudget.paintMax),
       workshopBudget
     } : {})
   };

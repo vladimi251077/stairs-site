@@ -38,6 +38,18 @@
   width: auto;
 }
 
+.stepwise-app .stepwise-pricing-settings {
+  margin: 12px 0;
+  padding: 12px;
+  border: 1px solid #745a43;
+  border-radius: 10px;
+}
+
+.stepwise-app .stepwise-pricing-settings form {
+  display: grid;
+  gap: 8px;
+}
+
 .stepwise-app .stepwise-progress {
   width: fit-content;
   margin: 0 0 12px;

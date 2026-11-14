@@ -1,4 +1,4 @@
-import { stepwisePricingRegions } from './calculator-preview-pricing.js';
+import { readStepwisePricingSettings, saveStepwisePricingSettings } from './calculator-preview-pricing.js';
 
 const byId = (id) => document.getElementById(id);
 const app = document.querySelector('.calculator-app');
@@ -194,12 +194,78 @@ regionLabel.htmlFor = 'stepwisePricingRegion';
 regionLabel.textContent = 'Регион работ';
 const regionSelect = document.createElement('select');
 regionSelect.id = regionLabel.htmlFor;
-for (const region of stepwisePricingRegions) {
-  regionSelect.add(new Option(region.name, region.code));
+function refreshRegions(regions) {
+  const previous = regionSelect.value;
+  regionSelect.replaceChildren(...regions.map(({ name, code }) => new Option(name, code)));
+  if (regions.some(({ code }) => code === previous)) regionSelect.value = previous;
 }
+refreshRegions(readStepwisePricingSettings().regions);
 previewRegionField.append(regionLabel, regionSelect);
 pricingInputs.append(previewRegionField);
+materials.append(buildPricingSettings());
 materials.append(pricingInputs, serviceOptions);
+
+function buildPricingSettings() {
+  const settings = readStepwisePricingSettings();
+  const panel = document.createElement('details');
+  panel.className = 'stepwise-pricing-settings';
+  const title = document.createElement('summary');
+  title.textContent = 'Настройки цены для теста';
+  const settingsForm = document.createElement('form');
+  const status = document.createElement('p');
+  status.setAttribute('role', 'status');
+  const hint = document.createElement('p');
+  hint.textContent = 'Настройки сохраняются в этом браузере. Новые расчёты используют выбранный город.';
+
+  function field(label, value, options) {
+    const wrapper = document.createElement('label');
+    wrapper.textContent = label;
+    const input = document.createElement('input');
+    Object.assign(input, options, { value, required: true });
+    wrapper.append(input);
+    return wrapper;
+  }
+
+  const expenses = field('Прочие расходы, %', settings.otherExpensesPercent, {
+    type: 'number', min: '0', max: '100', step: '0.001'
+  });
+  const cities = document.createElement('div');
+  const editors = [];
+  function addCity({ code, name, turnkeyCoefficient }) {
+    const row = document.createElement('div');
+    row.className = 'grid';
+    const city = field('Город или регион', name, { type: 'text', maxLength: 80 });
+    const rate = field('Коэффициент', turnkeyCoefficient, { type: 'number', min: '1', max: '20', step: '0.01' });
+    row.append(city, rate);
+    editors.push({ code, city: city.querySelector('input'), rate: rate.querySelector('input') });
+    cities.append(row);
+    return city.querySelector('input');
+  }
+  settings.regions.forEach(addCity);
+  const add = button('Добавить город', false, () => {
+    addCity({ code: 'city-' + crypto.randomUUID(), name: '', turnkeyCoefficient: '' }).focus();
+  });
+  const save = document.createElement('button');
+  save.type = 'submit';
+  save.className = 'btn-primary';
+  save.textContent = 'Сохранить настройки';
+  settingsForm.append(hint, expenses, cities, add, save, status);
+  settingsForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    try {
+      const updated = saveStepwisePricingSettings({
+        otherExpensesPercent: expenses.querySelector('input').valueAsNumber,
+        regions: editors.map(({ code, city, rate }) => ({ code, name: city.value, turnkeyCoefficient: rate.valueAsNumber }))
+      });
+      refreshRegions(updated.regions);
+      status.textContent = 'Настройки сохранены.';
+    } catch (error) {
+      status.textContent = error instanceof Error ? error.message : 'Настройки не удалось сохранить.';
+    }
+  });
+  panel.append(title, settingsForm);
+  return panel;
+}
 function syncReadyBaseFields() {
   finishScope.hidden = !isReadyBase();
   railingLength.hidden = !isReadyBase();

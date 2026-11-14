@@ -157,8 +157,10 @@ const msk = calculateQuantityFromCalculator(previewConfig, previewGeometry, getS
 assert.equal(tat.pricing.turnkeyCoefficient, 2.7);
 assert.equal(msk.pricing.turnkeyCoefficient, 3);
 assert.equal(tat.pricing.materialAndConsumablesSubtotal, msk.pricing.materialAndConsumablesSubtotal);
-assert.equal(tat.pricing.clientPrice, Math.round(tat.pricing.materialAndConsumablesSubtotal * 270) / 100);
-assert.equal(msk.pricing.clientPrice, Math.round(msk.pricing.materialAndConsumablesSubtotal * 300) / 100);
+assert.equal(tat.pricing.otherExpensesPercent, 15.924);
+assert.equal(tat.pricing.otherExpenses, Math.round(tat.pricing.materialAndConsumablesSubtotal * 15.924) / 100);
+assert.equal(tat.pricing.clientPrice, Math.round((tat.pricing.materialAndConsumablesSubtotal + tat.pricing.otherExpenses) * 270) / 100);
+assert.equal(msk.pricing.clientPrice, Math.round((msk.pricing.materialAndConsumablesSubtotal + msk.pricing.otherExpenses) * 300) / 100);
 assert.equal(tat.railing.totalLengthM, 7);
 assert.equal(tat.materials.find(({ code }) => code === 'MDF_10_WHITE_LAMINATED_SHEET').subtotal, 5187.5);
 assert.equal(tat.materials.find(({ code }) => code === 'MDF_38_SHEET').unitCost, 12000);
@@ -172,7 +174,7 @@ assert.equal(workshop.materials.find(({ code }) => code === 'MDF_4_TRIM_SET').su
 assert.ok(workshop.materials.every(({ quantityKind }) => quantityKind !== 'coverStrips'));
 assert.equal(workshop.materials.find(({ code }) => code === 'WORKSHOP_PAINT_BUDGET').subtotal, 17500);
 assert.ok(workshop.materials.every(({ quantityKind }) => !['primer', 'enamel', 'lacquer'].includes(quantityKind)));
-assert.equal(workshop.pricing.clientPriceMax - workshop.pricing.clientPriceMin, 13500);
+assert.ok(Math.abs(workshop.pricing.clientPriceMax - workshop.pricing.clientPriceMin - 5000 * 1.15924 * 2.7) < 0.04);
 assert.deepEqual(
   workshop.consumables.filter(({ quantityKind }) => quantityKind === 'fasteners')
     .map(({ code, subtotal }) => [code, subtotal]),
