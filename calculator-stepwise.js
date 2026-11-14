@@ -138,9 +138,27 @@ const extraFields = [
 const extraGrid = makeGrid(details);
 for (const id of extraFields) extraGrid.append(byId(id));
 details.append(byId('existingMetalGroup'), byId('existingConcreteGroup'));
-const finishScope = byId('finishScope').closest('.field');
+const finishScopeSelect = byId('finishScope');
+const finishScope = finishScopeSelect.closest('.field');
 const serviceOptions = byId('serviceOptionsGroup');
 serviceOptions.prepend(finishScope);
+const sheetFields = document.createElement('fieldset');
+const sheetLegend = document.createElement('legend');
+sheetLegend.textContent = 'МДФ 10 мм на всю обшивку, включая подступенки';
+sheetFields.append(sheetLegend);
+const sheetInputs = ['claddingSheetCount', 'claddingSheetWidth', 'claddingSheetHeight'].map(byId);
+for (const input of sheetInputs) {
+  input.value = '';
+  input.min = '1';
+  input.step = '1';
+}
+for (const id of ['sheetCountField', 'sheetSizeField']) {
+  const field = byId(id);
+  field.classList.remove('hidden');
+  field.removeAttribute('id');
+  sheetFields.append(field);
+}
+serviceOptions.append(sheetFields);
 const railingGrid = makeGrid(railing);
 moveField('railingOption', railingGrid);
 const railingLength = byId('readyFrameStraightRailingLength').closest('.field');
@@ -149,8 +167,11 @@ materials.append(byId('pricingInputGroup'), serviceOptions);
 function syncReadyBaseFields() {
   finishScope.hidden = !isReadyBase();
   railingLength.hidden = !isReadyBase();
+  sheetFields.hidden = !isReadyBase() || finishScopeSelect.value !== 'full_cladding';
+  sheetInputs.forEach((input) => { input.disabled = sheetFields.hidden; });
 }
 byId('baseCondition').addEventListener('change', syncReadyBaseFields);
+finishScopeSelect.addEventListener('change', syncReadyBaseFields);
 syncReadyBaseFields();
 const calculateGeometry = byId('toResultsBtn');
 const oldDimensionActions = calculateGeometry.closest('.actions');
@@ -170,7 +191,11 @@ navigation(scenario, null, () => show(shape));
 navigation(shape, () => show(scenario), () => show(dimensions));
 navigation(dimensions, () => show(shape), () => show(isReadyBase() ? details : materials));
 navigation(details, () => show(dimensions), () => show(materials));
-navigation(materials, () => show(isReadyBase() ? details : dimensions), () => show(railing));
+navigation(materials, () => show(isReadyBase() ? details : dimensions), () => {
+  const required = !sheetFields.hidden && sheetInputs.some((input) => input.value !== '');
+  for (const input of sheetInputs) input.required = required;
+  if (sheetInputs.every((input) => input.reportValidity())) show(railing);
+});
 editBackLink(review, () => show(railing));
 editBackLink(result, () => show(review));
 for (const id of ['engineerReviewLink', 'requestLink']) {

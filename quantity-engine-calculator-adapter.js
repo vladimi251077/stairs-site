@@ -46,6 +46,15 @@ export function buildQuantityEngineInput(config = {}, geometry = {}, options = {
     input.platformDepth = firstPresent(config.landing_length, config.ready_frame_march_width, config.march_width);
   }
 
+  if (isExistingBase && config.finish_scope === 'full_cladding') {
+    const [sheets, widthMm, heightMm] = [
+      config.cladding_sheet_count, config.cladding_sheet_width, config.cladding_sheet_height
+    ].map(Number);
+    if ([sheets, widthMm, heightMm].every((value) => Number.isSafeInteger(value) && value > 0)) {
+      input.claddingSheets = { sheets, widthMm, heightMm };
+    }
+  }
+
   const railingLengthM = resolveRailingLengthM({
     config, geometry, serviceMetrics, isExistingBase, topBalustradeLengthM: input.topBalustradeLengthM
   });

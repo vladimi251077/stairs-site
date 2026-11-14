@@ -176,9 +176,10 @@ export function calculateQuantityEngine(rawInput = {}, options = {}) {
   const selectedRailingType = railingDisabled
     ? null
     : resolveRailingType(rawInput.railingTypeId ?? rawInput.railingType, options.railingTypes || railingTypes, diagnostics);
-  const materialRows = buildMaterialRows({ catalog, geometry, preset });
-  const consumableRows = buildConsumableRows({ catalog, geometry, preset });
   const railing = buildRailing(rawInput, preset, selectedRailingType);
+  const quantities = buildQuantities({ geometry, preset, railing, claddingSheets: rawInput.claddingSheets });
+  const materialRows = buildMaterialRows({ catalog, quantities, preset });
+  const consumableRows = buildConsumableRows({ catalog, quantities });
   const pricing = calculatePricing({
     materials: materialRows,
     consumables: consumableRows,
@@ -189,7 +190,7 @@ export function calculateQuantityEngine(rawInput = {}, options = {}) {
 
   return {
     geometry,
-    quantities: buildQuantities({ geometry, preset, railing }),
+    quantities,
     materials: materialRows,
     consumables: consumableRows,
     railing,
@@ -284,9 +285,9 @@ function normalizeGeometry(rawInput, preset, diagnostics = []) {
   };
 }
 
-function buildQuantities({ geometry, preset, railing }) {
+function buildQuantities({ geometry, preset, railing, claddingSheets }) {
   const finishAreaM2 = roundTo(geometry.treadAreaM2 + geometry.riserAreaM2 + geometry.platformAreaM2, 2);
-  const mdfSheets = calculateMdfSheets(geometry, preset.wastePercent);
+  const mdfSheets = calculateMdfSheets(geometry, preset.wastePercent, claddingSheets);
   const addons = calculateAddons(geometry, preset);
   const coatings = calculateCoatings(finishAreaM2);
   const consumables = calculateConsumables(geometry, finishAreaM2, addons.coverStrips.lengthM);
@@ -313,7 +314,7 @@ function buildQuantities({ geometry, preset, railing }) {
   };
 }
 
-function calculateMdfSheets(geometry, wastePercent) {
+function calculateMdfSheets(geometry, wastePercent, claddingSheets) {
   const sheetAreaM2 = MDF_SHEET_SPECS.standard.areaM2;
   const treads = mdfAreaQuantity(geometry.treadAreaM2, wastePercent, sheetAreaM2, 'MDF_36_SHEET');
   const platforms = mdfAreaQuantity(geometry.platformAreaM2, wastePercent, sheetAreaM2, 'MDF_36_SHEET');
@@ -324,20 +325,35 @@ function calculateMdfSheets(geometry, wastePercent) {
     'MDF_36_SHEET'
   );
   const risers = mdfSheetQuantity(geometry.riserAreaM2, wastePercent, sheetAreaM2, 'MDF_10_SHEET');
+  const cladding = [claddingSheets?.sheets, claddingSheets?.widthMm, claddingSheets?.heightMm]
+    .every((value) => Number.isSafeInteger(value) && value > 0)
+    ? {
+        ...claddingSheets,
+        materialCode: 'MDF_10_SHEET',
+        sheetAreaM2: claddingSheets.widthMm * claddingSheets.heightMm / 1_000_000,
+        includesRisers: true
+      }
+    : null;
+  if (cladding) {
+    cladding.purchasedAreaM2 = roundTo(cladding.sheets * cladding.sheetAreaM2, 2);
+    risers.sheets = 0;
+  }
+  const sheetCount = treadsAndPlatforms.sheets + (cladding?.sheets ?? risers.sheets);
 
   return {
     treads,
     risers,
+    ...(cladding ? { cladding } : {}),
     platforms,
     treadsAndPlatforms,
     total: {
       areaM2: roundTo(treadsAndPlatforms.areaM2 + risers.areaM2, 2),
       areaWithWasteM2: roundTo(treadsAndPlatforms.areaWithWasteM2 + risers.areaWithWasteM2, 2),
-      sheets: treadsAndPlatforms.sheets + risers.sheets,
+      sheets: sheetCount,
       sheetAreaM2,
       wastePercent
     },
-    count: treadsAndPlatforms.sheets + risers.sheets,
+    count: sheetCount,
     wastePercent
   };
 }
@@ -417,12 +433,13 @@ function calculateConsumables(geometry, finishAreaM2, openSideLengthM) {
   };
 }
 
-function buildMaterialRows({ catalog, geometry, preset }) {
-  const quantities = buildQuantities({ geometry, preset, railing: { totalLengthM: 0, topBalustradeLengthM: 0, typeId: null } });
-
+function buildMaterialRows({ catalog, quantities, preset }) {
+  const { cladding, risers } = quantities.mdfSheets;
   return [
     materialLine(catalog, 'MDF_36_SHEET', quantities.mdfSheets.treadsAndPlatforms.sheets, { name: 'MDF 36 мм, лист — ступени и площадки', quantityKind: 'mdfTreadsAndPlatforms', wastePercent: preset.wastePercent, applyWaste: false }),
-    materialLine(catalog, 'MDF_10_SHEET', quantities.mdfSheets.risers.sheets, { name: 'MDF 10 мм, лист — подступенки', quantityKind: 'mdfRisers', wastePercent: preset.wastePercent, applyWaste: false }),
+    materialLine(catalog, 'MDF_10_SHEET', cladding?.sheets ?? risers.sheets, cladding
+      ? { name: 'МДФ 10 мм — обшивка с подступенками', quantityKind: 'mdfCladding', wastePercent: 0, applyWaste: false }
+      : { name: 'MDF 10 мм, лист — подступенки', quantityKind: 'mdfRisers', wastePercent: preset.wastePercent, applyWaste: false }),
     materialLine(catalog, 'ADDONS_TRIMS', quantities.nosingStrips.lengthM, { name: 'Доборы и планки — передняя кромка', quantityKind: 'nosingStrips' }),
     materialLine(catalog, 'ADDONS_TRIMS', quantities.endTrims.lengthM, { name: 'Доборы и планки — торцевые планки', quantityKind: 'endTrims' }),
     materialLine(catalog, 'ADDONS_TRIMS', quantities.coverStrips.lengthM, { name: 'Доборы и планки — нащельники', quantityKind: 'coverStrips' }),
@@ -432,9 +449,7 @@ function buildMaterialRows({ catalog, geometry, preset }) {
   ].filter(Boolean);
 }
 
-function buildConsumableRows({ catalog, geometry, preset }) {
-  const quantities = buildQuantities({ geometry, preset, railing: { totalLengthM: 0, topBalustradeLengthM: 0, typeId: null } });
-
+function buildConsumableRows({ catalog, quantities }) {
   return [
     materialLine(catalog, CONSUMABLE_NORMS.fasteners.code, quantities.consumables.fasteners.sets, { quantityKind: 'fasteners' }),
     materialLine(catalog, CONSUMABLE_NORMS.adhesive.code, quantities.consumables.adhesive.kg, { quantityKind: 'adhesive' }),

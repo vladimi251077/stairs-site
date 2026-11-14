@@ -124,6 +124,31 @@ assert.equal(concreteInput.stepCount, 9);
 assert.equal(concreteInput.riserCount, 9);
 assert.equal(concreteInput.railingLengthM, 3.6);
 
+const claddingConfig = baseConfig({
+  base_condition: 'existing_metal_frame',
+  ready_frame_step_count: 15,
+  ready_frame_march_width: 900,
+  ready_frame_tread_depth: 265,
+  ready_frame_riser_height: 180,
+  finish_scope: 'full_cladding',
+  cladding_sheet_count: 5,
+  cladding_sheet_width: 1035,
+  cladding_sheet_height: 2800
+});
+const withCladding = calculateQuantityFromCalculator(claddingConfig, baseGeometry());
+const withoutCladding = calculateQuantityFromCalculator(
+  { ...claddingConfig, finish_scope: 'treads_and_risers' }, baseGeometry()
+);
+const claddingResult = withCladding.quantityEngineResult;
+const tenMmRows = claddingResult.materials.filter((row) => row.code === 'MDF_10_SHEET');
+assert.equal(tenMmRows.length, 1);
+assert.equal(tenMmRows[0].quantity, 5);
+assert.equal(tenMmRows[0].quantityWithWaste, 5);
+assert.equal(claddingResult.quantities.mdfSheets.risers.sheets, 0);
+assert.equal(claddingResult.quantities.mdfSheets.cladding.purchasedAreaM2, 14.49);
+assert.equal(withoutCladding.quantityEngineResult.quantities.mdfSheets.risers.sheets, 1);
+assert.equal(withoutCladding.quantityEngineInput.claddingSheets, undefined);
+
 const pricedResult = calculateQuantityFromCalculator(
   baseConfig({ turnkeyCoefficient: 2.8 }),
   baseGeometry()

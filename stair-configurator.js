@@ -588,6 +588,12 @@ function clearIrrelevantScenarioFields() {
   if (!isConcreteBase) resetFieldValue('concreteBaseCondition', 'ready');
 }
 
+function readStepwiseCladdingInput(id) {
+  const input = $(id);
+  if (!input?.closest('.stepwise-app') || input.disabled) return 0;
+  return Number(input.value) || 0;
+}
+
 function getConfigFromForm() {
   const baseConditionRaw = $('baseCondition')?.value || 'empty_opening';
   const baseCondition = normalizeBaseConditionValue(baseConditionRaw);
@@ -634,9 +640,9 @@ function getConfigFromForm() {
     ready_frame_straight_railing_length: Number($('readyFrameStraightRailingLength')?.value || 0),
     finish_scope: normalizeFinishScope($('finishScope')?.value),
     clad_risers: normalizeFinishScope($('finishScope')?.value) !== 'treads_only',
-    cladding_sheet_count: 0,
-    cladding_sheet_width: 0,
-    cladding_sheet_height: 0,
+    cladding_sheet_count: readStepwiseCladdingInput('claddingSheetCount'),
+    cladding_sheet_width: readStepwiseCladdingInput('claddingSheetWidth'),
+    cladding_sheet_height: readStepwiseCladdingInput('claddingSheetHeight'),
     has_landing: hasLanding,
     landing_length: Number($('landingLength')?.value || 0),
     landing_width: Number($('landingWidth')?.value || 0),
@@ -1265,8 +1271,10 @@ export function buildMaterialsFromQuantityEngine(quantityAdapterResult) {
         value: `${formatQuantityEngineQuantity(mdfSheets.treadsAndPlatforms?.sheets || 0, 'лист.')}`
       },
       {
-        label: 'MDF 10 листы',
-        value: `${formatQuantityEngineQuantity(mdfSheets.risers?.sheets || 0, 'лист.')}`
+        label: mdfSheets.cladding ? 'МДФ 10 мм — обшивка с подступенками' : 'MDF 10 листы',
+        value: mdfSheets.cladding
+          ? `${mdfSheets.cladding.sheets} лист. · ${mdfSheets.cladding.widthMm} × ${mdfSheets.cladding.heightMm} мм`
+          : formatQuantityEngineQuantity(mdfSheets.risers?.sheets || 0, 'лист.')
       },
       {
         label: 'Покрытия: грунт / эмаль / лак',
