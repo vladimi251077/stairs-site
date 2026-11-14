@@ -184,9 +184,9 @@ const withDoor = calculateQuantityFromCalculator(
 ).quantityEngineResult;
 assert.deepEqual(
   withDoor.materials.filter(({ quantityKind }) => quantityKind === 'underStairDoor').map(({ subtotal }) => subtotal),
-  [839.44, 138, 6500]
+  [2000, 6500]
 );
-assert.equal(Math.round((withDoor.pricing.materialAndConsumablesSubtotal - tat.pricing.materialAndConsumablesSubtotal) * 100), 747744);
+assert.equal(Math.round((withDoor.pricing.materialAndConsumablesSubtotal - tat.pricing.materialAndConsumablesSubtotal) * 100), 850000);
 
 const pricedResult = calculateQuantityFromCalculator(
   baseConfig({ turnkeyCoefficient: 2.8 }),
