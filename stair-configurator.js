@@ -1,6 +1,6 @@
 import { calculateReadyFrameGeometry, calculateStairGeometry } from './stair-geometry-engine.js';
 import { calculateQuantityFromCalculator, requiresRailingQuote } from './quantity-engine-calculator-adapter.js';
-import { getStepwisePricingRegion } from './calculator-preview-pricing.js';
+import { getStepwisePricingRegion, stepwiseRailingOptions, stepwiseTreadMaterials } from './calculator-preview-pricing.js';
 import {
   buildQuantityEngineRuntimeOptions,
   normalizeQuantityEngineSettings,
@@ -349,6 +349,10 @@ function getScenarioRowsByGroup(group) {
 }
 
 function getScenarioOptionLabel(group, key) {
+  if (typeof document !== 'undefined' && $(SCENARIO_RATE_SELECTS[group]?.id)?.dataset.stepwiseOptions) {
+    const labels = group === 'railingPerM' ? stepwiseRailingOptions : stepwiseTreadMaterials;
+    if (Object.hasOwn(labels, key)) return labels[key];
+  }
   const row = getScenarioRowsByGroup(group).find((item) => item.rate_key === key);
   return row?.label || key || 'Уточняется';
 }
@@ -364,7 +368,7 @@ function getOptionLabel(kind, key) {
 function renderScenarioRateOptions(group, preferredValue = null) {
   const config = SCENARIO_RATE_SELECTS[group];
   const select = config ? $(config.id) : null;
-  if (!select) return;
+  if (!select || select.dataset.stepwiseOptions) return;
 
   const rows = getScenarioRowsByGroup(group);
   const fallbackRows = createDefaultScenarioRateRows()
@@ -375,11 +379,7 @@ function renderScenarioRateOptions(group, preferredValue = null) {
   const currentValue = preferredValue || select.value || config.fallback;
 
   select.innerHTML = options
-    .map((row) => {
-      const tubeLabel = select.id === 'railingOption' && row.rate_key === 'metal' && $('stepwisePricingRegion')
-        && $('baseCondition')?.value === 'ready_base' && $('finishScope')?.value === 'full_cladding';
-      return `<option value="${escapeHtml(row.rate_key)}">${escapeHtml(tubeLabel ? 'Металлические трубки' : row.label)}</option>`;
-    })
+    .map((row) => `<option value="${escapeHtml(row.rate_key)}">${escapeHtml(row.label)}</option>`)
     .join('');
 
   const nextValue = options.some((row) => row.rate_key === currentValue)
@@ -1275,7 +1275,7 @@ export function buildMaterialsFromQuantityEngine(quantityAdapterResult) {
         value: `${formatQuantityEngineQuantity(quantities.platforms?.count ?? quantities.platformCount, 'шт')} · ${formatQuantityEngineArea(quantities.platforms?.areaM2 ?? quantities.platformAreaM2)}`
       },
       {
-        label: mdfSheets.cladding?.laminatedWhite ? 'МДФ 38 мм — ступени и площадки' : 'MDF 36 листы',
+        label: mdfSheets.treadsAndPlatforms?.materialCode === 'MDF_38_SHEET' ? 'МДФ 38 мм — ступени и площадки' : 'MDF 36 листы',
         value: `${formatQuantityEngineQuantity(mdfSheets.treadsAndPlatforms?.sheets || 0, 'лист.')}`
       },
       {
@@ -1322,14 +1322,17 @@ export function buildMaterialsFromQuantityEngine(quantityAdapterResult) {
 export function buildPriceFromQuantityEngine(quantityAdapterResult, previewRegion) {
   if (!quantityAdapterResult?.valid || !quantityAdapterResult.quantityEngineResult?.pricing) return null;
 
-  const pricing = quantityAdapterResult.quantityEngineResult.pricing;
-  const total = Number(pricing.clientPrice || 0);
+  const { pricing, railing } = quantityAdapterResult.quantityEngineResult;
+  const startingAt = Boolean(railing?.clientPricePerMeter);
+  const minimum = pricing.clientPriceMin ?? pricing.clientPrice;
+  const total = Number((startingAt ? minimum : pricing.clientPrice) || 0);
   const materialAndConsumablesSubtotal = Number(pricing.materialAndConsumablesSubtotal || 0);
 
   return {
     total,
-    min: pricing.clientPriceMin ?? total,
-    max: pricing.clientPriceMax ?? total,
+    min: minimum ?? total,
+    max: startingAt ? null : pricing.clientPriceMax ?? total,
+    startingAt,
     subtotalBeforeRegion: materialAndConsumablesSubtotal,
     regionalAdjustment: 0,
     regionalCoef: 1,
@@ -1361,7 +1364,7 @@ function renderPrice(price) {
 
   if (price.pricingModel === 'quantity_engine_turnkey_coefficient') {
     root.innerHTML = `
-      <div class="price-main">${price.min === price.max ? money(price.total) : `${money(price.min)} — ${money(price.max)}`}</div>
+      <div class="price-main">${price.startingAt ? `От ${money(price.min)}` : price.min === price.max ? money(price.total) : `${money(price.min)} — ${money(price.max)}`}</div>
       <div class="muted">Предварительная стоимость под ключ</div>
       ${price.pricingRegion.code !== 'no_region_coefficient' ? `<div class="muted">${escapeHtml(price.pricingRegion.name)}</div>` : ''}
       <div class="muted">Финальная смета уточняется после проверки размеров, основания и выбранной комплектации.</div>
@@ -1471,6 +1474,10 @@ function buildCalculationPayload(config, geometry, materials = state.materials, 
       pricing_region_code: config.pricing_region_code,
       finish_material: config.finish_material,
       railing_option: config.railing_option,
+      ...(config.preview_pricing ? {
+        finish_material_label: getOptionLabel('finish_material', config.finish_material),
+        railing_option_label: getOptionLabel('railing', config.railing_option)
+      } : {}),
       coating_option: config.coating_option,
       lighting_option: config.lighting_option,
       turn_direction: config.turn_direction,
@@ -1523,6 +1530,7 @@ function buildCalculationPayload(config, geometry, materials = state.materials, 
             max: Math.round(price.max || 0)
           }
       : null,
+    ...(price?.startingAt ? { price_starting_at: true } : {}),
     preliminary_price_min: price?.min ? Math.round(price.min) : 0,
     preliminary_price_max: price?.max ? Math.round(price.max) : 0,
     pricing_snapshot: price
@@ -1688,11 +1696,15 @@ function runConfigurator() {
 
   const runtimeOptions = buildQuantityEngineRuntimeOptions(state.dictionaries.quantityEngineRuntime);
   const previewRegion = config.preview_pricing ? getStepwisePricingRegion(config.pricing_region_code) : null;
-  if (requiresRailingQuote(config)) {
+  const needsTreadQuote = config.preview_pricing && config.finish_material !== 'mdf_enamel';
+  const needsRailingQuote = requiresRailingQuote(config);
+  if (needsTreadQuote || needsRailingQuote) {
     const payload = buildCalculationPayload(config, geometry, null, null, 'engineer_review');
     saveCalculationPayload(payload);
     updateRequestLinks(payload);
-    $('priceResult').textContent = 'Цену ограждения уточнит инженер. Размеры и выбранные материалы можно передать на проверку.';
+    const item = needsTreadQuote && needsRailingQuote ? 'ступеней и ограждения'
+      : needsTreadQuote ? 'ступеней' : 'ограждения';
+    $('priceResult').textContent = 'Цену ' + item + ' уточнит инженер. Размеры и выбранные материалы можно передать на проверку.';
     showStep(4);
     return;
   }

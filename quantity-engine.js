@@ -177,8 +177,11 @@ export function calculateQuantityEngine(rawInput = {}, options = {}) {
     ? null
     : resolveRailingType(rawInput.railingTypeId ?? rawInput.railingType, options.railingTypes || railingTypes, diagnostics);
   const railing = buildRailing(rawInput, preset, selectedRailingType);
-  const quantities = buildQuantities({ geometry, preset, railing, claddingSheets: rawInput.claddingSheets });
-  const materialRows = buildMaterialRows({ catalog, quantities, preset });
+  const enamelTreadSheetCost = rawInput.enamelTreadSheetCost
+    ?? (rawInput.claddingSheets?.laminatedWhite ? rawInput.claddingSheets.enamelTreadSheetCost : undefined);
+  const enamelTreads = Number.isFinite(enamelTreadSheetCost) && enamelTreadSheetCost > 0;
+  const quantities = buildQuantities({ geometry, preset, railing, claddingSheets: rawInput.claddingSheets, enamelTreads });
+  const materialRows = buildMaterialRows({ catalog, quantities, preset, enamelTreadSheetCost });
   for (const item of rawInput.additionalMaterials ?? []) {
     materialRows.push(materialLine([{ ...item, active: true }], item.code, item.quantity, {
       quantityKind: 'underStairDoor', applyWaste: false, wastePercent: 0
@@ -295,15 +298,15 @@ function normalizeGeometry(rawInput, preset, diagnostics = []) {
   };
 }
 
-function buildQuantities({ geometry, preset, railing, claddingSheets }) {
+function buildQuantities({ geometry, preset, railing, claddingSheets, enamelTreads }) {
   const finishAreaM2 = roundTo(geometry.treadAreaM2 + geometry.riserAreaM2 + geometry.platformAreaM2, 2);
-  const mdfSheets = calculateMdfSheets(geometry, preset.wastePercent, claddingSheets);
+  const mdfSheets = calculateMdfSheets(geometry, preset.wastePercent, claddingSheets, enamelTreads);
   const addons = calculateAddons(geometry, preset);
   const laminated = mdfSheets.cladding?.laminatedWhite === true;
   const coatings = calculateCoatings(laminated
     ? roundTo(geometry.treadAreaM2 + geometry.platformAreaM2, 2)
     : finishAreaM2);
-  if (laminated) coatings.lacquer = { ...coatings.lacquer, liters: 0 };
+  if (laminated || enamelTreads) coatings.lacquer = { ...coatings.lacquer, liters: 0 };
   const consumables = calculateConsumables(geometry, finishAreaM2, addons.coverStrips.lengthM);
 
   return {
@@ -328,15 +331,16 @@ function buildQuantities({ geometry, preset, railing, claddingSheets }) {
   };
 }
 
-function calculateMdfSheets(geometry, wastePercent, claddingSheets) {
+function calculateMdfSheets(geometry, wastePercent, claddingSheets, enamelTreads) {
   const sheetAreaM2 = MDF_SHEET_SPECS.standard.areaM2;
-  const treads = mdfAreaQuantity(geometry.treadAreaM2, wastePercent, sheetAreaM2, 'MDF_36_SHEET');
-  const platforms = mdfAreaQuantity(geometry.platformAreaM2, wastePercent, sheetAreaM2, 'MDF_36_SHEET');
+  const treadCode = enamelTreads ? 'MDF_38_SHEET' : 'MDF_36_SHEET';
+  const treads = mdfAreaQuantity(geometry.treadAreaM2, wastePercent, sheetAreaM2, treadCode);
+  const platforms = mdfAreaQuantity(geometry.platformAreaM2, wastePercent, sheetAreaM2, treadCode);
   const treadsAndPlatforms = mdfSheetQuantity(
     geometry.treadAreaM2 + geometry.platformAreaM2,
     wastePercent,
     sheetAreaM2,
-    'MDF_36_SHEET'
+    treadCode
   );
   const risers = mdfSheetQuantity(geometry.riserAreaM2, wastePercent, sheetAreaM2, 'MDF_10_SHEET');
   const cladding = [claddingSheets?.sheets, claddingSheets?.widthMm, claddingSheets?.heightMm]
@@ -352,7 +356,6 @@ function calculateMdfSheets(geometry, wastePercent, claddingSheets) {
     cladding.purchasedAreaM2 = roundTo(cladding.sheets * cladding.sheetAreaM2, 2);
     risers.sheets = 0;
     if (cladding.laminatedWhite) {
-      treads.materialCode = platforms.materialCode = treadsAndPlatforms.materialCode = 'MDF_38_SHEET';
       cladding.materialCode = 'MDF_10_WHITE_LAMINATED_SHEET';
     }
   }
@@ -451,19 +454,20 @@ function calculateConsumables(geometry, finishAreaM2, openSideLengthM) {
   };
 }
 
-function buildMaterialRows({ catalog, quantities, preset }) {
+function buildMaterialRows({ catalog, quantities, preset, enamelTreadSheetCost }) {
   const { cladding, risers } = quantities.mdfSheets;
   const treads = quantities.mdfSheets.treadsAndPlatforms;
-  const treadCatalog = cladding?.laminatedWhite
+  const enamelTreads = treads.materialCode === 'MDF_38_SHEET';
+  const treadCatalog = enamelTreads
     ? [{ code: 'MDF_38_SHEET', name: 'МДФ 38 мм — ступени и площадки', unit: 'sheet',
-        category: 'MDF', active: true, baseCost: cladding.enamelTreadSheetCost }]
+        category: 'MDF', active: true, baseCost: enamelTreadSheetCost }]
     : catalog;
   const claddingCatalog = cladding?.laminatedWhite
     ? [{ code: 'MDF_10_WHITE_LAMINATED_SHEET', name: 'Белый ЛМДФ 10 мм — обшивка с подступенками',
         unit: 'sheet', category: 'MDF', active: true, baseCost: cladding.estimatedUnitCost }]
     : catalog;
   return [
-    materialLine(treadCatalog, treads.materialCode, treads.sheets, { name: cladding?.laminatedWhite ? undefined : 'MDF 36 мм, лист — ступени и площадки', quantityKind: 'mdfTreadsAndPlatforms', wastePercent: preset.wastePercent, applyWaste: false }),
+    materialLine(treadCatalog, treads.materialCode, treads.sheets, { name: enamelTreads ? undefined : 'MDF 36 мм, лист — ступени и площадки', quantityKind: 'mdfTreadsAndPlatforms', wastePercent: preset.wastePercent, applyWaste: false }),
     materialLine(claddingCatalog, cladding?.materialCode ?? risers.materialCode, cladding?.sheets ?? risers.sheets, cladding
       ? {
           name: cladding.laminatedWhite ? 'Белый ЛМДФ 10 мм — обшивка с подступенками' : 'МДФ 10 мм — обшивка с подступенками',
@@ -540,8 +544,10 @@ function buildRailing(rawInput, preset, selectedRailingType) {
     sections: rawInput.railingSections
   });
   const effectiveLengthM = totalLengthM || defaultRailingLength(rawInput);
-  const pricePerMeter = Number.isFinite(rawInput.railingMaterialCostPerMeter) && rawInput.railingMaterialCostPerMeter > 0
+  const clientPricePerMeter = numberValue(rawInput.railingClientPricePerMeter);
+  const materialPricePerMeter = Number.isFinite(rawInput.railingMaterialCostPerMeter) && rawInput.railingMaterialCostPerMeter > 0
     ? rawInput.railingMaterialCostPerMeter : selectedRailingType.pricePerMeter;
+  const pricePerMeter = clientPricePerMeter > 0 ? 0 : materialPricePerMeter;
   const materialSubtotal = roundTo(effectiveLengthM * pricePerMeter, 2);
 
   return {
@@ -552,7 +558,10 @@ function buildRailing(rawInput, preset, selectedRailingType) {
     totalLengthM: effectiveLengthM,
     topBalustradeLengthM,
     upperBalustradeIsSeparateType: false,
-    materialSubtotal
+    materialSubtotal,
+    ...(clientPricePerMeter > 0 ? {
+      clientPricePerMeter, clientPriceMin: roundTo(effectiveLengthM * clientPricePerMeter, 2)
+    } : {})
   };
 }
 
@@ -596,7 +605,7 @@ function calculatePricing({ materials, consumables, railing, turnkeyCoefficient,
   const otherExpenses = (subtotal) => roundTo(subtotal * otherRate / 100, 2);
   const clientPrice = (subtotal) => {
     const base = roundTo(subtotal, 2);
-    return roundTo((base + otherExpenses(base)) * safeTurnkeyCoefficient, 2);
+    return roundTo((base + otherExpenses(base)) * safeTurnkeyCoefficient + (railing.clientPriceMin || 0), 2);
   };
 
   if (materialAndConsumablesSubtotal === 0) {

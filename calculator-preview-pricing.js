@@ -54,6 +54,23 @@ export const trimMdfCost = Math.round(1333 * (15 * 0.04 * 2.8) / (2.07 * 2.8) * 
 // Control order: seven metres and an estimated 10,154–10,734 ₽ in components.
 // Fasteners are budgeted separately at the stair level.
 export const referenceTubeRailingCostPerMeter = 10444 / 7;
+export const glassRailingClientPricePerMeter = 35000;
+
+export const stepwiseTreadMaterials = {
+  mdf_enamel: 'МДФ 38 мм · эмаль',
+  oak: 'Дуб',
+  ash: 'Ясень',
+  stone: 'Камень',
+  porcelain: 'Керамогранит',
+  microcement: 'Микроцемент'
+};
+
+export const stepwiseRailingOptions = {
+  metal: 'Металлические трубки Ø16 мм',
+  glass: 'Стекло',
+  wood: 'Дерево',
+  none: 'Без ограждения'
+};
 
 export function estimateStepwiseCladding(stepCount, marchWidth, treadDepth, riserHeight) {
   // The reference job used five half sheets for 15 steps on a 900 mm march.

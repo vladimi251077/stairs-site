@@ -154,7 +154,7 @@ assert.equal(withoutCladding.quantityEngineInput.claddingSheets, undefined);
 const previewGeometry = baseGeometry({ service_metrics: { railingLengthM: 7, additionalRailingLengthM: 1 } });
 const previewConfig = { ...claddingConfig, preview_pricing: true };
 assert.equal(requiresRailingQuote({ ...previewConfig, railing_option: 'wood' }), true);
-assert.equal(requiresRailingQuote({ ...previewConfig, railing_option: 'glass' }), true);
+assert.equal(requiresRailingQuote({ ...previewConfig, railing_option: 'glass' }), false);
 assert.equal(requiresRailingQuote({ ...previewConfig, railing_option: 'metal' }), false);
 assert.equal(requiresRailingQuote({ ...previewConfig, railing_option: 'none' }), false);
 assert.equal(Boolean(requiresRailingQuote({ ...claddingConfig, railing_option: 'wood' })), false);
@@ -207,6 +207,25 @@ assert.equal(clientQuote.railing.totalLengthM, 7);
 assert.equal(clientQuote.railing.materialSubtotal, 10444);
 assert.ok(clientQuote.pricing.clientPriceMin < 340000 && clientQuote.pricing.clientPriceMax > 340000);
 assert.ok(Math.abs(clientQuote.pricing.clientPrice - 340000) < 2);
+
+const glassQuoteConfig = { ...previewConfig, finish_material: 'mdf_enamel', railing_option: 'glass' };
+for (const region of ['tatarstan', 'moscow']) {
+  const settings = getStepwisePricingRegion(region);
+  const glass = calculateQuantityFromCalculator(glassQuoteConfig, previewGeometry, settings).quantityEngineResult;
+  const withoutGlass = calculateQuantityFromCalculator(
+    { ...glassQuoteConfig, railing_option: 'none' }, previewGeometry, settings
+  ).quantityEngineResult;
+  assert.equal(glass.railing.materialSubtotal, 0);
+  assert.equal(glass.railing.clientPriceMin, 245000);
+  assert.ok(Math.abs(glass.pricing.clientPrice - withoutGlass.pricing.clientPrice - 245000) < 0.01);
+}
+const mdfTreads = calculateQuantityFromCalculator(
+  { ...glassQuoteConfig, finish_scope: 'treads_only', railing_option: 'none' },
+  previewGeometry, getStepwisePricingRegion('tatarstan')
+).quantityEngineResult;
+assert.equal(mdfTreads.quantities.risers.count, 0);
+assert.equal(mdfTreads.quantities.lacquer.liters, 0);
+assert.equal(mdfTreads.materials.find(row => row.code === 'MDF_38_SHEET').unitCost, 12000);
 
 const pricedResult = calculateQuantityFromCalculator(
   baseConfig({ turnkeyCoefficient: 2.8 }),

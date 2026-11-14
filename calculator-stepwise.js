@@ -1,4 +1,5 @@
-import { readStepwisePricingSettings, saveStepwisePricingSettings, useSharedStepwisePricingSettings } from './calculator-preview-pricing.js';
+import { glassRailingClientPricePerMeter, readStepwisePricingSettings, saveStepwisePricingSettings,
+  stepwiseRailingOptions, stepwiseTreadMaterials, useSharedStepwisePricingSettings } from './calculator-preview-pricing.js';
 import { loadSharedPricing } from './calculator-pricing-store.js';
 
 const supabaseConfig = window.SUPABASE_CONFIG;
@@ -175,7 +176,31 @@ const doorLabel = document.createElement('label');
 doorLabel.className = 'stepwise-budget-option';
 doorLabel.append(underStairDoor, ' Нужна дверка под лестницей');
 serviceOptions.append(doorLabel);
+function populatePreviewSelect(id, choices) {
+  const select = byId(id);
+  select.dataset.stepwiseOptions = 'true';
+  select.replaceChildren(...Object.entries(choices).map(([value, label]) => new Option(label, value)));
+  return select;
+}
+
+const treadMaterial = populatePreviewSelect('finishMaterial', stepwiseTreadMaterials);
+document.querySelector('label[for="finishMaterial"]').textContent = 'Материал ступеней';
+const treadField = treadMaterial.closest('.field');
+const treadGrid = document.createElement('div');
+treadGrid.className = 'grid';
+treadGrid.append(treadField);
+
 const railingGrid = makeGrid(railing);
+const railingOption = populatePreviewSelect('railingOption', stepwiseRailingOptions);
+const glassHint = document.createElement('p');
+glassHint.className = 'field-help';
+glassHint.textContent = 'Стеклянное ограждение от ' + glassRailingClientPricePerMeter.toLocaleString('ru-RU') + ' ₽/м.';
+function syncGlassHint() {
+  glassHint.hidden = railingOption.value !== 'glass';
+}
+railingOption.addEventListener('change', syncGlassHint);
+syncGlassHint();
+railingOption.after(glassHint);
 moveField('railingOption', railingGrid);
 const railingLength = byId('readyFrameStraightRailingLength').closest('.field');
 railingLength.querySelector('label').textContent = 'Дополнительное ограждение, м';
@@ -207,7 +232,7 @@ if (sharedPricingConfigured && !sharedPricingAvailable) {
   notice.textContent = 'Цены с сервера недоступны. Обновите страницу перед расчётом.';
   materials.append(notice);
 }
-materials.append(pricingInputs, serviceOptions);
+materials.append(pricingInputs, treadGrid, serviceOptions);
 
 function buildPricingSettings() {
   const settings = readStepwisePricingSettings();
@@ -276,8 +301,6 @@ function syncReadyBaseFields() {
   doorLabel.hidden = !isReadyBase() || finishScopeSelect.value !== 'full_cladding';
   underStairDoor.disabled = doorLabel.hidden;
   if (doorLabel.hidden) underStairDoor.checked = false;
-  const metal = railingGrid.querySelector('#railingOption option[value="metal"]');
-  if (metal) metal.textContent = doorLabel.hidden ? 'Металл' : 'Металлические трубки';
 }
 byId('baseCondition').addEventListener('change', syncReadyBaseFields);
 finishScopeSelect.addEventListener('change', syncReadyBaseFields);
@@ -396,7 +419,8 @@ function syncProgress() {
         d.ready_frame_step_count ? `${d.ready_frame_step_count} ступ. · ${d.ready_frame_march_width} × ${d.ready_frame_tread_depth} мм · подступенок ${d.ready_frame_riser_height} мм` : '',
         !d.ready_frame_step_count && dims.floor_to_floor_height ? `высота ${dims.floor_to_floor_height} мм` : '',
         d.finish_scope_label,
-        byId('railingOption').selectedOptions[0]?.textContent,
+        treadMaterial.selectedOptions[0]?.textContent,
+        railingOption.selectedOptions[0]?.textContent,
         d.railing_length_m ? `ограждение ${d.railing_length_m} м` : '',
         d.under_stair_door ? 'дверка под лестницей' : '',
         payload.pricing_region?.name

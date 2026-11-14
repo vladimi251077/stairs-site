@@ -1,5 +1,5 @@
 import { calculateQuantityEngine } from './quantity-engine.js';
-import { enamelTreadMdfSheetCost, estimateStepwiseCladding, getStepwiseCladdingSheetCost, referenceTubeRailingCostPerMeter,
+import { enamelTreadMdfSheetCost, estimateStepwiseCladding, getStepwiseCladdingSheetCost, glassRailingClientPricePerMeter, referenceTubeRailingCostPerMeter,
   shoeMdfHalfSheetCost, trimMdfCost, underStairDoorMaterials } from './calculator-preview-pricing.js';
 
 const READY_BASE_CONDITIONS = new Set(['existing_metal_frame', 'ready_frame']);
@@ -7,9 +7,7 @@ const CONCRETE_BASE_CONDITIONS = new Set(['existing_concrete_base']);
 const DEFAULT_RAILING_TYPE_ID = 'rail_tubes_16';
 
 export function requiresRailingQuote(config) {
-  return config.preview_pricing && config.finish_scope === 'full_cladding'
-    && (READY_BASE_CONDITIONS.has(config.base_condition) || CONCRETE_BASE_CONDITIONS.has(config.base_condition))
-    && !['none', 'metal'].includes(config.railing_option);
+  return Boolean(config.preview_pricing && config.railing_option === 'wood');
 }
 
 export function mapCalculatorConfigurationType(config = {}, geometry = {}) {
@@ -48,6 +46,17 @@ export function buildQuantityEngineInput(config = {}, geometry = {}, options = {
     topBalustradeLengthM: numberOrZero(serviceMetrics.additionalRailingLengthM)
   };
 
+  if (config.preview_pricing && config.finish_material === 'mdf_enamel') {
+    input.enamelTreadSheetCost = enamelTreadMdfSheetCost;
+    if (isExistingBase && config.finish_scope === 'treads_only') input.riserCount = 0;
+  }
+  if (config.preview_pricing && config.railing_option === 'metal') {
+    input.railingMaterialCostPerMeter = referenceTubeRailingCostPerMeter;
+  }
+  if (config.preview_pricing && config.railing_option === 'glass') {
+    input.railingClientPricePerMeter = glassRailingClientPricePerMeter;
+  }
+
   if (platformCount !== undefined) {
     input.platformCount = platformCount;
     input.platformWidth = firstPresent(config.landing_width, config.ready_frame_march_width, config.march_width);
@@ -81,9 +90,6 @@ export function buildQuantityEngineInput(config = {}, geometry = {}, options = {
           };
         }
       }
-    }
-    if (config.preview_pricing && config.railing_option === 'metal') {
-      input.railingMaterialCostPerMeter = referenceTubeRailingCostPerMeter;
     }
   }
 

@@ -152,6 +152,8 @@ function buildCalcSummary(payload) {
       : [];
     const total = Number(payload.total || pricingBreakdown?.total || 0);
     const payloadPrice = payload.price || {};
+    const finishMaterial = selections.finish_material_label || selections.finish_material;
+    const railingOption = selections.railing_option_label || selections.railing_option;
     const resolvedMin = Number(
       payloadPrice.min
       ?? payload.preliminary_price_min
@@ -188,9 +190,9 @@ function buildCalcSummary(payload) {
       details.total_finish_area_m2 ? `Общая площадь отделки: ${details.total_finish_area_m2} м²` : '',
       details.has_landing ? `Площадка: ${details.landing_area || metrics.landingAreaM2 || '-'} м²` : '',
       details.has_winders ? `Забежные ступени: ${details.winder_count || metrics.winderCount || '-'}` : '',
-      selections.finish_material ? `Отделка: ${selections.finish_material}` : '',
+      finishMaterial ? `Отделка: ${finishMaterial}` : '',
       selections.coating_option ? `Покрытие: ${selections.coating_option}` : '',
-      selections.railing_option ? `Ограждение: ${selections.railing_option}` : '',
+      railingOption ? `Ограждение: ${railingOption}` : '',
       selections.lighting_option ? `Подсветка: ${selections.lighting_option}` : '',
       !isReadyBaseScenario && pricingRegion ? `Регион цены: ${pricingRegion.name || pricingRegion.code}` : '',
       !isReadyBaseScenario && pricingBreakdown ? `База до региона: ${Number(pricingBreakdown.subtotal_before_region || 0).toLocaleString('ru-RU')} ₽` : '',
@@ -200,8 +202,10 @@ function buildCalcSummary(payload) {
       geometry.tread_depth ? `Проступь: ${geometry.tread_depth} мм` : '',
       !isReadyBaseScenario && geometry.headroom_min ? `Просвет: ${geometry.headroom_min} мм` : '',
       ...summaryRows,
-      isReadyBaseScenario
-        ? `Предварительная стоимость отделки: от ${inspectionMin.toLocaleString('ru-RU')} до ${inspectionMax.toLocaleString('ru-RU')} ₽`
+      payload.price_starting_at
+        ? 'Предварительная стоимость от ' + inspectionMin.toLocaleString('ru-RU') + ' ₽'
+        : isReadyBaseScenario
+          ? `Предварительная стоимость отделки: от ${inspectionMin.toLocaleString('ru-RU')} до ${inspectionMax.toLocaleString('ru-RU')} ₽`
         : `Ориентир: ${total.toLocaleString('ru-RU')} ₽`,
       isReadyBaseScenario
         ? 'Итоговая стоимость уточняется после проверки состояния основания, размеров ступеней, узлов примыкания и объёма работ на объекте.'
