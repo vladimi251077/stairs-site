@@ -141,11 +141,13 @@ function resolveLeadContext(lead = {}) {
     ? explicitSource === 'calculator'
     : inferredCalculatorData;
   const source = hasCalculatorData ? 'Заявка из калькулятора' : 'Ручная заявка без расчёта';
+  const needsEngineerReview = hasCalculatorData && options.meta?.request_mode === 'engineer_review';
 
   const leadId = String(lead?.id || '').trim();
 
   return {
     source,
+    needsEngineerReview,
     isCalculatorLead: hasCalculatorData,
     leadIdText: leadId || 'Lead ID будет доступен в админке / базе',
     customer: {
@@ -188,6 +190,7 @@ function formatLeadMessage(lead) {
   const lines = [
     'Новая заявка Tekstura',
     `Источник: ${ctx.source}`,
+    ...(ctx.needsEngineerReview ? ['Тип заявки: инженерная проверка'] : []),
     '',
     `Имя: ${ctx.customer.name}`,
     `Телефон: ${ctx.customer.phone}`,
@@ -239,6 +242,7 @@ function formatLeadEmailHtml(lead) {
 
   const projectRows = [
     ['Источник заявки', ctx.source],
+    ...(ctx.needsEngineerReview ? [['Тип заявки', 'Инженерная проверка']] : []),
     ['Тип лестницы', staircase.type],
     ['Сценарий', staircase.scenario],
     ['Конфигурация', staircase.configuration],
