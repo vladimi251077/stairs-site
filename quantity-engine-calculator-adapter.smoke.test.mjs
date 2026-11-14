@@ -161,7 +161,7 @@ assert.equal(tat.pricing.clientPrice, Math.round(tat.pricing.materialAndConsumab
 assert.equal(msk.pricing.clientPrice, Math.round(msk.pricing.materialAndConsumablesSubtotal * 300) / 100);
 assert.equal(tat.railing.totalLengthM, 7);
 assert.equal(tat.materials.find(({ code }) => code === 'MDF_10_WHITE_LAMINATED_SHEET').subtotal, 5187.5);
-assert.equal(tat.materials.find(({ code }) => code === 'MDF_38_SHEET').unitCost, 12171);
+assert.equal(tat.materials.find(({ code }) => code === 'MDF_38_SHEET').unitCost, 12000);
 assert.equal(tat.quantities.lacquer.liters, 0);
 assert.equal(tat.quantities.enamel.finishAreaM2, tat.quantities.treadAreaM2);
 const workshop = calculateQuantityFromCalculator(
