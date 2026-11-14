@@ -1,5 +1,6 @@
 import { calculateReadyFrameGeometry, calculateStairGeometry } from './stair-geometry-engine.js';
 import { calculateQuantityFromCalculator } from './quantity-engine-calculator-adapter.js';
+import { getStepwisePricingRegion } from './calculator-preview-pricing.js';
 import {
   buildQuantityEngineRuntimeOptions,
   normalizeQuantityEngineSettings,
@@ -626,7 +627,8 @@ function getConfigFromForm() {
     opening_width: Number($('openingWidth')?.value || 0),
     march_width: Number($('marchWidth')?.value || 0),
     frame_material: $('frameMaterial')?.value || 'metal',
-    pricing_region_code: $('pricingRegion')?.value || getActivePricingRegions()[0]?.code || 'primary_region',
+    pricing_region_code: $('stepwisePricingRegion')?.value || $('pricingRegion')?.value || getActivePricingRegions()[0]?.code || 'primary_region',
+    preview_pricing: Boolean($('stepwisePricingRegion')),
     finish_material: $('finishMaterial')?.value || 'oak',
     railing_option: $('railingOption')?.value || 'metal',
     coating_option: $('coatingOption')?.value || 'standard',
@@ -1267,7 +1269,7 @@ export function buildMaterialsFromQuantityEngine(quantityAdapterResult) {
         value: `${formatQuantityEngineQuantity(quantities.platforms?.count ?? quantities.platformCount, 'шт')} · ${formatQuantityEngineArea(quantities.platforms?.areaM2 ?? quantities.platformAreaM2)}`
       },
       {
-        label: 'MDF 36 листы',
+        label: mdfSheets.cladding?.laminatedWhite ? 'МДФ 38 мм — ступени и площадки' : 'MDF 36 листы',
         value: `${formatQuantityEngineQuantity(mdfSheets.treadsAndPlatforms?.sheets || 0, 'лист.')}`
       },
       {
@@ -1303,7 +1305,7 @@ export function buildMaterialsFromQuantityEngine(quantityAdapterResult) {
   };
 }
 
-export function buildPriceFromQuantityEngine(quantityAdapterResult) {
+export function buildPriceFromQuantityEngine(quantityAdapterResult, previewRegion) {
   if (!quantityAdapterResult?.valid || !quantityAdapterResult.quantityEngineResult?.pricing) return null;
 
   const pricing = quantityAdapterResult.quantityEngineResult.pricing;
@@ -1317,7 +1319,7 @@ export function buildPriceFromQuantityEngine(quantityAdapterResult) {
     subtotalBeforeRegion: materialAndConsumablesSubtotal,
     regionalAdjustment: 0,
     regionalCoef: 1,
-    pricingRegion: {
+    pricingRegion: previewRegion ? { code: previewRegion.code, name: previewRegion.name } : {
       code: 'no_region_coefficient',
       name: 'Без регионального коэффициента'
     },
@@ -1345,6 +1347,7 @@ function renderPrice(price) {
     root.innerHTML = `
       <div class="price-main">${money(price.total)}</div>
       <div class="muted">Предварительная стоимость под ключ</div>
+      ${price.pricingRegion.code !== 'no_region_coefficient' ? `<div class="muted">${escapeHtml(price.pricingRegion.name)}</div>` : ''}
       <div class="muted">Финальная смета уточняется после проверки размеров, основания и выбранной комплектации.</div>
     `;
     return;
@@ -1396,7 +1399,9 @@ function compactGeometryForPayload(geometry) {
 function buildCalculationPayload(config, geometry, materials = state.materials, price = state.price, requestMode = 'calculation') {
   const compactGeometry = compactGeometryForPayload(geometry);
   const warnings = geometry.status === 'invalid' ? geometry.blockers || [] : geometry.warnings || [];
-  const region = getPricingRegion(config.pricing_region_code);
+  const region = config.preview_pricing
+    ? getStepwisePricingRegion(config.pricing_region_code)
+    : getPricingRegion(config.pricing_region_code);
   const quantityEnginePayload = materials?.metrics?.quantityEngineInput || state.quantityEngine?.quantityEngineInput
     ? {
         input: materials?.metrics?.quantityEngineInput || state.quantityEngine?.quantityEngineInput || null,
@@ -1504,8 +1509,8 @@ function buildCalculationPayload(config, geometry, materials = state.materials, 
             pricing_model: price.pricingModel,
             turnkey_coefficient: Number(price.turnkeyCoefficient || 1),
             region: {
-              code: 'no_region_coefficient',
-              name: 'Без регионального коэффициента',
+              code: price.pricingRegion.code,
+              name: price.pricingRegion.name,
               price_coef: 1
             }
           }
@@ -1658,6 +1663,8 @@ function runConfigurator() {
   }
 
   const runtimeOptions = buildQuantityEngineRuntimeOptions(state.dictionaries.quantityEngineRuntime);
+  const previewRegion = config.preview_pricing ? getStepwisePricingRegion(config.pricing_region_code) : null;
+  if (previewRegion) runtimeOptions.turnkeyCoefficient = previewRegion.turnkeyCoefficient;
   const quantityEngine = calculateQuantityFromCalculator(config, geometry, runtimeOptions);
   state.quantityEngine = quantityEngine;
 
@@ -1665,7 +1672,7 @@ function runConfigurator() {
   state.materials = materials;
   renderMaterials(materials);
 
-  state.price = buildPriceFromQuantityEngine(quantityEngine);
+  state.price = buildPriceFromQuantityEngine(quantityEngine, previewRegion);
   renderPrice(state.price);
 
   const payload = buildCalculationPayload(config, geometry, materials, state.price);

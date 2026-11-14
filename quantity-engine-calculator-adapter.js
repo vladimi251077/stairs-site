@@ -1,4 +1,5 @@
 import { calculateQuantityEngine } from './quantity-engine.js';
+import { enamelTreadMdfSheetCost, getStepwiseCladdingSheetCost } from './calculator-preview-pricing.js';
 
 const READY_BASE_CONDITIONS = new Set(['existing_metal_frame', 'ready_frame']);
 const CONCRETE_BASE_CONDITIONS = new Set(['existing_concrete_base']);
@@ -52,6 +53,11 @@ export function buildQuantityEngineInput(config = {}, geometry = {}, options = {
     ].map(Number);
     if ([sheets, widthMm, heightMm].every((value) => Number.isSafeInteger(value) && value > 0)) {
       input.claddingSheets = { sheets, widthMm, heightMm };
+      if (config.preview_pricing) {
+        input.claddingSheets.laminatedWhite = true;
+        input.claddingSheets.estimatedUnitCost = getStepwiseCladdingSheetCost(widthMm, heightMm);
+        input.claddingSheets.enamelTreadSheetCost = enamelTreadMdfSheetCost;
+      }
     }
   }
 

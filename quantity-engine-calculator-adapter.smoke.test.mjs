@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { getStepwisePricingRegion } from './calculator-preview-pricing.js';
 import {
   buildQuantityEngineInput,
   calculateQuantityFromCalculator,
@@ -148,6 +149,21 @@ assert.equal(claddingResult.quantities.mdfSheets.risers.sheets, 0);
 assert.equal(claddingResult.quantities.mdfSheets.cladding.purchasedAreaM2, 14.49);
 assert.equal(withoutCladding.quantityEngineResult.quantities.mdfSheets.risers.sheets, 1);
 assert.equal(withoutCladding.quantityEngineInput.claddingSheets, undefined);
+
+const previewGeometry = baseGeometry({ service_metrics: { railingLengthM: 7, additionalRailingLengthM: 1 } });
+const previewConfig = { ...claddingConfig, preview_pricing: true };
+const tat = calculateQuantityFromCalculator(previewConfig, previewGeometry, getStepwisePricingRegion('tatarstan')).quantityEngineResult;
+const msk = calculateQuantityFromCalculator(previewConfig, previewGeometry, getStepwisePricingRegion('moscow')).quantityEngineResult;
+assert.equal(tat.pricing.turnkeyCoefficient, 2.7);
+assert.equal(msk.pricing.turnkeyCoefficient, 3);
+assert.equal(tat.pricing.materialAndConsumablesSubtotal, msk.pricing.materialAndConsumablesSubtotal);
+assert.equal(tat.pricing.clientPrice, Math.round(tat.pricing.materialAndConsumablesSubtotal * 270) / 100);
+assert.equal(msk.pricing.clientPrice, Math.round(msk.pricing.materialAndConsumablesSubtotal * 300) / 100);
+assert.equal(tat.railing.totalLengthM, 7);
+assert.equal(tat.materials.find(({ code }) => code === 'MDF_10_WHITE_LAMINATED_SHEET').subtotal, 5187.5);
+assert.equal(tat.materials.find(({ code }) => code === 'MDF_38_SHEET').unitCost, 12171);
+assert.equal(tat.quantities.lacquer.liters, 0);
+assert.equal(tat.quantities.enamel.finishAreaM2, tat.quantities.treadAreaM2);
 
 const pricedResult = calculateQuantityFromCalculator(
   baseConfig({ turnkeyCoefficient: 2.8 }),

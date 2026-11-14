@@ -289,7 +289,11 @@ function buildQuantities({ geometry, preset, railing, claddingSheets }) {
   const finishAreaM2 = roundTo(geometry.treadAreaM2 + geometry.riserAreaM2 + geometry.platformAreaM2, 2);
   const mdfSheets = calculateMdfSheets(geometry, preset.wastePercent, claddingSheets);
   const addons = calculateAddons(geometry, preset);
-  const coatings = calculateCoatings(finishAreaM2);
+  const laminated = mdfSheets.cladding?.laminatedWhite === true;
+  const coatings = calculateCoatings(laminated
+    ? roundTo(geometry.treadAreaM2 + geometry.platformAreaM2, 2)
+    : finishAreaM2);
+  if (laminated) coatings.lacquer = { ...coatings.lacquer, liters: 0 };
   const consumables = calculateConsumables(geometry, finishAreaM2, addons.coverStrips.lengthM);
 
   return {
@@ -337,6 +341,10 @@ function calculateMdfSheets(geometry, wastePercent, claddingSheets) {
   if (cladding) {
     cladding.purchasedAreaM2 = roundTo(cladding.sheets * cladding.sheetAreaM2, 2);
     risers.sheets = 0;
+    if (cladding.laminatedWhite) {
+      treads.materialCode = platforms.materialCode = treadsAndPlatforms.materialCode = 'MDF_38_SHEET';
+      cladding.materialCode = 'MDF_10_WHITE_LAMINATED_SHEET';
+    }
   }
   const sheetCount = treadsAndPlatforms.sheets + (cladding?.sheets ?? risers.sheets);
 
@@ -435,10 +443,22 @@ function calculateConsumables(geometry, finishAreaM2, openSideLengthM) {
 
 function buildMaterialRows({ catalog, quantities, preset }) {
   const { cladding, risers } = quantities.mdfSheets;
+  const treads = quantities.mdfSheets.treadsAndPlatforms;
+  const treadCatalog = cladding?.laminatedWhite
+    ? [{ code: 'MDF_38_SHEET', name: 'МДФ 38 мм — ступени и площадки', unit: 'sheet',
+        category: 'MDF', active: true, baseCost: cladding.enamelTreadSheetCost }]
+    : catalog;
+  const claddingCatalog = cladding?.laminatedWhite
+    ? [{ code: 'MDF_10_WHITE_LAMINATED_SHEET', name: 'Белый ЛМДФ 10 мм — обшивка с подступенками',
+        unit: 'sheet', category: 'MDF', active: true, baseCost: cladding.estimatedUnitCost }]
+    : catalog;
   return [
-    materialLine(catalog, 'MDF_36_SHEET', quantities.mdfSheets.treadsAndPlatforms.sheets, { name: 'MDF 36 мм, лист — ступени и площадки', quantityKind: 'mdfTreadsAndPlatforms', wastePercent: preset.wastePercent, applyWaste: false }),
-    materialLine(catalog, 'MDF_10_SHEET', cladding?.sheets ?? risers.sheets, cladding
-      ? { name: 'МДФ 10 мм — обшивка с подступенками', quantityKind: 'mdfCladding', wastePercent: 0, applyWaste: false }
+    materialLine(treadCatalog, treads.materialCode, treads.sheets, { name: cladding?.laminatedWhite ? undefined : 'MDF 36 мм, лист — ступени и площадки', quantityKind: 'mdfTreadsAndPlatforms', wastePercent: preset.wastePercent, applyWaste: false }),
+    materialLine(claddingCatalog, cladding?.materialCode ?? risers.materialCode, cladding?.sheets ?? risers.sheets, cladding
+      ? {
+          name: cladding.laminatedWhite ? 'Белый ЛМДФ 10 мм — обшивка с подступенками' : 'МДФ 10 мм — обшивка с подступенками',
+          quantityKind: 'mdfCladding', wastePercent: 0, applyWaste: false
+        }
       : { name: 'MDF 10 мм, лист — подступенки', quantityKind: 'mdfRisers', wastePercent: preset.wastePercent, applyWaste: false }),
     materialLine(catalog, 'ADDONS_TRIMS', quantities.nosingStrips.lengthM, { name: 'Доборы и планки — передняя кромка', quantityKind: 'nosingStrips' }),
     materialLine(catalog, 'ADDONS_TRIMS', quantities.endTrims.lengthM, { name: 'Доборы и планки — торцевые планки', quantityKind: 'endTrims' }),

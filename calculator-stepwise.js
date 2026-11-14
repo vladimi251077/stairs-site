@@ -1,3 +1,5 @@
+import { stepwisePricingRegions } from './calculator-preview-pricing.js';
+
 const byId = (id) => document.getElementById(id);
 const app = document.querySelector('.calculator-app');
 const form = byId('step1').parentElement;
@@ -144,7 +146,7 @@ const serviceOptions = byId('serviceOptionsGroup');
 serviceOptions.prepend(finishScope);
 const sheetFields = document.createElement('fieldset');
 const sheetLegend = document.createElement('legend');
-sheetLegend.textContent = 'МДФ 10 мм на всю обшивку, включая подступенки';
+sheetLegend.textContent = 'МДФ 10 мм, белый с одной стороны — обшивка и подступенки';
 sheetFields.append(sheetLegend);
 const sheetInputs = ['claddingSheetCount', 'claddingSheetWidth', 'claddingSheetHeight'].map(byId);
 for (const input of sheetInputs) {
@@ -163,7 +165,22 @@ const railingGrid = makeGrid(railing);
 moveField('railingOption', railingGrid);
 const railingLength = byId('readyFrameStraightRailingLength').closest('.field');
 railingGrid.append(railingLength);
-materials.append(byId('pricingInputGroup'), serviceOptions);
+const pricingInputs = byId('pricingInputGroup');
+const currentRegionField = byId('pricingRegion').closest('.field');
+currentRegionField.hidden = true;
+const previewRegionField = document.createElement('div');
+previewRegionField.className = 'field';
+const regionLabel = document.createElement('label');
+regionLabel.htmlFor = 'stepwisePricingRegion';
+regionLabel.textContent = 'Регион работ';
+const regionSelect = document.createElement('select');
+regionSelect.id = regionLabel.htmlFor;
+for (const region of stepwisePricingRegions) {
+  regionSelect.add(new Option(region.name, region.code));
+}
+previewRegionField.append(regionLabel, regionSelect);
+pricingInputs.append(previewRegionField);
+materials.append(pricingInputs, serviceOptions);
 function syncReadyBaseFields() {
   finishScope.hidden = !isReadyBase();
   railingLength.hidden = !isReadyBase();
