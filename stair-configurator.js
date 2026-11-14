@@ -1425,6 +1425,7 @@ function buildCalculationPayload(config, geometry, materials = state.materials, 
 
   return {
     schema: 'tekstura.stair.phase1',
+    ...(config.preview_pricing ? { client_stepwise: true } : {}),
     request_mode: requestMode,
     project_scenario: config.project_scenario,
     base_condition: config.base_condition,

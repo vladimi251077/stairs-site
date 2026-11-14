@@ -51,6 +51,18 @@ export const shoeMdfHalfSheetCost = 3280 / 2;
 // Opex-F, шлифованный МДФ 4 мм. Пропорция площади без раскроя и доставки.
 export const trimMdfCost = Math.round(1333 * (15 * 0.04 * 2.8) / (2.07 * 2.8) * 100) / 100;
 
+// Control order: seven metres and an estimated 10,154–10,734 ₽ in components.
+// Fasteners are budgeted separately at the stair level.
+export const referenceTubeRailingCostPerMeter = 10444 / 7;
+
+export function estimateStepwiseCladding(stepCount, marchWidth, treadDepth, riserHeight) {
+  // The reference job used five half sheets for 15 steps on a 900 mm march.
+  const referenceFace = 15 * 900 * (265 + 180);
+  const face = stepCount * marchWidth * (treadDepth + riserHeight);
+  if (!Number.isFinite(face) || face <= 0) return null;
+  return { sheets: Math.max(1, Math.ceil(5 * face / referenceFace)), widthMm: 1035, heightMm: 2800 };
+}
+
 export const underStairDoorMaterials = [
   // Закупочная цена мастерской за заказную дверку с кромкой.
   { code: 'UNDER_STAIR_DOOR_LMDF', name: 'Заказная дверка 1350 × 680 мм с кромкой, двусторонний ЛМДФ 16 мм', unit: 'piece',

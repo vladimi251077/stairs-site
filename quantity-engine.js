@@ -540,13 +540,15 @@ function buildRailing(rawInput, preset, selectedRailingType) {
     sections: rawInput.railingSections
   });
   const effectiveLengthM = totalLengthM || defaultRailingLength(rawInput);
-  const materialSubtotal = roundTo(effectiveLengthM * selectedRailingType.pricePerMeter, 2);
+  const pricePerMeter = Number.isFinite(rawInput.railingMaterialCostPerMeter) && rawInput.railingMaterialCostPerMeter > 0
+    ? rawInput.railingMaterialCostPerMeter : selectedRailingType.pricePerMeter;
+  const materialSubtotal = roundTo(effectiveLengthM * pricePerMeter, 2);
 
   return {
     enabled: true,
     typeId: selectedRailingType.id,
     name: selectedRailingType.name,
-    pricePerMeter: selectedRailingType.pricePerMeter,
+    pricePerMeter,
     totalLengthM: effectiveLengthM,
     topBalustradeLengthM,
     upperBalustradeIsSeparateType: false,

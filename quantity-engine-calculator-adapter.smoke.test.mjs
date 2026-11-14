@@ -190,6 +190,17 @@ assert.deepEqual(
 );
 assert.equal(Math.round((withDoor.pricing.materialAndConsumablesSubtotal - tat.pricing.materialAndConsumablesSubtotal) * 100), 850000);
 
+const clientQuote = calculateQuantityFromCalculator({
+  ...previewConfig, has_landing: true, landing_width: 1900, landing_length: 850,
+  cladding_sheet_count: 0, cladding_sheet_width: 0, cladding_sheet_height: 0,
+  preview_under_stair_door: true
+}, previewGeometry, getStepwisePricingRegion('tatarstan')).quantityEngineResult;
+assert.equal(clientQuote.quantities.mdfSheets.cladding.sheets, 5);
+assert.equal(clientQuote.railing.totalLengthM, 7);
+assert.equal(clientQuote.railing.materialSubtotal, 10444);
+assert.ok(clientQuote.pricing.clientPriceMin < 340000 && clientQuote.pricing.clientPriceMax > 340000);
+assert.ok(Math.abs(clientQuote.pricing.clientPrice - 340000) < 2);
+
 const pricedResult = calculateQuantityFromCalculator(
   baseConfig({ turnkeyCoefficient: 2.8 }),
   baseGeometry()

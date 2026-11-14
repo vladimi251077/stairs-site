@@ -157,47 +157,24 @@ const extraFields = [
 ];
 const extraGrid = makeGrid(details);
 for (const id of extraFields) extraGrid.append(byId(id));
+byId('existingFrameNotes').closest('.field').remove();
 details.append(byId('existingMetalGroup'), byId('existingConcreteGroup'));
 const finishScopeSelect = byId('finishScope');
 const finishScope = finishScopeSelect.closest('.field');
 const serviceOptions = byId('serviceOptionsGroup');
 serviceOptions.prepend(finishScope);
-const sheetFields = document.createElement('fieldset');
-const sheetLegend = document.createElement('legend');
-sheetLegend.textContent = 'МДФ 10 мм, белый с одной стороны — обшивка и подступенки';
-sheetFields.append(sheetLegend);
-const sheetInputs = ['claddingSheetCount', 'claddingSheetWidth', 'claddingSheetHeight'].map(byId);
-for (const input of sheetInputs) {
-  input.value = '';
-  input.min = '1';
-  input.step = '1';
-}
 for (const id of ['sheetCountField', 'sheetSizeField']) {
-  const field = byId(id);
-  field.classList.remove('hidden');
-  field.removeAttribute('id');
-  sheetFields.append(field);
+  byId(id).remove();
 }
-const workshopBudget = document.createElement('input');
-workshopBudget.type = 'checkbox';
-workshopBudget.id = 'stepwiseWorkshopBudget';
-const budgetLabel = document.createElement('label');
-budgetLabel.className = 'stepwise-budget-option';
-budgetLabel.append(workshopBudget, ' Учесть типовой расход мастерской');
-const budgetHelp = document.createElement('p');
-budgetHelp.className = 'field-help';
-budgetHelp.id = 'stepwiseWorkshopBudgetHelp';
-budgetHelp.textContent = 'Для лестницы как в примере: 1 лист МДФ 16 мм на сапожки, 15 полос МДФ 4 мм на нащельники, 15–20 тыс. ₽ на покрасочные материалы и 20 тыс. ₽ на крепёж.';
-workshopBudget.setAttribute('aria-describedby', budgetHelp.id);
-sheetFields.append(budgetLabel, budgetHelp);
+byId('materialsResult').closest('.result-box').hidden = true;
+result.querySelector('.post-submit-info').hidden = true;
 const underStairDoor = document.createElement('input');
 underStairDoor.type = 'checkbox';
 underStairDoor.id = 'stepwiseUnderStairDoor';
 const doorLabel = document.createElement('label');
 doorLabel.className = 'stepwise-budget-option';
-doorLabel.append(underStairDoor, ' Добавить дверку 1350 × 680 мм и каркас из 13 брусков');
-sheetFields.append(doorLabel);
-serviceOptions.append(sheetFields);
+doorLabel.append(underStairDoor, ' Нужна дверка под лестницей');
+serviceOptions.append(doorLabel);
 const railingGrid = makeGrid(railing);
 moveField('railingOption', railingGrid);
 const railingLength = byId('readyFrameStraightRailingLength').closest('.field');
@@ -293,12 +270,9 @@ function buildPricingSettings() {
 function syncReadyBaseFields() {
   finishScope.hidden = !isReadyBase();
   railingLength.hidden = !isReadyBase();
-  sheetFields.hidden = !isReadyBase() || finishScopeSelect.value !== 'full_cladding';
-  sheetInputs.forEach((input) => { input.disabled = sheetFields.hidden; });
-  workshopBudget.disabled = sheetFields.hidden;
-  if (sheetFields.hidden) workshopBudget.checked = false;
-  underStairDoor.disabled = sheetFields.hidden;
-  if (sheetFields.hidden) underStairDoor.checked = false;
+  doorLabel.hidden = !isReadyBase() || finishScopeSelect.value !== 'full_cladding';
+  underStairDoor.disabled = doorLabel.hidden;
+  if (doorLabel.hidden) underStairDoor.checked = false;
 }
 byId('baseCondition').addEventListener('change', syncReadyBaseFields);
 finishScopeSelect.addEventListener('change', syncReadyBaseFields);
@@ -323,9 +297,7 @@ navigation(dimensions, () => show(shape), () => show(isReadyBase() ? details : m
 navigation(details, () => show(dimensions), () => show(materials));
 navigation(materials, () => show(isReadyBase() ? details : dimensions), () => {
   if (sharedPricingConfigured && !sharedPricingAvailable) return;
-  const required = !sheetFields.hidden && (workshopBudget.checked || sheetInputs.some((input) => input.value !== ''));
-  for (const input of sheetInputs) input.required = required;
-  if (sheetInputs.every((input) => input.reportValidity())) show(railing);
+  show(railing);
 });
 editBackLink(review, () => show(railing));
 editBackLink(result, () => show(review));
@@ -352,6 +324,45 @@ form.insertBefore(shape, dimensions);
 for (const section of [details, materials, railing]) form.insertBefore(section, review);
 
 buildScenarioCards();
+const photoPath = document.createElement('details');
+photoPath.className = 'stepwise-pricing-settings';
+const photoTitle = document.createElement('summary');
+photoTitle.textContent = 'У меня есть фото лестницы';
+const photoHint = document.createElement('p');
+photoHint.textContent = 'Откройте фото рядом с расчётом. Для цены понадобятся хотя бы примерные размеры. Если их нет, можно обратиться к инженеру.';
+const photoInput = document.createElement('input');
+photoInput.type = 'file';
+photoInput.accept = 'image/*';
+photoInput.setAttribute('aria-label', 'Фото лестницы');
+const photo = document.createElement('img');
+photo.className = 'stepwise-photo';
+photo.alt = 'Выбранное фото лестницы';
+photo.hidden = true;
+const photoStatus = document.createElement('p');
+photoStatus.setAttribute('role', 'status');
+const engineer = document.createElement('a');
+engineer.href = '/request.html?source=stair_photo';
+engineer.textContent = 'Обратиться к инженеру';
+let photoUrl;
+photoInput.addEventListener('change', () => {
+  if (photoUrl) URL.revokeObjectURL(photoUrl);
+  photo.hidden = true;
+  photo.removeAttribute('src');
+  photoStatus.textContent = '';
+  const file = photoInput.files[0];
+  if (!file) return;
+  photoUrl = URL.createObjectURL(file);
+  photo.src = photoUrl;
+  photo.hidden = false;
+  photoStatus.textContent = 'Фото открыто в браузере.';
+});
+photo.addEventListener('error', () => {
+  photo.hidden = true;
+  photoStatus.textContent = 'Фото не открылось. Попробуйте выбрать JPG или PNG.';
+});
+photoPath.append(photoTitle, photoHint, photoInput, photoStatus, engineer);
+scenario.querySelector('.stepwise-scenarios').after(photoPath);
+app.querySelector('.top').after(photo);
 const originalScenarioGrid = byId('baseCondition').closest('.grid');
 originalScenarioGrid.hidden = true;
 

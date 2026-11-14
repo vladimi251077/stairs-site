@@ -1,5 +1,6 @@
 import { calculateQuantityEngine } from './quantity-engine.js';
-import { enamelTreadMdfSheetCost, getStepwiseCladdingSheetCost, shoeMdfHalfSheetCost, trimMdfCost, underStairDoorMaterials } from './calculator-preview-pricing.js';
+import { enamelTreadMdfSheetCost, estimateStepwiseCladding, getStepwiseCladdingSheetCost, referenceTubeRailingCostPerMeter,
+  shoeMdfHalfSheetCost, trimMdfCost, underStairDoorMaterials } from './calculator-preview-pricing.js';
 
 const READY_BASE_CONDITIONS = new Set(['existing_metal_frame', 'ready_frame']);
 const CONCRETE_BASE_CONDITIONS = new Set(['existing_concrete_base']);
@@ -54,18 +55,29 @@ export function buildQuantityEngineInput(config = {}, geometry = {}, options = {
     const [sheets, widthMm, heightMm] = [
       config.cladding_sheet_count, config.cladding_sheet_width, config.cladding_sheet_height
     ].map(Number);
-    if ([sheets, widthMm, heightMm].every((value) => Number.isSafeInteger(value) && value > 0)) {
-      input.claddingSheets = { sheets, widthMm, heightMm };
+    const explicitSheets = [sheets, widthMm, heightMm].every((value) => Number.isSafeInteger(value) && value > 0)
+      ? { sheets, widthMm, heightMm } : null;
+    const estimatedSheets = config.preview_pricing && estimateStepwiseCladding(
+      Number(input.stepCount), Number(input.marchWidth), Number(input.treadDepth), Number(input.riserHeight)
+    );
+    const cladding = explicitSheets || estimatedSheets;
+    if (cladding) {
+      input.claddingSheets = cladding;
       if (config.preview_pricing) {
         input.claddingSheets.laminatedWhite = true;
-        input.claddingSheets.estimatedUnitCost = getStepwiseCladdingSheetCost(widthMm, heightMm);
+        input.claddingSheets.estimatedUnitCost = getStepwiseCladdingSheetCost(cladding.widthMm, cladding.heightMm);
         input.claddingSheets.enamelTreadSheetCost = enamelTreadMdfSheetCost;
-        if (config.preview_workshop_budget) {
+        if (config.preview_workshop_budget || !explicitSheets) {
+          const scale = Number(input.stepCount) / 15;
           input.workshopBudget = {
-            shoeSheetCost: shoeMdfHalfSheetCost, trimMdfCost, paintMin: 15000, paintMax: 20000, fastenerCost: 20000
+            shoeSheetCost: shoeMdfHalfSheetCost * scale, trimMdfCost: trimMdfCost * scale,
+            paintMin: 15000 * scale, paintMax: 20000 * scale, fastenerCost: 20000 * scale
           };
         }
       }
+    }
+    if (config.preview_pricing && !explicitSheets && configurationType === 'metal_frame' && config.railing_option === 'metal') {
+      input.railingMaterialCostPerMeter = referenceTubeRailingCostPerMeter;
     }
   }
 
